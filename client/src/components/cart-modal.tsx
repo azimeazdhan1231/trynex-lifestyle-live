@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -16,11 +16,21 @@ interface CartModalProps {
 export default function CartModal({ isOpen, onClose }: CartModalProps) {
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const { cart, updateQuantity, removeFromCart, totalItems, totalPrice, clearCart } = useCart();
+  
+  // Force re-render when modal opens to ensure cart state is fresh
+  const [, forceUpdate] = useState({});
 
   const handleCheckout = () => {
     onClose();
     setIsCheckoutOpen(true);
   };
+
+  // Force cart state sync when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      forceUpdate({});
+    }
+  }, [isOpen]);
 
   return (
     <>

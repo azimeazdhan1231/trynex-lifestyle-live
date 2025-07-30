@@ -58,13 +58,18 @@ export function useCart() {
     };
     cartListeners.add(listener);
     
-    // Sync with current global state
+    // Sync with current global state immediately
     setCart([...globalCart]);
     
     return () => {
       cartListeners.delete(listener);
     };
   }, []);
+
+  // Additional effect to ensure cart is always in sync
+  useEffect(() => {
+    setCart([...globalCart]);
+  }, [globalCart.length]);
 
   const addToCart = useCallback((item: Omit<CartItem, 'quantity'>) => {
     const newCart = [...globalCart];
