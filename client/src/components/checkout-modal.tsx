@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,7 +9,9 @@ import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
-import { DISTRICTS, formatPrice } from "@/lib/constants";
+import { DISTRICTS, THANAS_BY_DISTRICT, formatPrice, calculateDeliveryFee } from "@/lib/constants";
+import OrderSuccessModal from "@/components/order-success-modal";
+import { trackInitiateCheckout, trackPurchase } from "@/lib/analytics";
 import type { Order } from "@shared/schema";
 
 interface CartItem {
@@ -34,11 +36,30 @@ export default function CheckoutModal({ isOpen, onClose, cart, onOrderComplete }
     thana: "",
     address: "",
   });
+  const [deliveryFee, setDeliveryFee] = useState(80);
+  const [availableThanas, setAvailableThanas] = useState<string[]>([]);
+  const [completedOrder, setCompletedOrder] = useState<Order | null>(null);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const totalPrice = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  const totalPrice = subtotal + deliveryFee;
+
+  // Update delivery fee and available thanas when district changes
+  useEffect(() => {
+    if (formData.district) {
+      const fee = calculateDeliveryFee(formData.district);
+      setDeliveryFee(fee);
+      setAvailableThanas(THANAS_BY_DISTRICT[formData.district] || []);
+      // Reset thana when district changes
+      setFormData(prev => ({ ...prev, thana: "" }));
+    } else {
+      setAvailableThanas([]);
+      setDeliveryFee(80);
+    }
+  }, [formData.district]);
 
   const createOrderMutation = useMutation({
     mutationFn: async (orderData: any) => {
@@ -49,12 +70,15 @@ export default function CheckoutModal({ isOpen, onClose, cart, onOrderComplete }
       return response.json();
     },
     onSuccess: (order: Order) => {
-      toast({
-        title: "অর্ডার সফল!",
-        description: `আপনার অর্ডার সফলভাবে প্লেস হয়েছে। ট্র্যাকিং আইডি: ${order.tracking_id}`,
-      });
+      // Track successful purchase
+      trackPurchase(order.tracking_id, Number(order.total), 'BDT');
+      
       queryClient.invalidateQueries({ queryKey: ["/api/orders"] });
+      setCompletedOrder(order);
+      setShowSuccessModal(true);
+      onClose(); // Close checkout modal
       onOrderComplete();
+      // Reset form
       setFormData({
         customer_name: "",
         phone: "",
@@ -94,10 +118,14 @@ export default function CheckoutModal({ isOpen, onClose, cart, onOrderComplete }
       return;
     }
 
+    // Track checkout initiation
+    trackInitiateCheckout(totalPrice, cart.length);
+
     const orderData = {
       ...formData,
-      items: cart,
+      items: cart.map(item => ({...item, delivery_fee: deliveryFee})),
       total: totalPrice.toString(),
+      delivery_fee: deliveryFee,
     };
 
     console.log('Submitting order:', orderData);
@@ -163,14 +191,23 @@ export default function CheckoutModal({ isOpen, onClose, cart, onOrderComplete }
 
             <div>
               <Label htmlFor="thana">থানা *</Label>
-              <Input
-                id="thana"
-                type="text"
-                value={formData.thana}
-                onChange={(e) => handleInputChange("thana", e.target.value)}
-                placeholder="থানার নাম লিখুন"
+              <Select 
+                value={formData.thana} 
+                onValueChange={(value) => handleInputChange("thana", value)}
+                disabled={!formData.district}
                 required
-              />
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder={formData.district ? "থানা নির্বাচন করুন" : "প্রথমে জেলা নির্বাচন করুন"} />
+                </SelectTrigger>
+                <SelectContent>
+                  {availableThanas.map((thana) => (
+                    <SelectItem key={thana} value={thana}>
+                      {thana}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             <div>
@@ -196,6 +233,15 @@ export default function CheckoutModal({ isOpen, onClose, cart, onOrderComplete }
                 <span>{formatPrice(item.price * item.quantity)}</span>
               </div>
             ))}
+            <Separator />
+            <div className="flex justify-between text-sm">
+              <span>পণ্যের মূল্য:</span>
+              <span>{formatPrice(subtotal)}</span>
+            </div>
+            <div className="flex justify-between text-sm">
+              <span>ডেলিভারি চার্জ:</span>
+              <span>{formatPrice(deliveryFee)}</span>
+            </div>
             <Separator />
             <div className="flex justify-between items-center font-semibold">
               <span>মোট পরিমাণ:</span>
@@ -228,6 +274,12 @@ export default function CheckoutModal({ isOpen, onClose, cart, onOrderComplete }
           </Button>
         </form>
       </DialogContent>
+
+      <OrderSuccessModal
+        isOpen={showSuccessModal}
+        onClose={() => setShowSuccessModal(false)}
+        order={completedOrder}
+      />
     </Dialog>
   );
 }

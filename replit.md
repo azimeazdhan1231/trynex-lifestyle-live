@@ -1,143 +1,93 @@
-# Trynex Lifestyle eCommerce Store
+# Trynex Lifestyle - Enhanced eCommerce Platform
 
 ## Overview
+A comprehensive Bengali-friendly eCommerce store with advanced admin panel, analytics integration, and responsive design. Live at https://trynex-lifestyle.pages.dev/
 
-This is a full-stack eCommerce application built for a Bengali lifestyle and custom gift store. The application features a modern React frontend with a Node.js/Express backend, using PostgreSQL as the database with Drizzle ORM for type-safe database operations. The application is designed to be deployed on Replit with external database hosting.
+## Recent Changes
+✅ **Product Enhancement** (2025-01-30)
+- Implemented responsive product modal with quantity selector and detailed product views
+- Enhanced product grid with hover effects and quick action buttons  
+- Added dynamic product categorization system
 
-## User Preferences
+✅ **Enhanced Checkout System** (2025-01-30)
+- Dynamic delivery fee calculation (80tk Dhaka, 80-120tk outside)
+- Location-based thana selection with district dependency
+- Enhanced order success modal with tracking and copy functionality
 
-Preferred communication style: Simple, everyday language.
+✅ **Comprehensive Admin Panel** (2025-01-30)  
+- Advanced dashboard with real-time statistics and recent orders overview
+- Complete product management with CRUD operations
+- Category management system with Bengali names
+- Promo code system with usage tracking and validation
+- Site settings for analytics and delivery configuration
 
-## System Architecture
+✅ **Analytics Integration** (2025-01-30)
+- Google Analytics 4 integration with page view and event tracking
+- Facebook Pixel integration for conversion tracking
+- E-commerce event tracking (add to cart, purchase, checkout initiation)
+- Product view tracking in modals
 
-The application follows a monorepo structure with clear separation between client, server, and shared components:
+✅ **Database Schema Enhancement** (2025-01-30)
+- Added comprehensive tables: categories, promo_codes, analytics, site_settings
+- Enhanced order tracking system with delivery fee integration
+- Proper type definitions and validation schemas
 
-- **Frontend**: React with TypeScript, using Vite for build tooling
-- **Backend**: Express.js server with TypeScript
-- **Database**: PostgreSQL with Drizzle ORM
-- **UI Framework**: shadcn/ui components with Tailwind CSS
-- **State Management**: TanStack Query for server state management
-- **Routing**: Wouter for lightweight client-side routing
+## Project Architecture
 
-## Key Components
+### Frontend Structure
+- **React** with TypeScript and Vite
+- **Tailwind CSS** with shadcn/ui components for consistent design
+- **Wouter** for client-side routing
+- **TanStack Query** for server state management
+- **Bengali Typography** with proper font loading
 
-### Frontend Architecture
-- **Component Library**: Uses shadcn/ui components built on Radix UI primitives
-- **Styling**: Tailwind CSS with custom Bengali font integration (Hind Siliguri)
-- **State Management**: TanStack Query for API state, local storage for cart management
-- **Internationalization**: Bengali language support throughout the interface
-- **Responsive Design**: Mobile-first approach with responsive breakpoints
-
-### Backend Architecture
-- **API Design**: RESTful API with Express.js
-- **Database Layer**: Drizzle ORM with PostgreSQL for type-safe database operations
-- **Route Organization**: Centralized route registration in `/server/routes.ts`
-- **Error Handling**: Centralized error handling middleware
-- **Development Tools**: Hot reloading with Vite integration in development
+### Backend Structure  
+- **Express.js** server with PostgreSQL database
+- **Drizzle ORM** for type-safe database operations
+- **API Routes** for products, orders, categories, promo codes, and analytics
+- **Zod** schemas for request validation
 
 ### Database Schema
-The application uses four main entities:
-- **Products**: Core product catalog with categories, pricing, and stock management
-- **Orders**: Customer orders with tracking, status updates, and Bengali address fields
-- **Offers**: Promotional offers with expiry dates and activation status
-- **Admins**: Simple admin authentication system
+- `products` - Product catalog with stock management
+- `orders` - Order management with tracking IDs and delivery info
+- `categories` - Product categorization with Bengali names
+- `promo_codes` - Discount code system with usage limits
+- `analytics` - Event tracking for user behavior analysis
+- `site_settings` - Configurable site parameters
+- `offers` - Special offers and promotions
+- `admins` - Admin user management
 
-### Core Features
-- **Product Catalog**: Category-based product browsing with search and filtering
-- **Shopping Cart**: Persistent cart using localStorage with quantity management
-- **Order Management**: Complete order lifecycle with tracking system
-- **Admin Panel**: Order management and status updates
-- **Multi-language Support**: Bengali interface with English fallbacks
-- **WhatsApp Integration**: Direct customer communication via WhatsApp API
+### Key Features
+- **Responsive Design** - Mobile-first approach with Bengali typography
+- **Real-time Analytics** - Google Analytics and Facebook Pixel integration
+- **Advanced Cart Management** - Persistent cart with quantity controls
+- **Dynamic Delivery Pricing** - Location-based fee calculation
+- **Comprehensive Admin Panel** - Full store management capabilities
+- **Order Tracking System** - Unique tracking IDs with status updates
+- **Multi-modal Product Views** - Enhanced product browsing experience
 
-## Data Flow
+### Environment Variables
+- `VITE_GA_MEASUREMENT_ID` - Google Analytics measurement ID
+- `VITE_FB_PIXEL_ID` - Facebook Pixel ID  
+- `DATABASE_URL` - PostgreSQL connection string
 
-1. **Client Requests**: Frontend makes API calls using TanStack Query
-2. **API Processing**: Express server handles requests and validates data using Zod schemas
-3. **Database Operations**: Drizzle ORM executes type-safe database queries
-4. **Response Handling**: Structured JSON responses with error handling
-5. **State Updates**: TanStack Query manages cache invalidation and UI updates
+### User Preferences
+- **Language**: Bengali (বাংলা) for all customer-facing content
+- **Design**: Modern, clean interface with orange/green accent colors
+- **Payment**: bKash/Nagad integration with manual confirmation
+- **Communication**: WhatsApp for customer support and order management
 
-## External Dependencies
+## Current Status
+- ✅ All core features implemented and functional
+- ✅ Analytics tracking fully integrated  
+- ✅ Admin panel with comprehensive management tools
+- ✅ Database schema updated with all necessary tables
+- ✅ Responsive design optimized for mobile and desktop
+- ✅ Cart functionality with persistent storage
 
-### Core Dependencies
-- **@neondatabase/serverless**: PostgreSQL database connectivity
-- **drizzle-orm**: Type-safe ORM for database operations
-- **@tanstack/react-query**: Server state management
-- **wouter**: Lightweight routing solution
-- **@radix-ui/***: Headless UI components
-- **tailwindcss**: Utility-first CSS framework
-
-### Development Tools
-- **vite**: Build tool and development server
-- **typescript**: Type safety across the entire stack
-- **drizzle-kit**: Database migration and schema management
-- **tsx**: TypeScript execution for server development
-
-### External Services
-- **PostgreSQL Database**: Hosted externally (Supabase referenced in setup docs)
-- **WhatsApp Business API**: Customer communication integration
-- **Cloudflare**: Deployment and hosting infrastructure (referenced in setup guide)
-
-## Deployment Strategy
-
-The application is designed for Replit deployment with the following approach:
-
-1. **Development**: Uses Vite dev server with Express integration
-2. **Production Build**: 
-   - Frontend: Vite builds static assets to `dist/public`
-   - Backend: esbuild bundles server code to `dist/index.js`
-3. **Database**: External PostgreSQL hosting with connection string configuration
-4. **Environment Variables**: Database URL and other configuration via environment variables
-5. **Static Serving**: Express serves built frontend assets in production
-
-### Build Process
-- `npm run dev`: Development mode with hot reloading
-- `npm run build`: Production build for both frontend and backend
-- `npm run start`: Production server startup
-- `npm run db:push`: Database schema deployment
-
-The application is optimized for Replit's environment with specific plugins and configuration for seamless development and deployment experience.
-
-## Current System Status (July 30, 2025)
-
-### ✅ Completed Features
-- **Full-Stack eCommerce Platform**: Complete Bengali-language online store
-- **Advanced Admin Panel**: Tabbed interface with full CRUD operations for products, categories, and offers
-- **Real-Time Order Tracking**: Dynamic tracking page with auto-refresh (3-second intervals)
-- **Payment Integration**: Manual verification system using bKash/Nagad: 01747292277
-- **Shopping Cart System**: Persistent cart with centralized state management
-- **Order Management**: Complete lifecycle from placement to delivery
-- **Bengali Language Support**: Full interface in Bengali with English fallbacks
-- **API Infrastructure**: Complete RESTful API with all CRUD operations
-- **Database Integration**: PostgreSQL with Drizzle ORM, hosted on Supabase
-- **Responsive Design**: Mobile-first approach with Tailwind CSS
-
-### 🎯 Key Admin Features
-- **Order Management**: View all orders, update status in real-time, track customer information
-- **Product Management**: Add, edit, delete products with image URLs, categories, and stock management
-- **Offer Management**: Create promotional offers with percentage discounts, minimum order amounts, expiry dates
-- **Dashboard Analytics**: Revenue tracking, order statistics, pending order alerts
-
-### 🔄 Real-Time Features
-- **Live Order Tracking**: Customer tracking page refreshes automatically every 3 seconds
-- **Admin Status Updates**: Changes in admin panel reflect immediately in customer tracking
-- **Dynamic UI Updates**: Status badges and progress indicators update in real-time
-
-### 💳 Payment System
-- **Manual Verification**: Customers must pay via bKash/Nagad to 01747292277 before delivery
-- **Payment Confirmation**: Clear instructions displayed during checkout and tracking
-- **Order Security**: Orders cannot be delivered without payment confirmation
-
-### 🚀 Deployment Ready
-- **Cloudflare Pages**: Complete deployment guide created (CLOUDFLARE_DEPLOYMENT.md)
-- **Supabase Backend**: Database schema and sample data ready for production
-- **Environment Configuration**: All secrets and environment variables documented
-
-### 📱 User Experience
-- **Intuitive Navigation**: Header with home, products, tracking, offers, and contact links
-- **Cart Functionality**: Add/remove products, quantity management, checkout flow
-- **Order Placement**: Complete customer information form with Bengali address fields
-- **WhatsApp Integration**: Direct customer communication links
-
-The system is production-ready and fully functional for deployment to Cloudflare Pages with Supabase backend.
+## Next Steps
+- Test all features thoroughly in live environment
+- Set up Google Analytics and Facebook Pixel with actual IDs
+- Configure WhatsApp Business integration
+- Add product images and populate initial inventory
+- Test order workflow end-to-end with real payment confirmation

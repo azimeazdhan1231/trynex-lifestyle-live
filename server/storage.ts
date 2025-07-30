@@ -1,7 +1,13 @@
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
-import { eq, desc, and, gte } from "drizzle-orm";
-import { products, orders, offers, admins, type Product, type InsertProduct, type Order, type InsertOrder, type Offer, type InsertOffer, type Admin, type InsertAdmin } from "@shared/schema";
+import { eq, desc, and, gte, lte } from "drizzle-orm";
+import { 
+  products, orders, offers, admins, categories, promoCodes, analytics, siteSettings,
+  type Product, type InsertProduct, type Order, type InsertOrder, 
+  type Offer, type InsertOffer, type Admin, type InsertAdmin,
+  type Category, type InsertCategory, type PromoCode, type InsertPromoCode,
+  type Analytics, type InsertAnalytics, type SiteSettings, type InsertSiteSettings
+} from "@shared/schema";
 
 const connectionString = process.env.DATABASE_URL || "postgresql://postgres.lxhhgdqfxmeohayceshb:Amiomito1Amiomito1@aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres";
 
@@ -29,6 +35,28 @@ export interface IStorage {
   createOffer(offer: InsertOffer): Promise<Offer>;
   updateOffer(id: string, offer: Partial<InsertOffer>): Promise<Offer>;
   deleteOffer(id: string): Promise<void>;
+
+  // Categories
+  getCategories(): Promise<Category[]>;
+  createCategory(category: InsertCategory): Promise<Category>;
+  updateCategory(id: string, category: Partial<InsertCategory>): Promise<Category>;
+  deleteCategory(id: string): Promise<void>;
+
+  // Promo Codes
+  getPromoCodes(): Promise<PromoCode[]>;
+  createPromoCode(promoCode: InsertPromoCode): Promise<PromoCode>;
+  updatePromoCode(id: string, promoCode: Partial<InsertPromoCode>): Promise<PromoCode>;
+  deletePromoCode(id: string): Promise<void>;
+  validatePromoCode(code: string, orderAmount: number): Promise<{ valid: boolean; discount: number; message: string }>;
+
+  // Analytics
+  getAnalytics(eventType?: string, startDate?: string, endDate?: string): Promise<Analytics[]>;
+  createAnalytics(analytics: InsertAnalytics): Promise<Analytics>;
+
+  // Settings
+  getSettings(): Promise<SiteSettings[]>;
+  createSetting(setting: InsertSiteSettings): Promise<SiteSettings>;
+  updateSetting(key: string, value: string): Promise<SiteSettings>;
 
   // Admins
   getAdminByEmail(email: string): Promise<Admin | undefined>;
@@ -123,6 +151,144 @@ export class DatabaseStorage implements IStorage {
 
   async createAdmin(admin: InsertAdmin): Promise<Admin> {
     const result = await db.insert(admins).values(admin).returning();
+    return result[0];
+  }
+
+  // Categories
+  async getCategories(): Promise<Category[]> {
+    const result = await db.select().from(categories).orderBy(desc(categories.sort_order));
+    return result;
+  }
+
+  async createCategory(category: InsertCategory): Promise<Category> {
+    const result = await db.insert(categories).values(category).returning();
+    return result[0];
+  }
+
+  async updateCategory(id: string, category: Partial<InsertCategory>): Promise<Category> {
+    const result = await db.update(categories).set(category).where(eq(categories.id, id)).returning();
+    return result[0];
+  }
+
+  async deleteCategory(id: string): Promise<void> {
+    await db.delete(categories).where(eq(categories.id, id));
+  }
+
+  // Promo Codes
+  async getPromoCodes(): Promise<PromoCode[]> {
+    const result = await db.select().from(promoCodes).orderBy(desc(promoCodes.created_at));
+    return result;
+  }
+
+  async createPromoCode(promoCode: InsertPromoCode): Promise<PromoCode> {
+    const result = await db.insert(promoCodes).values(promoCode).returning();
+    return result[0];
+  }
+
+  async updatePromoCode(id: string, promoCode: Partial<InsertPromoCode>): Promise<PromoCode> {
+    const result = await db.update(promoCodes).set(promoCode).where(eq(promoCodes.id, id)).returning();
+    return result[0];
+  }
+
+  async deletePromoCode(id: string): Promise<void> {
+    await db.delete(promoCodes).where(eq(promoCodes.id, id));
+  }
+
+  async validatePromoCode(code: string, orderAmount: number): Promise<{ valid: boolean; discount: number; message: string }> {
+    const result = await db.select().from(promoCodes).where(eq(promoCodes.code, code.toUpperCase())).limit(1);
+    const promoCode = result[0];
+
+    if (!promoCode) {
+      return { valid: false, discount: 0, message: "প্রমো কোড খুঁজে পাওয়া যায়নি" };
+    }
+
+    if (!promoCode.is_active) {
+      return { valid: false, discount: 0, message: "প্রমো কোড নিষ্ক্রিয়" };
+    }
+
+    if (promoCode.expires_at && new Date() > new Date(promoCode.expires_at)) {
+      return { valid: false, discount: 0, message: "প্রমো কোডের মেয়াদ শেষ" };
+    }
+
+    if (promoCode.usage_limit && promoCode.used_count >= promoCode.usage_limit) {
+      return { valid: false, discount: 0, message: "প্রমো কোডের ব্যবহারের সীমা শেষ" };
+    }
+
+    if (orderAmount < Number(promoCode.min_order_amount)) {
+      return { 
+        valid: false, 
+        discount: 0, 
+        message: `সর্বনিম্ন অর্ডার পরিমাণ ৳${promoCode.min_order_amount} হতে হবে` 
+      };
+    }
+
+    let discount = 0;
+    if (promoCode.discount_type === "percentage") {
+      discount = (orderAmount * Number(promoCode.discount_value)) / 100;
+      if (promoCode.max_discount && discount > Number(promoCode.max_discount)) {
+        discount = Number(promoCode.max_discount);
+      }
+    } else {
+      discount = Number(promoCode.discount_value);
+    }
+
+    return { 
+      valid: true, 
+      discount, 
+      message: `${promoCode.discount_type === "percentage" ? promoCode.discount_value + "%" : "৳" + promoCode.discount_value} ছাড় প্রয়োগ হয়েছে` 
+    };
+  }
+
+  // Analytics
+  async getAnalytics(eventType?: string, startDate?: string, endDate?: string): Promise<Analytics[]> {
+    let query = db.select().from(analytics);
+    
+    const conditions = [];
+    if (eventType) {
+      conditions.push(eq(analytics.event_type, eventType));
+    }
+    if (startDate) {
+      conditions.push(gte(analytics.created_at, new Date(startDate)));
+    }
+    if (endDate) {
+      conditions.push(lte(analytics.created_at, new Date(endDate)));
+    }
+
+    if (conditions.length > 0) {
+      query = query.where(and(...conditions));
+    }
+
+    const result = await query.orderBy(desc(analytics.created_at));
+    return result;
+  }
+
+  async createAnalytics(analyticsData: InsertAnalytics): Promise<Analytics> {
+    const result = await db.insert(analytics).values(analyticsData).returning();
+    return result[0];
+  }
+
+  // Settings
+  async getSettings(): Promise<SiteSettings[]> {
+    const result = await db.select().from(siteSettings).orderBy(desc(siteSettings.updated_at));
+    return result;
+  }
+
+  async createSetting(setting: InsertSiteSettings): Promise<SiteSettings> {
+    const result = await db.insert(siteSettings).values(setting).returning();
+    return result[0];
+  }
+
+  async updateSetting(key: string, value: string): Promise<SiteSettings> {
+    const result = await db.update(siteSettings)
+      .set({ value, updated_at: new Date() })
+      .where(eq(siteSettings.key, key))
+      .returning();
+    
+    if (result.length === 0) {
+      // Create if doesn't exist
+      return this.createSetting({ key, value });
+    }
+    
     return result[0];
   }
 }

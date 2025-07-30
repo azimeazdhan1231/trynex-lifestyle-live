@@ -4,9 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ShoppingCart, MessageCircle } from "lucide-react";
+import { ShoppingCart, MessageCircle, Eye } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { PRODUCT_CATEGORIES, formatPrice, createWhatsAppUrl } from "@/lib/constants";
+import ProductModal from "@/components/product-modal";
 import type { Product } from "@shared/schema";
 
 interface ProductGridProps {
@@ -15,6 +16,8 @@ interface ProductGridProps {
 
 export default function ProductGrid({ onAddToCart }: ProductGridProps) {
   const [selectedCategory, setSelectedCategory] = useState("all");
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const { toast } = useToast();
 
   const { data: allProducts = [], isLoading, error } = useQuery<Product[]>({
@@ -37,6 +40,15 @@ export default function ProductGrid({ onAddToCart }: ProductGridProps) {
       return;
     }
     onAddToCart(product);
+    
+    // Track add to cart event
+    if (typeof window !== 'undefined') {
+      import('@/lib/analytics').then(({ trackAddToCart }) => {
+        const price = typeof product.price === 'string' ? parseFloat(product.price) : product.price;
+        trackAddToCart(product.id, product.name, price);
+      });
+    }
+    
     toast({
       title: "কার্টে যোগ করা হয়েছে",
       description: `${product.name} কার্টে যোগ করা হয়েছে`,
@@ -46,6 +58,16 @@ export default function ProductGrid({ onAddToCart }: ProductGridProps) {
   const handleWhatsAppOrder = (product: Product) => {
     const message = `আমি ${product.name} কিনতে চাই। দাম ${formatPrice(product.price)}`;
     window.open(createWhatsAppUrl(message), '_blank');
+  };
+
+  const handleProductClick = (product: Product) => {
+    setSelectedProduct(product);
+    setIsModalOpen(true);
+  };
+
+  const handleModalClose = () => {
+    setIsModalOpen(false);
+    setSelectedProduct(null);
   };
 
   if (isLoading) {
@@ -102,16 +124,27 @@ export default function ProductGrid({ onAddToCart }: ProductGridProps) {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {products.map((product) => (
-              <Card key={product.id} className="overflow-hidden hover:shadow-lg transition-shadow">
-                <div className="aspect-square overflow-hidden">
+              <Card key={product.id} className="overflow-hidden hover:shadow-lg transition-all duration-300 cursor-pointer group">
+                <div 
+                  className="aspect-square overflow-hidden relative"
+                  onClick={() => handleProductClick(product)}
+                >
                   <img
                     src={product.image_url || "https://images.unsplash.com/photo-1544787219-7f47ccb76574?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"}
                     alt={product.name}
-                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   />
+                  <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all duration-300 flex items-center justify-center">
+                    <Eye className="w-8 h-8 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  </div>
                 </div>
                 <CardContent className="p-4">
-                  <h4 className="font-semibold text-lg mb-2 text-gray-800">{product.name}</h4>
+                  <h4 
+                    className="font-semibold text-lg mb-2 text-gray-800 hover:text-primary transition-colors cursor-pointer"
+                    onClick={() => handleProductClick(product)}
+                  >
+                    {product.name}
+                  </h4>
                   <div className="flex items-center justify-between mb-4">
                     <span className="text-2xl font-bold text-primary">{formatPrice(product.price)}</span>
                     <Badge variant={product.stock > 0 ? "secondary" : "destructive"}>
@@ -120,7 +153,10 @@ export default function ProductGrid({ onAddToCart }: ProductGridProps) {
                   </div>
                   <div className="space-y-2">
                     <Button
-                      onClick={() => handleAddToCart(product)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleAddToCart(product);
+                      }}
                       disabled={product.stock === 0}
                       className="w-full"
                       variant={product.stock === 0 ? "secondary" : "default"}
@@ -128,33 +164,45 @@ export default function ProductGrid({ onAddToCart }: ProductGridProps) {
                       <ShoppingCart className="w-4 h-4 mr-2" />
                       {product.stock === 0 ? "স্টক নেই" : "কার্টে যোগ করুন"}
                     </Button>
-                    <Button
-                      onClick={() => handleWhatsAppOrder(product)}
-                      variant="outline"
-                      className="w-full bg-green-500 text-white hover:bg-green-600 border-green-500"
-                    >
-                      <MessageCircle className="w-4 h-4 mr-2" />
-                      হোয়াটসঅ্যাপে অর্ডার
-                    </Button>
+                    <div className="grid grid-cols-2 gap-2">
+                      <Button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleProductClick(product);
+                        }}
+                        variant="outline"
+                        size="sm"
+                      >
+                        <Eye className="w-4 h-4 mr-1" />
+                        দেখুন
+                      </Button>
+                      <Button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleWhatsAppOrder(product);
+                        }}
+                        variant="outline"
+                        className="bg-green-500 text-white hover:bg-green-600 border-green-500"
+                        size="sm"
+                      >
+                        <MessageCircle className="w-4 h-4 mr-1" />
+                        WhatsApp
+                      </Button>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
             ))}
           </div>
         )}
+
+        <ProductModal
+          product={selectedProduct}
+          isOpen={isModalOpen}
+          onClose={handleModalClose}
+          onAddToCart={onAddToCart}
+        />
       </div>
     </section>
   );
 }
-const handleAddToCart = (product: Product) => {
-    const price = typeof product.price === 'string' ? parseFloat(product.price) : product.price;
-    addToCart({
-      id: product.id,
-      name: product.name,
-      price: price,
-    });
-    toast({
-      title: "কার্টে যোগ হয়েছে!",
-      description: `${product.name} কার্টে যোগ করা হয়েছে।`,
-    });
-  };
