@@ -209,6 +209,122 @@ export async function onRequest(context) {
       });
     }
 
+    // Product Update
+    if (path.startsWith("/api/products/") && !path.includes("/status") && method === "PATCH") {
+      const id = path.split("/")[3];
+      const body = await request.json();
+      const { name, price, image_url, category, stock } = body;
+
+      const response = await fetch(`https://lxhhgdqfxmeohayceshb.supabase.co/rest/v1/products?id=eq.${id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${env.SUPABASE_SERVICE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4aGhnZHFmeG1lb2hheWNlc2hiIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1Mzg5OTU5MCwiZXhwIjoyMDY5NDc1NTkwfQ.zsYuh0P2S97pLrvY6t1j-qw-j-R_-_5QQX7e423dDeU'}`,
+          'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4aGhnZHFmeG1lb2hheWNlc2hiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM4OTk1OTAsImV4cCI6MjA2OTQ3NTU5MH0.gW9X6igqtpAQKutqb4aEEx0VovEZdMp4Gk_R8Glm9Bw',
+          'Prefer': 'return=representation'
+        },
+        body: JSON.stringify({
+          ...(name && { name }),
+          ...(price && { price }),
+          ...(image_url && { image_url }),
+          ...(category && { category }),
+          ...(stock !== undefined && { stock: Number(stock) })
+        })
+      });
+
+      const data = await response.json();
+      return new Response(JSON.stringify(data[0] || data), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" }
+      });
+    }
+
+    // Product Delete
+    if (path.startsWith("/api/products/") && !path.includes("/status") && method === "DELETE") {
+      const id = path.split("/")[3];
+
+      const response = await fetch(`https://lxhhgdqfxmeohayceshb.supabase.co/rest/v1/products?id=eq.${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${env.SUPABASE_SERVICE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4aGhnZHFmeG1lb2hheWNlc2hiIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1Mzg5OTU5MCwiZXhwIjoyMDY5NDc1NTkwfQ.zsYuh0P2S97pLrvY6t1j-qw-j-R_-_5QQX7e423dDeU'}`,
+          'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4aGhnZHFmeG1lb2hheWNlc2hiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM4OTk1OTAsImV4cCI6MjA2OTQ3NTU5MH0.gW9X6igqtpAQKutqb4aEEx0VovEZdMp4Gk_R8Glm9Bw'
+        }
+      });
+
+      return new Response(null, {
+        status: 204,
+        headers: corsHeaders
+      });
+    }
+
+    // Offers CRUD operations
+    if (path === "/api/offers" && method === "POST") {
+      const body = await request.json();
+      const { title, description, discount_percentage, min_order_amount, max_discount_amount, expires_at, is_active } = body;
+
+      const response = await fetch(`https://lxhhgdqfxmeohayceshb.supabase.co/rest/v1/offers`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${env.SUPABASE_SERVICE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4aGhnZHFmeG1lb2hheWNlc2hiIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1Mzg5OTU5MCwiZXhwIjoyMDY5NDc1NTkwfQ.zsYuh0P2S97pLrvY6t1j-qw-j-R_-_5QQX7e423dDeU'}`,
+          'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4aGhnZHFmeG1lb2hheWNlc2hiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM4OTk1OTAsImV4cCI6MjA2OTQ3NTU5MH0.gW9X6igqtpAQKutqb4aEEx0VovEZdMp4Gk_R8Glm9Bw',
+          'Prefer': 'return=representation'
+        },
+        body: JSON.stringify({
+          title,
+          description,
+          discount_percentage: Number(discount_percentage),
+          min_order_amount: min_order_amount ? Number(min_order_amount) : null,
+          max_discount_amount: max_discount_amount ? Number(max_discount_amount) : null,
+          expires_at: expires_at || null,
+          is_active: Boolean(is_active)
+        })
+      });
+
+      const data = await response.json();
+      return new Response(JSON.stringify(data[0] || data), {
+        status: 201,
+        headers: { ...corsHeaders, "Content-Type": "application/json" }
+      });
+    }
+
+    if (path.startsWith("/api/offers/") && method === "PATCH") {
+      const id = path.split("/")[3];
+      const body = await request.json();
+
+      const response = await fetch(`https://lxhhgdqfxmeohayceshb.supabase.co/rest/v1/offers?id=eq.${id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${env.SUPABASE_SERVICE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4aGhnZHFmeG1lb2hheWNlc2hiIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1Mzg5OTU5MCwiZXhwIjoyMDY5NDc1NTkwfQ.zsYuh0P2S97pLrvY6t1j-qw-j-R_-_5QQX7e423dDeU'}`,
+          'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4aGhnZHFmeG1lb2hheWNlc2hiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM4OTk1OTAsImV4cCI6MjA2OTQ3NTU5MH0.gW9X6igqtpAQKutqb4aEEx0VovEZdMp4Gk_R8Glm9Bw',
+          'Prefer': 'return=representation'
+        },
+        body: JSON.stringify(body)
+      });
+
+      const data = await response.json();
+      return new Response(JSON.stringify(data[0] || data), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" }
+      });
+    }
+
+    if (path.startsWith("/api/offers/") && method === "DELETE") {
+      const id = path.split("/")[3];
+
+      const response = await fetch(`https://lxhhgdqfxmeohayceshb.supabase.co/rest/v1/offers?id=eq.${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${env.SUPABASE_SERVICE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4aGhnZHFmeG1lb2hheWNlc2hiIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1Mzg5OTU5MCwiZXhwIjoyMDY5NDc1NTkwfQ.zsYuh0P2S97pLrvY6t1j-qw-j-R_-_5QQX7e423dDeU'}`,
+          'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4aGhnZHFmeG1lb2hheWNlc2hiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM4OTk1OTAsImV4cCI6MjA2OTQ3NTU5MH0.gW9X6igqtpAQKutqb4aEEx0VovEZdMp4Gk_R8Glm9Bw'
+        }
+      });
+
+      return new Response(null, {
+        status: 204,
+        headers: corsHeaders
+      });
+    }
+
     if (path === "/api/admins/login" && method === "POST") {
       const body = await request.json();
       const { email, password } = body;

@@ -63,7 +63,7 @@ export default function AdminTabs() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState("orders");
-  
+
   // Product Form State
   const [productForm, setProductForm] = useState({
     name: "", price: "", image_url: "", category: "", stock: 0
@@ -114,6 +114,7 @@ export default function AdminTabs() {
       queryClient.invalidateQueries({ queryKey: ["/api/products"] });
       setIsProductDialogOpen(false);
       setEditingProduct(null);
+      setProductForm({ name: "", price: "", image_url: "", category: "", stock: 0 });
     }
   });
 

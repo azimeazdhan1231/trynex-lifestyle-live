@@ -17,10 +17,15 @@ export default function ProductGrid({ onAddToCart }: ProductGridProps) {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const { toast } = useToast();
 
-  const { data: products = [], isLoading, error } = useQuery<Product[]>({
-    queryKey: ["/api/products", selectedCategory === "all" ? "" : selectedCategory],
+  const { data: allProducts = [], isLoading, error } = useQuery<Product[]>({
+    queryKey: ["/api/products"],
     enabled: true,
   });
+
+  // Filter products by category
+  const products = selectedCategory === "all" 
+    ? allProducts 
+    : allProducts.filter(product => product.category === selectedCategory);
 
   const handleAddToCart = (product: Product) => {
     if (product.stock === 0) {
