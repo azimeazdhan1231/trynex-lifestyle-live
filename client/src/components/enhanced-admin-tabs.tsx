@@ -11,7 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Trash2, Plus, Package, Users, BarChart3, Settings, Eye, EyeOff, Edit } from "lucide-react";
+import { Trash2, Plus, Package, Users, BarChart3, Settings, Eye, EyeOff, Edit, DollarSign, ShoppingCart, Star } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { ORDER_STATUSES, PRODUCT_CATEGORIES, formatPrice } from "@/lib/constants";
 import type { Product, Order, Category, PromoCode, Offer, PopupOffer } from "@shared/schema";
@@ -454,38 +454,47 @@ export default function EnhancedAdminTabs() {
 
                     <div className="space-y-4">
                       <Label>হোমপেজ প্রদর্শন অপশন</Label>
-                      <div className="flex flex-wrap gap-4">
-                        <div className="flex items-center space-x-2">
+                      <div className="grid grid-cols-1 gap-3 p-4 border rounded-lg bg-gray-50">
+                        <div className="flex items-center space-x-3">
                           <input
                             type="checkbox"
                             id="is_featured"
                             checked={productForm.is_featured}
                             onChange={(e) => setProductForm({ ...productForm, is_featured: e.target.checked })}
-                            className="rounded"
+                            className="w-4 h-4 text-primary bg-gray-100 border-gray-300 rounded focus:ring-primary"
                           />
-                          <Label htmlFor="is_featured" className="text-sm">বিশেষ পণ্য</Label>
+                          <Label htmlFor="is_featured" className="text-sm font-medium">
+                            🌟 বিশেষ পণ্য (হোমপেজের Featured Products সেকশনে দেখাবে)
+                          </Label>
                         </div>
-                        <div className="flex items-center space-x-2">
+                        <div className="flex items-center space-x-3">
                           <input
                             type="checkbox"
                             id="is_latest"
                             checked={productForm.is_latest}
                             onChange={(e) => setProductForm({ ...productForm, is_latest: e.target.checked })}
-                            className="rounded"
+                            className="w-4 h-4 text-primary bg-gray-100 border-gray-300 rounded focus:ring-primary"
                           />
-                          <Label htmlFor="is_latest" className="text-sm">সর্বশেষ পণ্য</Label>
+                          <Label htmlFor="is_latest" className="text-sm font-medium">
+                            🆕 সর্বশেষ পণ্য (হোমপেজের Latest Products সেকশনে দেখাবে)
+                          </Label>
                         </div>
-                        <div className="flex items-center space-x-2">
+                        <div className="flex items-center space-x-3">
                           <input
                             type="checkbox"
                             id="is_best_selling"
                             checked={productForm.is_best_selling}
                             onChange={(e) => setProductForm({ ...productForm, is_best_selling: e.target.checked })}
-                            className="rounded"
+                            className="w-4 h-4 text-primary bg-gray-100 border-gray-300 rounded focus:ring-primary"
                           />
-                          <Label htmlFor="is_best_selling" className="text-sm">সর্বাধিক বিক্রিত</Label>
+                          <Label htmlFor="is_best_selling" className="text-sm font-medium">
+                            🔥 সর্বাধিক বিক্রিত (হোমপেজের Best Selling Products সেকশনে দেখাবে)
+                          </Label>
                         </div>
                       </div>
+                      <p className="text-sm text-gray-500">
+                        💡 একটি পণ্য একাধিক সেকশনে দেখানো যাবে
+                      </p>
                     </div>
                   <div>
                     <Label htmlFor="category">ক্যাটাগরি</Label>
@@ -751,8 +760,8 @@ export default function EnhancedAdminTabs() {
                   {categories.map((category) => (
                     <TableRow key={category.id}>
                       <TableCell>
-                        <img 
-                          src={category.image_url || 'https://images.unsplash.com/photo-1441986300917-64674bd600d8'} 
+                        <img
+                          src={category.image_url || "https://images.unsplash.com/photo-1472851294608-062f824d29cc?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"}
                           alt={category.name}
                           className="w-12 h-12 object-cover rounded"
                         />
