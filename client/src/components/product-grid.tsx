@@ -48,10 +48,26 @@ export default function ProductGrid({ onAddToCart }: ProductGridProps) {
     window.open(createWhatsAppUrl(message), '_blank');
   };
 
-  if (error) {
+  if (isLoading) {
     return (
-      <div className="text-center py-12">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {[...Array(8)].map((_, i) => (
+          <div key={i} className="animate-pulse">
+            <div className="bg-gray-300 h-48 rounded-lg mb-4"></div>
+            <div className="bg-gray-300 h-4 rounded mb-2"></div>
+            <div className="bg-gray-300 h-4 rounded w-2/3"></div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  if (error) {
+    console.error("Product loading error:", error);
+    return (
+      <div className="text-center py-8">
         <p className="text-red-600">পণ্য লোড করতে সমস্যা হয়েছে</p>
+        <p className="text-sm text-gray-500 mt-2">দয়া করে আবার চেষ্টা করুন</p>
       </div>
     );
   }
@@ -79,21 +95,7 @@ export default function ProductGrid({ onAddToCart }: ProductGridProps) {
         </div>
 
         {/* Product Grid */}
-        {isLoading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {Array.from({ length: 8 }).map((_, i) => (
-              <Card key={i} className="overflow-hidden">
-                <Skeleton className="aspect-square w-full" />
-                <CardContent className="p-4">
-                  <Skeleton className="h-6 w-3/4 mb-2" />
-                  <Skeleton className="h-4 w-1/2 mb-4" />
-                  <Skeleton className="h-10 w-full mb-2" />
-                  <Skeleton className="h-10 w-full" />
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        ) : products.length === 0 ? (
+        {products.length === 0 ? (
           <div className="text-center py-12">
             <p className="text-gray-500 text-lg">কোন পণ্য পাওয়া যায়নি</p>
           </div>

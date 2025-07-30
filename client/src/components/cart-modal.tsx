@@ -36,7 +36,7 @@ export default function CartModal({ isOpen, onClose }: CartModalProps) {
             </DialogDescription>
           </DialogHeader>
 
-          {cart.length === 0 ? (
+          {!cart || cart.length === 0 ? (
             <div className="text-center py-12">
               <ShoppingCart className="w-16 h-16 text-gray-300 mx-auto mb-4" />
               <p className="text-gray-500 text-lg mb-4">আপনার কার্ট খালি</p>

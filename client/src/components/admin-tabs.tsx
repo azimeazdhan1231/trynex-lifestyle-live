@@ -101,6 +101,14 @@ export default function AdminTabs() {
       queryClient.invalidateQueries({ queryKey: ["/api/products"] });
       setIsProductDialogOpen(false);
       setProductForm({ name: "", price: "", image_url: "", category: "", stock: 0 });
+    },
+    onError: (error) => {
+      console.error("Product creation error:", error);
+      toast({ 
+        title: "পণ্য যোগ করতে সমস্যা", 
+        description: "দয়া করে আবার চেষ্টা করুন",
+        variant: "destructive"
+      });
     }
   });
 

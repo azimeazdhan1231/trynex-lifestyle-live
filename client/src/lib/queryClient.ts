@@ -1,4 +1,3 @@
-
 import { QueryClient } from "@tanstack/react-query";
 
 const isDevelopment = import.meta.env.MODE === 'development';
@@ -10,17 +9,17 @@ export const queryClient = new QueryClient({
       queryFn: async ({ queryKey, signal }) => {
         const [path, params] = queryKey as [string, string?];
         let url = `${API_BASE_URL}${path}`;
-        
+
         if (params) {
           url += `?${params}`;
         }
-        
+
         const response = await fetch(url, { signal });
-        
+
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
-        
+
         return response.json();
       },
       retry: (failureCount, error) => {
@@ -35,25 +34,36 @@ export const queryClient = new QueryClient({
   },
 });
 
-export async function apiRequest(method: string, path: string, data?: any) {
-  const url = `${API_BASE_URL}${path}`;
-  
-  const options: RequestInit = {
+export async function apiRequest(method: string, path: string, body?: any): Promise<Response> {
+  // Use current domain for production, empty string for development
+  const baseUrl = import.meta.env.DEV ? "" : window.location.origin;
+  const url = `${baseUrl}${path}`;
+
+  const config: RequestInit = {
     method,
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     },
   };
-  
-  if (data) {
-    options.body = JSON.stringify(data);
+
+  if (body) {
+    config.body = JSON.stringify(body);
   }
-  
-  const response = await fetch(url, options);
-  
-  if (!response.ok) {
-    throw new Error(`HTTP error! status: ${response.status}`);
+
+  console.log(`API Request: ${method} ${url}`, body ? { body } : {});
+
+  try {
+    const response = await fetch(url, config);
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`API Error: ${response.status} ${response.statusText}`, errorText);
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    return response;
+  } catch (error) {
+    console.error("Network error:", error);
+    throw error;
   }
-  
-  return response;
 }

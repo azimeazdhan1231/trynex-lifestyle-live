@@ -326,7 +326,7 @@ export async function onRequest(context) {
       });
     }
 
-    if (path === "/api/admins/login" && method === "POST") {
+    if (path === "/api/admin/login" && method === "POST") {
       const body = await request.json();
       const { email, password } = body;
 
