@@ -1,17 +1,17 @@
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import { Plus, Edit, Trash2, Eye, Package, ShoppingCart, TrendingUp, Users, Gift, Tag, Settings, DollarSign, Star } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Trash2, Plus, Package, Users, BarChart3, Settings, Eye, EyeOff, Edit } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { ORDER_STATUSES, PRODUCT_CATEGORIES, formatPrice } from "@/lib/constants";
 import type { Product, Order, Category, PromoCode, Offer, PopupOffer } from "@shared/schema";
@@ -751,8 +751,8 @@ export default function EnhancedAdminTabs() {
                   {categories.map((category) => (
                     <TableRow key={category.id}>
                       <TableCell>
-                        <img
-                          src={category.image_url || "https://images.unsplash.com/photo-1441986300917-64674bd600d8"}
+                        <img 
+                          src={category.image_url || 'https://images.unsplash.com/photo-1441986300917-64674bd600d8'} 
                           alt={category.name}
                           className="w-12 h-12 object-cover rounded"
                         />

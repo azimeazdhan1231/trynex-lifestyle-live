@@ -12,6 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useCart } from "@/hooks/use-cart";
 import { COMPANY_NAME, COMPANY_TAGLINE, WHATSAPP_NUMBER, createWhatsAppUrl, formatPrice } from "@/lib/constants";
 import type { Product, Offer } from "@shared/schema";
+import { useQuery } from "@tanstack/react-query";
 
 export default function Home() {
   const [showScrollTop, setShowScrollTop] = useState(false);
