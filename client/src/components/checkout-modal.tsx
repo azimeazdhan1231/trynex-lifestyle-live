@@ -201,9 +201,20 @@ export default function CheckoutModal({ isOpen, onClose, cart, onOrderComplete }
               <span>মোট পরিমাণ:</span>
               <span className="text-lg text-primary">{formatPrice(totalPrice)}</span>
             </div>
-            <p className="text-sm text-gray-600">
-              পেমেন্ট পদ্ধতি: ক্যাশ অন ডেলিভারি
-            </p>
+            <div className="bg-orange-50 p-4 rounded-lg border border-orange-200">
+              <p className="text-sm text-orange-700 font-medium mb-2">
+                ডেলিভারি নিশ্চিত করতে পেমেন্ট করুন:
+              </p>
+              <p className="text-orange-900 font-bold text-lg">
+                bKash/Nagad: 01747292277
+              </p>
+              <p className="text-xs text-orange-600 mt-2">
+                পেমেন্ট করার পর ট্রানজেকশন আইডি দিয়ে WhatsApp করুন
+              </p>
+              <p className="text-xs text-orange-600">
+                পেমেন্ট ছাড়া অর্ডার ডেলিভার করা হবে না
+              </p>
+            </div>
           </div>
 
           {/* Submit Button */}

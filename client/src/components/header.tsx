@@ -2,6 +2,7 @@ import { useState } from "react";
 import { ShoppingCart, Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Link } from "wouter";
 import { COMPANY_NAME, COMPANY_TAGLINE } from "@/lib/constants";
 import CartModal from "@/components/cart-modal";
 
@@ -23,8 +24,9 @@ export default function Header({ cartCount, onCartOpen }: HeaderProps) {
   };
 
   const navigation = [
-    { name: "হোম", href: "#", onClick: () => scrollToSection("hero") },
+    { name: "হোম", href: "/", isLink: true },
     { name: "পণ্য", href: "#products", onClick: () => scrollToSection("products") },
+    { name: "ট্র্যাকিং", href: "/tracking", isLink: true },
     { name: "অফার", href: "#", onClick: () => scrollToSection("offers") },
     { name: "যোগাযোগ", href: "#", onClick: () => scrollToSection("contact") },
   ];
@@ -43,13 +45,19 @@ export default function Header({ cartCount, onCartOpen }: HeaderProps) {
             {/* Desktop Navigation */}
             <nav className="hidden md:flex space-x-8">
               {navigation.map((item) => (
-                <button
-                  key={item.name}
-                  onClick={item.onClick}
-                  className="text-gray-700 hover:text-primary font-medium transition-colors"
-                >
-                  {item.name}
-                </button>
+                item.isLink ? (
+                  <Link key={item.name} href={item.href} className="text-gray-700 hover:text-primary font-medium transition-colors">
+                    {item.name}
+                  </Link>
+                ) : (
+                  <button
+                    key={item.name}
+                    onClick={item.onClick}
+                    className="text-gray-700 hover:text-primary font-medium transition-colors"
+                  >
+                    {item.name}
+                  </button>
+                )
               ))}
             </nav>
             
