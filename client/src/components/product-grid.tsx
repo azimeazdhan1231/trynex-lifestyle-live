@@ -20,15 +20,29 @@ export default function ProductGrid({ onAddToCart }: ProductGridProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { toast } = useToast();
 
-  const { data: allProducts = [], isLoading, error } = useQuery<Product[]>({
+  const { data: products = [], isLoading, error } = useQuery<Product[]>({
     queryKey: ["/api/products"],
-    enabled: true,
+    queryFn: async () => {
+      try {
+        const response = await fetch("/api/products");
+        if (!response.ok) {
+          throw new Error(`Failed to fetch products: ${response.status}`);
+        }
+        const data = await response.json();
+        return Array.isArray(data) ? data : [];
+      } catch (error) {
+        console.error("Product loading error:", error);
+        return [];
+      }
+    },
+    retry: 3,
+    retryDelay: 1000,
   });
 
   // Filter products by category
-  const products = selectedCategory === "all" 
-    ? allProducts 
-    : allProducts.filter(product => product.category === selectedCategory);
+  const allProducts = selectedCategory === "all" 
+    ? products 
+    : products.filter(product => product.category === selectedCategory);
 
   const handleAddToCart = (product: Product) => {
     if (product.stock === 0) {
@@ -40,7 +54,7 @@ export default function ProductGrid({ onAddToCart }: ProductGridProps) {
       return;
     }
     onAddToCart(product);
-    
+
     // Track add to cart event
     if (typeof window !== 'undefined') {
       import('@/lib/analytics').then(({ trackAddToCart }) => {
@@ -48,7 +62,7 @@ export default function ProductGrid({ onAddToCart }: ProductGridProps) {
         trackAddToCart(product.id, product.name, price);
       });
     }
-    
+
     toast({
       title: "কার্টে যোগ করা হয়েছে",
       description: `${product.name} কার্টে যোগ করা হয়েছে`,

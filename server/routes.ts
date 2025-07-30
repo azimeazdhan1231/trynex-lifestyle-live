@@ -116,6 +116,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Additional endpoint for order status updates (for compatibility)
+  app.patch("/api/orders/:id/status", async (req, res) => {
+    try {
+      const { status } = req.body;
+      if (!status || typeof status !== "string") {
+        return res.status(400).json({ message: "Status is required" });
+      }
+      const order = await storage.updateOrderStatus(req.params.id, status);
+      res.json(order);
+    } catch (error) {
+      console.error("Error updating order status:", error);
+      res.status(400).json({ message: "Error updating order status" });
+    }
+  });
+
   // Offers
   app.get("/api/offers", async (req, res) => {
     try {

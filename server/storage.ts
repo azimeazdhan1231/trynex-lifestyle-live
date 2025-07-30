@@ -132,7 +132,15 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateOrderStatus(id: string, status: string): Promise<Order> {
-    const result = await db.update(orders).set({ status }).where(eq(orders.id, id)).returning();
+    const result = await db.update(orders).set({ 
+      status,
+      updated_at: new Date() 
+    }).where(eq(orders.id, id)).returning();
+    
+    if (result.length === 0) {
+      throw new Error("Order not found");
+    }
+    
     return result[0];
   }
 

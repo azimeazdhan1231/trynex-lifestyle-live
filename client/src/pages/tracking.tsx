@@ -61,6 +61,14 @@ export default function TrackingPage() {
   // Real-time tracking query with refetch interval
   const { data: order, isLoading, error, refetch } = useQuery<Order>({
     queryKey: ["/api/orders", searchId],
+    queryFn: async () => {
+      if (!searchId) throw new Error("No tracking ID provided");
+      const response = await fetch(`/api/orders/${searchId}`);
+      if (!response.ok) {
+        throw new Error("Order not found");
+      }
+      return response.json();
+    },
     enabled: !!searchId,
     refetchInterval: 2000, // Refetch every 2 seconds for real-time updates
     refetchIntervalInBackground: true,

@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { Plus, Edit, Trash2, Eye, Package, ShoppingCart, TrendingUp, Users, Gift, Tag, Settings } from "lucide-react";
+import { Plus, Edit, Trash2, Eye, Package, ShoppingCart, TrendingUp, Users, Gift, Tag, Settings, DollarSign, Star } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { ORDER_STATUSES, PRODUCT_CATEGORIES, formatPrice } from "@/lib/constants";
 import type { Product, Order, Category, PromoCode } from "@shared/schema";
@@ -81,6 +81,19 @@ export default function EnhancedAdminTabs() {
     }
   };
 
+  // API request helper
+  const apiRequest = async (url: string, method: string, data?: any) => {
+    const response = await fetch(url, {
+      method,
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: data ? JSON.stringify(data) : undefined,
+    });
+    if (!response.ok) throw new Error(`${method} ${url} failed`);
+    return response.json();
+  };
+
   // Mutations
   const createProductMutation = useMutation({
     mutationFn: (productData: any) => apiRequest("/api/products", "POST", productData),
@@ -146,7 +159,7 @@ export default function EnhancedAdminTabs() {
 
   const updateOrderStatusMutation = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: string }) => {
-      const response = await fetch(`/api/orders/${id}/status`, {
+      const response = await fetch(`/api/orders/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status }),
@@ -155,8 +168,6 @@ export default function EnhancedAdminTabs() {
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/orders"] });
-      // Also invalidate individual order queries for real-time updates
       queryClient.invalidateQueries({ queryKey: ["/api/orders"] });
       toast({ title: "অর্ডার স্ট্যাটাস আপডেট হয়েছে" });
     },

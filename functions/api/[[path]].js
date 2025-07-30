@@ -161,8 +161,10 @@ export async function onRequest(context) {
       });
     }
 
-    if (path.includes("/status") && method === "PATCH") {
-      const id = path.split("/")[3];
+    // Handle both /api/orders/:id and /api/orders/:id/status endpoints
+    if ((path.match(/^\/api\/orders\/[^\/]+$/) || path.includes("/status")) && method === "PATCH") {
+      const pathParts = path.split("/");
+      const id = pathParts[3];
       const body = await request.json();
       const { status } = body;
 

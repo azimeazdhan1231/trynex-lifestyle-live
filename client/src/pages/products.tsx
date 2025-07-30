@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -20,15 +19,30 @@ export default function ProductsPage() {
   const { toast } = useToast();
   const { addToCart, totalItems } = useCart();
 
-  const { data: allProducts = [], isLoading, error } = useQuery<Product[]>({
-    queryKey: ["/api/products"],
-    enabled: true,
+  const { data: products = [], isLoading, error } = useQuery<Product[]>({
+    queryKey: ["/api/products", selectedCategory],
+    queryFn: async () => {
+      try {
+        const url = selectedCategory === "all" ? "/api/products" : `/api/products?category=${selectedCategory}`;
+        const response = await fetch(url);
+        if (!response.ok) {
+          throw new Error(`Failed to fetch products: ${response.status}`);
+        }
+        const data = await response.json();
+        return Array.isArray(data) ? data : [];
+      } catch (error) {
+        console.error("Product loading error:", error);
+        return [];
+      }
+    },
+    retry: 3,
+    retryDelay: 1000,
   });
 
   // Filter products by category
-  const products = selectedCategory === "all" 
-    ? allProducts 
-    : allProducts.filter(product => product.category === selectedCategory);
+  const productsFiltered = selectedCategory === "all" 
+    ? products 
+    : products.filter(product => product.category === selectedCategory);
 
   const handleAddToCart = (product: Product) => {
     if (product.stock === 0) {
@@ -39,13 +53,13 @@ export default function ProductsPage() {
       });
       return;
     }
-    
+
     addToCart({
       id: product.id,
       name: product.name,
       price: Number(product.price),
     });
-    
+
     // Track add to cart event
     if (typeof window !== 'undefined') {
       import('@/lib/analytics').then(({ trackAddToCart }) => {
@@ -53,7 +67,7 @@ export default function ProductsPage() {
         trackAddToCart(product.id, product.name, price);
       });
     }
-    
+
     toast({
       title: "কার্টে যোগ করা হয়েছে",
       description: `${product.name} কার্টে যোগ করা হয়েছে`,
@@ -110,7 +124,7 @@ export default function ProductsPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <Header cartCount={totalItems} onCartOpen={() => {}} />
-      
+
       <div className="pt-20 py-16">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
@@ -136,20 +150,20 @@ export default function ProductsPage() {
           <div className="text-center mb-6">
             <p className="text-gray-600">
               {selectedCategory === "all" 
-                ? `সর্বমোট ${allProducts.length} টি পণ্য`
+                ? `সর্বমোট ${products.length} টি পণ্য`
                 : `${products.length} টি পণ্য "${PRODUCT_CATEGORIES.find(c => c.id === selectedCategory)?.name}" ক্যাটেগরিতে`
               }
             </p>
           </div>
 
           {/* Product Grid */}
-          {products.length === 0 ? (
+          {productsFiltered.length === 0 ? (
             <div className="text-center py-12">
               <p className="text-gray-500 text-lg">এই ক্যাটেগরিতে কোন পণ্য পাওয়া যায়নি</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {products.map((product) => (
+              {productsFiltered.map((product) => (
                 <Card key={product.id} className="overflow-hidden hover:shadow-lg transition-all duration-300 cursor-pointer group">
                   <div 
                     className="aspect-square overflow-hidden relative"
