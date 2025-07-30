@@ -1,0 +1,94 @@
+02:47:22.130	Cloning repository...
+02:47:22.779	From https://github.com/azimeazdhan1231/trynex-lifestyle
+02:47:22.779	 * branch            8c8c9c9bf18a5067e06eaf2e76dbaaf993fae26e -> FETCH_HEAD
+02:47:22.780	
+02:47:22.812	HEAD is now at 8c8c9c9 Assistant checkpoint: Fix wrangler.toml syntax error
+02:47:22.812	
+02:47:22.897	
+02:47:22.897	Using v2 root directory strategy
+02:47:22.921	Success: Finished cloning repository files
+02:47:25.191	Checking for configuration in a Wrangler configuration file (BETA)
+02:47:25.192	
+02:47:25.193	Found wrangler.toml file. Reading build configuration...
+02:47:26.325	A wrangler.toml file was found but it does not appear to be valid. Did you mean to use wrangler.toml to configure Pages? If so, then make sure the file is valid and contains the `pages_build_output_dir` property. Skipping file and continuing.
+02:47:26.396	Detected the following tools from environment: npm@10.9.2, nodejs@22.16.0
+02:47:26.397	Installing project dependencies: npm clean-install --progress=false
+02:47:30.781	npm warn deprecated @esbuild-kit/esm-loader@2.6.5: Merged into tsx: https://tsx.is
+02:47:30.845	npm warn deprecated @esbuild-kit/core-utils@3.3.2: Merged into tsx: https://tsx.is
+02:47:35.830	
+02:47:35.830	added 482 packages, and audited 483 packages in 9s
+02:47:35.830	
+02:47:35.831	65 packages are looking for funding
+02:47:35.831	  run `npm fund` for details
+02:47:35.857	
+02:47:35.857	11 vulnerabilities (3 low, 8 moderate)
+02:47:35.857	
+02:47:35.857	To address issues that do not require attention, run:
+02:47:35.858	  npm audit fix
+02:47:35.858	
+02:47:35.858	To address all issues (including breaking changes), run:
+02:47:35.858	  npm audit fix --force
+02:47:35.858	
+02:47:35.858	Run `npm audit` for details.
+02:47:35.890	Executing user command: npm run build
+02:47:36.290	
+02:47:36.290	> rest-express@1.0.0 build
+02:47:36.290	> vite build && esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist
+02:47:36.290	
+02:47:36.562	vite v5.4.19 building for production...
+02:47:36.616	transforming...
+02:47:36.938	Browserslist: browsers data (caniuse-lite) is 9 months old. Please run:
+02:47:36.938	  npx update-browserslist-db@latest
+02:47:36.939	  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+02:47:40.074	✓ 1732 modules transformed.
+02:47:40.292	rendering chunks...
+02:47:40.302	computing gzip size...
+02:47:40.315	../dist/public/index.html                   1.09 kB │ gzip:   0.71 kB
+02:47:40.315	../dist/public/assets/index-CYkY7AeK.css   65.71 kB │ gzip:  11.57 kB
+02:47:40.315	../dist/public/assets/index-Tt_auN3J.js   381.43 kB │ gzip: 118.88 kB
+02:47:40.316	✓ built in 3.73s
+02:47:40.369	
+02:47:40.369	  dist/index.js  14.9kb
+02:47:40.369	
+02:47:40.370	⚡ Done in 9ms
+02:47:40.389	Finished
+02:47:41.357	Checking for configuration in a Wrangler configuration file (BETA)
+02:47:41.358	
+02:47:41.359	Found wrangler.toml file. Reading build configuration...
+02:47:42.473	A wrangler.toml file was found but it does not appear to be valid. Did you mean to use wrangler.toml to configure Pages? If so, then make sure the file is valid and contains the `pages_build_output_dir` property. Skipping file and continuing.
+02:47:42.474	Found Functions directory at /functions. Uploading.
+02:47:42.481	 ⛅️ wrangler 3.101.0
+02:47:42.481	-------------------
+02:47:43.604	▲ [WARNING] The package "node:events" wasn't found on the file system but is built into node.
+02:47:43.605	
+02:47:43.605	  Your Worker may throw errors at runtime unless you enable the "nodejs_compat" compatibility flag. Refer to https://developers.cloudflare.com/workers/runtime-apis/nodejs/ for more details. Imported from:
+02:47:43.605	   - ../node_modules/postgres/cf/polyfills.js
+02:47:43.605	
+02:47:43.605	
+02:47:43.606	▲ [WARNING] 						The package "node:buffer" wasn't found on the file system but is built into node.
+02:47:43.607	
+02:47:43.607	  						Your Worker may throw errors at runtime unless you enable the "nodejs_compat" compatibility flag. Refer to https://developers.cloudflare.com/workers/runtime-apis/nodejs/ for more details. Imported from:
+02:47:43.607	  						 - ../node_modules/postgres/cf/src/types.js
+02:47:43.607	  - ../node_modules/postgres/cf/src/subscribe.js
+02:47:43.607	  - ../node_modules/postgres/cf/src/connection.js
+02:47:43.607	  - ../node_modules/postgres/cf/polyfills.js
+02:47:43.608	  - ../node_modules/postgres/cf/src/bytes.js
+02:47:43.608	
+02:47:43.608	
+02:47:43.608	▲ [WARNING] 						The package "node:stream" wasn't found on the file system but is built into node.
+02:47:43.608	
+02:47:43.609	  						Your Worker may throw errors at runtime unless you enable the "nodejs_compat" compatibility flag. Refer to https://developers.cloudflare.com/workers/runtime-apis/nodejs/ for more details. Imported from:
+02:47:43.609	  						 - ../node_modules/postgres/cf/src/large.js
+02:47:43.609	  - ../node_modules/postgres/cf/src/connection.js
+02:47:43.609	
+02:47:43.609	
+02:47:43.609	✨ Compiled Worker successfully
+02:47:44.703	Validating asset output directory
+02:47:49.334	Deploying your site to Cloudflare's global network...
+02:47:53.066	Uploading... (3/3)
+02:47:53.067	✨ Success! Uploaded 0 files (3 already uploaded) (0.32 sec)
+02:47:53.067	
+02:47:53.504	✨ Upload complete!
+02:47:57.018	Success: Assets published!
+02:47:57.719	Error: Failed to publish your Function. Got error: Uncaught Error: No such module "node:events".
+  imported from "functionsWorker-0.709310086867668.js"
