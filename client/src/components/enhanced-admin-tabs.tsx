@@ -1,17 +1,17 @@
-import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
-import { Switch } from "@/components/ui/switch";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Trash2, Plus, Package, Users, BarChart3, Settings, Eye, EyeOff, Edit } from "lucide-react";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import { Plus, Edit, Trash2, Eye, Package, ShoppingCart, TrendingUp, Users, Gift, Tag, Settings, DollarSign, Star } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { ORDER_STATUSES, PRODUCT_CATEGORIES, formatPrice } from "@/lib/constants";
 import type { Product, Order, Category, PromoCode, Offer, PopupOffer } from "@shared/schema";
@@ -22,15 +22,7 @@ export default function EnhancedAdminTabs() {
 
   // Form states
   const [productForm, setProductForm] = useState({
-    name: "",
-    price: "",
-    image_url: "",
-    category: "",
-    stock: 0,
-    description: "",
-    is_featured: false,
-    is_latest: false,
-    is_best_selling: false
+    name: "", price: "", image_url: "", category: "", stock: 0, description: ""
   });
   const [categoryForm, setCategoryForm] = useState({
     name: "", name_bengali: "", description: "", image_url: "", is_active: true, sort_order: 0
@@ -183,17 +175,7 @@ export default function EnhancedAdminTabs() {
 
   // Form reset functions
   const resetProductForm = () => {
-    setProductForm({
-      name: "",
-      price: "",
-      image_url: "",
-      category: "",
-      stock: 0,
-      description: "",
-      is_featured: false,
-      is_latest: false,
-      is_best_selling: false
-    });
+    setProductForm({ name: "", price: "", image_url: "", category: "", stock: 0, description: "" });
     setEditingProduct(null);
   };
 
@@ -229,10 +211,7 @@ export default function EnhancedAdminTabs() {
       image_url: product.image_url || "",
       category: product.category || "",
       stock: product.stock,
-      description: "",
-      is_featured: product.is_featured || false,
-      is_latest: product.is_latest || false,
-      is_best_selling: product.is_best_selling || false
+      description: ""
     });
     setIsProductDialogOpen(true);
   };
@@ -429,64 +408,16 @@ export default function EnhancedAdminTabs() {
                       required
                     />
                   </div>
-                  <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor="price">দাম (৳)</Label>
-                        <Input
-                          id="price"
-                          type="number"
-                          value={productForm.price}
-                          onChange={(e) => setProductForm({ ...productForm, price: e.target.value })}
-                          placeholder="0"
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="stock">স্টক</Label>
-                        <Input
-                          id="stock"
-                          type="number"
-                          value={productForm.stock}
-                          onChange={(e) => setProductForm({ ...productForm, stock: Number(e.target.value) })}
-                          placeholder="0"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="space-y-4">
-                      <Label>হোমপেজ প্রদর্শন অপশন</Label>
-                      <div className="flex flex-wrap gap-4">
-                        <div className="flex items-center space-x-2">
-                          <input
-                            type="checkbox"
-                            id="is_featured"
-                            checked={productForm.is_featured}
-                            onChange={(e) => setProductForm({ ...productForm, is_featured: e.target.checked })}
-                            className="rounded"
-                          />
-                          <Label htmlFor="is_featured" className="text-sm">বিশেষ পণ্য</Label>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <input
-                            type="checkbox"
-                            id="is_latest"
-                            checked={productForm.is_latest}
-                            onChange={(e) => setProductForm({ ...productForm, is_latest: e.target.checked })}
-                            className="rounded"
-                          />
-                          <Label htmlFor="is_latest" className="text-sm">সর্বশেষ পণ্য</Label>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <input
-                            type="checkbox"
-                            id="is_best_selling"
-                            checked={productForm.is_best_selling}
-                            onChange={(e) => setProductForm({ ...productForm, is_best_selling: e.target.checked })}
-                            className="rounded"
-                          />
-                          <Label htmlFor="is_best_selling" className="text-sm">সর্বাধিক বিক্রিত</Label>
-                        </div>
-                      </div>
-                    </div>
+                  <div>
+                    <Label htmlFor="price">দাম</Label>
+                    <Input
+                      id="price"
+                      type="number"
+                      value={productForm.price}
+                      onChange={(e) => setProductForm({...productForm, price: e.target.value})}
+                      required
+                    />
+                  </div>
                   <div>
                     <Label htmlFor="category">ক্যাটাগরি</Label>
                     <Select
@@ -510,12 +441,13 @@ export default function EnhancedAdminTabs() {
                     </Select>
                   </div>
                   <div>
-                    <Label htmlFor="description">বিবরণ</Label>
-                    <Textarea
-                      id="description"
-                      value={productForm.description}
-                      onChange={(e) => setProductForm({...productForm, description: e.target.value})}
-                      placeholder="পণ্যের বিবরণ লিখুন"
+                    <Label htmlFor="stock">স্টক</Label>
+                    <Input
+                      id="stock"
+                      type="number"
+                      value={productForm.stock}
+                      onChange={(e) => setProductForm({...productForm, stock: parseInt(e.target.value) || 0})}
+                      required
                     />
                   </div>
                   <div>
@@ -569,11 +501,10 @@ export default function EnhancedAdminTabs() {
                     <TableHead>ছবি</TableHead>
                     <TableHead>নাম</TableHead>
                     <TableHead>দাম</TableHead>
-                    <TableHead>ক্যাটেগরি</TableHead>
-                  <TableHead>স্টক</TableHead>
-                  <TableHead>ফ্ল্যাগ</TableHead>
-                  <TableHead>তারিখ</TableHead>
-                  <TableHead>কার্যক্রম</TableHead>
+                    <TableHead>ক্যাটাগরি</TableHead>
+                    <TableHead>স্টক</TableHead>
+                    <TableHead>তারিখ</TableHead>
+                    <TableHead>অ্যাকশন</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -588,18 +519,13 @@ export default function EnhancedAdminTabs() {
                       </TableCell>
                       <TableCell className="font-medium">{product.name}</TableCell>
                       <TableCell>{formatPrice(product.price)}</TableCell>
-                      <TableCell>{product.category || "অন্যান্য"}</TableCell>
                       <TableCell>
-                        <Badge variant={product.stock > 0 ? "secondary" : "destructive"}>
-                          {product.stock}
-                        </Badge>
+                        <Badge variant="secondary">{product.category}</Badge>
                       </TableCell>
                       <TableCell>
-                        <div className="flex flex-wrap gap-1">
-                          {product.is_featured && <Badge variant="default" className="text-xs">বিশেষ</Badge>}
-                          {product.is_latest && <Badge variant="secondary" className="text-xs">নতুন</Badge>}
-                          {product.is_best_selling && <Badge variant="outline" className="text-xs">বেস্ট</Badge>}
-                        </div>
+                        <Badge variant={product.stock < 5 ? "destructive" : "secondary"}>
+                          {product.stock}
+                        </Badge>
                       </TableCell>
                       <TableCell>
                         {new Date(product.created_at || Date.now()).toLocaleDateString('bn-BD')}
@@ -751,8 +677,8 @@ export default function EnhancedAdminTabs() {
                   {categories.map((category) => (
                     <TableRow key={category.id}>
                       <TableCell>
-                        <img 
-                          src={category.image_url || 'https://images.unsplash.com/photo-1441986300917-64674bd600d8'} 
+                        <img
+                          src={category.image_url || "https://images.unsplash.com/photo-1441986300917-64674bd600d8"}
                           alt={category.name}
                           className="w-12 h-12 object-cover rounded"
                         />
@@ -787,30 +713,6 @@ export default function EnhancedAdminTabs() {
                   ))}
                 </TableBody>
               </Table>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-         {/* Offers Tab */}
-         <TabsContent value="offers" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>অফার ম্যানেজমেন্ট</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-gray-600">অফার ফিচার শীঘ্রই আসছে...</p>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* Popup Offers Tab */}
-        <TabsContent value="popup-offers" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>পপআপ অফার ম্যানেজমেন্ট</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-gray-600">পপআপ অফার ফিচার শীঘ্রই আসছে...</p>
             </CardContent>
           </Card>
         </TabsContent>

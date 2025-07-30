@@ -3,7 +3,7 @@ import postgres from "postgres";
 import { eq, desc, and, gte, lte } from "drizzle-orm";
 import { 
   products, orders, offers, admins, categories, promoCodes, analytics, 
-  siteSettings, popupOffers, type Product, type InsertProduct, type Order, type InsertOrder, 
+  siteSettings, admins, popupOffers, type Product, type InsertProduct, type Order, type InsertOrder, 
   type Offer, type InsertOffer, type Admin, type InsertAdmin,
   type Category, type InsertCategory, type PromoCode, type InsertPromoCode,
   type Analytics, type InsertAnalytics, type SiteSettings, type InsertSiteSettings, type InsertPopupOffer
@@ -334,13 +334,7 @@ export class DatabaseStorage implements IStorage {
 
   async getActivePopupOffer(): Promise<any> { // Replace any with correct type
     const now = new Date();
-    const result = await db.select().from(popupOffers)
-      .where(and(
-        eq(popupOffers.is_active, true),
-        gte(popupOffers.expiry, now)
-      ))
-      .orderBy(desc(popupOffers.created_at))
-      .limit(1);
+    const result = await db.select().from(popupOffers).where(and(eq(popupOffers.is_active, true), gte(popupOffers.expiry, now))).orderBy(desc(popupOffers.created_at));
     return result[0];
   }
 
