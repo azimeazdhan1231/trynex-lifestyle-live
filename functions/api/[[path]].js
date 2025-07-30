@@ -1,54 +1,4 @@
 // Cloudflare Pages Functions - API Routes Handler
-import { drizzle } from "drizzle-orm/postgres-js";
-import postgres from "postgres";
-import { eq, desc, and, gte, sql } from "drizzle-orm";
-
-// Database Schema
-const products = {
-  id: "id",
-  name: "name", 
-  price: "price",
-  image_url: "image_url",
-  category: "category",
-  stock: "stock",
-  created_at: "created_at"
-};
-
-const orders = {
-  id: "id",
-  tracking_id: "tracking_id",
-  customer_name: "customer_name",
-  phone: "phone",
-  district: "district", 
-  thana: "thana",
-  address: "address",
-  status: "status",
-  items: "items",
-  total: "total",
-  payment_info: "payment_info",
-  created_at: "created_at"
-};
-
-const offers = {
-  id: "id",
-  title: "title",
-  description: "description",
-  discount_percentage: "discount_percentage",
-  min_order_amount: "min_order_amount",
-  max_discount_amount: "max_discount_amount",
-  expires_at: "expires_at",
-  is_active: "is_active",
-  created_at: "created_at"
-};
-
-const admins = {
-  id: "id",
-  email: "email",
-  password: "password",
-  name: "name",
-  created_at: "created_at"
-};
-
 export async function onRequest(context) {
   const { request, env } = context;
   const url = new URL(request.url);
@@ -68,8 +18,9 @@ export async function onRequest(context) {
   }
 
   try {
-    // Database connection
-    const connectionString = env.DATABASE_URL;
+    // Use your Supabase connection string
+    const connectionString = env.DATABASE_URL || "postgresql://postgres.lxhhgdqfxmeohayceshb:Amiomito1Amiomito1@aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres";
+
     if (!connectionString) {
       return new Response(JSON.stringify({ error: "Database connection not configured" }), {
         status: 500,
@@ -77,13 +28,30 @@ export async function onRequest(context) {
       });
     }
 
-    const client = postgres(connectionString);
-    const db = drizzle(client);
+    // Simple database query function
+    async function query(sql, params = []) {
+      const response = await fetch(`https://lxhhgdqfxmeohayceshb.supabase.co/rest/v1/rpc/execute_sql`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${env.SUPABASE_SERVICE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4aGhnZHFmeG1lb2hheWNlc2hiIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1Mzg5OTU5MCwiZXhwIjoyMDY5NDc1NTkwfQ.zsYuh0P2S97pLrvY6t1j-qw-j-R_-_5QQX7e423dDeU'}`,
+          'apikey': env.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4aGhnZHFmeG1lb2hheWNlc2hiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM4OTk1OTAsImV4cCI6MjA2OTQ3NTU5MH0.gW9X6igqtpAQKutqb4aEEx0VovEZdMp4Gk_R8Glm9Bw'
+        },
+        body: JSON.stringify({ query: sql, params })
+      });
+      return await response.json();
+    }
 
     // Route handling
     if (path === "/api/products" && method === "GET") {
-      const result = await db.execute(sql`SELECT * FROM products ORDER BY created_at DESC`);
-      return new Response(JSON.stringify(result.rows), {
+      const response = await fetch(`https://lxhhgdqfxmeohayceshb.supabase.co/rest/v1/products?select=*&order=created_at.desc`, {
+        headers: {
+          'Authorization': `Bearer ${env.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4aGhnZHFmeG1lb2hheWNlc2hiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM4OTk1OTAsImV4cCI6MjA2OTQ3NTU5MH0.gW9X6igqtpAQKutqb4aEEx0VovEZdMp4Gk_R8Glm9Bw'}`,
+          'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4aGhnZHFmeG1lb2hheWNlc2hiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM4OTk1OTAsImV4cCI6MjA2OTQ3NTU5MH0.gW9X6igqtpAQKutqb4aEEx0VovEZdMp4Gk_R8Glm9Bw'
+        }
+      });
+      const data = await response.json();
+      return new Response(JSON.stringify(data), {
         headers: { ...corsHeaders, "Content-Type": "application/json" }
       });
     }
@@ -91,7 +59,7 @@ export async function onRequest(context) {
     if (path === "/api/products" && method === "POST") {
       const body = await request.json();
       const { name, price, image_url, category, stock } = body;
-      
+
       if (!name || !price || !category) {
         return new Response(JSON.stringify({ error: "Missing required fields" }), {
           status: 400,
@@ -99,72 +67,39 @@ export async function onRequest(context) {
         });
       }
 
-      const result = await db.execute(sql`
-        INSERT INTO products (name, price, image_url, category, stock) 
-        VALUES (${name}, ${price}, ${image_url || "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"}, ${category}, ${Number(stock) || 0})
-        RETURNING *
-      `);
-      
-      return new Response(JSON.stringify(result.rows[0]), {
+      const response = await fetch(`https://lxhhgdqfxmeohayceshb.supabase.co/rest/v1/products`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${env.SUPABASE_SERVICE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4aGhnZHFmeG1lb2hheWNlc2hiIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1Mzg5OTU5MCwiZXhwIjoyMDY5NDc1NTkwfQ.zsYuh0P2S97pLrvY6t1j-qw-j-R_-_5QQX7e423dDeU'}`,
+          'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4aGhnZHFmeG1lb2hheWNlc2hiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM4OTk1OTAsImV4cCI6MjA2OTQ3NTU5MH0.gW9X6igqtpAQKutqb4aEEx0VovEZdMp4Gk_R8Glm9Bw',
+          'Prefer': 'return=representation'
+        },
+        body: JSON.stringify({
+          name,
+          price,
+          image_url: image_url || "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
+          category,
+          stock: Number(stock) || 0
+        })
+      });
+
+      const data = await response.json();
+      return new Response(JSON.stringify(data[0] || data), {
         status: 201,
         headers: { ...corsHeaders, "Content-Type": "application/json" }
       });
     }
 
-    if (path.startsWith("/api/products/") && method === "PATCH") {
-      const id = path.split("/")[3];
-      const body = await request.json();
-      
-      const updateFields = [];
-      const values = [];
-      let paramIndex = 1;
-      
-      if (body.name) {
-        updateFields.push(`name = $${paramIndex++}`);
-        values.push(body.name);
-      }
-      if (body.price) {
-        updateFields.push(`price = $${paramIndex++}`);
-        values.push(body.price);
-      }
-      if (body.image_url) {
-        updateFields.push(`image_url = $${paramIndex++}`);
-        values.push(body.image_url);
-      }
-      if (body.category) {
-        updateFields.push(`category = $${paramIndex++}`);
-        values.push(body.category);
-      }
-      if (body.stock !== undefined) {
-        updateFields.push(`stock = $${paramIndex++}`);
-        values.push(Number(body.stock));
-      }
-      
-      values.push(id);
-      
-      const result = await db.execute(sql.raw(`
-        UPDATE products SET ${updateFields.join(", ")} 
-        WHERE id = $${paramIndex}
-        RETURNING *
-      `, values));
-      
-      return new Response(JSON.stringify(result.rows[0]), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" }
-      });
-    }
-
-    if (path.startsWith("/api/products/") && method === "DELETE") {
-      const id = path.split("/")[3];
-      await db.execute(sql`DELETE FROM products WHERE id = ${id}`);
-      
-      return new Response(JSON.stringify({ message: "Product deleted successfully" }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" }
-      });
-    }
-
     if (path === "/api/orders" && method === "GET") {
-      const result = await db.execute(sql`SELECT * FROM orders ORDER BY created_at DESC`);
-      return new Response(JSON.stringify(result.rows), {
+      const response = await fetch(`https://lxhhgdqfxmeohayceshb.supabase.co/rest/v1/orders?select=*&order=created_at.desc`, {
+        headers: {
+          'Authorization': `Bearer ${env.SUPABASE_SERVICE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4aGhnZHFmeG1lb2hheWNlc2hiIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1Mzg5OTU5MCwiZXhwIjoyMDY5NDc1NTkwfQ.zsYuh0P2S97pLrvY6t1j-qw-j-R_-_5QQX7e423dDeU'}`,
+          'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4aGhnZHFmeG1lb2hheWNlc2hiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM4OTk1OTAsImV4cCI6MjA2OTQ3NTU5MH0.gW9X6igqtpAQKutqb4aEEx0VovEZdMp4Gk_R8Glm9Bw'
+        }
+      });
+      const data = await response.json();
+      return new Response(JSON.stringify(data), {
         headers: { ...corsHeaders, "Content-Type": "application/json" }
       });
     }
@@ -172,16 +107,32 @@ export async function onRequest(context) {
     if (path === "/api/orders" && method === "POST") {
       const body = await request.json();
       const { customer_name, phone, district, thana, address, items, total } = body;
-      
+
       const tracking_id = `TRX${Date.now()}${Math.floor(Math.random() * 1000)}`;
-      
-      const result = await db.execute(sql`
-        INSERT INTO orders (tracking_id, customer_name, phone, district, thana, address, items, total, status) 
-        VALUES (${tracking_id}, ${customer_name}, ${phone}, ${district}, ${thana}, ${address}, ${JSON.stringify(items)}, ${total}, 'pending')
-        RETURNING *
-      `);
-      
-      return new Response(JSON.stringify(result.rows[0]), {
+
+      const response = await fetch(`https://lxhhgdqfxmeohayceshb.supabase.co/rest/v1/orders`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${env.SUPABASE_SERVICE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4aGhnZHFmeG1lb2hheWNlc2hiIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1Mzg5OTU5MCwiZXhwIjoyMDY5NDc1NTkwfQ.zsYuh0P2S97pLrvY6t1j-qw-j-R_-_5QQX7e423dDeU'}`,
+          'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4aGhnZHFmeG1lb2hheWNlc2hiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM4OTk1OTAsImV4cCI6MjA2OTQ3NTU5MH0.gW9X6igqtpAQKutqb4aEEx0VovEZdMp4Gk_R8Glm9Bw',
+          'Prefer': 'return=representation'
+        },
+        body: JSON.stringify({
+          tracking_id,
+          customer_name,
+          phone,
+          district,
+          thana,
+          address,
+          items,
+          total,
+          status: 'pending'
+        })
+      });
+
+      const data = await response.json();
+      return new Response(JSON.stringify(data[0] || data), {
         status: 201,
         headers: { ...corsHeaders, "Content-Type": "application/json" }
       });
@@ -189,16 +140,22 @@ export async function onRequest(context) {
 
     if (path.startsWith("/api/orders/") && !path.includes("/status") && method === "GET") {
       const trackingId = path.split("/")[3];
-      const result = await db.execute(sql`SELECT * FROM orders WHERE tracking_id = ${trackingId} LIMIT 1`);
-      
-      if (result.rows.length === 0) {
+      const response = await fetch(`https://lxhhgdqfxmeohayceshb.supabase.co/rest/v1/orders?tracking_id=eq.${trackingId}&select=*`, {
+        headers: {
+          'Authorization': `Bearer ${env.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4aGhnZHFmeG1lb2hheWNlc2hiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM4OTk1OTAsImV4cCI6MjA2OTQ3NTU5MH0.gW9X6igqtpAQKutqb4aEEx0VovEZdMp4Gk_R8Glm9Bw'}`,
+          'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4aGhnZHFmeG1lb2hheWNlc2hiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM4OTk1OTAsImV4cCI6MjA2OTQ3NTU5MH0.gW9X6igqtpAQKutqb4aEEx0VovEZdMp4Gk_R8Glm9Bw'
+        }
+      });
+
+      const data = await response.json();
+      if (!data || data.length === 0) {
         return new Response(JSON.stringify({ error: "Order not found" }), {
           status: 404,
           headers: { ...corsHeaders, "Content-Type": "application/json" }
         });
       }
-      
-      return new Response(JSON.stringify(result.rows[0]), {
+
+      return new Response(JSON.stringify(data[0]), {
         headers: { ...corsHeaders, "Content-Type": "application/json" }
       });
     }
@@ -207,110 +164,47 @@ export async function onRequest(context) {
       const id = path.split("/")[3];
       const body = await request.json();
       const { status } = body;
-      
+
       if (!status) {
         return new Response(JSON.stringify({ error: "Status is required" }), {
           status: 400,
           headers: { ...corsHeaders, "Content-Type": "application/json" }
         });
       }
-      
-      const result = await db.execute(sql`
-        UPDATE orders SET status = ${status} WHERE id = ${id} RETURNING *
-      `);
-      
-      return new Response(JSON.stringify(result.rows[0]), {
+
+      const response = await fetch(`https://lxhhgdqfxmeohayceshb.supabase.co/rest/v1/orders?id=eq.${id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${env.SUPABASE_SERVICE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4aGhnZHFmeG1lb2hheWNlc2hiIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1Mzg5OTU5MCwiZXhwIjoyMDY5NDc1NTkwfQ.zsYuh0P2S97pLrvY6t1j-qw-j-R_-_5QQX7e423dDeU'}`,
+          'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4aGhnZHFmeG1lb2hheWNlc2hiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM4OTk1OTAsImV4cCI6MjA2OTQ3NTU5MH0.gW9X6igqtpAQKutqb4aEEx0VovEZdMp4Gk_R8Glm9Bw',
+          'Prefer': 'return=representation'
+        },
+        body: JSON.stringify({ status })
+      });
+
+      const data = await response.json();
+      return new Response(JSON.stringify(data[0] || data), {
         headers: { ...corsHeaders, "Content-Type": "application/json" }
       });
     }
 
     if (path === "/api/offers" && method === "GET") {
       const active = url.searchParams.get("active");
-      
-      let query;
+      let apiUrl = `https://lxhhgdqfxmeohayceshb.supabase.co/rest/v1/offers?select=*&order=created_at.desc`;
+
       if (active === "true") {
-        query = sql`SELECT * FROM offers WHERE is_active = true AND (expires_at IS NULL OR expires_at > NOW()) ORDER BY created_at DESC`;
-      } else {
-        query = sql`SELECT * FROM offers ORDER BY created_at DESC`;
+        apiUrl += `&is_active=eq.true&expires_at=gte.${new Date().toISOString()}`;
       }
-      
-      const result = await db.execute(query);
-      return new Response(JSON.stringify(result.rows), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" }
-      });
-    }
 
-    if (path === "/api/offers" && method === "POST") {
-      const body = await request.json();
-      const { title, description, discount_percentage, min_order_amount, max_discount_amount, expires_at, is_active } = body;
-      
-      const result = await db.execute(sql`
-        INSERT INTO offers (title, description, discount_percentage, min_order_amount, max_discount_amount, expires_at, is_active) 
-        VALUES (${title}, ${description}, ${Number(discount_percentage)}, ${min_order_amount ? Number(min_order_amount) : null}, ${max_discount_amount ? Number(max_discount_amount) : null}, ${expires_at || null}, ${Boolean(is_active)})
-        RETURNING *
-      `);
-      
-      return new Response(JSON.stringify(result.rows[0]), {
-        status: 201,
-        headers: { ...corsHeaders, "Content-Type": "application/json" }
+      const response = await fetch(apiUrl, {
+        headers: {
+          'Authorization': `Bearer ${env.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4aGhnZHFmeG1lb2hheWNlc2hiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM4OTk1OTAsImV4cCI6MjA2OTQ3NTU5MH0.gW9X6igqtpAQKutqb4aEEx0VovEZdMp4Gk_R8Glm9Bw'}`,
+          'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4aGhnZHFmeG1lb2hheWNlc2hiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM4OTk1OTAsImV4cCI6MjA2OTQ3NTU5MH0.gW9X6igqtpAQKutqb4aEEx0VovEZdMp4Gk_R8Glm9Bw'
+        }
       });
-    }
-
-    if (path.startsWith("/api/offers/") && method === "PATCH") {
-      const id = path.split("/")[3];
-      const body = await request.json();
-      
-      const updateFields = [];
-      const values = [];
-      let paramIndex = 1;
-      
-      if (body.title) {
-        updateFields.push(`title = $${paramIndex++}`);
-        values.push(body.title);
-      }
-      if (body.description) {
-        updateFields.push(`description = $${paramIndex++}`);
-        values.push(body.description);
-      }
-      if (body.discount_percentage !== undefined) {
-        updateFields.push(`discount_percentage = $${paramIndex++}`);
-        values.push(Number(body.discount_percentage));
-      }
-      if (body.min_order_amount !== undefined) {
-        updateFields.push(`min_order_amount = $${paramIndex++}`);
-        values.push(body.min_order_amount ? Number(body.min_order_amount) : null);
-      }
-      if (body.max_discount_amount !== undefined) {
-        updateFields.push(`max_discount_amount = $${paramIndex++}`);
-        values.push(body.max_discount_amount ? Number(body.max_discount_amount) : null);
-      }
-      if (body.expires_at !== undefined) {
-        updateFields.push(`expires_at = $${paramIndex++}`);
-        values.push(body.expires_at);
-      }
-      if (body.is_active !== undefined) {
-        updateFields.push(`is_active = $${paramIndex++}`);
-        values.push(Boolean(body.is_active));
-      }
-      
-      values.push(id);
-      
-      const result = await db.execute(sql.raw(`
-        UPDATE offers SET ${updateFields.join(", ")} 
-        WHERE id = $${paramIndex}
-        RETURNING *
-      `, values));
-      
-      return new Response(JSON.stringify(result.rows[0]), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" }
-      });
-    }
-
-    if (path.startsWith("/api/offers/") && method === "DELETE") {
-      const id = path.split("/")[3];
-      await db.execute(sql`DELETE FROM offers WHERE id = ${id}`);
-      
-      return new Response(JSON.stringify({ message: "Offer deleted successfully" }), {
+      const data = await response.json();
+      return new Response(JSON.stringify(data), {
         headers: { ...corsHeaders, "Content-Type": "application/json" }
       });
     }
@@ -318,17 +212,23 @@ export async function onRequest(context) {
     if (path === "/api/admins/login" && method === "POST") {
       const body = await request.json();
       const { email, password } = body;
-      
-      const result = await db.execute(sql`SELECT * FROM admins WHERE email = ${email} AND password = ${password} LIMIT 1`);
-      
-      if (result.rows.length === 0) {
+
+      const response = await fetch(`https://lxhhgdqfxmeohayceshb.supabase.co/rest/v1/admins?email=eq.${email}&password=eq.${password}&select=*`, {
+        headers: {
+          'Authorization': `Bearer ${env.SUPABASE_SERVICE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4aGhnZHFmeG1lb2hheWNlc2hiIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1Mzg5OTU5MCwiZXhwIjoyMDY5NDc1NTkwfQ.zsYuh0P2S97pLrvY6t1j-qw-j-R_-_5QQX7e423dDeU'}`,
+          'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4aGhnZHFmeG1lb2hheWNlc2hiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM4OTk1OTAsImV4cCI6MjA2OTQ3NTU5MH0.gW9X6igqtpAQKutqb4aEEx0VovEZdMp4Gk_R8Glm9Bw'
+        }
+      });
+
+      const data = await response.json();
+      if (!data || data.length === 0) {
         return new Response(JSON.stringify({ error: "Invalid credentials" }), {
           status: 401,
           headers: { ...corsHeaders, "Content-Type": "application/json" }
         });
       }
-      
-      return new Response(JSON.stringify({ success: true, admin: result.rows[0] }), {
+
+      return new Response(JSON.stringify({ success: true, admin: data[0] }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" }
       });
     }
