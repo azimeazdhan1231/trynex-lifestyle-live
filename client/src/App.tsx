@@ -11,6 +11,7 @@ import Tracking from "./pages/tracking";
 import NotFound from "./pages/not-found";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useEffect } from "react";
+import { initGA, initFacebookPixel } from "./lib/analytics";
 import { useAnalytics } from "./hooks/use-analytics";
 import DebugInfo from "./components/debug-info";
 
@@ -32,23 +33,17 @@ function Router() {
 }
 
 function App() {
-  // Load Facebook Pixel and Google Analytics
+  // Initialize analytics when app loads
   useEffect(() => {
-    const loadAnalytics = async () => {
-      try {
-        const analyticsModule = await import('@/lib/analytics');
-        if (analyticsModule.initializeFacebookPixel) {
-          analyticsModule.initializeFacebookPixel();
-        }
-        if (analyticsModule.initializeGoogleAnalytics) {
-          analyticsModule.initializeGoogleAnalytics();
-        }
-      } catch (error) {
-        console.error('Failed to load analytics:', error);
-      }
-    };
+    // Initialize Google Analytics
+    if (import.meta.env.VITE_GA_MEASUREMENT_ID) {
+      initGA();
+    }
 
-    loadAnalytics();
+    // Initialize Facebook Pixel
+    if (import.meta.env.VITE_FB_PIXEL_ID) {
+      initFacebookPixel(import.meta.env.VITE_FB_PIXEL_ID);
+    }
   }, []);
 
   return (

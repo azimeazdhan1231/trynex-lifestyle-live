@@ -6,8 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ShoppingCart, MessageCircle, Eye } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { formatPrice, createWhatsAppUrl } from "@/lib/constants";
-import type { Category } from "@shared/schema";
+import { PRODUCT_CATEGORIES, formatPrice, createWhatsAppUrl } from "@/lib/constants";
 import ProductModal from "@/components/product-modal";
 import Header from "@/components/header";
 import { useCart } from "@/hooks/use-cart";
@@ -19,22 +18,6 @@ export default function ProductsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { toast } = useToast();
   const { addToCart, totalItems } = useCart();
-
-  // Load categories
-  const { data: categories = [] } = useQuery<Category[]>({
-    queryKey: ["/api/categories"],
-    queryFn: async () => {
-      try {
-        const response = await fetch("/api/categories");
-        if (!response.ok) return [];
-        const data = await response.json();
-        return Array.isArray(data) ? data.filter(cat => cat.is_active) : [];
-      } catch (error) {
-        console.error("Categories loading error:", error);
-        return [];
-      }
-    },
-  });
 
   const { data: allProducts = [], isLoading, error } = useQuery<Product[]>({
     queryKey: ["/api/products"],
@@ -54,12 +37,6 @@ export default function ProductsPage() {
     retry: 3,
     retryDelay: 1000,
   });
-
-  // Create category options
-  const categoryOptions = [
-    { id: "all", name: "সকল পণ্য", name_bengali: "সকল পণ্য" },
-    ...categories
-  ];
 
   // Filter products by category
   const products = selectedCategory === "all" 
@@ -178,14 +155,14 @@ export default function ProductsPage() {
 
           {/* Product Filter */}
           <div className="flex flex-wrap justify-center gap-4 mb-8">
-            {categoryOptions.map((category) => (
+            {PRODUCT_CATEGORIES.map((category) => (
               <Button
                 key={category.id}
                 variant={selectedCategory === category.id ? "default" : "outline"}
                 onClick={() => setSelectedCategory(category.id)}
                 className="rounded-full font-medium"
               >
-                {category.name_bengali}
+                {category.name}
               </Button>
             ))}
           </div>
@@ -195,7 +172,7 @@ export default function ProductsPage() {
             <p className="text-gray-600">
               {selectedCategory === "all" 
                 ? `সর্বমোট ${allProducts.length} টি পণ্য`
-                : `${products.length} টি পণ্য "${categoryOptions.find(c => c.id === selectedCategory)?.name_bengali}" ক্যাটেগরিতে`
+                : `${products.length} টি পণ্য "${PRODUCT_CATEGORIES.find(c => c.id === selectedCategory)?.name}" ক্যাটেগরিতে`
               }
             </p>
           </div>

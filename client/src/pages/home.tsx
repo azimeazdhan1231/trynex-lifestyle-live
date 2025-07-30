@@ -47,12 +47,12 @@ export default function Home() {
   });
 
   // Filter products for different sections
-  const featuredProducts = allProducts.filter(p => p.is_featured && p.stock > 0).slice(0, 8);
+  const featuredProducts = allProducts.filter(p => p.is_featured).slice(0, 8);
   const latestProducts = allProducts
-    .filter(p => p.is_latest && p.stock > 0)
     .sort((a, b) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime())
+    .filter(p => p.is_latest)
     .slice(0, 8);
-  const bestSellingProducts = allProducts.filter(p => p.is_best_selling && p.stock > 0).slice(0, 8);
+  const bestSellingProducts = allProducts.filter(p => p.is_best_selling).slice(0, 8);
 
   useEffect(() => {
     const handleScroll = () => {
