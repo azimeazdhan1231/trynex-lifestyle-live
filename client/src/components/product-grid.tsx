@@ -12,16 +12,16 @@ import type { Product } from "@shared/schema";
 
 interface ProductGridProps {
   onAddToCart: (product: Product) => void;
+  featured?: boolean;
 }
 
-export default function ProductGrid({ onAddToCart }: ProductGridProps) {
-  const [selectedCategory, setSelectedCategory] = useState("all");
+export default function ProductGrid({ onAddToCart, featured = false }: ProductGridProps) {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { toast } = useToast();
 
   const { data: products = [], isLoading, error } = useQuery<Product[]>({
-    queryKey: ["/api/products"],
+    queryKey: ["/api/products", featured ? "featured" : "all"],
     queryFn: async () => {
       try {
         const response = await fetch("/api/products");
@@ -29,7 +29,14 @@ export default function ProductGrid({ onAddToCart }: ProductGridProps) {
           throw new Error(`Failed to fetch products: ${response.status}`);
         }
         const data = await response.json();
-        return Array.isArray(data) ? data : [];
+        let result = Array.isArray(data) ? data : [];
+        
+        // If featured, show only first 8 products
+        if (featured) {
+          result = result.slice(0, 8);
+        }
+        
+        return result;
       } catch (error) {
         console.error("Product loading error:", error);
         return [];
@@ -38,11 +45,6 @@ export default function ProductGrid({ onAddToCart }: ProductGridProps) {
     retry: 3,
     retryDelay: 1000,
   });
-
-  // Filter products by category
-  const allProducts = selectedCategory === "all" 
-    ? products 
-    : products.filter(product => product.category === selectedCategory);
 
   const handleAddToCart = (product: Product) => {
     if (product.stock === 0) {
@@ -128,35 +130,15 @@ export default function ProductGrid({ onAddToCart }: ProductGridProps) {
   };
 
   return (
-    <section id="products" className="py-16">
-      <div className="container mx-auto px-4">
-        <div className="text-center mb-12">
-          <h3 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4">আমাদের পণ্যসমূহ</h3>
-          <p className="text-gray-600 text-lg">সেরা মানের কাস্টম গিফট এবং লাইফস্টাইল পণ্য</p>
+    <>
+      {/* Product Grid */}
+      {products.length === 0 ? (
+        <div className="text-center py-12">
+          <p className="text-gray-500 text-lg">কোন পণ্য পাওয়া যায়নি</p>
         </div>
-
-        {/* Product Filter */}
-        <div className="flex flex-wrap justify-center gap-4 mb-8">
-          {PRODUCT_CATEGORIES.map((category) => (
-            <Button
-              key={category.id}
-              variant={selectedCategory === category.id ? "default" : "outline"}
-              onClick={() => setSelectedCategory(category.id)}
-              className="rounded-full font-medium"
-            >
-              {category.name}
-            </Button>
-          ))}
-        </div>
-
-        {/* Product Grid */}
-        {products.length === 0 ? (
-          <div className="text-center py-12">
-            <p className="text-gray-500 text-lg">কোন পণ্য পাওয়া যায়নি</p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {products.map((product) => (
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {products.map((product) => (
               <Card key={product.id} className="overflow-hidden hover:shadow-lg transition-all duration-300 cursor-pointer group">
                 <div 
                   className="aspect-square overflow-hidden relative"
@@ -236,12 +218,11 @@ export default function ProductGrid({ onAddToCart }: ProductGridProps) {
         )}
 
         <ProductModal
-          product={selectedProduct}
-          isOpen={isModalOpen}
-          onClose={handleModalClose}
-          onAddToCart={onAddToCart}
-        />
-      </div>
-    </section>
+        product={selectedProduct}
+        isOpen={isModalOpen}
+        onClose={handleModalClose}
+        onAddToCart={onAddToCart}
+      />
+    </>
   );
 }

@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import Header from "@/components/header";
 import ProductGrid from "@/components/product-grid";
 import TrackingSection from "@/components/tracking-section";
+import PopupOfferModal from "@/components/popup-offer-modal";
 import { useToast } from "@/hooks/use-toast";
 import { useCart } from "@/hooks/use-cart";
 import { COMPANY_NAME, COMPANY_TAGLINE, WHATSAPP_NUMBER, createWhatsAppUrl } from "@/lib/constants";
@@ -87,8 +88,31 @@ export default function Home() {
         </section>
       )}
 
-      {/* Product Grid */}
-      <ProductGrid onAddToCart={handleAddToCart} />
+      {/* Featured Products Section */}
+      <section id="products" className="py-16">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12">
+            <h3 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4">আমাদের বিশেষ পণ্যসমূহ</h3>
+            <p className="text-gray-600 text-lg">সেরা মানের কাস্টম গিফট এবং লাইফস্টাইল পণ্য</p>
+          </div>
+
+          {/* Featured Products Grid */}
+          <ProductGrid onAddToCart={handleAddToCart} featured={true} />
+
+          {/* View More Button */}
+          <div className="text-center mt-12">
+            <Button 
+              asChild
+              size="lg"
+              className="text-lg px-8 py-4"
+            >
+              <Link href="/products">
+                আরো পণ্য দেখুন <ArrowRight className="ml-2 w-5 h-5" />
+              </Link>
+            </Button>
+          </div>
+        </div>
+      </section>
 
       {/* Order Tracking */}
       <TrackingSection />
@@ -178,6 +202,9 @@ export default function Home() {
           </Button>
         )}
       </div>
+
+      {/* Popup Offer Modal */}
+      <PopupOfferModal />
     </div>
   );
 }

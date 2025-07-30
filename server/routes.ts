@@ -4,7 +4,7 @@ import { storage } from "./storage";
 import { 
   insertOrderSchema, insertProductSchema, insertOfferSchema,
   insertCategorySchema, insertPromoCodeSchema, insertAnalyticsSchema,
-  insertSiteSettingsSchema
+  insertSiteSettingsSchema, insertPopupOfferSchema
 } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -335,6 +335,59 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Admin authentication
+  // Popup Offers
+  app.get("/api/popup-offers", async (req, res) => {
+    try {
+      const offers = await storage.getPopupOffers();
+      res.json(offers);
+    } catch (error) {
+      console.error("Error fetching popup offers:", error);
+      res.status(500).json({ message: "Error fetching popup offers" });
+    }
+  });
+
+  app.get("/api/popup-offers/active", async (req, res) => {
+    try {
+      const offer = await storage.getActivePopupOffer();
+      res.json(offer);
+    } catch (error) {
+      console.error("Error fetching active popup offer:", error);
+      res.status(500).json({ message: "Error fetching active popup offer" });
+    }
+  });
+
+  app.post("/api/popup-offers", async (req, res) => {
+    try {
+      const offerData = insertPopupOfferSchema.parse(req.body);
+      const offer = await storage.createPopupOffer(offerData);
+      res.status(201).json(offer);
+    } catch (error) {
+      console.error("Error creating popup offer:", error);
+      res.status(400).json({ message: "Error creating popup offer" });
+    }
+  });
+
+  app.put("/api/popup-offers/:id", async (req, res) => {
+    try {
+      const offerData = insertPopupOfferSchema.partial().parse(req.body);
+      const offer = await storage.updatePopupOffer(req.params.id, offerData);
+      res.json(offer);
+    } catch (error) {
+      console.error("Error updating popup offer:", error);
+      res.status(400).json({ message: "Error updating popup offer" });
+    }
+  });
+
+  app.delete("/api/popup-offers/:id", async (req, res) => {
+    try {
+      await storage.deletePopupOffer(req.params.id);
+      res.status(204).send();
+    } catch (error) {
+      console.error("Error deleting popup offer:", error);
+      res.status(500).json({ message: "Error deleting popup offer" });
+    }
+  });
+
   app.post("/api/admin/login", async (req, res) => {
     try {
       const { email, password } = req.body;

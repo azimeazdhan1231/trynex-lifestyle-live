@@ -128,7 +128,6 @@ export const insertAnalyticsSchema = createInsertSchema(analytics).omit({
 export const insertSiteSettingsSchema = createInsertSchema(siteSettings).omit({
   id: true,
 });
-
 export type Product = typeof products.$inferSelect;
 export type InsertProduct = z.infer<typeof insertProductSchema>;
 export type Order = typeof orders.$inferSelect;
@@ -145,3 +144,36 @@ export type Analytics = typeof analytics.$inferSelect;
 export type InsertAnalytics = z.infer<typeof insertAnalyticsSchema>;
 export type SiteSettings = typeof siteSettings.$inferSelect;
 export type InsertSiteSettings = z.infer<typeof insertSiteSettingsSchema>;
+
+// Popup Offers table
+import { sqliteTable, text, integer, real } from 'drizzle-orm/sqlite-core';
+import { createInsertSchema } from 'drizzle-zod';
+import { z } from 'zod';
+import crypto from 'crypto';
+
+export const popupOffers = sqliteTable('popup_offers', {
+  id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+  title: text('title').notNull(),
+  subtitle: text('subtitle'),
+  description: text('description').notNull(),
+  discount_percentage: integer('discount_percentage'),
+  min_order_amount: real('min_order_amount'),
+  max_discount: real('max_discount'),
+  valid_until: text('valid_until'),
+  action_text: text('action_text'),
+  action_url: text('action_url'),
+  background_color: text('background_color').default('#ffffff'),
+  text_color: text('text_color').default('#000000'),
+  button_color: text('button_color').default('#059669'),
+  button_text_color: text('button_text_color').default('#ffffff'),
+  fine_print: text('fine_print'),
+  delay_seconds: integer('delay_seconds').default(3),
+  auto_close_seconds: integer('auto_close_seconds'),
+  is_active: integer('is_active', { mode: 'boolean' }).default(true),
+  created_at: text('created_at').default(sql`CURRENT_TIMESTAMP`),
+  updated_at: text('updated_at').default(sql`CURRENT_TIMESTAMP`)
+});
+
+export type PopupOffer = typeof popupOffers.$inferSelect;
+export const insertPopupOfferSchema = createInsertSchema(popupOffers);
+export type InsertPopupOffer = z.infer<typeof insertPopupOfferSchema>;

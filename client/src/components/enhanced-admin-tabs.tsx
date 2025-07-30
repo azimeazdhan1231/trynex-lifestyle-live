@@ -14,7 +14,7 @@ import { Switch } from "@/components/ui/switch";
 import { Plus, Edit, Trash2, Eye, Package, ShoppingCart, TrendingUp, Users, Gift, Tag, Settings, DollarSign, Star } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { ORDER_STATUSES, PRODUCT_CATEGORIES, formatPrice } from "@/lib/constants";
-import type { Product, Order, Category, PromoCode } from "@shared/schema";
+import type { Product, Order, Category, PromoCode, Offer, PopupOffer } from "@shared/schema";
 
 export default function EnhancedAdminTabs() {
   const { toast } = useToast();
@@ -232,14 +232,15 @@ export default function EnhancedAdminTabs() {
   return (
     <div className="container mx-auto p-6">
       <Tabs defaultValue="dashboard" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-6">
-          <TabsTrigger value="dashboard">ড্যাশবোর্ড</TabsTrigger>
-          <TabsTrigger value="orders">অর্ডার</TabsTrigger>
-          <TabsTrigger value="products">পণ্য</TabsTrigger>
-          <TabsTrigger value="categories">ক্যাটাগরি</TabsTrigger>
-          <TabsTrigger value="promo-codes">প্রমো কোড</TabsTrigger>
-          <TabsTrigger value="settings">সেটিংস</TabsTrigger>
-        </TabsList>
+        <TabsList className="grid w-full grid-cols-7">
+            <TabsTrigger value="dashboard">ড্যাশবোর্ড</TabsTrigger>
+            <TabsTrigger value="orders">অর্ডার</TabsTrigger>
+            <TabsTrigger value="products">পণ্য</TabsTrigger>
+            <TabsTrigger value="categories">ক্যাটাগরি</TabsTrigger>
+            <TabsTrigger value="offers">অফার</TabsTrigger>
+            <TabsTrigger value="popup-offers">পপআপ অফার</TabsTrigger>
+            <TabsTrigger value="settings">সেটিংস</TabsTrigger>
+          </TabsList>
 
         {/* Dashboard Tab */}
         <TabsContent value="dashboard" className="space-y-6">
