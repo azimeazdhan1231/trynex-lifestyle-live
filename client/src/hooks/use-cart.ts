@@ -13,23 +13,30 @@ export function useCart() {
   // Load cart from localStorage on mount
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const stored = localStorage.getItem('trynex-cart');
-      if (stored) {
-        try {
+      try {
+        const stored = localStorage.getItem('trynex-cart');
+        if (stored && stored !== 'undefined') {
           const parsedCart = JSON.parse(stored);
-          setCart(parsedCart);
-        } catch (error) {
-          console.error('Error parsing cart from localStorage:', error);
-          localStorage.removeItem('trynex-cart');
+          if (Array.isArray(parsedCart)) {
+            setCart(parsedCart);
+          }
         }
+      } catch (error) {
+        console.error('Error parsing cart from localStorage:', error);
+        localStorage.removeItem('trynex-cart');
+        setCart([]);
       }
     }
   }, []);
 
   // Save cart to localStorage whenever cart changes
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('trynex-cart', JSON.stringify(cart));
+    if (typeof window !== 'undefined' && cart.length >= 0) {
+      try {
+        localStorage.setItem('trynex-cart', JSON.stringify(cart));
+      } catch (error) {
+        console.error('Error saving cart to localStorage:', error);
+      }
     }
   }, [cart]);
 

@@ -9,7 +9,8 @@ export async function onRequest(context) {
   const corsHeaders = {
     "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Methods": "GET, POST, PUT, PATCH, DELETE, OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type, Authorization",
+    "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With",
+    "Access-Control-Max-Age": "86400",
   };
 
   // Handle preflight requests
@@ -357,7 +358,17 @@ export async function onRequest(context) {
 
   } catch (error) {
     console.error("API Error:", error);
-    return new Response(JSON.stringify({ error: "Internal server error", details: error.message }), {
+    console.error("Request details:", {
+      url: url.pathname,
+      method: request.method,
+      headers: Object.fromEntries(request.headers.entries())
+    });
+    return new Response(JSON.stringify({ 
+      error: "Internal server error", 
+      details: error.message,
+      path: url.pathname,
+      method: request.method
+    }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" }
     });

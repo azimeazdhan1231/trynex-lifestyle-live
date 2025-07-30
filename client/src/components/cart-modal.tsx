@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { ShoppingCart, Plus, Minus, Trash2 } from "lucide-react";
+import { ShoppingCart, Plus, Minus, Trash2, X } from "lucide-react";
 import { formatPrice } from "@/lib/constants";
 import { useCart } from "@/hooks/use-cart";
 import CheckoutModal from "@/components/checkout-modal";
@@ -47,12 +47,12 @@ export default function CartModal({ isOpen, onClose }: CartModalProps) {
           ) : (
             <div className="space-y-4">
               {/* Cart Items */}
-              <div className="space-y-3">
+              <div className="space-y-3 max-h-64 overflow-y-auto">
                 {cart.map((item) => (
                   <div key={item.id} className="flex items-center justify-between py-3 border-b">
                     <div className="flex-1">
-                      <h5 className="font-medium">{item.name}</h5>
-                      <p className="text-gray-600">{formatPrice(item.price)}</p>
+                      <h5 className="font-medium text-sm">{item.name}</h5>
+                      <p className="text-gray-600 text-sm">{formatPrice(item.price)} প্রতিটি</p>
                     </div>
                     <div className="flex items-center space-x-2">
                       <Button
@@ -76,11 +76,11 @@ export default function CartModal({ isOpen, onClose }: CartModalProps) {
                       </Button>
                       <Button
                         size="sm"
-                        variant="outline"
+                        variant="destructive"
                         onClick={() => removeFromCart(item.id)}
-                        className="w-8 h-8 p-0 text-red-500 hover:text-red-700"
+                        className="w-8 h-8 p-0 ml-2"
                       >
-                        <Trash2 className="w-4 h-4" />
+                        <X className="w-4 h-4" />
                       </Button>
                     </div>
                   </div>

@@ -2,7 +2,7 @@
 import { QueryClient } from "@tanstack/react-query";
 
 const isDevelopment = import.meta.env.MODE === 'development';
-const API_BASE_URL = isDevelopment ? '' : '';
+const API_BASE_URL = isDevelopment ? 'http://localhost:5173' : '';
 
 export const queryClient = new QueryClient({
   defaultOptions: {

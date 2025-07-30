@@ -144,3 +144,15 @@ export default function ProductGrid({ onAddToCart }: ProductGridProps) {
     </section>
   );
 }
+const handleAddToCart = (product: Product) => {
+    const price = typeof product.price === 'string' ? parseFloat(product.price) : product.price;
+    addToCart({
+      id: product.id,
+      name: product.name,
+      price: price,
+    });
+    toast({
+      title: "কার্টে যোগ হয়েছে!",
+      description: `${product.name} কার্টে যোগ করা হয়েছে।`,
+    });
+  };

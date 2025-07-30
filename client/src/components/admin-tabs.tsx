@@ -204,7 +204,7 @@ export default function AdminTabs() {
       setEditingProduct(product);
       setProductForm({
         name: product.name,
-        price: product.price,
+        price: typeof product.price === 'string' ? product.price : product.price.toString(),
         image_url: product.image_url,
         category: product.category,
         stock: product.stock
@@ -474,7 +474,7 @@ export default function AdminTabs() {
                         <img src={product.image_url} alt={product.name} className="w-12 h-12 object-cover rounded" />
                       </TableCell>
                       <TableCell className="font-medium">{product.name}</TableCell>
-                      <TableCell>{formatPrice(Number(product.price))}</TableCell>
+                      <TableCell>{formatPrice(typeof product.price === 'string' ? parseFloat(product.price) : product.price)}</TableCell>
                       <TableCell>
                         <Badge variant="secondary">
                           {categories.find(c => c.value === product.category)?.label || product.category}

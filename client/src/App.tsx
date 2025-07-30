@@ -7,6 +7,7 @@ import Home from "@/pages/home";
 import Admin from "@/pages/admin";
 import TrackingPage from "@/pages/tracking";
 import NotFound from "@/pages/not-found";
+import DebugInfo from "@/components/debug-info"; // Added DebugInfo component
 
 function Router() {
   return (
@@ -26,6 +27,7 @@ function App() {
         <div className="font-bengali">
           <Toaster />
           <Router />
+          <DebugInfo /> {/* Added DebugInfo component to App */}
         </div>
       </TooltipProvider>
     </QueryClientProvider>
