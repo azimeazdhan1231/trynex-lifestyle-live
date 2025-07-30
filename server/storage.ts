@@ -3,7 +3,7 @@ import postgres from "postgres";
 import { eq, desc, and, gte, lte } from "drizzle-orm";
 import { 
   products, orders, offers, admins, categories, promoCodes, analytics, 
-  siteSettings, admins, popupOffers, type Product, type InsertProduct, type Order, type InsertOrder, 
+  siteSettings, popupOffers, type Product, type InsertProduct, type Order, type InsertOrder, 
   type Offer, type InsertOffer, type Admin, type InsertAdmin,
   type Category, type InsertCategory, type PromoCode, type InsertPromoCode,
   type Analytics, type InsertAnalytics, type SiteSettings, type InsertSiteSettings, type InsertPopupOffer

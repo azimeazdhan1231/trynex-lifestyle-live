@@ -1,12 +1,15 @@
 -- Create products table
 CREATE TABLE IF NOT EXISTS products (
-  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   name TEXT NOT NULL,
-  price DECIMAL(10,2) NOT NULL,
-  image_url TEXT DEFAULT 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600',
-  category TEXT NOT NULL,
-  stock INTEGER DEFAULT 0,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  price NUMERIC NOT NULL,
+  image_url TEXT,
+  category TEXT,
+  stock INTEGER NOT NULL DEFAULT 0,
+  is_featured BOOLEAN DEFAULT FALSE,
+  is_latest BOOLEAN DEFAULT FALSE,
+  is_best_selling BOOLEAN DEFAULT FALSE,
+  created_at TIMESTAMP DEFAULT NOW()
 );
 
 -- Create orders table
