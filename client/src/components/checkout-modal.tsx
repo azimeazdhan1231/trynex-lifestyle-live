@@ -75,7 +75,7 @@ export default function CheckoutModal({ isOpen, onClose, cart, onOrderComplete }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!formData.customer_name || !formData.phone || !formData.district || !formData.thana) {
       toast({
         title: "তথ্য অসম্পূর্ণ",
@@ -114,7 +114,7 @@ export default function CheckoutModal({ isOpen, onClose, cart, onOrderComplete }
         <DialogHeader>
           <DialogTitle>অর্ডার সম্পূর্ণ করুন</DialogTitle>
           <DialogDescription>
-            আপনার ডেলিভারি তথ্য দিয়ে অর্ডার সম্পূর্ণ করুন
+            আপনার ঠিকানা এবং যোগাযোগের তথ্য প্রদান করুন
           </DialogDescription>
         </DialogHeader>
 

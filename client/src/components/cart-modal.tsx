@@ -95,7 +95,7 @@ export default function CartModal({ isOpen, onClose }: CartModalProps) {
                   <span className="text-lg font-semibold">মোট:</span>
                   <span className="text-2xl font-bold text-primary">{formatPrice(totalPrice)}</span>
                 </div>
-                
+
                 <Button onClick={handleCheckout} className="w-full" size="lg">
                   চেকআউট করুন ({totalItems} টি পণ্য)
                 </Button>

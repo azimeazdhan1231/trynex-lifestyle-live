@@ -41,7 +41,7 @@ export default function Header({ cartCount, onCartOpen }: HeaderProps) {
               <h1 className="text-2xl font-bold text-primary">{COMPANY_NAME}</h1>
               <span className="ml-2 text-sm text-gray-600 hidden sm:block">{COMPANY_TAGLINE}</span>
             </div>
-            
+
             {/* Desktop Navigation */}
             <nav className="hidden md:flex space-x-8">
               {navigation.map((item) => (
@@ -60,7 +60,7 @@ export default function Header({ cartCount, onCartOpen }: HeaderProps) {
                 )
               ))}
             </nav>
-            
+
             {/* Cart and Mobile Menu */}
             <div className="flex items-center space-x-4">
               <Button
@@ -76,7 +76,7 @@ export default function Header({ cartCount, onCartOpen }: HeaderProps) {
                   </span>
                 )}
               </Button>
-              
+
               {/* Mobile Menu */}
               <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
                 <SheetTrigger asChild>

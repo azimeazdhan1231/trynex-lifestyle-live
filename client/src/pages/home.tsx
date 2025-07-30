@@ -56,7 +56,7 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-gray-50">
       <Header cartCount={totalItems} onCartOpen={() => {}} />
-      
+
       {/* Hero Section */}
       <section id="hero" className="bg-gradient-to-r from-primary to-emerald-700 text-white py-20 mt-16">
         <div className="container mx-auto px-4 text-center">
@@ -166,7 +166,7 @@ export default function Home() {
             <MessageCircle className="w-6 h-6" />
           </a>
         </Button>
-        
+
         {showScrollTop && (
           <Button
             onClick={scrollToTop}
