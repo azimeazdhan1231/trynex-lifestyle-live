@@ -754,7 +754,8 @@ export default function EnhancedAdminTabs() {
                         <img
                           src={category.image_url || "https://images.unsplash.com/photo-1441986300917-64674bd600d8"}
                           alt={category.name}
-                          className="w-12 h-12 object-cover rounded                        />
+                          className="w-12 h-12 object-cover rounded"
+                        />
                       </TableCell>
                       <TableCell className="font-medium">{category.name_bengali}</TableCell>
                       <TableCell>{category.name}</TableCell>

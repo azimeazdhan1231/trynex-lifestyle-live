@@ -1,4 +1,3 @@
-
 import { sql } from "drizzle-orm";
 import { pgTable, text, varchar, numeric, integer, timestamp, jsonb, uuid, boolean } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
@@ -112,6 +111,7 @@ export const popupOffers = pgTable("popup_offers", {
   delay_seconds: integer("delay_seconds").default(3),
   auto_close_seconds: integer("auto_close_seconds"),
   is_active: boolean("is_active").default(true),
+  expiry: timestamp("expiry"),
   created_at: timestamp("created_at").defaultNow(),
   updated_at: timestamp("updated_at").defaultNow(),
 });

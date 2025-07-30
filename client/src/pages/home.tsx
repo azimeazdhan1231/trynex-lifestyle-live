@@ -1,6 +1,4 @@
-
 import { useState, useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
 import { Link } from "wouter";
 import { ArrowRight, Gift, MessageCircle, ArrowUp, ShoppingCart, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";

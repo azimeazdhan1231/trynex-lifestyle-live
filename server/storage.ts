@@ -334,7 +334,13 @@ export class DatabaseStorage implements IStorage {
 
   async getActivePopupOffer(): Promise<any> { // Replace any with correct type
     const now = new Date();
-    const result = await db.select().from(popupOffers).where(and(eq(popupOffers.is_active, true), gte(popupOffers.expiry, now))).orderBy(desc(popupOffers.created_at));
+    const result = await db.select().from(popupOffers)
+      .where(and(
+        eq(popupOffers.is_active, true),
+        gte(popupOffers.expiry, now)
+      ))
+      .orderBy(desc(popupOffers.created_at))
+      .limit(1);
     return result[0];
   }
 
