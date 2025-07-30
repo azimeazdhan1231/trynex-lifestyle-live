@@ -108,6 +108,25 @@ export default function ProductGrid({ onAddToCart }: ProductGridProps) {
     );
   }
 
+  const trackProductView = (product: Product) => {
+    try {
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'view_item', {
+          currency: 'BDT',
+          value: product.price,
+          items: [{
+            item_id: product.id,
+            item_name: product.name,
+            price: product.price,
+            quantity: 1
+          }]
+        });
+      }
+    } catch (error) {
+      console.error('Analytics tracking error:', error);
+    }
+  };
+
   return (
     <section id="products" className="py-16">
       <div className="container mx-auto px-4">
@@ -141,7 +160,10 @@ export default function ProductGrid({ onAddToCart }: ProductGridProps) {
               <Card key={product.id} className="overflow-hidden hover:shadow-lg transition-all duration-300 cursor-pointer group">
                 <div 
                   className="aspect-square overflow-hidden relative"
-                  onClick={() => handleProductClick(product)}
+                  onClick={() => {
+                    handleProductClick(product);
+                    trackProductView(product);
+                  }}
                 >
                   <img
                     src={product.image_url || "https://images.unsplash.com/photo-1544787219-7f47ccb76574?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"}
@@ -155,7 +177,10 @@ export default function ProductGrid({ onAddToCart }: ProductGridProps) {
                 <CardContent className="p-4">
                   <h4 
                     className="font-semibold text-lg mb-2 text-gray-800 hover:text-primary transition-colors cursor-pointer"
-                    onClick={() => handleProductClick(product)}
+                    onClick={() => {
+                      handleProductClick(product);
+                      trackProductView(product);
+                    }}
                   >
                     {product.name}
                   </h4>

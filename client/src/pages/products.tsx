@@ -121,6 +121,25 @@ export default function ProductsPage() {
     );
   }
 
+  const trackProductView = (product: Product) => {
+    try {
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'view_item', {
+          currency: 'BDT',
+          value: product.price,
+          items: [{
+            item_id: product.id,
+            item_name: product.name,
+            price: product.price,
+            quantity: 1
+          }]
+        });
+      }
+    } catch (error) {
+      console.error('Analytics tracking error:', error);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Header cartCount={totalItems} onCartOpen={() => {}} />
@@ -163,76 +182,79 @@ export default function ProductsPage() {
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {productsFiltered.map((product) => (
-                <Card key={product.id} className="overflow-hidden hover:shadow-lg transition-all duration-300 cursor-pointer group">
-                  <div 
-                    className="aspect-square overflow-hidden relative"
-                    onClick={() => handleProductClick(product)}
-                  >
-                    <img
-                      src={product.image_url || "https://images.unsplash.com/photo-1544787219-7f47ccb76574?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"}
-                      alt={product.name}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
-                    <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all duration-300 flex items-center justify-center">
-                      <Eye className="w-8 h-8 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                    </div>
-                  </div>
-                  <CardContent className="p-4">
-                    <h4 
-                      className="font-semibold text-lg mb-2 text-gray-800 hover:text-primary transition-colors cursor-pointer"
+              {productsFiltered.map((product) => {
+                trackProductView(product);
+                return (
+                  <Card key={product.id} className="overflow-hidden hover:shadow-lg transition-all duration-300 cursor-pointer group">
+                    <div
+                      className="aspect-square overflow-hidden relative"
                       onClick={() => handleProductClick(product)}
                     >
-                      {product.name}
-                    </h4>
-                    <div className="flex items-center justify-between mb-4">
-                      <span className="text-2xl font-bold text-primary">{formatPrice(product.price)}</span>
-                      <Badge variant={product.stock > 0 ? "secondary" : "destructive"}>
-                        স্টক: {product.stock}
-                      </Badge>
-                    </div>
-                    <div className="space-y-2">
-                      <Button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleAddToCart(product);
-                        }}
-                        disabled={product.stock === 0}
-                        className="w-full"
-                        variant={product.stock === 0 ? "secondary" : "default"}
-                      >
-                        <ShoppingCart className="w-4 h-4 mr-2" />
-                        {product.stock === 0 ? "স্টক নেই" : "কার্টে যোগ করুন"}
-                      </Button>
-                      <div className="grid grid-cols-2 gap-2">
-                        <Button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleProductClick(product);
-                          }}
-                          variant="outline"
-                          size="sm"
-                        >
-                          <Eye className="w-4 h-4 mr-1" />
-                          দেখুন
-                        </Button>
-                        <Button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleWhatsAppOrder(product);
-                          }}
-                          variant="outline"
-                          className="bg-green-500 text-white hover:bg-green-600 border-green-500"
-                          size="sm"
-                        >
-                          <MessageCircle className="w-4 h-4 mr-1" />
-                          WhatsApp
-                        </Button>
+                      <img
+                        src={product.image_url || "https://images.unsplash.com/photo-1544787219-7f47ccb76574?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"}
+                        alt={product.name}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
+                      <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all duration-300 flex items-center justify-center">
+                        <Eye className="w-8 h-8 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                       </div>
                     </div>
-                  </CardContent>
-                </Card>
-              ))}
+                    <CardContent className="p-4">
+                      <h4
+                        className="font-semibold text-lg mb-2 text-gray-800 hover:text-primary transition-colors cursor-pointer"
+                        onClick={() => handleProductClick(product)}
+                      >
+                        {product.name}
+                      </h4>
+                      <div className="flex items-center justify-between mb-4">
+                        <span className="text-2xl font-bold text-primary">{formatPrice(product.price)}</span>
+                        <Badge variant={product.stock > 0 ? "secondary" : "destructive"}>
+                          স্টক: {product.stock}
+                        </Badge>
+                      </div>
+                      <div className="space-y-2">
+                        <Button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleAddToCart(product);
+                          }}
+                          disabled={product.stock === 0}
+                          className="w-full"
+                          variant={product.stock === 0 ? "secondary" : "default"}
+                        >
+                          <ShoppingCart className="w-4 h-4 mr-2" />
+                          {product.stock === 0 ? "স্টক নেই" : "কার্টে যোগ করুন"}
+                        </Button>
+                        <div className="grid grid-cols-2 gap-2">
+                          <Button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleProductClick(product);
+                            }}
+                            variant="outline"
+                            size="sm"
+                          >
+                            <Eye className="w-4 h-4 mr-1" />
+                            দেখুন
+                          </Button>
+                          <Button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleWhatsAppOrder(product);
+                            }}
+                            variant="outline"
+                            className="bg-green-500 text-white hover:bg-green-600 border-green-500"
+                            size="sm"
+                          >
+                            <MessageCircle className="w-4 h-4 mr-1" />
+                            WhatsApp
+                          </Button>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
             </div>
           )}
 

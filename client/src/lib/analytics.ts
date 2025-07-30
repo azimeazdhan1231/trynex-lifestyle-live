@@ -35,10 +35,10 @@ export const initGA = () => {
 // Track page views - useful for single-page applications
 export const trackPageView = (url: string) => {
   if (typeof window === 'undefined' || !window.gtag) return;
-  
+
   const measurementId = import.meta.env.VITE_GA_MEASUREMENT_ID;
   if (!measurementId) return;
-  
+
   window.gtag('config', measurementId, {
     page_path: url
   });
@@ -52,7 +52,7 @@ export const trackEvent = (
   value?: number
 ) => {
   if (typeof window === 'undefined' || !window.gtag) return;
-  
+
   window.gtag('event', action, {
     event_category: category,
     event_label: label,
@@ -99,7 +99,7 @@ export const trackFBEvent = (eventName: string, parameters?: any) => {
 export const trackPurchase = (orderId: string, value: number, currency: string = 'BDT') => {
   // Google Analytics
   trackEvent('purchase', 'ecommerce', orderId, value);
-  
+
   // Facebook Pixel
   trackFBEvent('Purchase', {
     value: value,
@@ -112,7 +112,7 @@ export const trackPurchase = (orderId: string, value: number, currency: string =
 export const trackAddToCart = (productId: string, productName: string, value: number) => {
   // Google Analytics
   trackEvent('add_to_cart', 'ecommerce', productName, value);
-  
+
   // Facebook Pixel
   trackFBEvent('AddToCart', {
     value: value,
@@ -126,7 +126,7 @@ export const trackAddToCart = (productId: string, productName: string, value: nu
 export const trackProductView = (productId: string, productName: string, category: string) => {
   // Google Analytics
   trackEvent('view_item', 'ecommerce', productName);
-  
+
   // Facebook Pixel
   trackFBEvent('ViewContent', {
     content_ids: [productId],
@@ -139,7 +139,7 @@ export const trackProductView = (productId: string, productName: string, categor
 export const trackInitiateCheckout = (value: number, numItems: number) => {
   // Google Analytics
   trackEvent('begin_checkout', 'ecommerce', 'checkout_started', value);
-  
+
   // Facebook Pixel
   trackFBEvent('InitiateCheckout', {
     value: value,
