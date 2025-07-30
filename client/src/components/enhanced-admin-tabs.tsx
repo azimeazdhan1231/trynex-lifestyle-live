@@ -145,13 +145,21 @@ export default function EnhancedAdminTabs() {
   });
 
   const updateOrderStatusMutation = useMutation({
-    mutationFn: ({ id, status }: { id: string; status: string }) => 
-      apiRequest(`/api/orders/${id}`, "PATCH", { status }),
+    mutationFn: async ({ id, status }: { id: string; status: string }) => {
+      const response = await fetch(`/api/orders/${id}/status`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status }),
+      });
+      if (!response.ok) throw new Error("Failed to update order status");
+      return response.json();
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/orders"] });
-      toast({ title: "অর্ডার স্ট্যাটাস আপডেট করা হয়েছে!" });
+      // Also invalidate individual order queries for real-time updates
+      queryClient.invalidateQueries({ queryKey: ["/api/orders"] });
+      toast({ title: "অর্ডার স্ট্যাটাস আপডেট হয়েছে" });
     },
-    onError: () => toast({ title: "স্ট্যাটাস আপডেট করতে সমস্যা হয়েছে", variant: "destructive" })
   });
 
   // Form reset functions

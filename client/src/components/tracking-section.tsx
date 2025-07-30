@@ -28,7 +28,8 @@ export default function TrackingSection() {
       });
       return;
     }
-    setSearchTriggered(true);
+    // Navigate to tracking page with the tracking ID
+    window.open(`/tracking?id=${trackingId.trim()}`, '_blank');
   };
 
   const getStatusIcon = (status: string) => {

@@ -100,7 +100,26 @@ export class DatabaseStorage implements IStorage {
 
   async getOrder(trackingId: string): Promise<Order | undefined> {
     const result = await db.select().from(orders).where(eq(orders.tracking_id, trackingId)).limit(1);
-    return result[0];
+    const order = result[0];
+    if (order) {
+      // Ensure items is properly parsed
+      if (typeof order.items === 'string') {
+        try {
+          order.items = JSON.parse(order.items);
+        } catch (e) {
+          order.items = [];
+        }
+      }
+      // Ensure payment_info is properly parsed
+      if (typeof order.payment_info === 'string') {
+        try {
+          order.payment_info = JSON.parse(order.payment_info);
+        } catch (e) {
+          order.payment_info = null;
+        }
+      }
+    }
+    return order || null;
   }
 
   async createOrder(order: InsertOrder): Promise<Order> {
@@ -242,7 +261,7 @@ export class DatabaseStorage implements IStorage {
   // Analytics
   async getAnalytics(eventType?: string, startDate?: string, endDate?: string): Promise<Analytics[]> {
     let query = db.select().from(analytics);
-    
+
     const conditions = [];
     if (eventType) {
       conditions.push(eq(analytics.event_type, eventType));
@@ -283,12 +302,12 @@ export class DatabaseStorage implements IStorage {
       .set({ value, updated_at: new Date() })
       .where(eq(siteSettings.key, key))
       .returning();
-    
+
     if (result.length === 0) {
       // Create if doesn't exist
       return this.createSetting({ key, value });
     }
-    
+
     return result[0];
   }
 }

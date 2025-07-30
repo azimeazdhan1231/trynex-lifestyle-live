@@ -28,7 +28,10 @@ export default function OrderSuccessModal({ isOpen, onClose, order }: OrderSucce
   };
 
   const handleTrackOrder = () => {
-    window.open(`/tracking?id=${order.tracking_id}`, '_blank');
+    // Close modal first
+    onClose();
+    // Navigate to tracking page
+    window.location.href = `/tracking?id=${order.tracking_id}`;
   };
 
   const handleWhatsAppContact = () => {

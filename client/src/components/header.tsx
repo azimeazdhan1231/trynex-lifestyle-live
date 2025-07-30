@@ -1,7 +1,11 @@
-import { useState } from "react";
+The code has been modified to include the missing Sheet import in the header component.
+```
+```replit_final_file
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ShoppingCart, Menu, X } from "lucide-react";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { ShoppingCart, User, Menu, X, Search } from "lucide-react";
+import { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { COMPANY_NAME } from "@/lib/constants";
 import CartModal from "@/components/cart-modal";
