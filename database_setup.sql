@@ -1,3 +1,4 @@
+
 -- Create products table
 CREATE TABLE IF NOT EXISTS products (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
@@ -56,58 +57,3 @@ INSERT INTO products (name, price, category, stock, image_url) VALUES
 ('বাংলাদেশি ক্লাসিক বই', 350, 'gifts', 30, 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600'),
 ('কাস্টম টি-শার্ট', 450, 'custom', 25, 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600'),
 ('ব্যাকপ্যাক বহুক', 1100, 'accessories', 20, 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600');
-
--- Site Settings table
-CREATE TABLE IF NOT EXISTS site_settings (
-  id TEXT PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))),
-  key TEXT UNIQUE NOT NULL,
-  value TEXT NOT NULL,
-  description TEXT,
-  created_at TEXT DEFAULT CURRENT_TIMESTAMP,
-  updated_at TEXT DEFAULT CURRENT_TIMESTAMP
-);
-
--- Popup Offers table
-CREATE TABLE IF NOT EXISTS popup_offers (
-  id TEXT PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))),
-  title TEXT NOT NULL,
-  subtitle TEXT,
-  description TEXT NOT NULL,
-  discount_percentage INTEGER,
-  min_order_amount REAL,
-  max_discount REAL,
-  valid_until TEXT,
-  action_text TEXT,
-  action_url TEXT,
-  background_color TEXT DEFAULT '#ffffff',
-  text_color TEXT DEFAULT '#000000',
-  button_color TEXT DEFAULT '#059669',
-  button_text_color TEXT DEFAULT '#ffffff',
-  fine_print TEXT,
-  delay_seconds INTEGER DEFAULT 3,
-  auto_close_seconds INTEGER,
-  is_active INTEGER DEFAULT 1,
-  created_at TEXT DEFAULT CURRENT_TIMESTAMP,
-  updated_at TEXT DEFAULT CURRENT_TIMESTAMP
-);
-
--- Insert default admin user
-INSERT OR IGNORE INTO admins (id, email, password) 
-VALUES ('admin-1', 'admin@trynex.com', 'admin123');
-
--- Insert sample popup offer
-INSERT OR IGNORE INTO popup_offers (
-  id, title, subtitle, description, discount_percentage, min_order_amount,
-  action_text, action_url, delay_seconds, is_active
-) VALUES (
-  'sample-popup-1', 
-  '🎉 বিশেষ ছাড় অফার!', 
-  'শুধুমাত্র আজকের জন্য',
-  'আপনার প্রিয় পণ্যে পান ২০% পর্যন্ত ছাড়! এই সুযোগ হাতছাড়া করবেন না।',
-  20,
-  500,
-  'এখনই কিনুন',
-  '/products',
-  5,
-  1
-);

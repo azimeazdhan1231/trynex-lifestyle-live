@@ -13,6 +13,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { useEffect } from "react";
 import { initGA, initFacebookPixel } from "./lib/analytics";
 import { useAnalytics } from "./hooks/use-analytics";
+import DebugInfo from "@/components/debug-info";
 
 function Router() {
   // Track page views when routes change

@@ -19,11 +19,12 @@ export default function ProductsPage() {
   const { toast } = useToast();
   const { addToCart, totalItems } = useCart();
 
-  const { data: allProducts = [], isLoading, error } = useQuery<Product[]>({
-    queryKey: ["/api/products"],
+  const { data: products = [], isLoading, error } = useQuery<Product[]>({
+    queryKey: ["/api/products", selectedCategory],
     queryFn: async () => {
       try {
-        const response = await fetch("/api/products");
+        const url = selectedCategory === "all" ? "/api/products" : `/api/products?category=${selectedCategory}`;
+        const response = await fetch(url);
         if (!response.ok) {
           throw new Error(`Failed to fetch products: ${response.status}`);
         }
@@ -39,12 +40,9 @@ export default function ProductsPage() {
   });
 
   // Filter products by category
-  const products = selectedCategory === "all" 
-    ? allProducts 
-    : allProducts.filter(product => 
-        product.category?.toLowerCase() === selectedCategory.toLowerCase() ||
-        product.category === selectedCategory
-      );
+  const productsFiltered = selectedCategory === "all" 
+    ? products 
+    : products.filter(product => product.category === selectedCategory);
 
   const handleAddToCart = (product: Product) => {
     if (product.stock === 0) {
@@ -171,20 +169,20 @@ export default function ProductsPage() {
           <div className="text-center mb-6">
             <p className="text-gray-600">
               {selectedCategory === "all" 
-                ? `সর্বমোট ${allProducts.length} টি পণ্য`
+                ? `সর্বমোট ${products.length} টি পণ্য`
                 : `${products.length} টি পণ্য "${PRODUCT_CATEGORIES.find(c => c.id === selectedCategory)?.name}" ক্যাটেগরিতে`
               }
             </p>
           </div>
 
           {/* Product Grid */}
-          {products.length === 0 ? (
+          {productsFiltered.length === 0 ? (
             <div className="text-center py-12">
               <p className="text-gray-500 text-lg">এই ক্যাটেগরিতে কোন পণ্য পাওয়া যায়নি</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {products.map((product) => {
+              {productsFiltered.map((product) => {
                 trackProductView(product);
                 return (
                   <Card key={product.id} className="overflow-hidden hover:shadow-lg transition-all duration-300 cursor-pointer group">

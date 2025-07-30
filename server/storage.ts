@@ -2,11 +2,11 @@ import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import { eq, desc, and, gte, lte } from "drizzle-orm";
 import { 
-  products, orders, offers, admins, categories, promoCodes, analytics, 
-  siteSettings, admins, popupOffers, type Product, type InsertProduct, type Order, type InsertOrder, 
+  products, orders, offers, admins, categories, promoCodes, analytics, siteSettings,
+  type Product, type InsertProduct, type Order, type InsertOrder, 
   type Offer, type InsertOffer, type Admin, type InsertAdmin,
   type Category, type InsertCategory, type PromoCode, type InsertPromoCode,
-  type Analytics, type InsertAnalytics, type SiteSettings, type InsertSiteSettings, type InsertPopupOffer
+  type Analytics, type InsertAnalytics, type SiteSettings, type InsertSiteSettings
 } from "@shared/schema";
 
 const connectionString = process.env.DATABASE_URL || "postgresql://postgres.lxhhgdqfxmeohayceshb:Amiomito1Amiomito1@aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres";
@@ -57,13 +57,6 @@ export interface IStorage {
   getSettings(): Promise<SiteSettings[]>;
   createSetting(setting: InsertSiteSettings): Promise<SiteSettings>;
   updateSetting(key: string, value: string): Promise<SiteSettings>;
-
-    // Popup Offers
-  getPopupOffers(): Promise<any>; // Replace any with correct type
-  getActivePopupOffer(): Promise<any>; // Replace any with correct type
-  createPopupOffer(data: InsertPopupOffer): Promise<any>; // Replace any with correct type
-  updatePopupOffer(id: string, data: Partial<InsertPopupOffer>): Promise<any>; // Replace any with correct type
-  deletePopupOffer(id: string): Promise<any>; // Replace any with correct type
 
   // Admins
   getAdminByEmail(email: string): Promise<Admin | undefined>;
@@ -143,11 +136,11 @@ export class DatabaseStorage implements IStorage {
       status,
       updated_at: new Date() 
     }).where(eq(orders.id, id)).returning();
-
+    
     if (result.length === 0) {
       throw new Error("Order not found");
     }
-
+    
     return result[0];
   }
 
@@ -323,42 +316,6 @@ export class DatabaseStorage implements IStorage {
       return this.createSetting({ key, value });
     }
 
-    return result[0];
-  }
-
-  // Popup Offers
-  async getPopupOffers(): Promise<any> { // Replace any with correct type
-    const result = await db.select().from(popupOffers).orderBy(desc(popupOffers.created_at));
-    return result;
-  }
-
-  async getActivePopupOffer(): Promise<any> { // Replace any with correct type
-    const now = new Date();
-    const result = await db.select().from(popupOffers).where(and(eq(popupOffers.is_active, true), gte(popupOffers.expiry, now))).orderBy(desc(popupOffers.created_at));
-    return result[0];
-  }
-
-  async createPopupOffer(data: InsertPopupOffer): Promise<any> {
-    const result = await db.insert(popupOffers).values(data).returning();
-    return result[0];
-  }
-
-  async updatePopupOffer(id: string, data: Partial<InsertPopupOffer>): Promise<any> {
-    const result = await db.update(popupOffers).set(data).where(eq(popupOffers.id, id)).returning();
-    return result[0];
-  }
-
-  async deletePopupOffer(id: string): Promise<any> {
-    await db.delete(popupOffers).where(eq(popupOffers.id, id));
-  }
-
-  async getAdminByEmail(email: string): Promise<Admin | undefined> {
-    const result = await db.select().from(admins).where(eq(admins.email, email)).limit(1);
-    return result[0];
-  }
-
-  async createAdmin(admin: InsertAdmin): Promise<Admin> {
-    const result = await db.insert(admins).values(admin).returning();
     return result[0];
   }
 }
