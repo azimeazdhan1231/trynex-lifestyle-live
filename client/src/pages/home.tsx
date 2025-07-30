@@ -130,7 +130,7 @@ export default function Home() {
             <div>
               <h5 className="text-lg font-semibold mb-4">যোগাযোগ</h5>
               <div className="space-y-2 text-gray-300">
-                <p>📞 +৮৮০১৯০৪০৬৮৯৪৭</p>
+                <p>📞 {WHATSAPP_NUMBER}</p>
                 <p>✉️ trynexlifestyle@gmail.com</p>
                 <p>📍 ঢাকা, বাংলাদেশ</p>
               </div>

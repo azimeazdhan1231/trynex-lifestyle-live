@@ -72,7 +72,7 @@ export default function CheckoutModal({ isOpen, onClose, cart, onOrderComplete }
     onSuccess: (order: Order) => {
       // Track successful purchase
       trackPurchase(order.tracking_id, Number(order.total), 'BDT');
-      
+
       queryClient.invalidateQueries({ queryKey: ["/api/orders"] });
       setCompletedOrder(order);
       setShowSuccessModal(true);

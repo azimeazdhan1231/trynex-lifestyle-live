@@ -1,4 +1,4 @@
-export const WHATSAPP_NUMBER = "8801904068947";
+export const WHATSAPP_NUMBER = "+8801940689487";
 export const COMPANY_NAME = "Trynex Lifestyle";
 export const COMPANY_TAGLINE = "কাস্টম গিফট স্টোর";
 
@@ -14,10 +14,27 @@ export const DISTRICTS = [
 ];
 
 export const PRODUCT_CATEGORIES = [
-  { id: "all", name: "সকল পণ্য" },
-  { id: "gifts", name: "গিফট আইটেম" },
-  { id: "lifestyle", name: "লাইফস্টাইল" },
-  { id: "accessories", name: "এক্সেসরিজ" }
+  { id: "all", name: "সব পণ্য" },
+  { id: "gift-for-him", name: "Gift for Him" },
+  { id: "gift-for-her", name: "Gift for Her" },
+  { id: "baby-gifts", name: "Baby Gifts" },
+  { id: "men-gifts", name: "Men Gifts" },
+  { id: "women-gifts", name: "Women Gifts" },
+  { id: "kids-gifts", name: "Kids Gifts" },
+  { id: "mugs", name: "Mugs" },
+  { id: "t-shirts", name: "T-Shirts" },
+  { id: "keychains", name: "Keychains" },
+  { id: "water-bottles", name: "Water Bottles" },
+  { id: "personalized-gifts", name: "Personalized Gifts" },
+  { id: "corporate-gifts", name: "Corporate Gifts" },
+  { id: "anniversary-gifts", name: "Anniversary Gifts" },
+  { id: "birthday-gifts", name: "Birthday Gifts" },
+  { id: "holiday-gifts", name: "Holiday Gifts" },
+  { id: "custom-prints", name: "Custom Prints" },
+  { id: "gift-packages", name: "Gift Packages" },
+  { id: "home-decor-gifts", name: "Home Decor Gifts" },
+  { id: "fashion-accessories", name: "Fashion Accessories" },
+  { id: "seasonal-specials", name: "Seasonal Specials" },
 ];
 
 export const ORDER_STATUSES = [
@@ -75,3 +92,7 @@ export const THANAS_BY_DISTRICT: Record<string, string[]> = {
     "গৌরীপুর", "গফরগাঁও", "ঈশ্বরগঞ্জ", "হালুয়াঘাট", "ফুলবাড়ীয়া", "ধোবাউড়া"
   ]
 };
+export const PHONE_NUMBER = "+8801940689487";
+export const BKASH_NUMBER = "01747292277";
+export const NAGAD_NUMBER = "01747292277";
+export const FACEBOOK_PAGE = "https://www.facebook.com/profile.php?id=61576151563336";

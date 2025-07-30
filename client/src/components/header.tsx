@@ -1,9 +1,9 @@
 import { useState } from "react";
-import { ShoppingCart, Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Link } from "wouter";
-import { COMPANY_NAME, COMPANY_TAGLINE } from "@/lib/constants";
+import { Badge } from "@/components/ui/badge";
+import { ShoppingCart, Menu, X } from "lucide-react";
+import { Link, useLocation } from "wouter";
+import { COMPANY_NAME } from "@/lib/constants";
 import CartModal from "@/components/cart-modal";
 
 interface HeaderProps {
@@ -14,22 +14,18 @@ interface HeaderProps {
 export default function Header({ cartCount, onCartOpen }: HeaderProps) {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [location] = useLocation();
 
-  const scrollToSection = (sectionId: string) => {
-    const element = document.getElementById(sectionId);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
-    }
-    setIsMobileMenuOpen(false);
-  };
-
-  const navigation = [
-    { name: "হোম", href: "/", isLink: true },
-    { name: "পণ্য", href: "#products", onClick: () => scrollToSection("products") },
-    { name: "ট্র্যাকিং", href: "/tracking", isLink: true },
-    { name: "অফার", href: "#", onClick: () => scrollToSection("offers") },
-    { name: "যোগাযোগ", href: "#", onClick: () => scrollToSection("contact") },
+  const navItems = [
+    { name: "হোম", href: "/" },
+    { name: "পণ্য", href: "/products" },
+    { name: "অফার", href: "/offers" },
+    { name: "যোগাযোগ", href: "/contact" },
   ];
+
+  const isActive = (href: string) => {
+    return location === href;
+  };
 
   return (
     <>
@@ -38,26 +34,27 @@ export default function Header({ cartCount, onCartOpen }: HeaderProps) {
           <div className="flex justify-between items-center h-16">
             {/* Logo */}
             <div className="flex items-center">
-              <h1 className="text-2xl font-bold text-primary">{COMPANY_NAME}</h1>
-              <span className="ml-2 text-sm text-gray-600 hidden sm:block">{COMPANY_TAGLINE}</span>
-            </div>
+          <Link href="/">
+            <h1 className="text-2xl font-bold text-primary cursor-pointer hover:text-primary/80 transition-colors">
+              {COMPANY_NAME}
+            </h1>
+          </Link>
+        </div>
 
             {/* Desktop Navigation */}
             <nav className="hidden md:flex space-x-8">
-              {navigation.map((item) => (
-                item.isLink ? (
-                  <Link key={item.name} href={item.href} className="text-gray-700 hover:text-primary font-medium transition-colors">
-                    {item.name}
-                  </Link>
-                ) : (
-                  <button
-                    key={item.name}
-                    onClick={item.onClick}
-                    className="text-gray-700 hover:text-primary font-medium transition-colors"
-                  >
-                    {item.name}
-                  </button>
-                )
+              {navItems.map((item) => (
+                <Link
+                key={item.name}
+                href={item.href}
+                className={`font-medium transition-colors ${
+                  isActive(item.href) 
+                    ? "text-primary font-semibold" 
+                    : "text-gray-600 hover:text-primary"
+                }`}
+              >
+                {item.name}
+              </Link>
               ))}
             </nav>
 
@@ -86,14 +83,19 @@ export default function Header({ cartCount, onCartOpen }: HeaderProps) {
                 </SheetTrigger>
                 <SheetContent side="left" className="w-[300px] sm:w-[400px]">
                   <div className="flex flex-col space-y-4 mt-8">
-                    {navigation.map((item) => (
-                      <button
-                        key={item.name}
-                        onClick={item.onClick}
-                        className="text-left text-gray-700 font-medium hover:text-primary transition-colors"
-                      >
-                        {item.name}
-                      </button>
+                    {navItems.map((item) => (
+                      <Link
+                  key={item.name}
+                  href={item.href}
+                  className={`block py-2 font-medium ${
+                    isActive(item.href) 
+                      ? "text-primary font-semibold" 
+                      : "text-gray-600 hover:text-primary"
+                  }`}
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  {item.name}
+                </Link>
                     ))}
                   </div>
                 </SheetContent>
