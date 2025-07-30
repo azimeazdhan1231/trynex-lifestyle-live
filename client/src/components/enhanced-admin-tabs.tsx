@@ -9,14 +9,11 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Separator } from "@/components/ui/separator";
 import { 
-  Plus, Edit, Trash2, Package, Gift, TrendingUp, Users, Clock, 
-  Settings, Tag, BarChart3, Eye, Copy, Globe, Facebook, 
-  Instagram, MessageCircle, Search, Filter, Download,
-  DollarSign, ShoppingCart, Star, Calendar
+  Plus, Edit, Trash2, Package, TrendingUp, Users, Clock, 
+  Settings, Tag, BarChart3, Eye, DollarSign, ShoppingCart, Star
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
@@ -26,7 +23,6 @@ import type { Product, Order, Offer, Category, PromoCode, Analytics, SiteSetting
 export default function EnhancedAdminTabs() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [activeTab, setActiveTab] = useState("dashboard");
 
   // Form states
   const [productForm, setProductForm] = useState({
@@ -35,31 +31,18 @@ export default function EnhancedAdminTabs() {
   const [categoryForm, setCategoryForm] = useState({
     name: "", name_bengali: "", description: "", image_url: "", is_active: true, sort_order: 0
   });
-  const [promoForm, setPromoForm] = useState({
-    code: "", discount_type: "percentage", discount_value: 0, min_order_amount: 0,
-    max_discount: 0, usage_limit: 100, expires_at: "", is_active: true
-  });
-  const [settingsForm, setSettingsForm] = useState({
-    fb_pixel_id: "", ga_measurement_id: "", whatsapp_number: "", 
-    delivery_fee_dhaka: "80", delivery_fee_outside: "120"
-  });
 
   // Dialog states
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
-  const [editingPromo, setEditingPromo] = useState<PromoCode | null>(null);
   const [isProductDialogOpen, setIsProductDialogOpen] = useState(false);
   const [isCategoryDialogOpen, setIsCategoryDialogOpen] = useState(false);
-  const [isPromoDialogOpen, setIsPromoDialogOpen] = useState(false);
 
   // Fetch data
   const { data: orders = [] } = useQuery<Order[]>({ queryKey: ["/api/orders"] });
   const { data: products = [] } = useQuery<Product[]>({ queryKey: ["/api/products"] });
-  const { data: offers = [] } = useQuery<Offer[]>({ queryKey: ["/api/offers"] });
   const { data: categories = [] } = useQuery<Category[]>({ queryKey: ["/api/categories"] });
   const { data: promoCodes = [] } = useQuery<PromoCode[]>({ queryKey: ["/api/promo-codes"] });
-  const { data: analytics = [] } = useQuery<Analytics[]>({ queryKey: ["/api/analytics"] });
-  const { data: settings = [] } = useQuery<SiteSettings[]>({ queryKey: ["/api/settings"] });
 
   // Dashboard statistics
   const totalRevenue = orders.reduce((sum, order) => sum + Number(order.total), 0);
@@ -77,104 +60,120 @@ export default function EnhancedAdminTabs() {
     return orderDate >= weekAgo;
   });
 
-  // Product mutations
+  // Image upload handlers
+  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const result = e.target?.result as string;
+        setProductForm({...productForm, image_url: result});
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleCategoryImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const result = e.target?.result as string;
+        setCategoryForm({...categoryForm, image_url: result});
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // Mutations
   const createProductMutation = useMutation({
-    mutationFn: async (data: any) => {
-      const response = await apiRequest("POST", "/api/products", data);
-      return response.json();
-    },
+    mutationFn: (productData: any) => apiRequest("/api/products", "POST", productData),
     onSuccess: () => {
-      toast({ title: "পণ্য যোগ করা হয়েছে", description: "নতুন পণ্য সফলভাবে যোগ করা হয়েছে" });
       queryClient.invalidateQueries({ queryKey: ["/api/products"] });
       setIsProductDialogOpen(false);
       resetProductForm();
-    }
+      toast({ title: "পণ্য সফলভাবে যোগ করা হয়েছে!" });
+    },
+    onError: () => toast({ title: "পণ্য যোগ করতে সমস্যা হয়েছে", variant: "destructive" })
   });
 
   const updateProductMutation = useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: any }) => {
-      const response = await apiRequest("PATCH", `/api/products/${id}`, data);
-      return response.json();
-    },
+    mutationFn: ({ id, ...data }: any) => apiRequest(`/api/products/${id}`, "PATCH", data),
     onSuccess: () => {
-      toast({ title: "পণ্য আপডেট হয়েছে", description: "পণ্যের তথ্য সফলভাবে আপডেট করা হয়েছে" });
       queryClient.invalidateQueries({ queryKey: ["/api/products"] });
       setIsProductDialogOpen(false);
-      setEditingProduct(null);
       resetProductForm();
-    }
+      toast({ title: "পণ্য সফলভাবে আপডেট করা হয়েছে!" });
+    },
+    onError: () => toast({ title: "পণ্য আপডেট করতে সমস্যা হয়েছে", variant: "destructive" })
   });
 
   const deleteProductMutation = useMutation({
-    mutationFn: async (id: string) => {
-      await apiRequest("DELETE", `/api/products/${id}`);
-    },
+    mutationFn: (id: string) => apiRequest(`/api/products/${id}`, "DELETE"),
     onSuccess: () => {
-      toast({ title: "পণ্য ডিলিট হয়েছে", description: "পণ্য সফলভাবে ডিলিট করা হয়েছে" });
       queryClient.invalidateQueries({ queryKey: ["/api/products"] });
-    }
+      toast({ title: "পণ্য সফলভাবে মুছে ফেলা হয়েছে!" });
+    },
+    onError: () => toast({ title: "পণ্য মুছতে সমস্যা হয়েছে", variant: "destructive" })
   });
 
-  // Category mutations
   const createCategoryMutation = useMutation({
-    mutationFn: async (data: any) => {
-      const response = await apiRequest("POST", "/api/categories", data);
-      return response.json();
-    },
+    mutationFn: (categoryData: any) => apiRequest("/api/categories", "POST", categoryData),
     onSuccess: () => {
-      toast({ title: "ক্যাটাগরি যোগ করা হয়েছে" });
       queryClient.invalidateQueries({ queryKey: ["/api/categories"] });
       setIsCategoryDialogOpen(false);
       resetCategoryForm();
-    }
-  });
-
-  // Promo code mutations
-  const createPromoMutation = useMutation({
-    mutationFn: async (data: any) => {
-      const response = await apiRequest("POST", "/api/promo-codes", data);
-      return response.json();
+      toast({ title: "ক্যাটাগরি সফলভাবে যোগ করা হয়েছে!" });
     },
-    onSuccess: () => {
-      toast({ title: "প্রমো কোড যোগ করা হয়েছে" });
-      queryClient.invalidateQueries({ queryKey: ["/api/promo-codes"] });
-      setIsPromoDialogOpen(false);
-      resetPromoForm();
-    }
+    onError: () => toast({ title: "ক্যাটাগরি যোগ করতে সমস্যা হয়েছে", variant: "destructive" })
   });
 
-  // Order status update
+  const updateCategoryMutation = useMutation({
+    mutationFn: ({ id, ...data }: any) => apiRequest(`/api/categories/${id}`, "PUT", data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/categories"] });
+      setIsCategoryDialogOpen(false);
+      resetCategoryForm();
+      toast({ title: "ক্যাটাগরি সফলভাবে আপডেট করা হয়েছে!" });
+    },
+    onError: () => toast({ title: "ক্যাটাগরি আপডেট করতে সমস্যা হয়েছে", variant: "destructive" })
+  });
+
+  const deleteCategoryMutation = useMutation({
+    mutationFn: (id: string) => apiRequest(`/api/categories/${id}`, "DELETE"),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/categories"] });
+      toast({ title: "ক্যাটাগরি সফলভাবে মুছে ফেলা হয়েছে!" });
+    },
+    onError: () => toast({ title: "ক্যাটাগরি মুছতে সমস্যা হয়েছে", variant: "destructive" })
+  });
+
   const updateOrderStatusMutation = useMutation({
-    mutationFn: async ({ id, status }: { id: string; status: string }) => {
-      const response = await apiRequest("PATCH", `/api/orders/${id}`, { status });
-      return response.json();
-    },
+    mutationFn: ({ id, status }: { id: string; status: string }) => 
+      apiRequest(`/api/orders/${id}`, "PATCH", { status }),
     onSuccess: () => {
-      toast({ title: "অর্ডার স্ট্যাটাস আপডেট হয়েছে" });
       queryClient.invalidateQueries({ queryKey: ["/api/orders"] });
-    }
+      toast({ title: "অর্ডার স্ট্যাটাস আপডেট করা হয়েছে!" });
+    },
+    onError: () => toast({ title: "স্ট্যাটাস আপডেট করতে সমস্যা হয়েছে", variant: "destructive" })
   });
 
-  // Helper functions
+  // Form reset functions
   const resetProductForm = () => {
     setProductForm({ name: "", price: "", image_url: "", category: "", stock: 0, description: "" });
+    setEditingProduct(null);
   };
 
   const resetCategoryForm = () => {
     setCategoryForm({ name: "", name_bengali: "", description: "", image_url: "", is_active: true, sort_order: 0 });
+    setEditingCategory(null);
   };
 
-  const resetPromoForm = () => {
-    setPromoForm({
-      code: "", discount_type: "percentage", discount_value: 0, min_order_amount: 0,
-      max_discount: 0, usage_limit: 100, expires_at: "", is_active: true
-    });
-  };
-
+  // Form submit handlers
   const handleProductSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (editingProduct) {
-      updateProductMutation.mutate({ id: editingProduct.id, data: productForm });
+      updateProductMutation.mutate({ id: editingProduct.id, ...productForm });
     } else {
       createProductMutation.mutate(productForm);
     }
@@ -182,12 +181,11 @@ export default function EnhancedAdminTabs() {
 
   const handleCategorySubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    createCategoryMutation.mutate(categoryForm);
-  };
-
-  const handlePromoSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    createPromoMutation.mutate(promoForm);
+    if (editingCategory) {
+      updateCategoryMutation.mutate({ id: editingCategory.id, ...categoryForm });
+    } else {
+      createCategoryMutation.mutate(categoryForm);
+    }
   };
 
   const handleEditProduct = (product: Product) => {
@@ -203,38 +201,29 @@ export default function EnhancedAdminTabs() {
     setIsProductDialogOpen(true);
   };
 
+  const handleEditCategory = (category: Category) => {
+    setEditingCategory(category);
+    setCategoryForm({
+      name: category.name,
+      name_bengali: category.name_bengali || "",
+      description: category.description || "",
+      image_url: category.image_url || "",
+      is_active: category.is_active ?? true,
+      sort_order: category.sort_order || 0
+    });
+    setIsCategoryDialogOpen(true);
+  };
+
   return (
-    <div className="space-y-6">
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-7">
-          <TabsTrigger value="dashboard">
-            <BarChart3 className="w-4 h-4 mr-2" />
-            ড্যাশবোর্ড
-          </TabsTrigger>
-          <TabsTrigger value="orders">
-            <ShoppingCart className="w-4 h-4 mr-2" />
-            অর্ডার
-          </TabsTrigger>
-          <TabsTrigger value="products">
-            <Package className="w-4 h-4 mr-2" />
-            পণ্য
-          </TabsTrigger>
-          <TabsTrigger value="categories">
-            <Tag className="w-4 h-4 mr-2" />
-            ক্যাটাগরি
-          </TabsTrigger>
-          <TabsTrigger value="offers">
-            <Gift className="w-4 h-4 mr-2" />
-            অফার
-          </TabsTrigger>
-          <TabsTrigger value="promos">
-            <Star className="w-4 h-4 mr-2" />
-            প্রমো কোড
-          </TabsTrigger>
-          <TabsTrigger value="settings">
-            <Settings className="w-4 h-4 mr-2" />
-            সেটিংস
-          </TabsTrigger>
+    <div className="container mx-auto p-6">
+      <Tabs defaultValue="dashboard" className="space-y-6">
+        <TabsList className="grid w-full grid-cols-6">
+          <TabsTrigger value="dashboard">ড্যাশবোর্ড</TabsTrigger>
+          <TabsTrigger value="orders">অর্ডার</TabsTrigger>
+          <TabsTrigger value="products">পণ্য</TabsTrigger>
+          <TabsTrigger value="categories">ক্যাটাগরি</TabsTrigger>
+          <TabsTrigger value="promo-codes">প্রমো কোড</TabsTrigger>
+          <TabsTrigger value="settings">সেটিংস</TabsTrigger>
         </TabsList>
 
         {/* Dashboard Tab */}
@@ -247,26 +236,26 @@ export default function EnhancedAdminTabs() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{formatPrice(totalRevenue)}</div>
-                <p className="text-xs text-muted-foreground">সর্বমোট বিক্রয়</p>
+                <p className="text-xs text-muted-foreground">সর্বমোট রেভিনিউ</p>
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">মোট অর্ডার</CardTitle>
+                <CardTitle className="text-sm font-medium">অর্ডার</CardTitle>
                 <ShoppingCart className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{totalOrders}</div>
                 <p className="text-xs text-muted-foreground">
-                  {pendingOrders} টি অপেক্ষমান
+                  {pendingOrders} টি পেন্ডিং
                 </p>
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">মোট পণ্য</CardTitle>
+                <CardTitle className="text-sm font-medium">পণ্য</CardTitle>
                 <Package className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
@@ -387,7 +376,7 @@ export default function EnhancedAdminTabs() {
                   নতুন পণ্য যোগ করুন
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-md">
+              <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                   <DialogTitle>
                     {editingProduct ? "পণ্য সম্পাদনা" : "নতুন পণ্য যোগ করুন"}
@@ -423,7 +412,11 @@ export default function EnhancedAdminTabs() {
                         <SelectValue placeholder="ক্যাটাগরি নির্বাচন করুন" />
                       </SelectTrigger>
                       <SelectContent>
-                        {PRODUCT_CATEGORIES.filter(cat => cat.id !== "all").map((category) => (
+                        {categories.length > 0 ? categories.map((category) => (
+                          <SelectItem key={category.id} value={category.name}>
+                            {category.name_bengali || category.name}
+                          </SelectItem>
+                        )) : PRODUCT_CATEGORIES.filter(cat => cat.id !== "all").map((category) => (
                           <SelectItem key={category.id} value={category.id}>
                             {category.name}
                           </SelectItem>
@@ -442,13 +435,35 @@ export default function EnhancedAdminTabs() {
                     />
                   </div>
                   <div>
-                    <Label htmlFor="image_url">ইমেজ URL</Label>
-                    <Input
-                      id="image_url"
-                      type="url"
-                      value={productForm.image_url}
-                      onChange={(e) => setProductForm({...productForm, image_url: e.target.value})}
-                    />
+                    <Label htmlFor="image">পণ্যের ছবি</Label>
+                    <div className="space-y-2">
+                      <Input
+                        id="image-file"
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageUpload}
+                        className="cursor-pointer"
+                      />
+                      <div className="text-xs text-gray-500 text-center">অথবা</div>
+                      <Input
+                        id="image-url"
+                        value={productForm.image_url}
+                        onChange={(e) => setProductForm({...productForm, image_url: e.target.value})}
+                        placeholder="ছবির URL দিন"
+                      />
+                      {productForm.image_url && (
+                        <div className="mt-2">
+                          <img 
+                            src={productForm.image_url} 
+                            alt="পূর্বরূপ" 
+                            className="w-20 h-20 object-cover rounded border"
+                            onError={(e) => {
+                              e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3QgeD0iMyIgeT0iMyIgd2lkdGg9IjE4IiBoZWlnaHQ9IjE4IiByeD0iMiIgc3Ryb2tlPSJjdXJyZW50Q29sb3IiIHN0cm9rZS13aWR0aD0iMiIvPgo8Y2lyY2xlIGN4PSI5IiBjeT0iOSIgcj0iMiIgc3Ryb2tlPSJjdXJyZW50Q29sb3IiIHN0cm9rZS13aWR0aD0iMiIvPgo8cGF0aCBkPSJtMjEgMTUtMy01TDUgMjEiIHN0cm9rZT0iY3VycmVudENvbG9yIiBzdHJva2Utd2lkdGg9IjIiLz4KPC9zdmc+';
+                            }}
+                          />
+                        </div>
+                      )}
+                    </div>
                   </div>
                   <Button 
                     type="submit" 
@@ -531,192 +546,98 @@ export default function EnhancedAdminTabs() {
             <h3 className="text-lg font-semibold">ক্যাটাগরি ম্যানেজমেন্ট</h3>
             <Dialog open={isCategoryDialogOpen} onOpenChange={setIsCategoryDialogOpen}>
               <DialogTrigger asChild>
-                <Button onClick={resetCategoryForm}>
+                <Button onClick={() => { setEditingCategory(null); resetCategoryForm(); }}>
                   <Plus className="w-4 h-4 mr-2" />
                   নতুন ক্যাটাগরি যোগ করুন
                 </Button>
               </DialogTrigger>
-              <DialogContent>
+              <DialogContent className="max-w-md">
                 <DialogHeader>
-                  <DialogTitle>নতুন ক্যাটাগরি যোগ করুন</DialogTitle>
+                  <DialogTitle>
+                    {editingCategory ? "ক্যাটাগরি সম্পাদনা" : "নতুন ক্যাটাগরি যোগ করুন"}
+                  </DialogTitle>
                 </DialogHeader>
                 <form onSubmit={handleCategorySubmit} className="space-y-4">
                   <div>
-                    <Label htmlFor="cat_name">ইংরেজি নাম</Label>
+                    <Label htmlFor="category-name">ক্যাটাগরির নাম (ইংরেজি)</Label>
                     <Input
-                      id="cat_name"
+                      id="category-name"
                       value={categoryForm.name}
                       onChange={(e) => setCategoryForm({...categoryForm, name: e.target.value})}
                       required
                     />
                   </div>
                   <div>
-                    <Label htmlFor="cat_name_bengali">বাংলা নাম</Label>
+                    <Label htmlFor="category-name-bengali">ক্যাটাগরির নাম (বাংলা)</Label>
                     <Input
-                      id="cat_name_bengali"
+                      id="category-name-bengali"
                       value={categoryForm.name_bengali}
                       onChange={(e) => setCategoryForm({...categoryForm, name_bengali: e.target.value})}
                       required
                     />
                   </div>
                   <div>
-                    <Label htmlFor="cat_description">বিবরণ</Label>
+                    <Label htmlFor="category-description">বিবরণ</Label>
                     <Textarea
-                      id="cat_description"
+                      id="category-description"
                       value={categoryForm.description}
                       onChange={(e) => setCategoryForm({...categoryForm, description: e.target.value})}
                     />
                   </div>
                   <div>
-                    <Label htmlFor="cat_image">ইমেজ URL</Label>
+                    <Label htmlFor="category-image">ক্যাটাগরির ছবি</Label>
+                    <div className="space-y-2">
+                      <Input
+                        id="category-image-file"
+                        type="file"
+                        accept="image/*"
+                        onChange={handleCategoryImageUpload}
+                        className="cursor-pointer"
+                      />
+                      <div className="text-xs text-gray-500 text-center">অথবা</div>
+                      <Input
+                        id="category-image-url"
+                        value={categoryForm.image_url}
+                        onChange={(e) => setCategoryForm({...categoryForm, image_url: e.target.value})}
+                        placeholder="ছবির URL দিন"
+                      />
+                      {categoryForm.image_url && (
+                        <div className="mt-2">
+                          <img 
+                            src={categoryForm.image_url} 
+                            alt="পূর্বরূপ" 
+                            className="w-20 h-20 object-cover rounded border"
+                            onError={(e) => {
+                              e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3QgeD0iMyIgeT0iMyIgd2lkdGg9IjE4IiBoZWlnaHQ9IjE4IiByeD0iMiIgc3Ryb2tlPSJjdXJyZW50Q29sb3IiIHN0cm9rZS13aWR0aD0iMiIvPgo8Y2lyY2xlIGN4PSI5IiBjeT0iOSIgcj0iMiIgc3Ryb2tlPSJjdXJyZW50Q29sb3IiIHN0cm9rZS13aWR0aD0iMiIvPgo8cGF0aCBkPSJtMjEgMTUtMy01TDUgMjEiIHN0cm9rZT0iY3VycmVudENvbG9yIiBzdHJva2Utd2lkdGg9IjIiLz4KPC9zdmc+';
+                            }}
+                          />
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <div>
+                    <Label htmlFor="sort-order">সর্ট অর্ডার</Label>
                     <Input
-                      id="cat_image"
-                      type="url"
-                      value={categoryForm.image_url}
-                      onChange={(e) => setCategoryForm({...categoryForm, image_url: e.target.value})}
+                      id="sort-order"
+                      type="number"
+                      value={categoryForm.sort_order}
+                      onChange={(e) => setCategoryForm({...categoryForm, sort_order: parseInt(e.target.value) || 0})}
                     />
                   </div>
                   <div className="flex items-center space-x-2">
                     <Switch
+                      id="is-active"
                       checked={categoryForm.is_active}
                       onCheckedChange={(checked) => setCategoryForm({...categoryForm, is_active: checked})}
                     />
-                    <Label>সক্রিয় রাখুন</Label>
+                    <Label htmlFor="is-active">সক্রিয়</Label>
                   </div>
-                  <Button type="submit" className="w-full" disabled={createCategoryMutation.isPending}>
-                    ক্যাটাগরি যোগ করুন
-                  </Button>
-                </form>
-              </DialogContent>
-            </Dialog>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {categories.map((category) => (
-              <Card key={category.id}>
-                <CardHeader>
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <CardTitle className="text-lg">{category.name_bengali}</CardTitle>
-                      <p className="text-sm text-gray-500">{category.name}</p>
-                    </div>
-                    <Badge variant={category.is_active ? "secondary" : "destructive"}>
-                      {category.is_active ? "সক্রিয়" : "নিষ্ক্রিয়"}
-                    </Badge>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  {category.image_url && (
-                    <img
-                      src={category.image_url}
-                      alt={category.name}
-                      className="w-full h-32 object-cover rounded mb-3"
-                    />
-                  )}
-                  <p className="text-sm text-gray-600 mb-4">{category.description}</p>
-                  <div className="flex space-x-2">
-                    <Button variant="outline" size="sm">
-                      <Edit className="w-4 h-4" />
-                    </Button>
-                    <Button variant="destructive" size="sm">
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </TabsContent>
-
-        {/* Promo Codes Tab */}
-        <TabsContent value="promos" className="space-y-6">
-          <div className="flex justify-between items-center">
-            <h3 className="text-lg font-semibold">প্রমো কোড ম্যানেজমেন্ট</h3>
-            <Dialog open={isPromoDialogOpen} onOpenChange={setIsPromoDialogOpen}>
-              <DialogTrigger asChild>
-                <Button onClick={resetPromoForm}>
-                  <Plus className="w-4 h-4 mr-2" />
-                  নতুন প্রমো কোড যোগ করুন
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>নতুন প্রমো কোড তৈরি করুন</DialogTitle>
-                </DialogHeader>
-                <form onSubmit={handlePromoSubmit} className="space-y-4">
-                  <div>
-                    <Label htmlFor="promo_code">প্রমো কোড</Label>
-                    <Input
-                      id="promo_code"
-                      value={promoForm.code}
-                      onChange={(e) => setPromoForm({...promoForm, code: e.target.value.toUpperCase()})}
-                      placeholder="SAVE20"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="discount_type">ছাড়ের ধরন</Label>
-                    <Select
-                      value={promoForm.discount_type}
-                      onValueChange={(value) => setPromoForm({...promoForm, discount_type: value})}
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="percentage">শতাংশ (%)</SelectItem>
-                        <SelectItem value="fixed">নির্দিষ্ট পরিমাণ (৳)</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <Label htmlFor="discount_value">
-                      ছাড়ের পরিমাণ {promoForm.discount_type === "percentage" ? "(%)" : "(৳)"}
-                    </Label>
-                    <Input
-                      id="discount_value"
-                      type="number"
-                      value={promoForm.discount_value}
-                      onChange={(e) => setPromoForm({...promoForm, discount_value: parseFloat(e.target.value) || 0})}
-                      required
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="min_order">সর্বনিম্ন অর্ডার পরিমাণ (৳)</Label>
-                    <Input
-                      id="min_order"
-                      type="number"
-                      value={promoForm.min_order_amount}
-                      onChange={(e) => setPromoForm({...promoForm, min_order_amount: parseFloat(e.target.value) || 0})}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="usage_limit">ব্যবহারের সীমা</Label>
-                    <Input
-                      id="usage_limit"
-                      type="number"
-                      value={promoForm.usage_limit}
-                      onChange={(e) => setPromoForm({...promoForm, usage_limit: parseInt(e.target.value) || 0})}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="expires_at">মেয়াদ উত্তীর্ণের তারিখ</Label>
-                    <Input
-                      id="expires_at"
-                      type="datetime-local"
-                      value={promoForm.expires_at}
-                      onChange={(e) => setPromoForm({...promoForm, expires_at: e.target.value})}
-                    />
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Switch
-                      checked={promoForm.is_active}
-                      onCheckedChange={(checked) => setPromoForm({...promoForm, is_active: checked})}
-                    />
-                    <Label>সক্রিয় রাখুন</Label>
-                  </div>
-                  <Button type="submit" className="w-full" disabled={createPromoMutation.isPending}>
-                    প্রমো কোড তৈরি করুন
+                  <Button 
+                    type="submit" 
+                    className="w-full"
+                    disabled={createCategoryMutation.isPending || updateCategoryMutation.isPending}
+                  >
+                    {editingCategory ? "আপডেট করুন" : "ক্যাটাগরি যোগ করুন"}
                   </Button>
                 </form>
               </DialogContent>
@@ -728,52 +649,46 @@ export default function EnhancedAdminTabs() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>কোড</TableHead>
-                    <TableHead>ধরন</TableHead>
-                    <TableHead>ছাড়</TableHead>
-                    <TableHead>সর্বনিম্ন অর্ডার</TableHead>
-                    <TableHead>ব্যবহৃত/সীমা</TableHead>
-                    <TableHead>মেয়াদ</TableHead>
+                    <TableHead>ছবি</TableHead>
+                    <TableHead>নাম (বাংলা)</TableHead>
+                    <TableHead>নাম (ইংরেজি)</TableHead>
                     <TableHead>স্ট্যাটাস</TableHead>
+                    <TableHead>সর্ট অর্ডার</TableHead>
                     <TableHead>অ্যাকশন</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {promoCodes.map((promo) => (
-                    <TableRow key={promo.id}>
-                      <TableCell className="font-mono font-bold">{promo.code}</TableCell>
+                  {categories.map((category) => (
+                    <TableRow key={category.id}>
                       <TableCell>
-                        <Badge variant="outline">
-                          {promo.discount_type === "percentage" ? "শতাংশ" : "টাকা"}
+                        <img
+                          src={category.image_url || "https://images.unsplash.com/photo-1441986300917-64674bd600d8"}
+                          alt={category.name}
+                          className="w-12 h-12 object-cover rounded"
+                        />
+                      </TableCell>
+                      <TableCell className="font-medium">{category.name_bengali}</TableCell>
+                      <TableCell>{category.name}</TableCell>
+                      <TableCell>
+                        <Badge variant={category.is_active ? "secondary" : "destructive"}>
+                          {category.is_active ? "সক্রিয়" : "নিষ্ক্রিয়"}
                         </Badge>
                       </TableCell>
-                      <TableCell>
-                        {promo.discount_type === "percentage" 
-                          ? `${promo.discount_value}%` 
-                          : formatPrice(promo.discount_value)
-                        }
-                      </TableCell>
-                      <TableCell>{formatPrice(promo.min_order_amount)}</TableCell>
-                      <TableCell>
-                        {promo.used_count}/{promo.usage_limit || "∞"}
-                      </TableCell>
-                      <TableCell>
-                        {promo.expires_at 
-                          ? new Date(promo.expires_at).toLocaleDateString('bn-BD')
-                          : "কোন মেয়াদ নেই"
-                        }
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant={promo.is_active ? "secondary" : "destructive"}>
-                          {promo.is_active ? "সক্রিয়" : "নিষ্ক্রিয়"}
-                        </Badge>
-                      </TableCell>
+                      <TableCell>{category.sort_order}</TableCell>
                       <TableCell>
                         <div className="flex space-x-2">
-                          <Button variant="outline" size="sm">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleEditCategory(category)}
+                          >
                             <Edit className="w-4 h-4" />
                           </Button>
-                          <Button variant="destructive" size="sm">
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => deleteCategoryMutation.mutate(category.id)}
+                          >
                             <Trash2 className="w-4 h-4" />
                           </Button>
                         </div>
@@ -786,135 +701,28 @@ export default function EnhancedAdminTabs() {
           </Card>
         </TabsContent>
 
+        {/* Promo Codes Tab */}
+        <TabsContent value="promo-codes" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>প্রমো কোড ম্যানেজমেন্ট</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-gray-600">প্রমো কোড ফিচার শীঘ্রই আসছে...</p>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
         {/* Settings Tab */}
         <TabsContent value="settings" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Analytics & Tracking */}
-            <Card>
-              <CardHeader>
-                <CardTitle>অ্যানালিটিক্স ও ট্র্যাকিং</CardTitle>
-                <p className="text-sm text-gray-600">গুগল অ্যানালিটিক্স ও ফেসবুক পিক্সেল সেটআপ</p>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <Label htmlFor="fb_pixel">Facebook Pixel ID</Label>
-                  <Input
-                    id="fb_pixel"
-                    value={settingsForm.fb_pixel_id}
-                    onChange={(e) => setSettingsForm({...settingsForm, fb_pixel_id: e.target.value})}
-                    placeholder="123456789012345"
-                  />
-                  <p className="text-xs text-gray-500 mt-1">Facebook Ads Manager থেকে Pixel ID নিন</p>
-                </div>
-                <div>
-                  <Label htmlFor="ga_id">Google Analytics Measurement ID</Label>
-                  <Input
-                    id="ga_id"
-                    value={settingsForm.ga_measurement_id}
-                    onChange={(e) => setSettingsForm({...settingsForm, ga_measurement_id: e.target.value})}
-                    placeholder="G-XXXXXXXXXX"
-                  />
-                  <p className="text-xs text-gray-500 mt-1">Google Analytics 4 থেকে Measurement ID নিন</p>
-                </div>
-                <Button className="w-full">
-                  <Settings className="w-4 h-4 mr-2" />
-                  অ্যানালিটিক্স সেভ করুন
-                </Button>
-              </CardContent>
-            </Card>
-
-            {/* Delivery Settings */}
-            <Card>
-              <CardHeader>
-                <CardTitle>ডেলিভারি সেটিংস</CardTitle>
-                <p className="text-sm text-gray-600">ডেলিভারি চার্জ ও যোগাযোগ তথ্য</p>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <Label htmlFor="whatsapp">WhatsApp নম্বর</Label>
-                  <Input
-                    id="whatsapp"
-                    value={settingsForm.whatsapp_number}
-                    onChange={(e) => setSettingsForm({...settingsForm, whatsapp_number: e.target.value})}
-                    placeholder="8801xxxxxxxxx"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="dhaka_fee">ঢাকায় ডেলিভারি চার্জ (৳)</Label>
-                  <Input
-                    id="dhaka_fee"
-                    type="number"
-                    value={settingsForm.delivery_fee_dhaka}
-                    onChange={(e) => setSettingsForm({...settingsForm, delivery_fee_dhaka: e.target.value})}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="outside_fee">ঢাকার বাইরে ডেলিভারি চার্জ (৳)</Label>
-                  <Input
-                    id="outside_fee"
-                    type="number"
-                    value={settingsForm.delivery_fee_outside}
-                    onChange={(e) => setSettingsForm({...settingsForm, delivery_fee_outside: e.target.value})}
-                  />
-                </div>
-                <Button className="w-full">
-                  <Settings className="w-4 h-4 mr-2" />
-                  ডেলিভারি সেটিংস সেভ করুন
-                </Button>
-              </CardContent>
-            </Card>
-
-            {/* System Info */}
-            <Card>
-              <CardHeader>
-                <CardTitle>সিস্টেম তথ্য</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="flex justify-between">
-                  <span>মোট ডাটাবেস সাইজ:</span>
-                  <Badge variant="secondary">~2.5 MB</Badge>
-                </div>
-                <div className="flex justify-between">
-                  <span>সর্বশেষ ব্যাকআপ:</span>
-                  <Badge variant="secondary">আজ 2:30 PM</Badge>
-                </div>
-                <div className="flex justify-between">
-                  <span>API স্ট্যাটাস:</span>
-                  <Badge variant="secondary">✅ সক্রিয়</Badge>
-                </div>
-                <Separator />
-                <Button variant="outline" className="w-full">
-                  <Download className="w-4 h-4 mr-2" />
-                  ডাটা এক্সপোর্ট করুন
-                </Button>
-              </CardContent>
-            </Card>
-
-            {/* Quick Actions */}
-            <Card>
-              <CardHeader>
-                <CardTitle>দ্রুত অ্যাকশন</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <Button variant="outline" className="w-full justify-start">
-                  <Globe className="w-4 h-4 mr-2" />
-                  ওয়েবসাইট দেখুন
-                </Button>
-                <Button variant="outline" className="w-full justify-start">
-                  <Facebook className="w-4 h-4 mr-2" />
-                  Facebook Page
-                </Button>
-                <Button variant="outline" className="w-full justify-start">
-                  <Instagram className="w-4 h-4 mr-2" />
-                  Instagram Profile
-                </Button>
-                <Button variant="outline" className="w-full justify-start">
-                  <MessageCircle className="w-4 h-4 mr-2" />
-                  WhatsApp Business
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
+          <Card>
+            <CardHeader>
+              <CardTitle>সাইট সেটিংস</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-gray-600">সেটিংস ফিচার শীঘ্রই আসছে...</p>
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
     </div>
