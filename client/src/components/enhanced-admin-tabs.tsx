@@ -22,23 +22,33 @@ export default function EnhancedAdminTabs() {
 
   // Form states
   const [productForm, setProductForm] = useState({
-    name: "", price: "", image_url: "", category: "", stock: 0, description: ""
+    name: "", price: "", image_url: "", category: "", stock: 0, description: "",
+    is_featured: false, is_latest: false, is_best_selling: false
   });
   const [categoryForm, setCategoryForm] = useState({
     name: "", name_bengali: "", description: "", image_url: "", is_active: true, sort_order: 0
+  });
+  
+  const [offerForm, setOfferForm] = useState({
+    title: "", description: "", image_url: "", discount_percentage: 0, 
+    min_order_amount: "", button_text: "অর্ডার করুন", button_link: "/products",
+    is_popup: false, popup_delay: 3000, active: true, expiry: ""
   });
 
   // Dialog states
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
+  const [editingOffer, setEditingOffer] = useState<any>(null);
   const [isProductDialogOpen, setIsProductDialogOpen] = useState(false);
   const [isCategoryDialogOpen, setIsCategoryDialogOpen] = useState(false);
+  const [isOfferDialogOpen, setIsOfferDialogOpen] = useState(false);
 
   // Fetch data
   const { data: orders = [] } = useQuery<Order[]>({ queryKey: ["/api/orders"] });
   const { data: products = [] } = useQuery<Product[]>({ queryKey: ["/api/products"] });
   const { data: categories = [] } = useQuery<Category[]>({ queryKey: ["/api/categories"] });
   const { data: promoCodes = [] } = useQuery<PromoCode[]>({ queryKey: ["/api/promo-codes"] });
+  const { data: offers = [] } = useQuery<any[]>({ queryKey: ["/api/offers"] });
 
   // Dashboard statistics
   const totalRevenue = orders.reduce((sum, order) => sum + Number(order.total), 0);
@@ -173,15 +183,56 @@ export default function EnhancedAdminTabs() {
     },
   });
 
+  // Offer mutations
+  const createOfferMutation = useMutation({
+    mutationFn: (offerData: any) => apiRequest("/api/offers", "POST", offerData),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/offers"] });
+      setIsOfferDialogOpen(false);
+      resetOfferForm();
+      toast({ title: "অফার সফলভাবে যোগ করা হয়েছে!" });
+    },
+  });
+
+  const updateOfferMutation = useMutation({
+    mutationFn: ({ id, ...offerData }: any) => apiRequest(`/api/offers/${id}`, "PATCH", offerData),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/offers"] });
+      setIsOfferDialogOpen(false);
+      resetOfferForm();
+      toast({ title: "অফার সফলভাবে আপডেট হয়েছে!" });
+    },
+  });
+
+  const deleteOfferMutation = useMutation({
+    mutationFn: (id: string) => apiRequest(`/api/offers/${id}`, "DELETE"),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/offers"] });
+      toast({ title: "অফার সফলভাবে ডিলিট হয়েছে!" });
+    },
+  });
+
   // Form reset functions
   const resetProductForm = () => {
-    setProductForm({ name: "", price: "", image_url: "", category: "", stock: 0, description: "" });
+    setProductForm({ 
+      name: "", price: "", image_url: "", category: "", stock: 0, description: "",
+      is_featured: false, is_latest: false, is_best_selling: false
+    });
     setEditingProduct(null);
   };
 
   const resetCategoryForm = () => {
     setCategoryForm({ name: "", name_bengali: "", description: "", image_url: "", is_active: true, sort_order: 0 });
     setEditingCategory(null);
+  };
+
+  const resetOfferForm = () => {
+    setOfferForm({
+      title: "", description: "", image_url: "", discount_percentage: 0, 
+      min_order_amount: "", button_text: "অর্ডার করুন", button_link: "/products",
+      is_popup: false, popup_delay: 3000, active: true, expiry: ""
+    });
+    setEditingOffer(null);
   };
 
   // Form submit handlers
@@ -203,6 +254,33 @@ export default function EnhancedAdminTabs() {
     }
   };
 
+  const handleOfferSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (editingOffer) {
+      updateOfferMutation.mutate({ id: editingOffer.id, ...offerForm });
+    } else {
+      createOfferMutation.mutate(offerForm);
+    }
+  };
+
+  const handleEditOffer = (offer: any) => {
+    setEditingOffer(offer);
+    setOfferForm({
+      title: offer.title || "",
+      description: offer.description || "",
+      image_url: offer.image_url || "",
+      discount_percentage: offer.discount_percentage || 0,
+      min_order_amount: offer.min_order_amount || "",
+      button_text: offer.button_text || "অর্ডার করুন",
+      button_link: offer.button_link || "/products",
+      is_popup: offer.is_popup || false,
+      popup_delay: offer.popup_delay || 3000,
+      active: offer.active !== false,
+      expiry: offer.expiry ? new Date(offer.expiry).toISOString().slice(0, 16) : ""
+    });
+    setIsOfferDialogOpen(true);
+  };
+
   const handleEditProduct = (product: Product) => {
     setEditingProduct(product);
     setProductForm({
@@ -211,7 +289,10 @@ export default function EnhancedAdminTabs() {
       image_url: product.image_url || "",
       category: product.category || "",
       stock: product.stock,
-      description: ""
+      description: product.description || "",
+      is_featured: product.is_featured || false,
+      is_latest: product.is_latest || false,
+      is_best_selling: product.is_best_selling || false
     });
     setIsProductDialogOpen(true);
   };
@@ -232,11 +313,12 @@ export default function EnhancedAdminTabs() {
   return (
     <div className="container mx-auto p-6">
       <Tabs defaultValue="dashboard" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-6">
+        <TabsList className="grid w-full grid-cols-7">
           <TabsTrigger value="dashboard">ড্যাশবোর্ড</TabsTrigger>
           <TabsTrigger value="orders">অর্ডার</TabsTrigger>
           <TabsTrigger value="products">পণ্য</TabsTrigger>
           <TabsTrigger value="categories">ক্যাটাগরি</TabsTrigger>
+          <TabsTrigger value="offers">অফার</TabsTrigger>
           <TabsTrigger value="promo-codes">প্রমো কোড</TabsTrigger>
           <TabsTrigger value="settings">সেটিংস</TabsTrigger>
         </TabsList>
@@ -450,6 +532,15 @@ export default function EnhancedAdminTabs() {
                     />
                   </div>
                   <div>
+                    <Label htmlFor="description">পণ্যের বিবরণ</Label>
+                    <Textarea
+                      id="description"
+                      value={productForm.description}
+                      onChange={(e) => setProductForm({...productForm, description: e.target.value})}
+                      placeholder="পণ্যের বিস্তারিত বিবরণ লিখুন"
+                    />
+                  </div>
+                  <div>
                     <Label htmlFor="image">পণ্যের ছবি</Label>
                     <div className="space-y-2">
                       <Input
@@ -480,6 +571,44 @@ export default function EnhancedAdminTabs() {
                       )}
                     </div>
                   </div>
+                  
+                  {/* Feature Toggles */}
+                  <div className="space-y-4 border-t pt-4">
+                    <Label className="text-base font-semibold">হোমপেজে প্রদর্শন সেটিংস</Label>
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="is_featured" className="flex items-center space-x-2">
+                        <Star className="w-4 h-4 text-yellow-500" />
+                        <span>ফিচার্ড পণ্য</span>
+                      </Label>
+                      <Switch
+                        id="is_featured"
+                        checked={productForm.is_featured}
+                        onCheckedChange={(checked) => setProductForm({...productForm, is_featured: checked})}
+                      />
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="is_latest" className="flex items-center space-x-2">
+                        <Package className="w-4 h-4 text-blue-500" />
+                        <span>নতুন পণ্য</span>
+                      </Label>
+                      <Switch
+                        id="is_latest"
+                        checked={productForm.is_latest}
+                        onCheckedChange={(checked) => setProductForm({...productForm, is_latest: checked})}
+                      />
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="is_best_selling" className="flex items-center space-x-2">
+                        <TrendingUp className="w-4 h-4 text-green-500" />
+                        <span>বেস্ট সেলিং</span>
+                      </Label>
+                      <Switch
+                        id="is_best_selling"
+                        checked={productForm.is_best_selling}
+                        onCheckedChange={(checked) => setProductForm({...productForm, is_best_selling: checked})}
+                      />
+                    </div>
+                  </div>
                   <Button 
                     type="submit" 
                     className="w-full"
@@ -502,6 +631,7 @@ export default function EnhancedAdminTabs() {
                     <TableHead>দাম</TableHead>
                     <TableHead>ক্যাটাগরি</TableHead>
                     <TableHead>স্টক</TableHead>
+                    <TableHead>ফিচার</TableHead>
                     <TableHead>তারিখ</TableHead>
                     <TableHead>অ্যাকশন</TableHead>
                   </TableRow>
@@ -525,6 +655,13 @@ export default function EnhancedAdminTabs() {
                         <Badge variant={product.stock < 5 ? "destructive" : "secondary"}>
                           {product.stock}
                         </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex flex-wrap gap-1">
+                          {product.is_featured && <Badge className="bg-yellow-500 text-black text-xs">ফিচার্ড</Badge>}
+                          {product.is_latest && <Badge className="bg-blue-500 text-xs">নতুন</Badge>}
+                          {product.is_best_selling && <Badge className="bg-green-500 text-xs">বেস্ট</Badge>}
+                        </div>
                       </TableCell>
                       <TableCell>
                         {new Date(product.created_at || Date.now()).toLocaleDateString('bn-BD')}
@@ -716,6 +853,183 @@ export default function EnhancedAdminTabs() {
           </Card>
         </TabsContent>
 
+        {/* Offers Tab */}
+        <TabsContent value="offers" className="space-y-6">
+          <div className="flex justify-between items-center">
+            <h3 className="text-lg font-semibold">অফার ম্যানেজমেন্ট</h3>
+            <Dialog open={isOfferDialogOpen} onOpenChange={setIsOfferDialogOpen}>
+              <DialogTrigger asChild>
+                <Button onClick={() => { setEditingOffer(null); resetOfferForm(); }}>
+                  <Plus className="w-4 h-4 mr-2" />
+                  নতুন অফার যোগ করুন
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle>
+                    {editingOffer ? "অফার সম্পাদনা" : "নতুন অফার যোগ করুন"}
+                  </DialogTitle>
+                </DialogHeader>
+                <form onSubmit={handleOfferSubmit} className="space-y-4">
+                  <div>
+                    <Label htmlFor="offer-title">অফারের শিরোনাম</Label>
+                    <Input
+                      id="offer-title"
+                      value={offerForm.title}
+                      onChange={(e) => setOfferForm({...offerForm, title: e.target.value})}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="offer-description">বিবরণ</Label>
+                    <Textarea
+                      id="offer-description"
+                      value={offerForm.description}
+                      onChange={(e) => setOfferForm({...offerForm, description: e.target.value})}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="discount">ছাড়ের পরিমাণ (%)</Label>
+                    <Input
+                      id="discount"
+                      type="number"
+                      min="0"
+                      max="100"
+                      value={offerForm.discount_percentage}
+                      onChange={(e) => setOfferForm({...offerForm, discount_percentage: parseInt(e.target.value) || 0})}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="min-amount">সর্বনিম্ন অর্ডার পরিমাণ</Label>
+                    <Input
+                      id="min-amount"
+                      type="number"
+                      value={offerForm.min_order_amount}
+                      onChange={(e) => setOfferForm({...offerForm, min_order_amount: e.target.value})}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="button-text">বাটনের টেক্সট</Label>
+                    <Input
+                      id="button-text"
+                      value={offerForm.button_text}
+                      onChange={(e) => setOfferForm({...offerForm, button_text: e.target.value})}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="button-link">বাটনের লিংক</Label>
+                    <Input
+                      id="button-link"
+                      value={offerForm.button_link}
+                      onChange={(e) => setOfferForm({...offerForm, button_link: e.target.value})}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="expiry">মেয়াদ শেষ</Label>
+                    <Input
+                      id="expiry"
+                      type="datetime-local"
+                      value={offerForm.expiry}
+                      onChange={(e) => setOfferForm({...offerForm, expiry: e.target.value})}
+                    />
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Switch
+                      id="is-popup"
+                      checked={offerForm.is_popup}
+                      onCheckedChange={(checked) => setOfferForm({...offerForm, is_popup: checked})}
+                    />
+                    <Label htmlFor="is-popup">পপআপ অফার</Label>
+                  </div>
+                  {offerForm.is_popup && (
+                    <div>
+                      <Label htmlFor="popup-delay">পপআপ দেরি (মিলিসেকেন্ড)</Label>
+                      <Input
+                        id="popup-delay"
+                        type="number"
+                        min="1000"
+                        value={offerForm.popup_delay}
+                        onChange={(e) => setOfferForm({...offerForm, popup_delay: parseInt(e.target.value) || 3000})}
+                      />
+                    </div>
+                  )}
+                  <div className="flex items-center space-x-2">
+                    <Switch
+                      id="offer-active"
+                      checked={offerForm.active}
+                      onCheckedChange={(checked) => setOfferForm({...offerForm, active: checked})}
+                    />
+                    <Label htmlFor="offer-active">সক্রিয়</Label>
+                  </div>
+                  <Button 
+                    type="submit" 
+                    className="w-full"
+                    disabled={createOfferMutation.isPending || updateOfferMutation.isPending}
+                  >
+                    {editingOffer ? "আপডেট করুন" : "অফার যোগ করুন"}
+                  </Button>
+                </form>
+              </DialogContent>
+            </Dialog>
+          </div>
+
+          <Card>
+            <CardContent className="p-0">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>শিরোনাম</TableHead>
+                    <TableHead>ছাড়</TableHead>
+                    <TableHead>ধরন</TableHead>
+                    <TableHead>স্ট্যাটাস</TableHead>
+                    <TableHead>মেয়াদ</TableHead>
+                    <TableHead>অ্যাকশন</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {offers.map((offer) => (
+                    <TableRow key={offer.id}>
+                      <TableCell className="font-medium">{offer.title}</TableCell>
+                      <TableCell>{offer.discount_percentage}%</TableCell>
+                      <TableCell>
+                        <Badge variant={offer.is_popup ? "default" : "secondary"}>
+                          {offer.is_popup ? "পপআপ" : "সাধারণ"}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={offer.active ? "secondary" : "destructive"}>
+                          {offer.active ? "সক্রিয়" : "নিষ্ক্রিয়"}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        {offer.expiry ? new Date(offer.expiry).toLocaleDateString('bn-BD') : "অসীম"}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex space-x-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleEditOffer(offer)}
+                          >
+                            <Edit className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => deleteOfferMutation.mutate(offer.id)}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
         {/* Promo Codes Tab */}
         <TabsContent value="promo-codes" className="space-y-6">
           <Card>
@@ -730,14 +1044,116 @@ export default function EnhancedAdminTabs() {
 
         {/* Settings Tab */}
         <TabsContent value="settings" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>সাইট সেটিংস</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-gray-600">সেটিংস ফিচার শীঘ্রই আসছে...</p>
-            </CardContent>
-          </Card>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Analytics Settings */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <TrendingUp className="w-5 h-5" />
+                  <span>অ্যানালিটিক্স সেটিংস</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <Label htmlFor="ga-id">Google Analytics Measurement ID</Label>
+                  <Input
+                    id="ga-id"
+                    placeholder="G-XXXXXXXXXX"
+                    defaultValue={import.meta.env.VITE_GA_MEASUREMENT_ID || ""}
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Google Analytics GA4 Measurement ID (উদাহরণ: G-XXXXXXXXXX)
+                  </p>
+                </div>
+                <div>
+                  <Label htmlFor="fb-pixel-id">Facebook Pixel ID</Label>
+                  <Input
+                    id="fb-pixel-id"
+                    placeholder="123456789012345"
+                    defaultValue={import.meta.env.VITE_FB_PIXEL_ID || ""}
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Facebook Pixel ID (১৫ ডিজিটের সংখ্যা)
+                  </p>
+                </div>
+                <div className="border-t pt-4">
+                  <h4 className="font-semibold mb-2">বর্তমান স্ট্যাটাস</h4>
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span>Google Analytics</span>
+                      <Badge variant={import.meta.env.VITE_GA_MEASUREMENT_ID ? "secondary" : "destructive"}>
+                        {import.meta.env.VITE_GA_MEASUREMENT_ID ? "সংযুক্ত" : "সংযুক্ত নয়"}
+                      </Badge>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span>Facebook Pixel</span>
+                      <Badge variant={import.meta.env.VITE_FB_PIXEL_ID ? "secondary" : "destructive"}>
+                        {import.meta.env.VITE_FB_PIXEL_ID ? "সংযুক্ত" : "সংযুক্ত নয়"}
+                      </Badge>
+                    </div>
+                  </div>
+                </div>
+                <div className="bg-blue-50 p-3 rounded-md">
+                  <p className="text-sm text-blue-800">
+                    <strong>নোট:</strong> Analytics IDs পরিবর্তনের জন্য Secrets tab ব্যবহার করুন।
+                    VITE_GA_MEASUREMENT_ID এবং VITE_FB_PIXEL_ID যোগ করুন।
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Site Settings */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <Settings className="w-5 h-5" />
+                  <span>সাইট সেটিংস</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <Label htmlFor="site-name">সাইটের নাম</Label>
+                  <Input
+                    id="site-name"
+                    defaultValue="Trynex Lifestyle"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="site-tagline">ট্যাগলাইন</Label>
+                  <Input
+                    id="site-tagline"
+                    defaultValue="আপনার প্রিয় লাইফস্টাইল পার্টনার"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="whatsapp-number">হোয়াটসঅ্যাপ নম্বর</Label>
+                  <Input
+                    id="whatsapp-number"
+                    defaultValue="+8801XXXXXXXXX"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="delivery-charge">ডেলিভারি চার্জ (ঢাকার ভিতরে)</Label>
+                  <Input
+                    id="delivery-charge"
+                    type="number"
+                    defaultValue="60"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="delivery-charge-outside">ডেলিভারি চার্জ (ঢাকার বাইরে)</Label>
+                  <Input
+                    id="delivery-charge-outside"
+                    type="number"
+                    defaultValue="120"
+                  />
+                </div>
+                <Button className="w-full">
+                  সেটিংস সেভ করুন
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
       </Tabs>
     </div>

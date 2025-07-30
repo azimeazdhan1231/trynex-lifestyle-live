@@ -6,11 +6,11 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ShoppingCart, MessageCircle, Eye } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { PRODUCT_CATEGORIES, formatPrice, createWhatsAppUrl } from "@/lib/constants";
+import { formatPrice, createWhatsAppUrl } from "@/lib/constants";
 import ProductModal from "@/components/product-modal";
 import Header from "@/components/header";
 import { useCart } from "@/hooks/use-cart";
-import type { Product } from "@shared/schema";
+import type { Product, Category } from "@shared/schema";
 
 export default function ProductsPage() {
   const [selectedCategory, setSelectedCategory] = useState("all");
@@ -19,22 +19,15 @@ export default function ProductsPage() {
   const { toast } = useToast();
   const { addToCart, totalItems } = useCart();
 
+  // Load products and categories
   const { data: products = [], isLoading, error } = useQuery<Product[]>({
-    queryKey: ["/api/products", selectedCategory],
-    queryFn: async () => {
-      try {
-        const url = selectedCategory === "all" ? "/api/products" : `/api/products?category=${selectedCategory}`;
-        const response = await fetch(url);
-        if (!response.ok) {
-          throw new Error(`Failed to fetch products: ${response.status}`);
-        }
-        const data = await response.json();
-        return Array.isArray(data) ? data : [];
-      } catch (error) {
-        console.error("Product loading error:", error);
-        return [];
-      }
-    },
+    queryKey: ["/api/products"],
+    retry: 3,
+    retryDelay: 1000,
+  });
+
+  const { data: categories = [] } = useQuery<Category[]>({
+    queryKey: ["/api/categories"],
     retry: 3,
     retryDelay: 1000,
   });
@@ -42,7 +35,11 @@ export default function ProductsPage() {
   // Filter products by category
   const productsFiltered = selectedCategory === "all" 
     ? products 
-    : products.filter(product => product.category === selectedCategory);
+    : products.filter(product => {
+        // First try to match by category id, then by category name
+        return product.category === selectedCategory || 
+               categories.find(cat => cat.id === selectedCategory)?.name === product.category;
+      });
 
   const handleAddToCart = (product: Product) => {
     if (product.stock === 0) {
@@ -153,14 +150,22 @@ export default function ProductsPage() {
 
           {/* Product Filter */}
           <div className="flex flex-wrap justify-center gap-4 mb-8">
-            {PRODUCT_CATEGORIES.map((category) => (
+            <Button
+              key="all"
+              variant={selectedCategory === "all" ? "default" : "outline"}
+              onClick={() => setSelectedCategory("all")}
+              className="rounded-full font-medium"
+            >
+              সব পণ্য
+            </Button>
+            {categories.filter(cat => cat.is_active).map((category) => (
               <Button
                 key={category.id}
                 variant={selectedCategory === category.id ? "default" : "outline"}
                 onClick={() => setSelectedCategory(category.id)}
                 className="rounded-full font-medium"
               >
-                {category.name}
+                {category.name_bengali}
               </Button>
             ))}
           </div>
@@ -169,8 +174,8 @@ export default function ProductsPage() {
           <div className="text-center mb-6">
             <p className="text-gray-600">
               {selectedCategory === "all" 
-                ? `সর্বমোট ${products.length} টি পণ্য`
-                : `${products.length} টি পণ্য "${PRODUCT_CATEGORIES.find(c => c.id === selectedCategory)?.name}" ক্যাটেগরিতে`
+                ? `সর্বমোট ${productsFiltered.length} টি পণ্য`
+                : `${productsFiltered.length} টি পণ্য "${categories.find(c => c.id === selectedCategory)?.name_bengali}" ক্যাটেগরিতে`
               }
             </p>
           </div>

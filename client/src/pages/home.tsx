@@ -1,15 +1,16 @@
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowRight, Gift, MessageCircle, ArrowUp } from "lucide-react";
+import { ArrowRight, Gift, MessageCircle, ArrowUp, Star, Clock, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import Header from "@/components/header";
-import ProductGrid from "@/components/product-grid";
 import TrackingSection from "@/components/tracking-section";
+import PopupOffer from "../components/popup-offer";
 import { useToast } from "@/hooks/use-toast";
 import { useCart } from "@/hooks/use-cart";
-import { COMPANY_NAME, COMPANY_TAGLINE, WHATSAPP_NUMBER, createWhatsAppUrl } from "@/lib/constants";
+import { Link } from "wouter";
+import { COMPANY_NAME, COMPANY_TAGLINE, WHATSAPP_NUMBER, createWhatsAppUrl, formatPrice } from "@/lib/constants";
 import type { Product, Offer } from "@shared/schema";
 
 export default function Home() {
@@ -21,6 +22,16 @@ export default function Home() {
   const { data: offers = [] } = useQuery<Offer[]>({
     queryKey: ["/api/offers", "active=true"],
   });
+
+  // Load products for homepage sections
+  const { data: products = [] } = useQuery<Product[]>({
+    queryKey: ["/api/products"],
+  });
+
+  // Filter products for different sections
+  const featuredProducts = products.filter(p => p.is_featured).slice(0, 4);
+  const latestProducts = products.filter(p => p.is_latest).slice(0, 4);
+  const bestSellingProducts = products.filter(p => p.is_best_selling).slice(0, 4);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -56,6 +67,7 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-gray-50">
       <Header cartCount={totalItems} onCartOpen={() => {}} />
+      <PopupOffer />
 
       {/* Hero Section */}
       <section id="hero" className="bg-gradient-to-r from-primary to-emerald-700 text-white py-20 mt-16">
@@ -87,8 +99,71 @@ export default function Home() {
         </section>
       )}
 
-      {/* Product Grid */}
-      <ProductGrid onAddToCart={handleAddToCart} />
+      {/* Featured Products Section */}
+      {featuredProducts.length > 0 && (
+        <section className="py-16 bg-white">
+          <div className="container mx-auto px-4">
+            <div className="flex items-center justify-between mb-8">
+              <div className="flex items-center space-x-3">
+                <Star className="w-8 h-8 text-yellow-500" />
+                <h3 className="text-3xl font-bold text-gray-800">ফিচার্ড পণ্য</h3>
+              </div>
+              <Button asChild variant="outline">
+                <Link href="/products">সব দেখুন</Link>
+              </Button>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {featuredProducts.map((product) => (
+                <ProductCard key={product.id} product={product} onAddToCart={handleAddToCart} />
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Latest Products Section */}
+      {latestProducts.length > 0 && (
+        <section className="py-16 bg-gray-50">
+          <div className="container mx-auto px-4">
+            <div className="flex items-center justify-between mb-8">
+              <div className="flex items-center space-x-3">
+                <Clock className="w-8 h-8 text-blue-500" />
+                <h3 className="text-3xl font-bold text-gray-800">নতুন পণ্য</h3>
+              </div>
+              <Button asChild variant="outline">
+                <Link href="/products">সব দেখুন</Link>
+              </Button>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {latestProducts.map((product) => (
+                <ProductCard key={product.id} product={product} onAddToCart={handleAddToCart} />
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Best Selling Products Section */}
+      {bestSellingProducts.length > 0 && (
+        <section className="py-16 bg-white">
+          <div className="container mx-auto px-4">
+            <div className="flex items-center justify-between mb-8">
+              <div className="flex items-center space-x-3">
+                <TrendingUp className="w-8 h-8 text-green-500" />
+                <h3 className="text-3xl font-bold text-gray-800">বেস্ট সেলিং</h3>
+              </div>
+              <Button asChild variant="outline">
+                <Link href="/products">সব দেখুন</Link>
+              </Button>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {bestSellingProducts.map((product) => (
+                <ProductCard key={product.id} product={product} onAddToCart={handleAddToCart} />
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Order Tracking */}
       <TrackingSection />
@@ -179,5 +254,68 @@ export default function Home() {
         )}
       </div>
     </div>
+  );
+}
+
+// Product Card Component
+interface ProductCardProps {
+  product: Product;
+  onAddToCart: (product: Product) => void;
+}
+
+function ProductCard({ product, onAddToCart }: ProductCardProps) {
+  const { toast } = useToast();
+
+  const handleWhatsAppOrder = () => {
+    const message = `আমি ${product.name} কিনতে চাই। দাম ${formatPrice(product.price)}`;
+    window.open(createWhatsAppUrl(message), '_blank');
+  };
+
+  return (
+    <Card className="overflow-hidden hover:shadow-lg transition-all duration-300 group">
+      <div className="aspect-square overflow-hidden relative">
+        <img
+          src={product.image_url || "https://images.unsplash.com/photo-1544787219-7f47ccb76574?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"}
+          alt={product.name}
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+        />
+        {product.stock === 0 && (
+          <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+            <Badge variant="destructive" className="text-white">স্টক নেই</Badge>
+          </div>
+        )}
+        {product.is_featured && (
+          <Badge className="absolute top-2 left-2 bg-yellow-500 text-black">ফিচার্ড</Badge>
+        )}
+        {product.is_latest && (
+          <Badge className="absolute top-2 right-2 bg-blue-500">নতুন</Badge>
+        )}
+        {product.is_best_selling && (
+          <Badge className="absolute bottom-2 left-2 bg-green-500">বেস্ট সেলার</Badge>
+        )}
+      </div>
+      <CardContent className="p-4">
+        <h4 className="font-semibold text-lg mb-2 line-clamp-2">{product.name}</h4>
+        <p className="text-2xl font-bold text-primary mb-4">{formatPrice(product.price)}</p>
+        
+        <div className="flex gap-2">
+          <Button
+            onClick={() => onAddToCart(product)}
+            disabled={product.stock === 0}
+            className="flex-1 bg-primary hover:bg-primary/90"
+          >
+            কার্টে যোগ করুন
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleWhatsAppOrder}
+            className="text-green-600 border-green-600 hover:bg-green-50"
+          >
+            <MessageCircle className="w-4 h-4" />
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
   );
 }

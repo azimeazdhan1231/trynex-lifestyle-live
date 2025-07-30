@@ -10,6 +10,10 @@ export const products = pgTable("products", {
   image_url: text("image_url"),
   category: text("category"),
   stock: integer("stock").notNull().default(0),
+  description: text("description"),
+  is_featured: boolean("is_featured").default(false),
+  is_latest: boolean("is_latest").default(false),
+  is_best_selling: boolean("is_best_selling").default(false),
   created_at: timestamp("created_at").defaultNow(),
 });
 
@@ -32,6 +36,13 @@ export const offers = pgTable("offers", {
   id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
   title: text("title").notNull(),
   description: text("description"),
+  image_url: text("image_url"),
+  discount_percentage: integer("discount_percentage").default(0),
+  min_order_amount: numeric("min_order_amount").default("0"),
+  button_text: text("button_text").default("অর্ডার করুন"),
+  button_link: text("button_link").default("/products"),
+  is_popup: boolean("is_popup").default(false),
+  popup_delay: integer("popup_delay").default(3000), // milliseconds
   expiry: timestamp("expiry"),
   active: boolean("active").default(true),
   created_at: timestamp("created_at").defaultNow(),
