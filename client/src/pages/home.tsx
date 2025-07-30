@@ -8,26 +8,14 @@ import Header from "@/components/header";
 import ProductGrid from "@/components/product-grid";
 import TrackingSection from "@/components/tracking-section";
 import { useToast } from "@/hooks/use-toast";
+import { useCart } from "@/hooks/use-cart";
 import { COMPANY_NAME, COMPANY_TAGLINE, WHATSAPP_NUMBER, createWhatsAppUrl } from "@/lib/constants";
 import type { Product, Offer } from "@shared/schema";
 
-interface CartItem {
-  id: string;
-  name: string;
-  price: number;
-  quantity: number;
-}
-
 export default function Home() {
-  const [cart, setCart] = useState<CartItem[]>(() => {
-    if (typeof window !== 'undefined') {
-      const stored = localStorage.getItem('trynex-cart');
-      return stored ? JSON.parse(stored) : [];
-    }
-    return [];
-  });
   const [showScrollTop, setShowScrollTop] = useState(false);
   const { toast } = useToast();
+  const { addToCart, totalItems } = useCart();
 
   // Load active offers
   const { data: offers = [] } = useQuery<Offer[]>({
@@ -42,29 +30,16 @@ export default function Home() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const updateCart = (newCart: CartItem[]) => {
-    setCart(newCart);
-    localStorage.setItem('trynex-cart', JSON.stringify(newCart));
-  };
-
-  const addToCart = (product: Product) => {
-    const existingItem = cart.find(item => item.id === product.id);
-    if (existingItem) {
-      const newCart = cart.map(item =>
-        item.id === product.id 
-          ? { ...item, quantity: item.quantity + 1 }
-          : item
-      );
-      updateCart(newCart);
-    } else {
-      const newCart = [...cart, {
-        id: product.id,
-        name: product.name,
-        price: Number(product.price),
-        quantity: 1,
-      }];
-      updateCart(newCart);
-    }
+  const handleAddToCart = (product: Product) => {
+    addToCart({
+      id: product.id,
+      name: product.name,
+      price: Number(product.price),
+    });
+    toast({
+      title: "কার্টে যোগ করা হয়েছে",
+      description: `${product.name} কার্টে যোগ করা হয়েছে`,
+    });
   };
 
   const scrollToProducts = () => {
@@ -78,11 +53,9 @@ export default function Home() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const totalCartItems = cart.reduce((sum, item) => sum + item.quantity, 0);
-
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header cartCount={totalCartItems} onCartOpen={() => {}} />
+      <Header cartCount={totalItems} onCartOpen={() => {}} />
       
       {/* Hero Section */}
       <section id="hero" className="bg-gradient-to-r from-primary to-emerald-700 text-white py-20 mt-16">
@@ -115,7 +88,7 @@ export default function Home() {
       )}
 
       {/* Product Grid */}
-      <ProductGrid onAddToCart={addToCart} />
+      <ProductGrid onAddToCart={handleAddToCart} />
 
       {/* Order Tracking */}
       <TrackingSection />

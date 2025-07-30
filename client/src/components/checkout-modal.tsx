@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -43,6 +43,9 @@ export default function CheckoutModal({ isOpen, onClose, cart, onOrderComplete }
   const createOrderMutation = useMutation({
     mutationFn: async (orderData: any) => {
       const response = await apiRequest("POST", "/api/orders", orderData);
+      if (!response.ok) {
+        throw new Error('Order creation failed');
+      }
       return response.json();
     },
     onSuccess: (order: Order) => {
@@ -61,6 +64,7 @@ export default function CheckoutModal({ isOpen, onClose, cart, onOrderComplete }
       });
     },
     onError: (error) => {
+      console.error('Order creation error:', error);
       toast({
         title: "অর্ডার ব্যর্থ",
         description: "অর্ডার প্রক্রিয়ায় সমস্যা হয়েছে। আবার চেষ্টা করুন।",
@@ -81,12 +85,22 @@ export default function CheckoutModal({ isOpen, onClose, cart, onOrderComplete }
       return;
     }
 
+    if (cart.length === 0) {
+      toast({
+        title: "কার্ট খালি",
+        description: "অর্ডার করার জন্য কার্টে পণ্য যোগ করুন।",
+        variant: "destructive",
+      });
+      return;
+    }
+
     const orderData = {
       ...formData,
       items: cart,
       total: totalPrice.toString(),
     };
 
+    console.log('Submitting order:', orderData);
     createOrderMutation.mutate(orderData);
   };
 
@@ -99,6 +113,9 @@ export default function CheckoutModal({ isOpen, onClose, cart, onOrderComplete }
       <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>অর্ডার সম্পূর্ণ করুন</DialogTitle>
+          <DialogDescription>
+            আপনার ডেলিভারি তথ্য দিয়ে অর্ডার সম্পূর্ণ করুন
+          </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">

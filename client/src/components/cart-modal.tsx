@@ -1,18 +1,12 @@
 import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { ShoppingCart, Plus, Minus, Trash2 } from "lucide-react";
 import { formatPrice } from "@/lib/constants";
+import { useCart } from "@/hooks/use-cart";
 import CheckoutModal from "@/components/checkout-modal";
-
-interface CartItem {
-  id: string;
-  name: string;
-  price: number;
-  quantity: number;
-}
 
 interface CartModalProps {
   isOpen: boolean;
@@ -20,39 +14,8 @@ interface CartModalProps {
 }
 
 export default function CartModal({ isOpen, onClose }: CartModalProps) {
-  const [cart, setCart] = useState<CartItem[]>(() => {
-    if (typeof window !== 'undefined') {
-      const stored = localStorage.getItem('trynex-cart');
-      return stored ? JSON.parse(stored) : [];
-    }
-    return [];
-  });
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
-
-  const updateCart = (newCart: CartItem[]) => {
-    setCart(newCart);
-    localStorage.setItem('trynex-cart', JSON.stringify(newCart));
-  };
-
-  const updateQuantity = (id: string, change: number) => {
-    const newCart = cart.map(item => {
-      if (item.id === id) {
-        const newQuantity = Math.max(0, item.quantity + change);
-        return newQuantity === 0 ? null : { ...item, quantity: newQuantity };
-      }
-      return item;
-    }).filter(Boolean) as CartItem[];
-    
-    updateCart(newCart);
-  };
-
-  const removeItem = (id: string) => {
-    const newCart = cart.filter(item => item.id !== id);
-    updateCart(newCart);
-  };
-
-  const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
-  const totalPrice = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  const { cart, updateQuantity, removeFromCart, totalItems, totalPrice, clearCart } = useCart();
 
   const handleCheckout = () => {
     onClose();
@@ -68,6 +31,9 @@ export default function CartModal({ isOpen, onClose }: CartModalProps) {
               <ShoppingCart className="w-5 h-5" />
               আপনার কার্ট
             </DialogTitle>
+            <DialogDescription>
+              আপনার নির্বাচিত পণ্যসমূহ দেখুন এবং চেকআউট করুন
+            </DialogDescription>
           </DialogHeader>
 
           {cart.length === 0 ? (
@@ -92,7 +58,7 @@ export default function CartModal({ isOpen, onClose }: CartModalProps) {
                       <Button
                         size="sm"
                         variant="outline"
-                        onClick={() => updateQuantity(item.id, -1)}
+                        onClick={() => updateQuantity(item.id, item.quantity - 1)}
                         className="w-8 h-8 p-0"
                       >
                         <Minus className="w-4 h-4" />
@@ -103,7 +69,7 @@ export default function CartModal({ isOpen, onClose }: CartModalProps) {
                       <Button
                         size="sm"
                         variant="outline"
-                        onClick={() => updateQuantity(item.id, 1)}
+                        onClick={() => updateQuantity(item.id, item.quantity + 1)}
                         className="w-8 h-8 p-0"
                       >
                         <Plus className="w-4 h-4" />
@@ -111,7 +77,7 @@ export default function CartModal({ isOpen, onClose }: CartModalProps) {
                       <Button
                         size="sm"
                         variant="outline"
-                        onClick={() => removeItem(item.id)}
+                        onClick={() => removeFromCart(item.id)}
                         className="w-8 h-8 p-0 text-red-500 hover:text-red-700"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -144,7 +110,7 @@ export default function CartModal({ isOpen, onClose }: CartModalProps) {
         onClose={() => setIsCheckoutOpen(false)}
         cart={cart}
         onOrderComplete={() => {
-          updateCart([]);
+          clearCart();
           setIsCheckoutOpen(false);
         }}
       />
