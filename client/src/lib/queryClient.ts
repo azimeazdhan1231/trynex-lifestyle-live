@@ -6,12 +6,15 @@ const API_BASE = typeof window !== 'undefined' && window.location.hostname === '
   ? 'http://localhost:5000' 
   : '';
 
-// Enhanced API request function with better error handling
+// Enhanced API request function with better error handling and timeout
 export async function apiRequest(
   method: "GET" | "POST" | "PUT" | "DELETE",
   endpoint: string,
   data?: any
 ): Promise<Response> {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+
   try {
     const url = `${API_BASE}${endpoint}`;
     
@@ -21,6 +24,7 @@ export async function apiRequest(
         "Content-Type": "application/json",
       },
       credentials: 'same-origin',
+      signal: controller.signal,
     };
 
     if (data && method !== "GET") {
@@ -30,6 +34,7 @@ export async function apiRequest(
     console.log(`Making ${method} request to ${url}`);
     
     const response = await fetch(url, config);
+    clearTimeout(timeoutId);
     
     // Log response for debugging
     console.log(`Response: ${response.status} ${response.statusText}`);
@@ -50,7 +55,13 @@ export async function apiRequest(
 
     return response;
   } catch (error) {
+    clearTimeout(timeoutId);
     console.error("Network error:", error);
+    
+    // Handle abort/timeout
+    if (error instanceof Error && error.name === 'AbortError') {
+      throw new Error('অনুরোধ সময়সীমা অতিক্রম করেছে। অনুগ্রহ করে আবার চেষ্টা করুন।');
+    }
     
     // For offline scenarios or network issues
     if (error instanceof TypeError && error.message === 'Failed to fetch') {
@@ -68,16 +79,16 @@ export const queryClient = new QueryClient({
       staleTime: 5 * 60 * 1000, // 5 minutes
       gcTime: 10 * 60 * 1000, // 10 minutes (formerly cacheTime)
       retry: (failureCount, error) => {
-        // Don't retry on 4xx errors
-        if (error instanceof Error && error.message.includes('4')) {
+        // Don't retry on 4xx errors or auth endpoints
+        if (error instanceof Error && (error.message.includes('4') || error.message.includes('auth'))) {
           return false;
         }
-        return failureCount < 3;
+        return failureCount < 2; // Reduced retries
       },
-      retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+      retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 5000), // Shorter delays
       refetchOnWindowFocus: false,
-      refetchOnReconnect: true,
-      networkMode: 'offlineFirst',
+      refetchOnReconnect: false,
+      networkMode: 'online', // Changed to online mode
     },
     mutations: {
       retry: (failureCount, error) => {
@@ -85,10 +96,10 @@ export const queryClient = new QueryClient({
         if (error instanceof Error && error.message.includes('4')) {
           return false;
         }
-        return failureCount < 2;
+        return failureCount < 1; // Reduced mutation retries
       },
-      retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
-      networkMode: 'offlineFirst',
+      retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 5000),
+      networkMode: 'online',
     },
   },
 });

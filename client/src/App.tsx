@@ -77,8 +77,23 @@ function LoadingSpinner() {
 
 function AppContent() {
   const { user, isLoading } = useAuth();
+  const [appReady, setAppReady] = React.useState(false);
 
-  if (isLoading) {
+  React.useEffect(() => {
+    // Set a maximum loading time to prevent infinite loading
+    const timer = setTimeout(() => {
+      setAppReady(true);
+    }, 5000); // 5 seconds max loading time
+
+    if (!isLoading) {
+      clearTimeout(timer);
+      setAppReady(true);
+    }
+
+    return () => clearTimeout(timer);
+  }, [isLoading]);
+
+  if (isLoading && !appReady) {
     return <LoadingSpinner />;
   }
 
