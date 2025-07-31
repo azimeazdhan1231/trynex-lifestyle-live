@@ -129,26 +129,28 @@ export default function Header({ cartCount, onCartOpen }: HeaderProps) {
       </header>
 
       <CartModal isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
-      
+
       {/* Search Modal */}
       <Sheet open={isSearchOpen} onOpenChange={setIsSearchOpen}>
-        <SheetContent side="top" className="h-auto max-h-[80vh] overflow-y-auto">
-          <div className="space-y-4 mt-6">
-            <h2 className="text-xl font-semibold text-center">পণ্য খুঁজুন</h2>
-            <p className="text-sm text-gray-600 text-center">যে কোনো পণ্য খুঁজে নিন সহজেই</p>
+        <SheetContent side="top" className="h-auto max-h-[90vh] overflow-y-auto">
+          <div className="space-y-6 mt-6">
+            <div className="text-center">
+              <h2 className="text-2xl font-bold text-gray-800 mb-2">পণ্য খুঁজুন</h2>
+              <p className="text-gray-600">রিয়েল-টাইম সার্চ - টাইপ করুন এবং তাৎক্ষণিক ফলাফল পান</p>
+            </div>
             <SearchBar
               onProductSelect={(product) => {
                 setSelectedProduct(product);
                 setIsProductModalOpen(true);
                 setIsSearchOpen(false);
               }}
-              placeholder="পণ্য খুঁজুন... (নাম, ক্যাটেগরি, বিবরণ)"
-              className="mx-auto"
+              placeholder="পণ্যের নাম, ক্যাটেগরি বা বর্ণনা লিখুন..."
+              className="w-full"
             />
           </div>
         </SheetContent>
       </Sheet>
-      
+
       {/* Product Modal from Search */}
       {selectedProduct && (
         <ProductModal
