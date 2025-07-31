@@ -185,8 +185,7 @@ export default function ProductModal({ product, isOpen, onClose, onAddToCart, on
             <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
               <h4 className="font-semibold text-blue-900 mb-2">পণ্যের বিবরণ:</h4>
               <p className="text-sm text-blue-800">
-                {product.name} একটি উচ্চমানের পণ্য যা আপনার প্রত্যাশা পূরণ করবে। 
-                আমাদের সকল পণ্য যত্নসহকারে নির্বাচিত এবং মান নিয়ন্ত্রিত।
+                {product.description || `${product.name} একটি উচ্চমানের পণ্য যা আপনার প্রত্যাশা পূরণ করবে। আমাদের সকল পণ্য যত্নসহকারে নির্বাচিত এবং মান নিয়ন্ত্রিত।`}
               </p>
             </div>
 

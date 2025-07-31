@@ -55,13 +55,14 @@ export default function Products() {
   useAnalytics();
   const { toast } = useToast();
 
-  // Fetch products with advanced caching
+  // Ultra-fast products loading with aggressive caching
   const { data: products = [], isLoading: productsLoading } = useQuery<Product[]>({
     queryKey: ["/api/products"],
-    staleTime: 1000 * 60 * 10, // 10 minutes cache
-    gcTime: 1000 * 60 * 30, // 30 minutes in memory
+    staleTime: 1000 * 60 * 30, // 30 minutes cache
+    gcTime: 1000 * 60 * 60, // 1 hour in memory
     refetchOnWindowFocus: false,
-    retry: 2,
+    retry: 1,
+    refetchOnMount: false, // Don't refetch on mount if data exists
   });
 
   // Fetch categories
@@ -115,10 +116,22 @@ export default function Products() {
       }
     });
 
-  // Handle pagination and "View More" functionality
+  // Handle pagination and "View More" functionality with performance optimization
   useEffect(() => {
-    setDisplayedProducts(processedProducts.slice(0, PRODUCTS_PER_PAGE));
+    const initialProducts = processedProducts.slice(0, PRODUCTS_PER_PAGE);
+    setDisplayedProducts(initialProducts);
     setCurrentPage(1);
+    
+    // Preload next batch of images for smoother "View More" experience
+    if (processedProducts.length > PRODUCTS_PER_PAGE) {
+      const nextBatch = processedProducts.slice(PRODUCTS_PER_PAGE, PRODUCTS_PER_PAGE * 2);
+      nextBatch.forEach(product => {
+        if (product.image_url) {
+          const img = new Image();
+          img.src = product.image_url;
+        }
+      });
+    }
   }, [processedProducts]);
 
   const handleViewMore = useCallback(() => {
@@ -179,8 +192,10 @@ export default function Products() {
   };
 
   const handleViewProduct = (product: Product) => {
+    console.log("Opening product modal for:", product.name);
     setSelectedProduct(product);
     setShowProductModal(true);
+    // Track product view immediately
     import("@/lib/analytics").then(({ trackProductView }) => {
       trackProductView(product.id, product.name, product.category || "uncategorized");
     });
@@ -199,18 +214,18 @@ export default function Products() {
     );
   };
 
-  // Loading state
-  if (productsLoading && displayedProducts.length === 0) {
+  // Optimized loading state - only show if no cached data
+  if (productsLoading && products.length === 0) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
         <Header cartCount={0} onCartOpen={() => {}} />
         <div className="container mx-auto px-4 py-8 mt-20">
           <div className="animate-pulse space-y-8">
             <div className="h-12 bg-gray-200 rounded-lg w-1/3 mx-auto"></div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {[...Array(12)].map((_, i) => (
-                <div key={i} className="bg-white rounded-xl shadow-md p-4">
-                  <div className="h-80 bg-gray-200 rounded-lg mb-4"></div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {[...Array(8)].map((_, i) => (
+                <div key={i} className="bg-white rounded-2xl shadow-md p-4">
+                  <div className="aspect-[1/1.2] bg-gray-200 rounded-t-lg mb-4"></div>
                   <div className="space-y-3">
                     <div className="h-4 bg-gray-200 rounded"></div>
                     <div className="h-4 bg-gray-200 rounded w-2/3"></div>
@@ -423,11 +438,12 @@ export default function Products() {
         )}
       </div>
 
-      {/* Modals */}
+      {/* Product Modal - Optimized for fast opening */}
       <ProductModal
         product={selectedProduct}
         isOpen={showProductModal}
         onClose={() => {
+          console.log("Closing product modal");
           setShowProductModal(false);
           setSelectedProduct(null);
         }}
@@ -582,11 +598,21 @@ function PremiumProductGrid({
               className="aspect-[1/1.2] overflow-hidden bg-gray-50 cursor-pointer relative rounded-t-2xl"
               onClick={() => onViewProduct(product)}
             >
-              <LazyImage
-                src={product.image_url || "https://via.placeholder.com/500x600/f3f4f6/9ca3af?text=No+Image"}
-                alt={product.name}
-                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-              />
+              {product.image_url ? (
+                <LazyImage
+                  src={product.image_url}
+                  alt={product.name}
+                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                  loading="lazy"
+                />
+              ) : (
+                <div className="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
+                  <div className="text-center text-gray-500">
+                    <Package className="w-16 h-16 mx-auto mb-2 opacity-50" />
+                    <span className="text-sm">ছবি লোড হচ্ছে...</span>
+                  </div>
+                </div>
+              )}
               
               {/* Premium Overlay */}
               <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center justify-center">
