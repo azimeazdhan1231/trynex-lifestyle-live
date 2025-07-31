@@ -56,12 +56,12 @@ export default function Header({ cartCount, onCartOpen }: HeaderProps) {
   return (
     <>
       <header className="bg-white shadow-lg fixed top-0 left-0 right-0 z-50">        
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
+        <div className="container mx-auto px-2 sm:px-4 lg:px-8">
+          <div className="flex justify-between items-center h-14 sm:h-16">
             {/* Logo */}
-            <div className="flex items-center">
+            <div className="flex items-center flex-shrink-0">
           <Link href="/">
-            <h1 className="text-2xl font-bold text-primary cursor-pointer hover:text-primary/80 transition-colors">
+            <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-primary cursor-pointer hover:text-primary/80 transition-colors whitespace-nowrap">
               {COMPANY_NAME}
             </h1>
           </Link>
@@ -85,25 +85,25 @@ export default function Header({ cartCount, onCartOpen }: HeaderProps) {
             </nav>
 
             {/* Search, Cart and Mobile Menu */}
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-2 sm:space-x-4">
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => setIsSearchOpen(true)}
-                className="p-2 text-gray-700 hover:text-primary transition-colors"
+                className="p-1.5 sm:p-2 text-gray-700 hover:text-primary transition-colors"
               >
-                <Search className="h-6 w-6" />
+                <Search className="h-5 w-5 sm:h-6 sm:w-6" />
               </Button>
 
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => setIsCartOpen(true)}
-                className="relative p-2 text-gray-700 hover:text-primary transition-colors"
+                className="relative p-1.5 sm:p-2 text-gray-700 hover:text-primary transition-colors"
               >
-                <ShoppingCart className="h-6 w-6" />
+                <ShoppingCart className="h-5 w-5 sm:h-6 sm:w-6" />
                 {cartCount > 0 && (
-                  <span className="absolute -top-2 -right-2 bg-secondary text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                  <span className="absolute -top-1 -right-1 sm:-top-2 sm:-right-2 bg-secondary text-white text-xs rounded-full h-4 w-4 sm:h-5 sm:w-5 flex items-center justify-center text-[10px] sm:text-xs">
                     {cartCount}
                   </span>
                 )}
@@ -162,17 +162,19 @@ export default function Header({ cartCount, onCartOpen }: HeaderProps) {
                       </DropdownMenuContent>
                     </DropdownMenu>
                   ) : (
-                    <div className="flex items-center space-x-2">
-                      <Button asChild variant="outline" size="sm">
+                    <div className="flex items-center space-x-1 sm:space-x-2">
+                      <Button asChild variant="outline" size="sm" className="text-xs sm:text-sm px-2 sm:px-3">
                         <Link href="/auth">
-                          <User className="mr-2 h-4 w-4" />
-                          লগইন
+                          <User className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
+                          <span className="hidden xs:inline">লগইন</span>
+                          <span className="xs:hidden">লগইন</span>
                         </Link>
                       </Button>
-                      <Button asChild variant="default" size="sm">
+                      <Button asChild variant="default" size="sm" className="text-xs sm:text-sm px-2 sm:px-3">
                         <a href="/api/login">
-                          <User className="mr-2 h-4 w-4" />
-                          দ্রুত লগইন
+                          <User className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
+                          <span className="hidden sm:inline">দ্রুত লগইন</span>
+                          <span className="sm:hidden">লগইন</span>
                         </a>
                       </Button>
                     </div>
@@ -183,8 +185,8 @@ export default function Header({ cartCount, onCartOpen }: HeaderProps) {
               {/* Mobile Menu */}
               <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
                 <SheetTrigger asChild>
-                  <Button variant="ghost" size="sm" className="md:hidden">
-                    <Menu className="h-6 w-6" />
+                  <Button variant="ghost" size="sm" className="md:hidden p-1.5">
+                    <Menu className="h-5 w-5" />
                   </Button>
                 </SheetTrigger>
                 <SheetContent side="left" className="w-[300px] sm:w-[400px]">
