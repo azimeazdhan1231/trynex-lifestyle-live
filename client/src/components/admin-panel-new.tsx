@@ -101,11 +101,11 @@ export default function AdminPanelNew() {
   const { data: orders = [], isLoading: ordersLoading, error: ordersError } = useQuery<Order[]>({ 
     queryKey: ["/api/orders"]
   });
-  
+
   const { data: products = [], isLoading: productsLoading, error: productsError } = useQuery<Product[]>({ 
     queryKey: ["/api/products"]
   });
-  
+
   const { data: categories = [], isLoading: categoriesLoading, error: categoriesError } = useQuery<Category[]>({ 
     queryKey: ["/api/categories"]
   });
@@ -130,7 +130,7 @@ export default function AdminPanelNew() {
     const orderTotal = Number(order.total) || 0;
     return sum + orderTotal;
   }, 0) : 0;
-  
+
   const totalOrders = Array.isArray(orders) ? orders.length : 0;
   const pendingOrders = Array.isArray(orders) ? orders.filter((order: Order) => order.status === "pending").length : 0;
   const totalProducts = Array.isArray(products) ? products.length : 0;
@@ -252,7 +252,7 @@ export default function AdminPanelNew() {
     const file = e.target.files?.[0];
     if (file) {
       setSelectedImage(file);
-      
+
       // Create preview URL
       const reader = new FileReader();
       reader.onload = (e) => {
@@ -316,7 +316,7 @@ export default function AdminPanelNew() {
   const handleSubmitProduct = async () => {
     try {
       let finalProductForm = { ...productForm };
-      
+
       // If there's a selected image, it's already converted to base64 in handleImageChange
       if (selectedImage && imagePreview) {
         finalProductForm.image_url = imagePreview;
@@ -382,6 +382,42 @@ export default function AdminPanelNew() {
     if (confirm("আপনি কি নিশ্চিত যে এই ক্যাটাগরিটি মুছে ফেলতে চান?")) {
       deleteCategoryMutation.mutate(id);
     }
+  };
+
+  const openProductDialog = (product?: Product) => {
+    if (product) {
+      setProductForm({
+        name: product.name,
+        price: product.price.toString(),
+        image_url: product.image_url || "",
+        category: product.category || "",
+        stock: product.stock,
+        description: product.description || "",
+        is_featured: product.is_featured || false,
+        is_latest: product.is_latest || false,
+        is_best_selling: product.is_best_selling || false,
+      });
+      setEditingProduct(product);
+      // Clear any local file selections when editing
+      setSelectedImage(null);
+      setImagePreview("");
+    } else {
+      setProductForm({
+        name: "", 
+        price: "", 
+        image_url: "", 
+        category: "", 
+        stock: 0, 
+        description: "",
+        is_featured: false, 
+        is_latest: false, 
+        is_best_selling: false
+      });
+      setEditingProduct(null);
+      setSelectedImage(null);
+      setImagePreview("");
+    }
+    setIsProductDialogOpen(true);
   };
 
   return (
@@ -610,14 +646,23 @@ export default function AdminPanelNew() {
                 </CardTitle>
                 <Dialog open={isProductDialogOpen} onOpenChange={setIsProductDialogOpen}>
                   <DialogTrigger asChild>
-                    <Button onClick={() => { setEditingProduct(null); resetProductForm(); }}>
+                    <Button onClick={() => { openProductDialog(); }}>
                       <Plus className="w-4 h-4 mr-2" />
                       নতুন পণ্য
                     </Button>
                   </DialogTrigger>
                   <DialogContent className="max-w-md mx-auto">
                     <DialogHeader>
-                      <DialogTitle>{editingProduct ? 'পণ্য সম্পাদনা' : 'নতুন পণ্য যোগ'}</DialogTitle>
+                      <DialogTitle>
+                        {editingProduct ? "পণ্য সম্পাদনা" : "নতুন পণ্য যোগ করুন"}
+                      </DialogTitle>
+                      {editingProduct && editingProduct.image_url && !editingProduct.image_url.startsWith('http') && (
+                        <div className="bg-orange-100 p-3 rounded-lg border border-orange-200 mt-2">
+                          <p className="text-sm text-orange-800">
+                            ⚠️ এই পণ্যটি ডেটাবেস ইমেজ ব্যবহার করছে। পারফরমেন্সের জন্য ক্লাউড URL-এ পরিবর্তন করুন।
+                          </p>
+                        </div>
+                      )}
                     </DialogHeader>
                     <div className="space-y-4 max-h-96 overflow-y-auto">
                       <div>
@@ -794,7 +839,7 @@ export default function AdminPanelNew() {
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                onClick={() => handleEditProduct(product)}
+                                onClick={() => openProductDialog(product)}
                               >
                                 <Edit2 className="w-4 h-4" />
                               </Button>
@@ -1177,7 +1222,7 @@ export default function AdminPanelNew() {
                     </div>
                   </div>
                 </div>
-                
+
                 <div>
                   <h3 className="text-lg font-semibold mb-4">অ্যানালিটিক্স</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
