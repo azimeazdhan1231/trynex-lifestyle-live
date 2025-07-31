@@ -372,107 +372,96 @@ export default function TrackingPage() {
                               </div>
                             )}
 
-                            {/* Handle customImages array (multiple images) */}
-                            {item.customization.customImages && Array.isArray(item.customization.customImages) && item.customization.customImages.length > 0 && (
-                              <div className="mt-3">
-                                <div className="flex items-start gap-2">
-                                  <Package className="w-4 h-4 text-blue-600 mt-1" />
-                                  <div className="flex-1">
-                                    <span className="font-medium text-blue-800">কাস্টম ইমেজসমূহ ({item.customization.customImages.length}টি):</span>
-                                    <div className="grid grid-cols-3 gap-2 mt-2">
-                                      {item.customization.customImages.map((imageUrl: string, imgIndex: number) => (
-                                        <div key={imgIndex} className="relative group">
-                                          <img 
-                                            src={imageUrl} 
-                                            alt={`Custom Design ${imgIndex + 1}`}
-                                            className="w-full h-20 object-cover rounded-lg border cursor-pointer hover:opacity-80 transition-opacity"
-                                            onClick={() => window.open(imageUrl, '_blank')}
-                                          />
-                                          <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 rounded-lg transition-all flex items-center justify-center">
-                                            <span className="text-white text-xs opacity-0 group-hover:opacity-100 transition-opacity">
-                                              ইমেজ {imgIndex + 1}
-                                            </span>
-                                          </div>
-                                        </div>
-                                      ))}
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            )}
+                            {/* Custom Images - Unified handling */}
+                            {(() => {
+                              // Collect all possible image sources
+                              const images = [];
+                              
+                              // From customization.customImages (array)
+                              if (item.customization?.customImages && Array.isArray(item.customization.customImages)) {
+                                images.push(...item.customization.customImages);
+                              }
+                              
+                              // From customization.customImage (single)
+                              if (item.customization?.customImage && typeof item.customization.customImage === 'string') {
+                                images.push(item.customization.customImage);
+                              }
+                              
+                              // From direct customImages (fallback)
+                              if (item.customImages && Array.isArray(item.customImages)) {
+                                images.push(...item.customImages);
+                              }
+                              
+                              // From direct customImage (fallback)
+                              if (item.customImage && typeof item.customImage === 'string') {
+                                images.push(item.customImage);
+                              }
 
-                            {/* Handle direct customImages in item (fallback) */}
-                            {item.customImages && Array.isArray(item.customImages) && item.customImages.length > 0 && (
-                              <div className="mt-3">
-                                <div className="flex items-start gap-2">
-                                  <Package className="w-4 h-4 text-blue-600 mt-1" />
-                                  <div className="flex-1">
-                                    <span className="font-medium text-blue-800">আপলোড করা ইমেজসমূহ ({item.customImages.length}টি):</span>
-                                    <div className="grid grid-cols-3 gap-2 mt-2">
-                                      {item.customImages.map((imageUrl: string, imgIndex: number) => (
-                                        <div key={imgIndex} className="relative group">
-                                          <img 
-                                            src={imageUrl} 
-                                            alt={`Uploaded ${imgIndex + 1}`}
-                                            className="w-full h-20 object-cover rounded-lg border cursor-pointer hover:opacity-80 transition-opacity"
-                                            onClick={() => window.open(imageUrl, '_blank')}
-                                          />
-                                          <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 rounded-lg transition-all flex items-center justify-center">
-                                            <span className="text-white text-xs opacity-0 group-hover:opacity-100 transition-opacity">
-                                              ইমেজ {imgIndex + 1}
-                                            </span>
-                                          </div>
-                                        </div>
-                                      ))}
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            )}
+                              // Remove duplicates and empty values
+                              const uniqueImages = [...new Set(images.filter(img => img && img.trim()))];
 
-                            {/* Single Custom Image (legacy support) */}
-                            {item.customization.customImage && !item.customization.customImages && (
-                              <div className="mt-3">
-                                <div className="flex items-start gap-2">
-                                  <Package className="w-4 h-4 text-blue-600 mt-1" />
-                                  <div className="flex-1">
-                                    <span className="font-medium text-blue-800">কাস্টম ছবি:</span>
-                                    <div className="mt-2">
-                                      {typeof item.customization.customImage === 'string' ? (
-                                        <img 
-                                          src={item.customization.customImage} 
-                                          alt="Custom uploaded image" 
-                                          className="w-32 h-32 object-cover rounded-lg border cursor-pointer hover:opacity-80 transition-opacity"
-                                          onClick={() => window.open(item.customization.customImage, '_blank')}
-                                        />
-                                      ) : item.customization.customImage.url ? (
-                                        <img 
-                                          src={item.customization.customImage.url} 
-                                          alt="Custom uploaded image" 
-                                          className="w-32 h-32 object-cover rounded-lg border cursor-pointer hover:opacity-80 transition-opacity"
-                                          onClick={() => window.open(item.customization.customImage.url, '_blank')}
-                                        />
-                                      ) : (
-                                        <div className="bg-white p-3 rounded-lg border text-sm">
-                                          <p className="text-green-600 font-medium">
-                                            {item.customization.customImage.name || "ছবি আপলোড করা হয়েছে"}
-                                          </p>
-                                        </div>
-                                      )}
-                                      <p className="text-sm text-blue-600 mt-1 cursor-pointer hover:underline"
-                                         onClick={() => {
-                                           const imageUrl = typeof item.customization.customImage === 'string' 
-                                             ? item.customization.customImage 
-                                             : item.customization.customImage.url;
-                                           if (imageUrl) window.open(imageUrl, '_blank');
-                                         }}>
-                                        ক্লিক করে বড় করে দেখুন
+                              if (uniqueImages.length === 0) return null;
+
+                              return (
+                                <div className="mt-3">
+                                  <div className="flex items-start gap-2">
+                                    <Package className="w-4 h-4 text-blue-600 mt-1" />
+                                    <div className="flex-1">
+                                      <span className="font-medium text-blue-800">
+                                        কাস্টম ইমেজসমূহ ({uniqueImages.length}টি):
+                                      </span>
+                                      <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-2">
+                                        {uniqueImages.map((imageUrl: string, imgIndex: number) => (
+                                          <div key={imgIndex} className="relative group">
+                                            <img 
+                                              src={imageUrl} 
+                                              alt={`Custom Design ${imgIndex + 1}`}
+                                              className="w-full h-20 object-cover rounded-lg border cursor-pointer hover:opacity-80 transition-opacity"
+                                              onClick={() => {
+                                                // Create a proper image preview instead of opening in new tab
+                                                const modal = document.createElement('div');
+                                                modal.className = 'fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-[9999] p-4';
+                                                modal.innerHTML = `
+                                                  <div class="relative max-w-4xl max-h-full">
+                                                    <img src="${imageUrl}" alt="Preview" class="max-w-full max-h-full object-contain rounded-lg">
+                                                    <button class="absolute top-2 right-2 bg-white rounded-full p-2 hover:bg-gray-100" onclick="this.closest('.fixed').remove()">
+                                                      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                                      </svg>
+                                                    </button>
+                                                  </div>
+                                                `;
+                                                document.body.appendChild(modal);
+                                                modal.addEventListener('click', (e) => {
+                                                  if (e.target === modal) modal.remove();
+                                                });
+                                              }}
+                                              onError={(e) => {
+                                                const target = e.target as HTMLImageElement;
+                                                target.style.display = 'none';
+                                                const fallback = target.nextElementSibling as HTMLElement;
+                                                if (fallback) fallback.style.display = 'flex';
+                                              }}
+                                            />
+                                            <div className="hidden w-full h-20 bg-gray-200 rounded-lg border items-center justify-center">
+                                              <Package className="w-6 h-6 text-gray-400" />
+                                            </div>
+                                            <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 rounded-lg transition-all flex items-center justify-center">
+                                              <span className="text-white text-xs opacity-0 group-hover:opacity-100 transition-opacity">
+                                                ইমেজ {imgIndex + 1}
+                                              </span>
+                                            </div>
+                                          </div>
+                                        ))}
+                                      </div>
+                                      <p className="text-sm text-blue-600 mt-2">
+                                        ইমেজে ক্লিক করে বড় করে দেখুন
                                       </p>
                                     </div>
                                   </div>
                                 </div>
-                              </div>
-                            )}
+                              );
+                            })()}
 
                             {item.customization.specialInstructions && (
                               <div className="mt-3">

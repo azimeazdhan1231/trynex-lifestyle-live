@@ -1,29 +1,25 @@
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
-import { Plus, Edit, Trash2, Eye, Package, ShoppingCart, TrendingUp, Users, Gift, Tag, Settings, DollarSign, Star, BarChart3 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { ORDER_STATUSES, PRODUCT_CATEGORIES, formatPrice } from "@/lib/constants";
-import AnalyticsAdmin from "@/components/analytics-admin";
-import type { Product, Order, Category, PromoCode } from "@shared/schema";
-import OrderDetailsModal from "./order-details-modal";
+import { Plus, Edit2, Trash2, Eye, Package, Users, TrendingUp, Settings, Gift, Tag, Code, BarChart3, Archive, Calendar, Phone, MapPin, Banknote, User, Hash, CheckCircle, Clock } from "lucide-react";
+import { ORDER_STATUSES, formatPrice } from "@/lib/constants";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import OrderDetailsModal from "@/components/order-details-modal";
+import type { Product, Order, Offer, Category, PromoCode, Analytics, SiteSettings } from "@shared/schema";
 
 export default function EnhancedAdminTabs() {
+  const [activeTab, setActiveTab] = useState("dashboard");
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [orderDetailsOpen, setOrderDetailsOpen] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -189,6 +185,33 @@ export default function EnhancedAdminTabs() {
       toast({ title: "অর্ডার স্ট্যাটাস আপডেট হয়েছে" });
     },
   });
+
+  const handleUpdateOrderStatus = async (orderId: string, newStatus: string) => {
+    try {
+      await fetch(`/api/orders/${orderId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: newStatus }),
+      });
+
+      queryClient.invalidateQueries({ queryKey: ["/api/orders"] });
+      toast({
+        title: "সফল",
+        description: "অর্ডার স্ট্যাটাস আপডেট হয়েছে",
+      });
+    } catch (error) {
+      toast({
+        title: "ত্রুটি",
+        description: "অর্ডার স্ট্যাটাস আপডেট করতে সমস্যা হয়েছে",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleViewOrderDetails = (order: Order) => {
+    setSelectedOrder(order);
+    setOrderDetailsOpen(true);
+  };
 
   // Offer mutations
   const createOfferMutation = useMutation({
@@ -465,18 +488,14 @@ export default function EnhancedAdminTabs() {
                         {new Date(order.created_at || Date.now()).toLocaleDateString('bn-BD')}
                       </TableCell>
                       <TableCell>
-                            <div className="flex gap-2">
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => setSelectedOrderId(order.id)}
-                                className="flex items-center gap-1"
-                              >
-                                <Eye className="w-4 h-4" />
-                                দেখুন
-                              </Button>
-                            </div>
-                          </TableCell>
+                                <Button 
+                                  size="sm" 
+                                  variant="outline"
+                                  onClick={() => handleViewOrderDetails(order)}
+                                >
+                                  <Eye className="w-4 h-4" />
+                                </Button>
+                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -741,7 +760,7 @@ export default function EnhancedAdminTabs() {
                       onChange={(e) => setCategoryForm({...categoryForm, name: e.target.value})}
                       required
                     />
-                  </div>
+</div>
                   <div>
                     <Label htmlFor="category-name-bengali">ক্যাটাগরির নাম (বাংলা)</Label>
                     <Input
@@ -1186,11 +1205,8 @@ export default function EnhancedAdminTabs() {
       {/* Order Details Modal */}
       <OrderDetailsModal
         order={selectedOrder} 
-        isOpen={isOrderDetailsOpen}
-        onClose={() => {
-          setIsOrderDetailsOpen(false);
-          setSelectedOrder(null);
-        }} 
+        isOpen={orderDetailsOpen}
+        onClose={() => setOrderDetailsOpen(false)} 
       />
     </div>
   );
