@@ -55,15 +55,25 @@ export default function Products() {
   useAnalytics();
   const { toast } = useToast();
 
-  // Ultra-fast products loading with aggressive caching
-  const { data: products = [], isLoading: productsLoading } = useQuery<Product[]>({
+  // ULTRA-FAST products loading with instant cache
+  const { data: products = [], isLoading: productsLoading, error } = useQuery<Product[]>({
     queryKey: ["/api/products"],
-    staleTime: 1000 * 60 * 30, // 30 minutes cache
-    gcTime: 1000 * 60 * 60, // 1 hour in memory
+    staleTime: Infinity, // Never consider data stale - cache forever until manual refresh
+    gcTime: Infinity, // Keep in memory forever
     refetchOnWindowFocus: false,
-    retry: 1,
-    refetchOnMount: false, // Don't refetch on mount if data exists
+    refetchOnMount: false,
+    retry: false, // Don't retry failed requests
+    networkMode: 'offlineFirst', // Use cache first, network second
   });
+
+  // Debug loading performance
+  useEffect(() => {
+    if (!productsLoading && products.length > 0) {
+      console.log("⚡ Products loaded instantly from cache:", products.length, "products");
+    } else if (productsLoading) {
+      console.log("🔄 Loading products from API...");
+    }
+  }, [productsLoading, products.length]);
 
   // Fetch categories
   const { data: categories = [] } = useQuery<Category[]>({
@@ -191,17 +201,29 @@ export default function Products() {
     }
   };
 
-  const handleViewProduct = (product: Product) => {
-    console.log("🔍 Opening product modal for:", product.name, product);
-    console.log("🔍 Current modal state:", showProductModal);
+  const handleViewProduct = useCallback((product: Product) => {
+    console.log("🚀 MODAL TRIGGER: Opening product modal for:", product.name);
+    console.log("🚀 MODAL STATE BEFORE:", { showProductModal, selectedProduct });
+    
+    // Prevent any default navigation
+    if (window.event) {
+      window.event.preventDefault();
+      window.event.stopPropagation();
+    }
+    
+    // Force modal state update
     setSelectedProduct(product);
     setShowProductModal(true);
-    console.log("🔍 Modal should now be open");
-    // Track product view immediately
-    import("@/lib/analytics").then(({ trackProductView }) => {
-      trackProductView(product.id, product.name, product.category || "uncategorized");
-    });
-  };
+    
+    console.log("🚀 MODAL STATE AFTER: Modal should be open");
+    
+    // Track product view
+    setTimeout(() => {
+      import("@/lib/analytics").then(({ trackProductView }) => {
+        trackProductView(product.id, product.name, product.category || "uncategorized");
+      });
+    }, 100);
+  }, [showProductModal, selectedProduct]);
 
   const handleCustomizeProduct = (product: Product) => {
     setSelectedProduct(product);
@@ -593,7 +615,10 @@ function PremiumProductGrid({
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
       {products.map((product) => (
-        <Card key={product.id} className="group overflow-hidden hover:shadow-2xl transition-all duration-500 border-0 shadow-lg bg-white transform hover:-translate-y-2 rounded-2xl">
+        <Card 
+          key={product.id} 
+          className="group overflow-hidden hover:shadow-2xl transition-all duration-500 border-0 shadow-lg bg-white transform hover:-translate-y-2 rounded-2xl"
+        >
           <div className="relative">
             {/* Much Bigger Product Image */}
             <div 
@@ -601,9 +626,13 @@ function PremiumProductGrid({
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                console.log("🖱️ Image clicked for product:", product.name);
+                e.nativeEvent?.stopImmediatePropagation();
+                console.log("🖱️ IMAGE CLICK:", product.name);
                 onViewProduct(product);
+                return false;
               }}
+              onMouseDown={(e) => e.preventDefault()}
+              onTouchStart={(e) => e.preventDefault()}
             >
               {product.image_url ? (
                 <LazyImage
