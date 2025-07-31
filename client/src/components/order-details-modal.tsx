@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -57,7 +56,7 @@ export default function OrderDetailsModal({ isOpen, onClose, order }: OrderDetai
 
   const handleDownloadImage = async (imageUrl: string, filename: string) => {
     if (!imageUrl || !imageUrl.trim()) return;
-    
+
     try {
       const response = await fetch(imageUrl);
       const blob = await response.blob();
@@ -304,70 +303,93 @@ export default function OrderDetailsModal({ isOpen, onClose, order }: OrderDetai
                             </div>
                           )}
 
-                          {/* Custom Images */}
-                          {(() => {
-                            // Collect all possible image sources
-                            const images = [];
-                            
-                            // From customization.customImages (array)
-                            if (item.customization?.customImages && Array.isArray(item.customization.customImages)) {
-                              images.push(...item.customization.customImages);
-                            }
-                            
-                            // From customization.customImage (single)
-                            if (item.customization?.customImage && typeof item.customization.customImage === 'string') {
-                              images.push(item.customization.customImage);
-                            }
-                            
-                            // From direct customImages (fallback)
-                            if (item.customImages && Array.isArray(item.customImages)) {
-                              images.push(...item.customImages);
-                            }
-                            
-                            // From direct customImage (fallback)
-                            if (item.customImage && typeof item.customImage === 'string') {
-                              images.push(item.customImage);
-                            }
+                          {/* All Custom Images - Handle multiple formats */}
+                    {(() => {
+                      const images = [];
 
-                            // Remove duplicates and empty values
-                            const uniqueImages = [...new Set(images.filter(img => img && img.trim()))];
+                      // Collect from various sources
+                      if (item.customization) {
+                        if (Array.isArray(item.customization.customImages)) {
+                          images.push(...item.customization.customImages);
+                        }
+                        if (item.customization.customImage && typeof item.customization.customImage === 'string') {
+                          images.push(item.customization.customImage);
+                        }
+                      }
 
-                            if (uniqueImages.length === 0) return null;
+                      // Fallback sources
+                      if (Array.isArray(item.customImages)) {
+                        images.push(...item.customImages);
+                      }
+                      if (item.customImage && typeof item.customImage === 'string') {
+                        images.push(item.customImage);
+                      }
 
-                            return (
-                              <div className="mb-4">
-                                <div className="flex items-start gap-2">
-                                  <Package className="w-4 h-4 text-blue-600 mt-1" />
-                                  <div className="flex-1">
-                                    <span className="font-medium text-blue-800">
-                                      কাস্টম ইমেজসমূহ ({uniqueImages.length}টি):
-                                    </span>
-                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mt-2">
-                                      {uniqueImages.map((imageUrl: string, imgIndex: number) => 
-                                        renderImage(imageUrl, `Custom Image ${imgIndex + 1}`, imgIndex)
-                                      )}
-                                    </div>
-                                    
-                                    {/* Download All Images Button */}
-                                    <div className="flex gap-2 mt-3">
-                                      {uniqueImages.map((imageUrl: string, imgIndex: number) => (
-                                        <Button
-                                          key={imgIndex}
-                                          size="sm"
-                                          variant="outline"
-                                          onClick={() => handleDownloadImage(imageUrl, `custom-${order.tracking_id}-${index}-${imgIndex}.jpg`)}
-                                          className="flex items-center gap-1 text-xs"
-                                        >
-                                          <Download className="w-3 h-3" />
-                                          ইমেজ {imgIndex + 1}
-                                        </Button>
-                                      ))}
-                                    </div>
-                                  </div>
+                      const uniqueImages = [...new Set(images)]
+                        .filter(img => img && typeof img === 'string' && img.trim())
+                        .map(img => img.trim());
+
+                      if (uniqueImages.length === 0) return null;
+
+                      const showFullImage = (imageUrl: string) => {
+                        const overlay = document.createElement('div');
+                        overlay.className = 'fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-[99999] p-4 cursor-pointer';
+                        overlay.innerHTML = `
+                          <div class="relative max-w-[95vw] max-h-[95vh]">
+                            <img src="${imageUrl}" alt="Preview" class="max-w-full max-h-full object-contain rounded-lg">
+                            <button class="absolute -top-12 right-0 bg-white text-black rounded-full p-3 hover:bg-gray-100" onclick="this.closest('.fixed').remove()">
+                              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                              </svg>
+                            </button>
+                          </div>
+                        `;
+                        document.body.appendChild(overlay);
+                        overlay.addEventListener('click', (e) => {
+                          if (e.target === overlay) overlay.remove();
+                        });
+                      };
+
+                      return (
+                        <div className="mt-2">
+                          <span className="text-sm font-medium text-gray-700">
+                            কাস্টম ইমেজ ({uniqueImages.length}টি):
+                          </span>
+                          <div className="grid grid-cols-3 gap-2 mt-2">
+                            {uniqueImages.map((imageUrl: string, imgIndex: number) => (
+                              <div key={imgIndex} className="relative group">
+                                <img 
+                                  src={imageUrl} 
+                                  alt={`Custom ${imgIndex + 1}`}
+                                  className="w-20 h-20 object-cover rounded border cursor-pointer hover:opacity-80 transition-opacity"
+                                  onClick={() => showFullImage(imageUrl)}
+                                  onError={(e) => {
+                                    const target = e.target as HTMLImageElement;
+                                    target.style.display = 'none';
+                                    const parent = target.parentElement;
+                                    if (parent) {
+                                      parent.innerHTML = `
+                                        <div class="w-20 h-20 bg-gray-200 rounded border flex items-center justify-center">
+                                          <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                          </svg>
+                                        </div>
+                                      `;
+                                    }
+                                  }}
+                                />
+                                <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 rounded transition-all flex items-center justify-center">
+                                  <span className="text-white text-xs opacity-0 group-hover:opacity-100 transition-opacity">
+                                    {imgIndex + 1}
+                                  </span>
                                 </div>
                               </div>
-                            );
-                          })()}
+                            ))}
+                          </div>
+                          <p className="text-xs text-blue-600 mt-1">ক্লিক করে বড় করে দেখুন</p>
+                        </div>
+                      );
+                    })()}
 
                           {/* No customization message */}
                           {!item.customization && !item.customText && !item.specialInstructions && !item.customImages && !item.customImage && (

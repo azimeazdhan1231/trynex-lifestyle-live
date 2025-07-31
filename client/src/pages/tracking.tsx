@@ -372,89 +372,126 @@ export default function TrackingPage() {
                               </div>
                             )}
 
-                            {/* Custom Images - Unified handling */}
+                            {/* All Custom Images - Unified handling with better fallback */}
                             {(() => {
-                              // Collect all possible image sources
+                              // Collect all possible image sources from various fields
                               const images = [];
                               
-                              // From customization.customImages (array)
-                              if (item.customization?.customImages && Array.isArray(item.customization.customImages)) {
-                                images.push(...item.customization.customImages);
+                              // From customization object
+                              if (item.customization) {
+                                if (Array.isArray(item.customization.customImages)) {
+                                  images.push(...item.customization.customImages);
+                                }
+                                if (item.customization.customImage && typeof item.customization.customImage === 'string') {
+                                  images.push(item.customization.customImage);
+                                }
                               }
                               
-                              // From customization.customImage (single)
-                              if (item.customization?.customImage && typeof item.customization.customImage === 'string') {
-                                images.push(item.customization.customImage);
-                              }
-                              
-                              // From direct customImages (fallback)
-                              if (item.customImages && Array.isArray(item.customImages)) {
+                              // From item level (fallback)
+                              if (Array.isArray(item.customImages)) {
                                 images.push(...item.customImages);
                               }
-                              
-                              // From direct customImage (fallback)
                               if (item.customImage && typeof item.customImage === 'string') {
                                 images.push(item.customImage);
                               }
 
-                              // Remove duplicates and empty values
-                              const uniqueImages = [...new Set(images.filter(img => img && img.trim()))];
+                              // Remove duplicates, empty values, and invalid URLs
+                              const uniqueImages = [...new Set(images)]
+                                .filter(img => img && typeof img === 'string' && img.trim())
+                                .map(img => img.trim());
 
                               if (uniqueImages.length === 0) return null;
+
+                              const showImage = (imageUrl: string) => {
+                                const overlay = document.createElement('div');
+                                overlay.className = 'fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-[99999] p-4 cursor-pointer';
+                                overlay.innerHTML = `
+                                  <div class="relative max-w-[95vw] max-h-[95vh] flex items-center justify-center">
+                                    <img 
+                                      src="${imageUrl}" 
+                                      alt="Preview" 
+                                      class="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
+                                      style="max-width: 95vw; max-height: 95vh;"
+                                    >
+                                    <button 
+                                      class="absolute -top-12 right-0 bg-white text-black rounded-full p-3 hover:bg-gray-100 transition-colors shadow-lg" 
+                                      onclick="this.closest('.fixed').remove()"
+                                      title="বন্ধ করুন"
+                                    >
+                                      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                      </svg>
+                                    </button>
+                                  </div>
+                                `;
+                                document.body.appendChild(overlay);
+                                overlay.addEventListener('click', (e) => {
+                                  if (e.target === overlay) overlay.remove();
+                                });
+                                
+                                // ESC key to close
+                                const handleEsc = (e: KeyboardEvent) => {
+                                  if (e.key === 'Escape') {
+                                    overlay.remove();
+                                    document.removeEventListener('keydown', handleEsc);
+                                  }
+                                };
+                                document.addEventListener('keydown', handleEsc);
+                              };
 
                               return (
                                 <div className="mt-3">
                                   <div className="flex items-start gap-2">
-                                    <Package className="w-4 h-4 text-blue-600 mt-1" />
+                                    <Package className="w-4 h-4 text-blue-600 mt-1 flex-shrink-0" />
                                     <div className="flex-1">
                                       <span className="font-medium text-blue-800">
                                         কাস্টম ইমেজসমূহ ({uniqueImages.length}টি):
                                       </span>
-                                      <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-2">
+                                      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 mt-3">
                                         {uniqueImages.map((imageUrl: string, imgIndex: number) => (
-                                          <div key={imgIndex} className="relative group">
+                                          <div key={imgIndex} className="relative group border rounded-lg overflow-hidden bg-gray-50">
                                             <img 
                                               src={imageUrl} 
                                               alt={`Custom Design ${imgIndex + 1}`}
-                                              className="w-full h-20 object-cover rounded-lg border cursor-pointer hover:opacity-80 transition-opacity"
-                                              onClick={() => {
-                                                // Create a proper image preview instead of opening in new tab
-                                                const modal = document.createElement('div');
-                                                modal.className = 'fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-[9999] p-4';
-                                                modal.innerHTML = `
-                                                  <div class="relative max-w-4xl max-h-full">
-                                                    <img src="${imageUrl}" alt="Preview" class="max-w-full max-h-full object-contain rounded-lg">
-                                                    <button class="absolute top-2 right-2 bg-white rounded-full p-2 hover:bg-gray-100" onclick="this.closest('.fixed').remove()">
-                                                      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                                                      </svg>
-                                                    </button>
-                                                  </div>
-                                                `;
-                                                document.body.appendChild(modal);
-                                                modal.addEventListener('click', (e) => {
-                                                  if (e.target === modal) modal.remove();
-                                                });
-                                              }}
+                                              className="w-full h-24 object-cover cursor-pointer transition-all duration-200 group-hover:scale-105"
+                                              onClick={() => showImage(imageUrl)}
                                               onError={(e) => {
                                                 const target = e.target as HTMLImageElement;
                                                 target.style.display = 'none';
-                                                const fallback = target.nextElementSibling as HTMLElement;
-                                                if (fallback) fallback.style.display = 'flex';
+                                                const parent = target.parentElement;
+                                                if (parent) {
+                                                  parent.innerHTML = `
+                                                    <div class="w-full h-24 bg-gray-200 flex flex-col items-center justify-center text-gray-500">
+                                                      <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                                      </svg>
+                                                      <span class="text-xs">ইমেজ লোড করা যায়নি</span>
+                                                    </div>
+                                                  `;
+                                                }
                                               }}
+                                              loading="lazy"
                                             />
-                                            <div className="hidden w-full h-20 bg-gray-200 rounded-lg border items-center justify-center">
-                                              <Package className="w-6 h-6 text-gray-400" />
+                                            <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-200 flex items-center justify-center">
+                                              <div className="bg-white bg-opacity-90 rounded-full p-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <svg className="w-4 h-4 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
+                                                </svg>
+                                              </div>
                                             </div>
-                                            <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 rounded-lg transition-all flex items-center justify-center">
-                                              <span className="text-white text-xs opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/50 to-transparent p-2">
+                                              <span className="text-white text-xs font-medium">
                                                 ইমেজ {imgIndex + 1}
                                               </span>
                                             </div>
                                           </div>
                                         ))}
                                       </div>
-                                      <p className="text-sm text-blue-600 mt-2">
+                                      <p className="text-sm text-blue-600 mt-2 flex items-center gap-1">
+                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                        </svg>
                                         ইমেজে ক্লিক করে বড় করে দেখুন
                                       </p>
                                     </div>

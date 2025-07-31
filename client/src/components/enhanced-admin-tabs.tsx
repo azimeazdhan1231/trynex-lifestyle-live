@@ -10,10 +10,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Edit2, Trash2, Eye, Package, Users, TrendingUp, Settings, Gift, Tag, Code, BarChart3, Archive, Calendar, Phone, MapPin, Banknote, User, Hash, CheckCircle, Clock } from "lucide-react";
-import { ORDER_STATUSES, formatPrice } from "@/lib/constants";
+import { useOrderNotifications } from "@/hooks/use-order-notifications";
+import { Plus, Edit2, Trash2, Eye, Package, Users, TrendingUp, Settings, Gift, Tag, Code, BarChart3, Archive, Calendar, Phone, MapPin, Banknote, User, Hash, CheckCircle, Clock, Bell, BellRing, DollarSign, ShoppingCart, Star, Edit } from "lucide-react";
+import { ORDER_STATUSES, formatPrice, PRODUCT_CATEGORIES } from "@/lib/constants";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import OrderDetailsModal from "@/components/order-details-modal";
+import AnalyticsAdmin from "@/components/analytics-admin";
 import type { Product, Order, Offer, Category, PromoCode, Analytics, SiteSettings } from "@shared/schema";
 
 export default function EnhancedAdminTabs() {
@@ -22,6 +25,27 @@ export default function EnhancedAdminTabs() {
   const [orderDetailsOpen, setOrderDetailsOpen] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  
+  // Order notifications
+  const { 
+    orders: notificationOrders, 
+    newOrdersCount, 
+    requestNotificationPermission, 
+    hasNotificationPermission 
+  } = useOrderNotifications();
+
+  // Initialize notifications on mount
+  useEffect(() => {
+    // Auto-request notification permission
+    requestNotificationPermission();
+    
+    // Show welcome message
+    toast({
+      title: "🎯 অ্যাডমিন প্যানেল সক্রিয়",
+      description: "নতুন অর্ডারের জন্য রিয়েল-টাইম নোটিফিকেশন চালু আছে",
+      duration: 5000,
+    });
+  }, []);
 
   // Form states
   const [productForm, setProductForm] = useState({
@@ -340,19 +364,76 @@ export default function EnhancedAdminTabs() {
     setIsCategoryDialogOpen(true);
   };
 
-  // order state
-  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  // Additional order states
   const [isOrderDetailsOpen, setIsOrderDetailsOpen] = useState(false);
-
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
 
 
   return (
     <div className="container mx-auto p-6">
+      {/* Notification Header */}
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-3xl font-bold">অ্যাডমিন প্যানেল</h1>
+        <div className="flex items-center gap-4">
+          {/* Notification Bell */}
+          <div className="relative">
+            <Button
+              variant={newOrdersCount > 0 ? "default" : "outline"}
+              size="sm"
+              className={`${newOrdersCount > 0 ? 'bg-red-500 hover:bg-red-600 animate-pulse' : ''}`}
+              onClick={() => {
+                if (!hasNotificationPermission) {
+                  requestNotificationPermission();
+                }
+              }}
+            >
+              {newOrdersCount > 0 ? (
+                <BellRing className="w-4 h-4 mr-2" />
+              ) : (
+                <Bell className="w-4 h-4 mr-2" />
+              )}
+              নোটিফিকেশন
+              {newOrdersCount > 0 && (
+                <Badge variant="secondary" className="ml-2 bg-white text-red-500">
+                  {newOrdersCount}
+                </Badge>
+              )}
+            </Button>
+            {newOrdersCount > 0 && (
+              <div className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center animate-bounce">
+                {newOrdersCount}
+              </div>
+            )}
+          </div>
+          
+          {/* Notification Status */}
+          <div className="flex items-center gap-2 text-sm">
+            <div className={`w-2 h-2 rounded-full ${hasNotificationPermission ? 'bg-green-500' : 'bg-yellow-500'}`}></div>
+            <span className="text-gray-600">
+              {hasNotificationPermission ? 'নোটিফিকেশন সক্রিয়' : 'নোটিফিকেশন অনুমতি দিন'}
+            </span>
+          </div>
+        </div>
+      </div>
+
       <Tabs defaultValue="dashboard" className="space-y-6">
         <TabsList className="grid w-full grid-cols-8">
-          <TabsTrigger value="dashboard">ড্যাশবোর্ড</TabsTrigger>
-          <TabsTrigger value="orders">অর্ডার</TabsTrigger>
+          <TabsTrigger value="dashboard" className="relative">
+            ড্যাশবোর্ড
+            {activeTab === "dashboard" && newOrdersCount > 0 && (
+              <Badge variant="destructive" className="absolute -top-2 -right-2 text-xs">
+                {newOrdersCount}
+              </Badge>
+            )}
+          </TabsTrigger>
+          <TabsTrigger value="orders" className="relative">
+            অর্ডার
+            {newOrdersCount > 0 && (
+              <Badge variant="destructive" className="absolute -top-2 -right-2 text-xs">
+                {newOrdersCount}
+              </Badge>
+            )}
+          </TabsTrigger>
           <TabsTrigger value="products">পণ্য</TabsTrigger>
           <TabsTrigger value="categories">ক্যাটাগরি</TabsTrigger>
           <TabsTrigger value="offers">অফার</TabsTrigger>
