@@ -24,6 +24,7 @@ export default function EnhancedAdminTabs() {
   const [activeTab, setActiveTab] = useState("dashboard");
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [orderDetailsOpen, setOrderDetailsOpen] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
   
@@ -37,16 +38,20 @@ export default function EnhancedAdminTabs() {
 
   // Initialize notifications on mount
   useEffect(() => {
-    // Auto-request notification permission
-    requestNotificationPermission();
-    
-    // Show welcome message
-    toast({
-      title: "🎯 অ্যাডমিন প্যানেল সক্রিয়",
-      description: "নতুন অর্ডারের জন্য রিয়েল-টাইম নোটিফিকেশন চালু আছে",
-      duration: 5000,
-    });
-  }, []);
+    if (!isInitialized) {
+      // Auto-request notification permission
+      requestNotificationPermission();
+      
+      // Show welcome message only once
+      toast({
+        title: "🎯 অ্যাডমিন প্যানেল সক্রিয়",
+        description: "নতুন অর্ডারের জন্য রিয়েল-টাইম নোটিফিকেশন চালু আছে",
+        duration: 5000,
+      });
+      
+      setIsInitialized(true);
+    }
+  }, [isInitialized, requestNotificationPermission, toast]);
 
   // Form states
   const [productForm, setProductForm] = useState({

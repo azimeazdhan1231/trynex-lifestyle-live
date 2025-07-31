@@ -314,16 +314,16 @@ export default function TrackingPage() {
                                   <span>{item.customization.printArea}</span>
                                 </div>
                               )}
-                              {item.customization.customText && (
+                              {item.customization.customText && item.customization.customText.trim() && (
                                 <div>
                                   <span className="font-medium">কাস্টম টেক্সট:</span>
-                                  <p className="mt-1 p-2 bg-white rounded border text-gray-900">{item.customization.customText}</p>
+                                  <p className="mt-1 p-2 bg-white rounded border text-gray-900 whitespace-pre-wrap">{item.customization.customText.trim()}</p>
                                 </div>
                               )}
-                              {item.customization.specialInstructions && (
+                              {item.customization.specialInstructions && item.customization.specialInstructions.trim() && (
                                 <div>
                                   <span className="font-medium">বিশেষ নির্দেশনা:</span>
-                                  <p className="mt-1 p-2 bg-white rounded border text-gray-900">{item.customization.specialInstructions}</p>
+                                  <p className="mt-1 p-2 bg-white rounded border text-gray-900 whitespace-pre-wrap">{item.customization.specialInstructions.trim()}</p>
                                 </div>
                               )}
                               {item.customization.customImage && (

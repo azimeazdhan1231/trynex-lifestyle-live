@@ -108,11 +108,25 @@ export default function CustomizeModal({ product, isOpen, onClose, onAddToCart }
       }
     }
 
+    // Clean up customization data - remove empty values
     const customizationData = {
-      ...customization,
+      size: customization.size,
+      color: customization.color,
+      printArea: customization.printArea,
+      quantity: customization.quantity,
+      customText: customization.customText?.trim() || "",
+      specialInstructions: customization.specialInstructions?.trim() || "",
       customImage: customImageBase64,
-      customImageName: customization.customImage?.name
+      customImageName: customization.customImage?.name || null
     };
+
+    // Remove empty fields to avoid confusion
+    Object.keys(customizationData).forEach(key => {
+      const value = customizationData[key as keyof typeof customizationData];
+      if (value === "" || value === null || value === undefined) {
+        delete customizationData[key as keyof typeof customizationData];
+      }
+    });
 
     onAddToCart(product, customizationData);
     toast({

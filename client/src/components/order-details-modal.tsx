@@ -255,7 +255,7 @@ export default function OrderDetailsModal({ isOpen, onClose, order }: OrderDetai
                           </div>
 
                           {/* Customization Details */}
-                          {item.customization && (
+                          {item.customization && Object.keys(item.customization).length > 0 && (
                             <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
                               <h5 className="font-semibold text-blue-900 mb-3 flex items-center gap-2">
                                 <Settings className="w-4 h-4" />
@@ -280,16 +280,16 @@ export default function OrderDetailsModal({ isOpen, onClose, order }: OrderDetai
                                     <span className="ml-2">{item.customization.printArea}</span>
                                   </div>
                                 )}
-                                {item.customization.customText && (
+                                {item.customization.customText && item.customization.customText.trim() && (
                                   <div className="md:col-span-2">
                                     <span className="text-blue-600 font-medium">কাস্টম টেক্সট:</span>
-                                    <p className="mt-1 p-2 bg-white rounded border">{item.customization.customText}</p>
+                                    <p className="mt-1 p-2 bg-white rounded border whitespace-pre-wrap">{item.customization.customText.trim()}</p>
                                   </div>
                                 )}
-                                {item.customization.specialInstructions && (
+                                {item.customization.specialInstructions && item.customization.specialInstructions.trim() && (
                                   <div className="md:col-span-2">
                                     <span className="text-blue-600 font-medium">বিশেষ নির্দেশনা:</span>
-                                    <p className="mt-1 p-2 bg-white rounded border">{item.customization.specialInstructions}</p>
+                                    <p className="mt-1 p-2 bg-white rounded border whitespace-pre-wrap">{item.customization.specialInstructions.trim()}</p>
                                   </div>
                                 )}
                               </div>
@@ -330,22 +330,22 @@ export default function OrderDetailsModal({ isOpen, onClose, order }: OrderDetai
                           )}
 
                           {/* Legacy Customization Support */}
-                          {!item.customization && (item.customText || item.specialInstructions || item.customImages || item.customImage) && (
+                          {(!item.customization || Object.keys(item.customization).length === 0) && (item.customText || item.specialInstructions || item.customImages || item.customImage) && (
                             <div className="mt-4 p-3 bg-yellow-50 rounded-lg border border-yellow-200">
                               <h5 className="font-semibold text-yellow-900 mb-3 flex items-center gap-2">
                                 <Settings className="w-4 h-4" />
                                 কাস্টমাইজেশন তথ্য
                               </h5>
-                              {item.customText && (
+                              {item.customText && item.customText.trim() && (
                                 <div className="mb-3">
                                   <span className="text-yellow-600 font-medium">কাস্টম টেক্সট:</span>
-                                  <p className="mt-1 p-2 bg-white rounded border">{item.customText}</p>
+                                  <p className="mt-1 p-2 bg-white rounded border whitespace-pre-wrap">{item.customText.trim()}</p>
                                 </div>
                               )}
-                              {item.specialInstructions && (
+                              {item.specialInstructions && item.specialInstructions.trim() && (
                                 <div className="mb-3">
                                   <span className="text-yellow-600 font-medium">বিশেষ নির্দেশনা:</span>
-                                  <p className="mt-1 p-2 bg-white rounded border">{item.specialInstructions}</p>
+                                  <p className="mt-1 p-2 bg-white rounded border whitespace-pre-wrap">{item.specialInstructions.trim()}</p>
                                 </div>
                               )}
                               {(item.customImages || item.customImage) && (
@@ -364,8 +364,18 @@ export default function OrderDetailsModal({ isOpen, onClose, order }: OrderDetai
                             </div>
                           )}
 
-                          {/* No customization message */}
-                          {!item.customization && !item.customText && !item.specialInstructions && !item.customImages && !item.customImage && (
+                          {/* Check if there's any customization data */}
+                          {(() => {
+                            const hasNewCustomization = item.customization && Object.keys(item.customization).some(key => {
+                              const value = item.customization[key];
+                              return value && (typeof value === 'string' ? value.trim() : value);
+                            });
+                            const hasLegacyCustomization = (item.customText && item.customText.trim()) || 
+                                                           (item.specialInstructions && item.specialInstructions.trim()) || 
+                                                           item.customImages || item.customImage;
+                            
+                            return !hasNewCustomization && !hasLegacyCustomization;
+                          })() && (
                             <div className="mt-4 bg-gray-100 rounded-lg p-4 text-center text-gray-500">
                               <Package className="w-8 h-8 mx-auto mb-2 opacity-50" />
                               <p>এই পণ্যের জন্য কোনো কাস্টমাইজেশন নেই</p>

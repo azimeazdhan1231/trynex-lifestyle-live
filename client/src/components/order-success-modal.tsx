@@ -113,14 +113,13 @@ export default function OrderSuccessModal({ isOpen, onClose, order }: OrderSucce
 
                     {/* Show customization details if present */}
                     {item.customization && (
-                      <div className="text-xs text-gray-600 bg-gray-50 p-2 rounded mt-1">
-                        <p className="font-medium text-gray-800 mb-1">কাস্টমাইজেশন:</p>
+                      <div className="text-xs text-blue-600 mt-1 space-y-1">
                         {item.customization.size && <p>সাইজ: {item.customization.size}</p>}
                         {item.customization.color && <p>রং: {item.customization.color}</p>}
                         {item.customization.printArea && <p>প্রিন্ট এরিয়া: {item.customization.printArea}</p>}
-                        {item.customization.customText && <p>কাস্টম টেক্সট: {item.customization.customText}</p>}
-                        {item.customization.customImage && <p>কাস্টম ছবি: আপলোড করা হয়েছে</p>}
-                        {item.customization.specialInstructions && <p>বিশেষ নির্দেশনা: {item.customization.specialInstructions}</p>}
+                        {item.customization.customText && item.customization.customText.trim() && <p>কাস্টম টেক্সট: {item.customization.customText.trim()}</p>}
+                        {item.customization.specialInstructions && item.customization.specialInstructions.trim() && <p>বিশেষ নির্দেশনা: {item.customization.specialInstructions.trim()}</p>}
+                        {item.customization.customImage && <p>কাস্টম ছবি: ✅ আপলোড করা হয়েছে</p>}
                       </div>
                     )}
                   </div>
