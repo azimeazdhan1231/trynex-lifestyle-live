@@ -321,6 +321,9 @@ export default function EnhancedAdminTabs() {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [isOrderDetailsOpen, setIsOrderDetailsOpen] = useState(false);
 
+  const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
+
+
   return (
     <div className="container mx-auto p-6">
       <Tabs defaultValue="dashboard" className="space-y-6">
@@ -462,19 +465,18 @@ export default function EnhancedAdminTabs() {
                         {new Date(order.created_at || Date.now()).toLocaleDateString('bn-BD')}
                       </TableCell>
                       <TableCell>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => {
-                            setSelectedOrder(order);
-                            setIsOrderDetailsOpen(true);
-                          }}
-                          className="text-blue-600 border-blue-300 hover:bg-blue-50"
-                        >
-                          <Eye className="w-4 h-4 mr-1" />
-                          বিস্তারিত
-                        </Button>
-                      </TableCell>
+                            <div className="flex gap-2">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => setSelectedOrderId(order.id)}
+                                className="flex items-center gap-1"
+                              >
+                                <Eye className="w-4 h-4" />
+                                দেখুন
+                              </Button>
+                            </div>
+                          </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -1181,7 +1183,8 @@ export default function EnhancedAdminTabs() {
           <AnalyticsAdmin />
         </TabsContent>
       </Tabs>
-      <OrderDetailsModal 
+      {/* Order Details Modal */}
+      <OrderDetailsModal
         order={selectedOrder} 
         isOpen={isOrderDetailsOpen}
         onClose={() => {
