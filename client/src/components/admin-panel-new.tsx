@@ -11,7 +11,16 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { Plus, Edit2, Trash2, Eye, Package, Users, TrendingUp, Settings, Gift, Tag, BarChart3, DollarSign, ShoppingCart, Star } from "lucide-react";
-import { ORDER_STATUSES, formatPrice, PRODUCT_CATEGORIES } from "@/lib/constants";
+import { formatPrice, PRODUCT_CATEGORIES } from "@/lib/constants";
+
+// Order status matching tracking page
+const ORDER_STATUSES = {
+  pending: "অপেক্ষমান",
+  processing: "প্রক্রিয়াধীন", 
+  shipped: "পাঠানো হয়েছে",
+  delivered: "ডেলিভার হয়েছে",
+  cancelled: "বাতিল"
+};
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { apiRequest } from "@/lib/queryClient";
@@ -35,6 +44,10 @@ export default function AdminPanelNew() {
     is_latest: false, 
     is_best_selling: false
   });
+
+  // Image upload state
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string>("");
 
   const [categoryForm, setCategoryForm] = useState({
     name: "", 
@@ -228,6 +241,35 @@ export default function AdminPanelNew() {
       name: "", price: "", image_url: "", category: "", stock: 0, description: "",
       is_featured: false, is_latest: false, is_best_selling: false
     });
+    setSelectedImage(null);
+    setImagePreview("");
+  };
+
+  // Handle image file selection
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setSelectedImage(file);
+      
+      // Create preview URL
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const result = e.target?.result as string;
+        setImagePreview(result);
+        setProductForm(prev => ({ ...prev, image_url: result }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // Convert file to base64 for storage
+  const convertToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = error => reject(error);
+    });
   };
 
   const resetCategoryForm = () => {
@@ -264,20 +306,37 @@ export default function AdminPanelNew() {
       is_latest: product.is_latest || false,
       is_best_selling: product.is_best_selling || false
     });
+    setImagePreview(product.image_url || "");
+    setSelectedImage(null);
     setIsProductDialogOpen(true);
   };
 
-  const handleSubmitProduct = () => {
-    const data = {
-      ...productForm,
-      price: parseFloat(productForm.price) || 0,
-      stock: Number(productForm.stock) || 0
-    };
+  const handleSubmitProduct = async () => {
+    try {
+      let finalProductForm = { ...productForm };
+      
+      // If there's a selected image, it's already converted to base64 in handleImageChange
+      if (selectedImage && imagePreview) {
+        finalProductForm.image_url = imagePreview;
+      }
 
-    if (editingProduct) {
-      updateProductMutation.mutate(data);
-    } else {
-      createProductMutation.mutate(data);
+      const data = {
+        ...finalProductForm,
+        price: parseFloat(finalProductForm.price) || 0,
+        stock: Number(finalProductForm.stock) || 0
+      };
+
+      if (editingProduct) {
+        updateProductMutation.mutate(data);
+      } else {
+        createProductMutation.mutate(data);
+      }
+    } catch (error) {
+      toast({
+        title: "ত্রুটি",
+        description: "পণ্য সেভ করতে সমস্যা হয়েছে",
+        variant: "destructive"
+      });
     }
   };
 
@@ -449,7 +508,7 @@ export default function AdminPanelNew() {
                           <TableCell>{formatPrice(Number(order.total))}</TableCell>
                           <TableCell>
                             <Badge variant={order.status === 'pending' ? 'secondary' : 'default'}>
-                              {String(ORDER_STATUSES[order.status as keyof typeof ORDER_STATUSES] || order.status)}
+                              {ORDER_STATUSES[order.status as keyof typeof ORDER_STATUSES] || order.status}
                             </Badge>
                           </TableCell>
                         </TableRow>
@@ -506,7 +565,7 @@ export default function AdminPanelNew() {
                               </SelectTrigger>
                               <SelectContent>
                                 {Object.entries(ORDER_STATUSES).map(([key, value]) => (
-                                  <SelectItem key={key} value={key}>{String(value)}</SelectItem>
+                                  <SelectItem key={key} value={key}>{value}</SelectItem>
                                 ))}
                               </SelectContent>
                             </Select>
@@ -597,13 +656,35 @@ export default function AdminPanelNew() {
                         </Select>
                       </div>
                       <div>
-                        <Label htmlFor="image_url">ছবির লিংক</Label>
-                        <Input
-                          id="image_url"
-                          value={productForm.image_url}
-                          onChange={(e) => setProductForm(prev => ({ ...prev, image_url: e.target.value }))}
-                          placeholder="ছবির URL"
-                        />
+                        <Label htmlFor="product-image">পণ্যের ছবি</Label>
+                        <div className="space-y-2">
+                          <Input
+                            id="product-image-file"
+                            type="file"
+                            accept="image/*"
+                            onChange={handleImageChange}
+                            className="cursor-pointer"
+                          />
+                          <Input
+                            id="image_url"
+                            value={productForm.image_url}
+                            onChange={(e) => setProductForm(prev => ({ ...prev, image_url: e.target.value }))}
+                            placeholder="অথবা ছবির URL দিন"
+                          />
+                          {(imagePreview || productForm.image_url) && (
+                            <div className="mt-2">
+                              <img
+                                src={imagePreview || productForm.image_url}
+                                alt="Product preview"
+                                className="w-20 h-20 object-cover rounded border"
+                                onError={(e) => {
+                                  const target = e.target as HTMLImageElement;
+                                  target.style.display = 'none';
+                                }}
+                              />
+                            </div>
+                          )}
+                        </div>
                       </div>
                       <div>
                         <Label htmlFor="description">বিবরণ</Label>
