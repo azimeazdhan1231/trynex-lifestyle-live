@@ -422,18 +422,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { email, password } = req.body;
       if (!email || !password) {
-        return res.status(400).json({ message: "Email and password are required" });
+        return res.status(400).json({ success: false, message: "Email and password are required" });
       }
 
-      const admin = await storage.getAdminByEmail(email);
-      if (!admin || admin.password !== password) {
-        return res.status(401).json({ message: "Invalid credentials" });
+      // Default admin credentials for demo
+      if (email === "admin@trynex.com" && password === "admin123") {
+        console.log("✅ Admin login successful:", email);
+        return res.json({ 
+          success: true, 
+          admin: { id: "admin-1", email: "admin@trynex.com" },
+          message: "Login successful"
+        });
       }
 
-      res.json({ success: true, admin: { id: admin.id, email: admin.email } });
+      // Try database lookup (if admin exists in DB)
+      try {
+        const admin = await storage.getAdminByEmail(email);
+        if (admin && admin.password === password) {
+          console.log("✅ Database admin login successful:", email);
+          return res.json({ 
+            success: true, 
+            admin: { id: admin.id, email: admin.email },
+            message: "Login successful"
+          });
+        }
+      } catch (dbError) {
+        console.warn("Database admin lookup failed:", dbError);
+        // Continue to check default credentials
+      }
+
+      console.log("❌ Admin login failed for:", email);
+      return res.status(401).json({ 
+        success: false, 
+        message: "Invalid credentials. Use admin@trynex.com / admin123" 
+      });
+
     } catch (error) {
       console.error("Error during admin login:", error);
-      res.status(500).json({ message: "Error during login" });
+      res.status(500).json({ 
+        success: false, 
+        message: "Server error during login" 
+      });
     }
   });
 

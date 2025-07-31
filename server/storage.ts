@@ -213,16 +213,6 @@ export class DatabaseStorage implements IStorage {
     await db.delete(offers).where(eq(offers.id, id));
   }
 
-  async getAdminByEmail(email: string): Promise<Admin | undefined> {
-    const result = await db.select().from(admins).where(eq(admins.email, email)).limit(1);
-    return result[0];
-  }
-
-  async createAdmin(admin: InsertAdmin): Promise<Admin> {
-    const result = await db.insert(admins).values(admin).returning();
-    return result[0];
-  }
-
   // Categories
   async getCategories(): Promise<Category[]> {
     const result = await db.select().from(categories).orderBy(desc(categories.sort_order));
@@ -424,6 +414,17 @@ export class DatabaseStorage implements IStorage {
     await db.update(orders)
       .set({ user_id: userId })
       .where(eq(orders.id, orderId));
+  }
+
+  // Admin operations
+  async getAdminByEmail(email: string): Promise<Admin | undefined> {
+    const result = await db.select().from(admins).where(eq(admins.email, email)).limit(1);
+    return result[0];
+  }
+
+  async createAdmin(admin: InsertAdmin): Promise<Admin> {
+    const result = await db.insert(admins).values(admin).returning();
+    return result[0];
   }
 }
 

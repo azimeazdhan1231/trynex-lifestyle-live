@@ -22,10 +22,16 @@ export default function AdminLogin({ onLoginSuccess }: AdminLoginProps) {
 
   const loginMutation = useMutation({
     mutationFn: async (loginData: { email: string; password: string }) => {
-      const response = await apiRequest("POST", "/api/admin/login", loginData);
-      return response.json();
+      try {
+        const response = await apiRequest("POST", "/api/admin/login", loginData);
+        return await response.json();
+      } catch (error) {
+        console.error("Admin login error:", error);
+        throw error;
+      }
     },
     onSuccess: (data) => {
+      console.log("Login response:", data);
       if (data.success) {
         toast({
           title: "লগইন সফল",
@@ -35,15 +41,16 @@ export default function AdminLogin({ onLoginSuccess }: AdminLoginProps) {
       } else {
         toast({
           title: "লগইন ব্যর্থ",
-          description: "ভুল ইমেইল বা পাসওয়ার্ড",
+          description: data.message || "ভুল ইমেইল বা পাসওয়ার্ড",
           variant: "destructive",
         });
       }
     },
     onError: (error) => {
+      console.error("Login mutation error:", error);
       toast({
         title: "লগইনে সমস্যা",
-        description: "আবার চেষ্টা করুন",
+        description: "সার্ভার কানেকশন চেক করুন",
         variant: "destructive",
       });
     },
@@ -69,8 +76,8 @@ export default function AdminLogin({ onLoginSuccess }: AdminLoginProps) {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
-      <Card className="w-full max-w-md">
+    <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4 admin-panel-container">
+      <Card className="w-full max-w-md shadow-lg">
         <CardHeader className="text-center">
           <div className="mx-auto w-12 h-12 bg-primary rounded-full flex items-center justify-center mb-4">
             <Lock className="w-6 h-6 text-white" />

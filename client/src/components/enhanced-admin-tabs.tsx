@@ -39,9 +39,12 @@ export default function EnhancedAdminTabs() {
   // Initialize notifications on mount - with mobile safety checks
   useEffect(() => {
     if (!isInitialized) {
-      // Only request notification permission if not on mobile or if explicitly supported
+      // Detect mobile browser
       const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      const isChrome = /Chrome/i.test(navigator.userAgent);
+      const isMobileChrome = isMobile && isChrome;
 
+      // Handle notifications carefully for mobile browsers
       if (!isMobile || ('Notification' in window && typeof Notification.requestPermission === 'function')) {
         try {
           requestNotificationPermission();
@@ -50,12 +53,24 @@ export default function EnhancedAdminTabs() {
         }
       }
 
-      // Show welcome message only once - shorter for mobile
+      // Show welcome message only once - customized for mobile
       toast({
-        title: "অ্যাডমিন প্যানেল সক্রিয়",
-        description: isMobile ? "মোবাইল ড্যাশবোর্ড লোড হয়েছে" : "রিয়েল-টাইম নোটিফিকেশন চালু আছে",
+        title: "এডমিন প্যানেল সক্রিয়",
+        description: isMobileChrome ? "মোবাইল Chrome-এ সাপোর্ট করা হচ্ছে" : isMobile ? "মোবাইল ড্যাশবোর্ড লোড হয়েছে" : "রিয়েল-টাইম নোটিফিকেশন চালু আছে",
         duration: 3000,
       });
+
+      // Add mobile browser compatibility fixes
+      if (isMobileChrome) {
+        // Fix for Chrome mobile viewport issues
+        const viewport = document.querySelector('meta[name="viewport"]');
+        if (!viewport) {
+          const meta = document.createElement('meta');
+          meta.name = 'viewport';
+          meta.content = 'width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no';
+          document.head.appendChild(meta);
+        }
+      }
 
       setIsInitialized(true);
     }
