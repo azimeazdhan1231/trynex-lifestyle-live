@@ -14,27 +14,58 @@ export const DISTRICTS = [
 ];
 
 export const PRODUCT_CATEGORIES = [
-  { id: "all", name: "সব পণ্য" },
-  { id: "gift-for-him", name: "Gift for Him" },
-  { id: "gift-for-her", name: "Gift for Her" },
-  { id: "baby-gifts", name: "Baby Gifts" },
-  { id: "men-gifts", name: "Men Gifts" },
-  { id: "women-gifts", name: "Women Gifts" },
-  { id: "kids-gifts", name: "Kids Gifts" },
-  { id: "mugs", name: "Mugs" },
-  { id: "t-shirts", name: "T-Shirts" },
-  { id: "keychains", name: "Keychains" },
-  { id: "water-bottles", name: "Water Bottles" },
-  { id: "personalized-gifts", name: "Personalized Gifts" },
-  { id: "corporate-gifts", name: "Corporate Gifts" },
-  { id: "anniversary-gifts", name: "Anniversary Gifts" },
-  { id: "birthday-gifts", name: "Birthday Gifts" },
-  { id: "holiday-gifts", name: "Holiday Gifts" },
-  { id: "custom-prints", name: "Custom Prints" },
-  { id: "gift-packages", name: "Gift Packages" },
-  { id: "home-decor-gifts", name: "Home Decor Gifts" },
-  { id: "fashion-accessories", name: "Fashion Accessories" },
-  { id: "seasonal-specials", name: "Seasonal Specials" },
+  { id: "all", name: "সব পণ্য", icon: "🛍️" },
+
+  // Apparel Category
+  { id: "apparel", name: "🎽 পোশাক-পরিচ্ছদ", icon: "🎽", isParent: true },
+  { id: "t-shirts-men", name: "টি-শার্ট (পুরুষ)", parent: "apparel" },
+  { id: "t-shirts-women", name: "টি-শার্ট (মহিলা)", parent: "apparel" },
+  { id: "t-shirts-kids", name: "টি-শার্ট (শিশু)", parent: "apparel" },
+  { id: "couple-tshirts", name: "কাপল টি-শার্ট", parent: "apparel" },
+  { id: "hoodie-longsleeve", name: "হুডি ও লম্বা হাতা", parent: "apparel" },
+  { id: "baby-wear", name: "শিশুর পোশাক", parent: "apparel" },
+  { id: "custom-name-tees", name: "কাস্টম নাম টি", parent: "apparel" },
+
+  // Drinkware Category
+  { id: "drinkware", name: "☕ পানীয়ের সামগ্রী", icon: "☕", isParent: true },
+  { id: "classic-mugs", name: "ক্লাসিক মগ", parent: "drinkware" },
+  { id: "magic-mugs", name: "ম্যাজিক মগ", parent: "drinkware" },
+  { id: "couple-mugs", name: "কাপল মগ", parent: "drinkware" },
+  { id: "tumblers-bottles", name: "টাম্বলার ও বোতল", parent: "drinkware" },
+  { id: "photo-print-mugs", name: "ফটো প্রিন্ট মগ", parent: "drinkware" },
+  { id: "name-quote-mugs", name: "নাম/উক্তি মগ", parent: "drinkware" },
+
+  // Occasion-Based Gifts
+  { id: "occasion-gifts", name: "🎁 উপলক্ষ্য ভিত্তিক গিফট", icon: "🎁", isParent: true },
+  { id: "birthday-gifts", name: "জন্মদিনের গিফট", parent: "occasion-gifts" },
+  { id: "anniversary-gifts", name: "বার্ষিকীর গিফট", parent: "occasion-gifts" },
+  { id: "valentine-gifts", name: "ভালোবাসা দিবসের গিফট", parent: "occasion-gifts" },
+  { id: "wedding-gifts", name: "বিবাহের গিফট", parent: "occasion-gifts" },
+  { id: "engagement-gifts", name: "বাগদানের গিফট", parent: "occasion-gifts" },
+  { id: "new-baby-gifts", name: "নবজাতকের গিফট", parent: "occasion-gifts" },
+  { id: "graduation-gifts", name: "স্নাতকের গিফট", parent: "occasion-gifts" },
+  { id: "mothers-fathers-day", name: "মা/বাবা দিবস", parent: "occasion-gifts" },
+  { id: "religious-gifts", name: "ঈদ/ক্রিসমাস/নববর্ষ", parent: "occasion-gifts" },
+
+  // Recipient-Based
+  { id: "recipient-gifts", name: "👩‍❤‍👨 ব্যক্তি ভিত্তিক", icon: "👨‍👩‍👧‍👦", isParent: true },
+  { id: "gift-for-him", name: "তার জন্য গিফট", parent: "recipient-gifts" },
+  { id: "gift-for-her", name: "তার জন্য গিফট", parent: "recipient-gifts" },
+  { id: "gift-for-couple", name: "কাপলের জন্য গিফট", parent: "recipient-gifts" },
+  { id: "gift-for-parents", name: "মা/বাবার জন্য গিফট", parent: "recipient-gifts" },
+  { id: "gift-for-kids", name: "শিশুদের জন্য গিফট", parent: "recipient-gifts" },
+  { id: "gift-for-friends", name: "বন্ধুদের জন্য গিফট", parent: "recipient-gifts" },
+  { id: "gift-for-coworker", name: "সহকর্মীর জন্য গিফট", parent: "recipient-gifts" },
+
+  // Theme & Surprise Gifts
+  { id: "theme-gifts", name: "🎉 থিম ও সারপ্রাইজ গিফট", icon: "🎉", isParent: true },
+  { id: "surprise-box", name: "সারপ্রাইজ বক্স", parent: "theme-gifts" },
+  { id: "mystery-box", name: "মিস্ট্রি বক্স", parent: "theme-gifts" },
+  { id: "romantic-gifts", name: "রোমান্টিক গিফট", parent: "theme-gifts" },
+  { id: "funny-meme-gifts", name: "মজার/মিম গিফট", parent: "theme-gifts" },
+  { id: "customized-gifts", name: "কাস্টমাইজড গিফট", parent: "theme-gifts" },
+  { id: "magic-reveal-gifts", name: "ম্যাজিক রিভিল গিফট", parent: "theme-gifts" },
+  { id: "3d-led-gifts", name: "3D/LED নাম গিফট", parent: "theme-gifts" },
 ];
 
 export const ORDER_STATUSES = [
