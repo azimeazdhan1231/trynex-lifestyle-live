@@ -712,33 +712,81 @@ export default function AdminPanelNew() {
                       </div>
                       <div>
                         <Label htmlFor="product-image">পণ্যের ছবি</Label>
-                        <div className="space-y-2">
-                          <Input
-                            id="product-image-file"
-                            type="file"
-                            accept="image/*"
-                            onChange={handleImageChange}
-                            className="cursor-pointer"
-                          />
-                          <Input
-                            id="image_url"
-                            value={productForm.image_url}
-                            onChange={(e) => setProductForm(prev => ({ ...prev, image_url: e.target.value }))}
-                            placeholder="অথবা ছবির URL দিন"
-                          />
+                        <div className="space-y-3">
+                          {/* Cloud URL Input - Primary Option */}
+                          <div className="space-y-2">
+                            <Label htmlFor="image_url" className="text-sm font-medium text-green-700">
+                              ⚡ ক্লাউড ইমেজ URL (প্রস্তাবিত - দ্রুত লোডিং)
+                            </Label>
+                            <Input
+                              id="image_url"
+                              value={productForm.image_url}
+                              onChange={(e) => {
+                                setProductForm(prev => ({ ...prev, image_url: e.target.value }));
+                                setImagePreview("");
+                                setSelectedImage(null);
+                              }}
+                              placeholder="যেমন: https://cdn.example.com/image.webp"
+                              className="border-green-300 focus:border-green-500"
+                            />
+                            <p className="text-xs text-green-600">
+                              💡 Cloudflare Images, ImageKit, বা অন্য CDN থেকে URL ব্যবহার করুন
+                            </p>
+                          </div>
+
+                          {/* File Upload - Secondary Option */}
+                          <div className="space-y-2 border-t pt-3">
+                            <Label htmlFor="product-image-file" className="text-sm font-medium text-orange-600">
+                              📁 ডিভাইস থেকে আপলোড (ধীর লোডিং)
+                            </Label>
+                            <Input
+                              id="product-image-file"
+                              type="file"
+                              accept="image/*"
+                              onChange={handleImageChange}
+                              className="cursor-pointer border-orange-300"
+                            />
+                            <p className="text-xs text-orange-600">
+                              ⚠️ বড় ফাইল সাইট স্লো করতে পারে। WebP/AVIF ফরম্যাট ব্যবহার করুন।
+                            </p>
+                          </div>
+
+                          {/* Image Preview */}
                           {(imagePreview || productForm.image_url) && (
-                            <div className="mt-2">
-                              <img
-                                src={imagePreview || productForm.image_url}
-                                alt="Product preview"
-                                className="w-20 h-20 object-cover rounded border"
-                                onError={(e) => {
-                                  const target = e.target as HTMLImageElement;
-                                  target.style.display = 'none';
-                                }}
-                              />
+                            <div className="mt-3 space-y-2">
+                              <Label className="text-sm">প্রিভিউ:</Label>
+                              <div className="flex items-start space-x-3">
+                                <img
+                                  src={imagePreview || productForm.image_url}
+                                  alt="Product preview"
+                                  className="w-20 h-20 object-cover rounded border"
+                                  onError={(e) => {
+                                    const target = e.target as HTMLImageElement;
+                                    target.style.display = 'none';
+                                  }}
+                                />
+                                <div className="flex-1 text-xs space-y-1">
+                                  {productForm.image_url && !productForm.image_url.startsWith('data:') && (
+                                    <p className="text-green-600">✓ ক্লাউড URL ব্যবহার করা হচ্ছে</p>
+                                  )}
+                                  {imagePreview && (
+                                    <p className="text-orange-600">⚠️ ডেটাবেস স্টোরেজ - পারফরমেন্সের জন্য URL ব্যবহার করুন</p>
+                                  )}
+                                </div>
+                              </div>
                             </div>
                           )}
+
+                          {/* Performance Tips */}
+                          <div className="bg-blue-50 p-3 rounded-lg border border-blue-200 text-xs">
+                            <h4 className="font-semibold text-blue-800 mb-2">🚀 পারফরমেন্স টিপস:</h4>
+                            <ul className="space-y-1 text-blue-700">
+                              <li>• WebP বা AVIF ফরম্যাট ব্যবহার করুন</li>
+                              <li>• ছবির সাইজ ১০০KB এর নিচে রাখুন</li>
+                              <li>• TinyPNG বা Squoosh দিয়ে কমপ্রেস করুন</li>
+                              <li>• Cloudflare Images বা ImageKit ব্যবহার করুন</li>
+                            </ul>
+                          </div>
                         </div>
                       </div>
                       <div>

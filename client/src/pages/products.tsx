@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -18,6 +17,7 @@ import { useAnalytics } from "@/hooks/use-analytics";
 import { useToast } from "@/hooks/use-toast";
 import type { Product, Category } from "@shared/schema";
 import { useProgressiveProducts } from "@/hooks/use-progressive-products";
+import PaginatedProductGrid from "@/components/PaginatedProductGrid";
 
 export default function Products() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -53,7 +53,7 @@ export default function Products() {
       const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                            (product.description || "").toLowerCase().includes(searchTerm.toLowerCase());
       const matchesCategory = selectedCategory === "all" || product.category === selectedCategory;
-      
+
       let matchesPrice = true;
       if (priceRange !== "all") {
         const price = Number(product.price);
@@ -72,7 +72,7 @@ export default function Products() {
             break;
         }
       }
-      
+
       return matchesSearch && matchesCategory && matchesPrice;
     })
     .sort((a, b) => {
@@ -107,7 +107,7 @@ export default function Products() {
           image: product.image_url
         });
       }
-      
+
       toast({
         title: "পণ্য যোগ করা হয়েছে",
         description: `${product.name} কার্টে যোগ করা হয়েছে`,
@@ -301,25 +301,27 @@ export default function Products() {
                 ))}
               </TabsList>
             </div>
-            
+
             <TabsContent value="all">
-              <ProductGrid 
+              <PaginatedProductGrid 
                 products={filteredAndSortedProducts} 
                 viewMode={viewMode}
                 onAddToCart={handleAddToCart}
                 onViewProduct={handleViewProduct}
                 onCustomizeProduct={handleCustomizeProduct}
+                itemsPerPage={12}
               />
             </TabsContent>
 
             {categories.filter(cat => cat.is_active).map((category) => (
               <TabsContent key={category.name} value={category.name}>
-                <ProductGrid 
+                <PaginatedProductGrid 
                   products={filteredAndSortedProducts.filter(p => p.category === category.name)} 
                   viewMode={viewMode}
                   onAddToCart={handleAddToCart}
                   onViewProduct={handleViewProduct}
                   onCustomizeProduct={handleCustomizeProduct}
+                  itemsPerPage={12}
                 />
               </TabsContent>
             ))}
@@ -370,9 +372,10 @@ interface ProductGridProps {
   onAddToCart: (product: Product) => void;
   onViewProduct: (product: Product) => void;
   onCustomizeProduct: (product: Product) => void;
+  itemsPerPage: number;
 }
 
-function ProductGrid({ products, viewMode, onAddToCart, onViewProduct, onCustomizeProduct }: ProductGridProps) {
+function ProductGrid({ products, viewMode, onAddToCart, onViewProduct, onCustomizeProduct, itemsPerPage }: ProductGridProps) {
   const [favorites, setFavorites] = useState<string[]>([]);
 
   const toggleFavorite = (productId: string) => {
@@ -433,7 +436,7 @@ function ProductGrid({ products, viewMode, onAddToCart, onViewProduct, onCustomi
                     <Heart className={`w-5 h-5 ${favorites.includes(product.id) ? 'fill-red-500 text-red-500' : ''}`} />
                   </Button>
                 </div>
-                
+
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-4">
                     <span className="text-2xl font-bold text-blue-600">{formatPrice(product.price)}</span>
@@ -441,7 +444,7 @@ function ProductGrid({ products, viewMode, onAddToCart, onViewProduct, onCustomi
                       {product.stock > 0 ? `স্টক: ${product.stock}` : "স্টক নেই"}
                     </Badge>
                   </div>
-                  
+
                   <div className="flex space-x-2">
                     <Button
                       variant="outline"
@@ -482,7 +485,7 @@ function ProductGrid({ products, viewMode, onAddToCart, onViewProduct, onCustomi
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
               />
             </div>
-            
+
             {/* Overlay Actions */}
             <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center space-x-2">
               <Button 
@@ -521,7 +524,7 @@ function ProductGrid({ products, viewMode, onAddToCart, onViewProduct, onCustomi
             <h3 className="font-bold text-lg text-gray-800 mb-2 line-clamp-1 group-hover:text-blue-600 transition-colors">
               {product.name}
             </h3>
-            
+
             <p className="text-gray-600 text-sm mb-3 line-clamp-2">
               {product.description || "বিশেষ কাস্টম পণ্য"}
             </p>
@@ -544,7 +547,7 @@ function ProductGrid({ products, viewMode, onAddToCart, onViewProduct, onCustomi
                 <ShoppingCart className="w-4 h-4 mr-2" />
                 কার্টে যোগ করুন
               </Button>
-              
+
               <Button
                 variant="outline"
                 onClick={() => onCustomizeProduct(product)}

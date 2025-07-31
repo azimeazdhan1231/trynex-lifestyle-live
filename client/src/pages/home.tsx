@@ -18,6 +18,8 @@ import { Link, useLocation } from "wouter";
 import { COMPANY_NAME, COMPANY_TAGLINE, WHATSAPP_NUMBER, createWhatsAppUrl, formatPrice } from "@/lib/constants";
 import { trackProductView, trackAddToCart } from "@/lib/analytics";
 import type { Product, Offer } from "@shared/schema";
+import OptimizedImage from "@/components/OptimizedImage";
+import PaginatedProductGrid from "@/components/PaginatedProductGrid";
 
 interface ProductCardProps {
   product: Product;
@@ -195,7 +197,7 @@ const ProductCard = memo(function ProductCard({ product, onAddToCart, onViewProd
                 <MessageCircle className="w-4 h-4 mr-1" />
                 অর্ডার
               </Button>
-              
+
               {onCustomize && (
                 <Button
                   onClick={handleCustomize}
@@ -382,7 +384,7 @@ export default function Home() {
       price: Number(product.price),
       customization: customization,
     });
-    
+
     toast({
       title: "কাস্টমাইজড পণ্য যোগ করা হয়েছে!",
       description: `${product.name} আপনার পছন্দমতো কাস্টমাইজ করে কার্টে যোগ করা হয়েছে`,
