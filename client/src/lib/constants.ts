@@ -1,4 +1,3 @@
-
 export const COMPANY_NAME = "Trynex Lifestyle";
 
 export const PRODUCT_CATEGORIES = [
@@ -75,8 +74,6 @@ export const THANAS: Record<string, string[]> = {
     "ভালুকা", "ত্রিশাল", "ধোবাউড়া", "ঈশ্বরগঞ্জ"
   ]
 };
-
-export const COMPANY_NAME = "Trynex Lifestyle";
 
 export const formatPrice = (price: number | string): string => {
   const numPrice = typeof price === 'string' ? parseFloat(price) : price;
