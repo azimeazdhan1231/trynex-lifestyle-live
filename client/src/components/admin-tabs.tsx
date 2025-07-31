@@ -251,11 +251,7 @@ export default function AdminTabs() {
     setIsOfferDialogOpen(true);
   };
 
-  const handleViewOrderDetails = (order: Order) => {
-    console.log('Viewing order details for:', order);
-    setSelectedOrder(order);
-    setIsOrderDetailsOpen(true);
-  };
+
 
   return (
     <div className="max-w-7xl mx-auto">
@@ -378,9 +374,14 @@ export default function AdminTabs() {
                         <Button 
                           variant="outline" 
                           size="sm"
-                          onClick={() => handleViewOrderDetails(order)}
+                          className="bg-yellow-50 hover:bg-yellow-100 border-yellow-300 text-yellow-800"
+                          onClick={() => {
+                            console.log('Clicking order details for:', order);
+                            setSelectedOrder(order);
+                            setIsOrderDetailsOpen(true);
+                          }}
                         >
-                          <Eye className="w-4 h-4 mr-1" />
+                          <Eye className="w-4 h-4 mr-1 text-yellow-600" />
                           বিস্তারিত
                         </Button>
                       </TableCell>
