@@ -11,6 +11,7 @@ import CartModal from "@/components/cart-modal";
 import SearchBar from "@/components/search-bar";
 import ProductModal from "@/components/product-modal";
 import { useAuth } from "@/hooks/useAuth";
+import { useSimpleAuth } from "@/hooks/use-simple-auth";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -35,7 +36,13 @@ export default function Header({ cartCount, onCartOpen }: HeaderProps) {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
   const [location] = useLocation();
-  const { user, isLoading, isAuthenticated } = useAuth();
+  const { user: oldUser, isLoading: oldIsLoading, isAuthenticated: oldIsAuthenticated } = useAuth();
+  const { user, isLoading, isAuthenticated, logout } = useSimpleAuth();
+  
+  // Use simple auth if available, otherwise fall back to old auth
+  const currentUser = user || oldUser;
+  const currentIsAuthenticated = isAuthenticated || oldIsAuthenticated;
+  const currentIsLoading = isLoading && oldIsLoading;
 
   const navItems = [
     { name: "হোম", href: "/" },
@@ -110,16 +117,16 @@ export default function Header({ cartCount, onCartOpen }: HeaderProps) {
               </Button>
 
               {/* User Authentication */}
-              {!isLoading && (
+              {!currentIsLoading && (
                 <>
-                  {isAuthenticated ? (
+                  {currentIsAuthenticated ? (
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                           <Avatar className="h-8 w-8">
-                            <AvatarImage src={user?.profileImageUrl || ''} alt={user?.firstName || 'User'} />
+                            <AvatarImage src={currentUser?.profileImageUrl || ''} alt={currentUser?.firstName || 'User'} />
                             <AvatarFallback>
-                              {user?.firstName?.[0] || user?.email?.[0] || 'U'}
+                              {currentUser?.firstName?.[0] || currentUser?.phone?.[0] || 'U'}
                             </AvatarFallback>
                           </Avatar>
                         </Button>
@@ -128,12 +135,12 @@ export default function Header({ cartCount, onCartOpen }: HeaderProps) {
                         <DropdownMenuLabel className="font-normal">
                           <div className="flex flex-col space-y-1">
                             <p className="text-sm font-medium leading-none">
-                              {user?.firstName && user?.lastName 
-                                ? `${user.firstName} ${user.lastName}`
-                                : user?.email}
+                              {currentUser?.firstName && currentUser?.lastName 
+                                ? `${currentUser.firstName} ${currentUser.lastName}`
+                                : currentUser?.phone || currentUser?.email}
                             </p>
                             <p className="text-xs leading-none text-muted-foreground">
-                              {user?.email}
+                              {currentUser?.phone || currentUser?.email}
                             </p>
                           </div>
                         </DropdownMenuLabel>
@@ -153,22 +160,26 @@ export default function Header({ cartCount, onCartOpen }: HeaderProps) {
                           </DropdownMenuItem>
                         </DropdownMenuGroup>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem asChild>
-                          <a href="/api/logout" className="cursor-pointer">
-                            <LogOut className="mr-2 h-4 w-4" />
-                            <span>লগআউট</span>
-                          </a>
+                        <DropdownMenuItem 
+                          onClick={() => {
+                            logout();
+                            window.location.href = '/';
+                          }}
+                          className="cursor-pointer"
+                        >
+                          <LogOut className="mr-2 h-4 w-4" />
+                          <span>লগআউট</span>
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   ) : (
                       <div className="flex items-center space-x-1 sm:space-x-2">
                       <Button asChild variant="default" size="sm" className="text-xs sm:text-sm px-2 sm:px-3">
-                        <a href="/api/login">
+                        <Link href="/auth">
                           <User className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
                           <span className="hidden sm:inline">লগইন</span>
                           <span className="sm:hidden">লগ</span>
-                        </a>
+                        </Link>
                       </Button>
                     </div>
                   )}

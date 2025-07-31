@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { memo } from "react";
 import { ArrowRight, Gift, MessageCircle, ArrowUp, Star, Clock, TrendingUp, ShoppingCart, Eye, Heart, Share2, Phone, ChevronRight, Sparkles, Palette } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -25,7 +26,7 @@ interface ProductCardProps {
   showBadge?: boolean;
 }
 
-function ProductCard({ product, onAddToCart, onViewProduct, onCustomize, showBadge = true }: ProductCardProps) {
+const ProductCard = memo(function ProductCard({ product, onAddToCart, onViewProduct, onCustomize, showBadge = true }: ProductCardProps) {
   const [isFavorite, setIsFavorite] = useState(false);
 
   const handleWhatsAppOrder = () => {
@@ -210,7 +211,7 @@ function ProductCard({ product, onAddToCart, onViewProduct, onCustomize, showBad
       </CardContent>
     </Card>
   );
-}
+});
 
 function ProductSection({ 
   title, 

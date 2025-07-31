@@ -70,6 +70,10 @@ export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
   upsertUser(user: UpsertUser): Promise<User>;
   getUsers(): Promise<User[]>; // For admin panel
+  
+  // Simple Authentication Methods
+  getUserByPhone(phone: string): Promise<User | undefined>;
+  createUser(user: { phone: string; password: string; firstName: string; lastName: string; address: string; email: string | null; profileImageUrl: string | null }): Promise<User>;
 
   // User Carts
   getUserCart(userId: string): Promise<UserCart | undefined>;
@@ -355,6 +359,24 @@ export class DatabaseStorage implements IStorage {
   // User operations (Required for Replit Auth)
   async getUser(id: string): Promise<User | undefined> {
     const result = await db.select().from(users).where(eq(users.id, id)).limit(1);
+    return result[0];
+  }
+
+  async getUserByPhone(phone: string): Promise<User | undefined> {
+    const result = await db.select().from(users).where(eq(users.phone, phone)).limit(1);
+    return result[0];
+  }
+
+  async createUser(userData: { phone: string; password: string; firstName: string; lastName: string; address: string; email: string | null; profileImageUrl: string | null }): Promise<User> {
+    const result = await db.insert(users).values({
+      phone: userData.phone,
+      password: userData.password,
+      firstName: userData.firstName,
+      lastName: userData.lastName || '',
+      address: userData.address,
+      email: userData.email,
+      profileImageUrl: userData.profileImageUrl,
+    }).returning();
     return result[0];
   }
 
