@@ -1,6 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
+import { setupAuth, isAuthenticated, optionalAuth } from "./replitAuth";
 import { 
   insertOrderSchema, insertProductSchema, insertOfferSchema,
   insertCategorySchema, insertPromoCodeSchema, insertAnalyticsSchema,
@@ -8,6 +9,67 @@ import {
 } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Setup authentication middleware
+  await setupAuth(app);
+
+  // Auth routes
+  app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      res.json(user);
+    } catch (error) {
+      console.error("Error fetching user:", error);
+      res.status(500).json({ message: "Failed to fetch user" });
+    }
+  });
+
+  // User management routes (for admin)
+  app.get('/api/users', async (req, res) => {
+    try {
+      const users = await storage.getUsers();
+      res.json(users);
+    } catch (error) {
+      console.error("Error fetching users:", error);
+      res.status(500).json({ message: "Error fetching users" });
+    }
+  });
+
+  // User cart routes
+  app.get('/api/user/cart', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const cart = await storage.getUserCart(userId);
+      res.json(cart ? JSON.parse(cart.items as string) : []);
+    } catch (error) {
+      console.error("Error fetching user cart:", error);
+      res.status(500).json({ message: "Error fetching cart" });
+    }
+  });
+
+  app.post('/api/user/cart', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { items } = req.body;
+      const cart = await storage.updateUserCart(userId, items);
+      res.json(cart);
+    } catch (error) {
+      console.error("Error updating user cart:", error);
+      res.status(500).json({ message: "Error updating cart" });
+    }
+  });
+
+  // User orders routes
+  app.get('/api/user/orders', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const orders = await storage.getUserOrders(userId);
+      res.json(orders);
+    } catch (error) {
+      console.error("Error fetching user orders:", error);
+      res.status(500).json({ message: "Error fetching orders" });
+    }
+  });
   // Products
   app.get("/api/products", async (req, res) => {
     try {
@@ -91,10 +153,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/orders", async (req, res) => {
+  app.post("/api/orders", optionalAuth, async (req: any, res) => {
     try {
       const orderData = insertOrderSchema.parse(req.body);
       const order = await storage.createOrder(orderData);
+      
+      // Link order to user if authenticated
+      if (req.user?.claims?.sub) {
+        await storage.linkOrderToUser(order.id, req.user.claims.sub);
+      }
+      
       res.status(201).json(order);
     } catch (error) {
       console.error("Error creating order:", error);

@@ -3,10 +3,13 @@ import postgres from "postgres";
 import { eq, desc, and, gte, lte } from "drizzle-orm";
 import { 
   products, orders, offers, admins, categories, promoCodes, analytics, siteSettings,
+  users, userCarts, userOrders,
   type Product, type InsertProduct, type Order, type InsertOrder, 
   type Offer, type InsertOffer, type Admin, type InsertAdmin,
   type Category, type InsertCategory, type PromoCode, type InsertPromoCode,
-  type Analytics, type InsertAnalytics, type SiteSettings, type InsertSiteSettings
+  type Analytics, type InsertAnalytics, type SiteSettings, type InsertSiteSettings,
+  type User, type UpsertUser, type UserCart, type InsertUserCart,
+  type UserOrder, type InsertUserOrder
 } from "@shared/schema";
 
 const connectionString = process.env.DATABASE_URL || "postgresql://postgres.lxhhgdqfxmeohayceshb:Amiomito1Amiomito1@aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres";
@@ -61,6 +64,19 @@ export interface IStorage {
   // Admins
   getAdminByEmail(email: string): Promise<Admin | undefined>;
   createAdmin(admin: InsertAdmin): Promise<Admin>;
+
+  // Users (Required for Replit Auth)
+  getUser(id: string): Promise<User | undefined>;
+  upsertUser(user: UpsertUser): Promise<User>;
+  getUsers(): Promise<User[]>; // For admin panel
+  
+  // User Carts
+  getUserCart(userId: string): Promise<UserCart | undefined>;
+  updateUserCart(userId: string, items: any[]): Promise<UserCart>;
+  
+  // User Orders
+  getUserOrders(userId: string): Promise<Order[]>;
+  linkOrderToUser(orderId: string, userId: string): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -317,6 +333,70 @@ export class DatabaseStorage implements IStorage {
     }
 
     return result[0];
+  }
+
+  // User operations (Required for Replit Auth)
+  async getUser(id: string): Promise<User | undefined> {
+    const result = await db.select().from(users).where(eq(users.id, id)).limit(1);
+    return result[0];
+  }
+
+  async upsertUser(userData: UpsertUser): Promise<User> {
+    const result = await db
+      .insert(users)
+      .values(userData)
+      .onConflictDoUpdate({
+        target: users.id,
+        set: {
+          ...userData,
+          updatedAt: new Date(),
+        },
+      })
+      .returning();
+    return result[0];
+  }
+
+  async getUsers(): Promise<User[]> {
+    const result = await db.select().from(users).orderBy(desc(users.createdAt));
+    return result;
+  }
+
+  // User Cart operations
+  async getUserCart(userId: string): Promise<UserCart | undefined> {
+    const result = await db.select().from(userCarts).where(eq(userCarts.user_id, userId)).limit(1);
+    return result[0];
+  }
+
+  async updateUserCart(userId: string, items: any[]): Promise<UserCart> {
+    const existing = await this.getUserCart(userId);
+    
+    if (existing) {
+      const result = await db.update(userCarts)
+        .set({ items: JSON.stringify(items), updated_at: new Date() })
+        .where(eq(userCarts.user_id, userId))
+        .returning();
+      return result[0];
+    } else {
+      const result = await db.insert(userCarts)
+        .values({ user_id: userId, items: JSON.stringify(items) })
+        .returning();
+      return result[0];
+    }
+  }
+
+  // User Order operations
+  async getUserOrders(userId: string): Promise<Order[]> {
+    const result = await db.select()
+      .from(orders)
+      .where(eq(orders.user_id, userId))
+      .orderBy(desc(orders.created_at));
+    return result;
+  }
+
+  async linkOrderToUser(orderId: string, userId: string): Promise<void> {
+    await db.update(orders)
+      .set({ user_id: userId })
+      .where(eq(orders.id, orderId));
   }
 }
 

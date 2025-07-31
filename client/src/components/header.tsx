@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Heart, Search, ShoppingCart, User, Menu, X, Phone, Mail, MapPin, Clock } from "lucide-react";
+import { Heart, Search, ShoppingCart, User, Menu, X, Phone, Mail, MapPin, Clock, LogOut } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
@@ -10,6 +10,17 @@ import { COMPANY_NAME } from "@/lib/constants";
 import CartModal from "@/components/cart-modal";
 import SearchBar from "@/components/search-bar";
 import ProductModal from "@/components/product-modal";
+import { useAuth } from "@/hooks/useAuth";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import type { Product } from "@shared/schema";
 
 interface HeaderProps {
@@ -24,6 +35,7 @@ export default function Header({ cartCount, onCartOpen }: HeaderProps) {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
   const [location] = useLocation();
+  const { user, isLoading, isAuthenticated } = useAuth();
 
   const navItems = [
     { name: "হোম", href: "/" },
@@ -96,6 +108,69 @@ export default function Header({ cartCount, onCartOpen }: HeaderProps) {
                   </span>
                 )}
               </Button>
+
+              {/* User Authentication */}
+              {!isLoading && (
+                <>
+                  {isAuthenticated ? (
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                          <Avatar className="h-8 w-8">
+                            <AvatarImage src={user?.profileImageUrl || ''} alt={user?.firstName || 'User'} />
+                            <AvatarFallback>
+                              {user?.firstName?.[0] || user?.email?.[0] || 'U'}
+                            </AvatarFallback>
+                          </Avatar>
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent className="w-56" align="end" forceMount>
+                        <DropdownMenuLabel className="font-normal">
+                          <div className="flex flex-col space-y-1">
+                            <p className="text-sm font-medium leading-none">
+                              {user?.firstName && user?.lastName 
+                                ? `${user.firstName} ${user.lastName}`
+                                : user?.email}
+                            </p>
+                            <p className="text-xs leading-none text-muted-foreground">
+                              {user?.email}
+                            </p>
+                          </div>
+                        </DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuGroup>
+                          <DropdownMenuItem asChild>
+                            <Link href="/profile" className="cursor-pointer">
+                              <User className="mr-2 h-4 w-4" />
+                              <span>প্রোফাইল</span>
+                            </Link>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem asChild>
+                            <Link href="/orders" className="cursor-pointer">
+                              <ShoppingCart className="mr-2 h-4 w-4" />
+                              <span>আমার অর্ডার</span>
+                            </Link>
+                          </DropdownMenuItem>
+                        </DropdownMenuGroup>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem asChild>
+                          <a href="/api/logout" className="cursor-pointer">
+                            <LogOut className="mr-2 h-4 w-4" />
+                            <span>লগআউট</span>
+                          </a>
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  ) : (
+                    <Button asChild variant="outline" size="sm">
+                      <a href="/api/login">
+                        <User className="mr-2 h-4 w-4" />
+                        লগইন
+                      </a>
+                    </Button>
+                  )}
+                </>
+              )}
 
               {/* Mobile Menu */}
               <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>

@@ -18,6 +18,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import OrderDetailsModal from "@/components/order-details-modal";
 import AnalyticsAdmin from "@/components/analytics-admin";
 import type { Product, Order, Offer, Category, PromoCode, Analytics, SiteSettings } from "@shared/schema";
+import UsersManagement from "@/components/users-management";
 
 export default function EnhancedAdminTabs() {
   const [activeTab, setActiveTab] = useState("dashboard");
@@ -417,7 +418,7 @@ export default function EnhancedAdminTabs() {
       </div>
 
       <Tabs defaultValue="dashboard" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-8">
+        <TabsList className="grid w-full grid-cols-9">
           <TabsTrigger value="dashboard" className="relative">
             ড্যাশবোর্ড
             {activeTab === "dashboard" && newOrdersCount > 0 && (
@@ -438,6 +439,7 @@ export default function EnhancedAdminTabs() {
           <TabsTrigger value="categories">ক্যাটাগরি</TabsTrigger>
           <TabsTrigger value="offers">অফার</TabsTrigger>
           <TabsTrigger value="promo-codes">প্রমো কোড</TabsTrigger>
+          <TabsTrigger value="users">ব্যবহারকারী</TabsTrigger>
           <TabsTrigger value="analytics">অ্যানালিটিক্স</TabsTrigger>
           <TabsTrigger value="settings">সেটিংস</TabsTrigger>
         </TabsList>
@@ -1276,6 +1278,11 @@ export default function EnhancedAdminTabs() {
               </CardContent>
             </Card>
           </div>
+        </TabsContent>
+
+        {/* Users Tab */}
+        <TabsContent value="users">
+          <UsersManagement />
         </TabsContent>
 
         {/* Analytics Tab */}

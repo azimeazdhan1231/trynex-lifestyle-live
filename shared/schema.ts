@@ -20,6 +20,7 @@ export const products = pgTable("products", {
 export const orders = pgTable("orders", {
   id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
   tracking_id: text("tracking_id").unique().notNull(),
+  user_id: varchar("user_id"), // Optional - for registered users
   customer_name: text("customer_name").notNull(),
   district: text("district").notNull(),
   thana: text("thana").notNull(),
@@ -100,6 +101,40 @@ export const siteSettings = pgTable("site_settings", {
   updated_at: timestamp("updated_at").defaultNow(),
 });
 
+// Session storage table for Replit Auth
+export const sessions = pgTable("sessions", {
+  sid: varchar("sid").primaryKey(),
+  sess: jsonb("sess").notNull(),
+  expire: timestamp("expire").notNull(),
+});
+
+// User storage table  
+export const users = pgTable("users", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  email: varchar("email").unique(),
+  firstName: varchar("first_name"),
+  lastName: varchar("last_name"),
+  profileImageUrl: varchar("profile_image_url"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// User carts for persistent storage
+export const userCarts = pgTable("user_carts", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  user_id: varchar("user_id").notNull(),
+  items: jsonb("items").notNull().default('[]'),
+  updated_at: timestamp("updated_at").defaultNow(),
+});
+
+// Update orders table to include user_id for logged in users
+export const userOrders = pgTable("user_orders", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  user_id: varchar("user_id"),
+  order_id: uuid("order_id").references(() => orders.id),
+  created_at: timestamp("created_at").defaultNow(),
+});
+
 export const insertProductSchema = createInsertSchema(products).omit({
   id: true,
   created_at: true,
@@ -140,6 +175,16 @@ export const insertSiteSettingsSchema = createInsertSchema(siteSettings).omit({
   id: true,
 });
 
+export const insertUserCartSchema = createInsertSchema(userCarts).omit({
+  id: true,
+  updated_at: true,
+});
+
+export const insertUserOrderSchema = createInsertSchema(userOrders).omit({
+  id: true,
+  created_at: true,
+});
+
 export type Product = typeof products.$inferSelect;
 export type InsertProduct = z.infer<typeof insertProductSchema>;
 export type Order = typeof orders.$inferSelect;
@@ -156,3 +201,9 @@ export type Analytics = typeof analytics.$inferSelect;
 export type InsertAnalytics = z.infer<typeof insertAnalyticsSchema>;
 export type SiteSettings = typeof siteSettings.$inferSelect;
 export type InsertSiteSettings = z.infer<typeof insertSiteSettingsSchema>;
+export type User = typeof users.$inferSelect;
+export type UpsertUser = typeof users.$inferInsert;
+export type UserCart = typeof userCarts.$inferSelect;
+export type InsertUserCart = z.infer<typeof insertUserCartSchema>;
+export type UserOrder = typeof userOrders.$inferSelect;
+export type InsertUserOrder = z.infer<typeof insertUserOrderSchema>;

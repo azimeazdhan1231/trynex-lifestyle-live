@@ -4,6 +4,15 @@
 A comprehensive Bengali-friendly eCommerce store with advanced admin panel, analytics integration, and responsive design. Live at https://trynex-lifestyle.pages.dev/
 
 ## Recent Changes
+✅ **Complete User Authentication System** (2025-01-31)
+- Implemented full user authentication using Replit Auth with PostgreSQL integration
+- Added user registration/login with email and social login (Google, Facebook) capabilities
+- Created user profile and order history pages for authenticated users
+- Updated header with authentication UI including user avatar and dropdown menu
+- Added users management section to admin panel for tracking and managing user accounts
+- Integrated persistent cart items and order history access for logged-in users
+- Added middleware for handling both authenticated and guest checkout flows
+
 ✅ **Footer Position & Image Display Fixes** (2025-01-31)
 - Fixed footer appearing above hero section by removing it from header component
 - Fixed admin panel not showing client-uploaded images in order details
@@ -68,13 +77,17 @@ A comprehensive Bengali-friendly eCommerce store with advanced admin panel, anal
 
 ### Database Schema
 - `products` - Product catalog with stock management
-- `orders` - Order management with tracking IDs and delivery info
+- `orders` - Order management with tracking IDs and delivery info (now linked to users)
 - `categories` - Product categorization with Bengali names
 - `promo_codes` - Discount code system with usage limits
 - `analytics` - Event tracking for user behavior analysis
 - `site_settings` - Configurable site parameters
 - `offers` - Special offers and promotions
 - `admins` - Admin user management
+- `users` - User authentication and profile management (Replit Auth)
+- `user_carts` - Persistent cart storage for logged-in users
+- `user_orders` - Order-user relationship mapping
+- `sessions` - Session management for authentication
 
 ### Key Features
 - **Responsive Design** - Mobile-first approach with Bengali typography
