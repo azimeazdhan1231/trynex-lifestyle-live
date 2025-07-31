@@ -17,6 +17,7 @@ import { useCart } from "@/hooks/use-cart";
 import { useAnalytics } from "@/hooks/use-analytics";
 import { useToast } from "@/hooks/use-toast";
 import type { Product, Category } from "@shared/schema";
+import { useProgressiveProducts } from "@/hooks/use-progressive-products";
 
 export default function Products() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -31,13 +32,14 @@ export default function Products() {
   useAnalytics(); // Initialize analytics tracking
   const { toast } = useToast();
 
-  const { data: products = [], isLoading: productsLoading, error: productsError } = useQuery<Product[]>({
-    queryKey: ["/api/products"],
-    staleTime: 1000 * 60 * 5, // Cache for 5 minutes
-    gcTime: 1000 * 60 * 10, // Keep in cache for 10 minutes
-    retry: 1, // Only retry once on failure
-    refetchOnWindowFocus: false, // Don't refetch on window focus
-  });
+  // Use progressive loading for ultra-fast product display
+  const { 
+    products, 
+    isLoading: productsLoading, 
+    isProgressive, 
+    displayedCount, 
+    totalCount 
+  } = useProgressiveProducts();
 
   const { data: categories = [], isLoading: categoriesLoading } = useQuery<Category[]>({
     queryKey: ["/api/categories"],

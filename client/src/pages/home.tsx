@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import ProgressiveProductGrid from "@/components/ProgressiveProductGrid";
 import Header from "@/components/header";
 import TrackingSection from "@/components/tracking-section";
 import PopupOffer from "../components/popup-offer";
@@ -275,17 +276,12 @@ function ProductSection({
           <div className="w-24 h-1 bg-gradient-to-r from-primary to-primary/50 mx-auto mt-6 rounded-full"></div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 lg:gap-8 mb-8 sm:mb-12">
-          {products.map((product) => (
-            <ProductCard 
-              key={product.id} 
-              product={product} 
-              onAddToCart={onAddToCart}
-              onViewProduct={onViewProduct}
-              onCustomize={onCustomize}
-            />
-          ))}
-        </div>
+        <ProgressiveProductGrid
+          products={products}
+          onAddToCart={onAddToCart}
+          onViewProduct={onViewProduct}
+          onCustomize={onCustomize}
+        />
 
         <div className="text-center">
           <Button asChild size="lg" variant="outline" className="group">
@@ -317,12 +313,13 @@ export default function Home() {
     enabled: false, // Disable auto-loading to prevent popup blocking
   });
 
-  // Load products for homepage sections
+  // Load products for homepage sections with progressive loading
   const { data: products = [], isLoading: productsLoading } = useQuery<Product[]>({
     queryKey: ["/api/products"],
     staleTime: 1000 * 60 * 5, // Cache for 5 minutes
     retry: 1, // Only retry once
     refetchOnWindowFocus: false, // Don't refetch on window focus
+    placeholderData: [], // Show empty array immediately while loading
   });
 
   // Filter products for different sections with fallbacks
