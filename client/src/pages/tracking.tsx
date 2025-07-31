@@ -289,52 +289,66 @@ export default function TrackingPage() {
                         </div>
                         
                         {/* Customization Details */}
-                        {item.customization && (
-                          <div className="mt-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
-                            <h5 className="font-medium text-blue-900 mb-2 flex items-center gap-2">
-                              <Settings className="w-4 h-4" />
-                              কাস্টমাইজেশন বিবরণ
-                            </h5>
-                            <div className="text-sm text-blue-700 space-y-2">
-                              {item.customization.size && (
-                                <div className="flex items-center gap-2">
-                                  <span className="font-medium">সাইজ:</span>
-                                  <span>{item.customization.size}</span>
-                                </div>
-                              )}
-                              {item.customization.color && (
-                                <div className="flex items-center gap-2">
-                                  <span className="font-medium">রং:</span>
-                                  <span>{item.customization.color}</span>
-                                </div>
-                              )}
-                              {item.customization.printArea && (
-                                <div className="flex items-center gap-2">
-                                  <span className="font-medium">প্রিন্ট এরিয়া:</span>
-                                  <span>{item.customization.printArea}</span>
-                                </div>
-                              )}
-                              {item.customization.customText && item.customization.customText.trim() && (
-                                <div>
-                                  <span className="font-medium">কাস্টম টেক্সট:</span>
-                                  <p className="mt-1 p-2 bg-white rounded border text-gray-900 whitespace-pre-wrap">{item.customization.customText.trim()}</p>
-                                </div>
-                              )}
-                              {item.customization.specialInstructions && item.customization.specialInstructions.trim() && (
-                                <div>
-                                  <span className="font-medium">বিশেষ নির্দেশনা:</span>
-                                  <p className="mt-1 p-2 bg-white rounded border text-gray-900 whitespace-pre-wrap">{item.customization.specialInstructions.trim()}</p>
-                                </div>
-                              )}
-                              {item.customization.customImage && (
-                                <div className="flex items-center gap-2">
-                                  <CheckCircle className="w-4 h-4 text-green-600" />
-                                  <span className="text-green-600 font-medium">কাস্টম ছবি আপলোড করা হয়েছে</span>
-                                </div>
-                              )}
+                        {(() => {
+                          // Check if there's any customization data to show
+                          const hasCustomization = item.customization && (
+                            item.customization.size || 
+                            item.customization.color || 
+                            item.customization.printArea || 
+                            (item.customization.customText && item.customization.customText.trim()) ||
+                            (item.customization.specialInstructions && item.customization.specialInstructions.trim()) ||
+                            item.customization.customImage
+                          );
+                          
+                          if (!hasCustomization) return null;
+                          
+                          return (
+                            <div className="mt-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                              <h5 className="font-medium text-blue-900 mb-2 flex items-center gap-2">
+                                <Settings className="w-4 h-4" />
+                                কাস্টমাইজেশন বিবরণ
+                              </h5>
+                              <div className="text-sm text-blue-700 space-y-2">
+                                {item.customization.size && (
+                                  <div className="flex items-center gap-2">
+                                    <span className="font-medium">সাইজ:</span>
+                                    <span>{item.customization.size}</span>
+                                  </div>
+                                )}
+                                {item.customization.color && (
+                                  <div className="flex items-center gap-2">
+                                    <span className="font-medium">রং:</span>
+                                    <span>{item.customization.color}</span>
+                                  </div>
+                                )}
+                                {item.customization.printArea && (
+                                  <div className="flex items-center gap-2">
+                                    <span className="font-medium">প্রিন্ট এরিয়া:</span>
+                                    <span>{item.customization.printArea}</span>
+                                  </div>
+                                )}
+                                {item.customization.customText && item.customization.customText.trim() && (
+                                  <div>
+                                    <span className="font-medium">কাস্টম টেক্সট:</span>
+                                    <p className="mt-1 p-3 bg-white rounded border text-gray-900 whitespace-pre-wrap border-gray-300">{item.customization.customText.trim()}</p>
+                                  </div>
+                                )}
+                                {item.customization.specialInstructions && item.customization.specialInstructions.trim() && (
+                                  <div>
+                                    <span className="font-medium">বিশেষ নির্দেশনা:</span>
+                                    <p className="mt-1 p-3 bg-white rounded border text-gray-900 whitespace-pre-wrap border-gray-300">{item.customization.specialInstructions.trim()}</p>
+                                  </div>
+                                )}
+                                {item.customization.customImage && (
+                                  <div className="flex items-center gap-2">
+                                    <CheckCircle className="w-4 h-4 text-green-600" />
+                                    <span className="text-green-600 font-medium">কাস্টম ছবি আপলোড করা হয়েছে</span>
+                                  </div>
+                                )}
+                              </div>
                             </div>
-                          </div>
-                        )}
+                          );
+                        })()}
                         
                         {/* Legacy customization support */}
                         {!item.customization && (item.customText || item.specialInstructions || item.customImage || item.customImages) && (

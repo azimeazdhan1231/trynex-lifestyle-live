@@ -36,17 +36,25 @@ export default function EnhancedAdminTabs() {
     hasNotificationPermission 
   } = useOrderNotifications();
 
-  // Initialize notifications on mount
+  // Initialize notifications on mount - with mobile safety checks
   useEffect(() => {
     if (!isInitialized) {
-      // Auto-request notification permission
-      requestNotificationPermission();
+      // Only request notification permission if not on mobile or if explicitly supported
+      const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
       
-      // Show welcome message only once
+      if (!isMobile || ('Notification' in window && typeof Notification.requestPermission === 'function')) {
+        try {
+          requestNotificationPermission();
+        } catch (error) {
+          console.warn('Notification permission request failed:', error);
+        }
+      }
+      
+      // Show welcome message only once - shorter for mobile
       toast({
-        title: "🎯 অ্যাডমিন প্যানেল সক্রিয়",
-        description: "নতুন অর্ডারের জন্য রিয়েল-টাইম নোটিফিকেশন চালু আছে",
-        duration: 5000,
+        title: "অ্যাডমিন প্যানেল সক্রিয়",
+        description: isMobile ? "মোবাইল ড্যাশবোর্ড লোড হয়েছে" : "রিয়েল-টাইম নোটিফিকেশন চালু আছে",
+        duration: 3000,
       });
       
       setIsInitialized(true);
@@ -533,8 +541,9 @@ export default function EnhancedAdminTabs() {
             <CardHeader>
               <CardTitle>অর্ডার ম্যানেজমেন্ট</CardTitle>
             </CardHeader>
-            <CardContent>
-              <Table>
+            <CardContent className="p-0">
+              <div className="overflow-x-auto">
+                <Table className="min-w-full">
                 <TableHeader>
                   <TableRow>
                     <TableHead>ট্র্যাকিং আইডি</TableHead>
@@ -587,7 +596,8 @@ export default function EnhancedAdminTabs() {
                     </TableRow>
                   ))}
                 </TableBody>
-              </Table>
+                </Table>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>

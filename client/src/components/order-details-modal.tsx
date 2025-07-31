@@ -227,9 +227,14 @@ export default function OrderDetailsModal({ isOpen, onClose, order }: OrderDetai
                     <div key={index} className="border rounded-lg p-4">
                       <div className="flex items-start gap-4">
                         <img
-                          src={item.image_url || "https://images.unsplash.com/photo-1544787219-7f47ccb76574?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"}
+                          src={
+                            item.customization?.customImage || 
+                            item.customImage || 
+                            item.image_url || 
+                            "https://images.unsplash.com/photo-1544787219-7f47ccb76574?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"
+                          }
                           alt={item.name}
-                          className="w-20 h-20 object-cover rounded-lg"
+                          className="w-24 h-24 object-cover rounded-lg border-2 border-gray-200"
                         />
                         <div className="flex-1">
                           <h4 className="font-semibold text-lg">{item.name}</h4>
@@ -255,44 +260,57 @@ export default function OrderDetailsModal({ isOpen, onClose, order }: OrderDetai
                           </div>
 
                           {/* Customization Details */}
-                          {item.customization && Object.keys(item.customization).length > 0 && (
-                            <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
-                              <h5 className="font-semibold text-blue-900 mb-3 flex items-center gap-2">
-                                <Settings className="w-4 h-4" />
-                                কাস্টমাইজেশন বিবরণ
-                              </h5>
-                              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
-                                {item.customization.size && (
-                                  <div>
-                                    <span className="text-blue-600 font-medium">সাইজ:</span>
-                                    <span className="ml-2">{item.customization.size}</span>
-                                  </div>
-                                )}
-                                {item.customization.color && (
-                                  <div>
-                                    <span className="text-blue-600 font-medium">রং:</span>
-                                    <span className="ml-2">{item.customization.color}</span>
-                                  </div>
-                                )}
-                                {item.customization.printArea && (
-                                  <div>
-                                    <span className="text-blue-600 font-medium">প্রিন্ট এরিয়া:</span>
-                                    <span className="ml-2">{item.customization.printArea}</span>
-                                  </div>
-                                )}
-                                {item.customization.customText && item.customization.customText.trim() && (
-                                  <div className="md:col-span-2">
-                                    <span className="text-blue-600 font-medium">কাস্টম টেক্সট:</span>
-                                    <p className="mt-1 p-2 bg-white rounded border whitespace-pre-wrap">{item.customization.customText.trim()}</p>
-                                  </div>
-                                )}
-                                {item.customization.specialInstructions && item.customization.specialInstructions.trim() && (
-                                  <div className="md:col-span-2">
-                                    <span className="text-blue-600 font-medium">বিশেষ নির্দেশনা:</span>
-                                    <p className="mt-1 p-2 bg-white rounded border whitespace-pre-wrap">{item.customization.specialInstructions.trim()}</p>
-                                  </div>
-                                )}
-                              </div>
+                          {(() => {
+                            // Check if there's any customization data to show
+                            const hasCustomization = item.customization && (
+                              item.customization.size || 
+                              item.customization.color || 
+                              item.customization.printArea || 
+                              (item.customization.customText && item.customization.customText.trim()) ||
+                              (item.customization.specialInstructions && item.customization.specialInstructions.trim()) ||
+                              item.customization.customImage
+                            );
+                            
+                            if (!hasCustomization) return null;
+                            
+                            return (
+                              <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                                <h5 className="font-semibold text-blue-900 mb-3 flex items-center gap-2">
+                                  <Settings className="w-4 h-4" />
+                                  কাস্টমাইজেশন বিবরণ
+                                </h5>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                                  {item.customization.size && (
+                                    <div>
+                                      <span className="text-blue-600 font-medium">সাইজ:</span>
+                                      <span className="ml-2">{item.customization.size}</span>
+                                    </div>
+                                  )}
+                                  {item.customization.color && (
+                                    <div>
+                                      <span className="text-blue-600 font-medium">রং:</span>
+                                      <span className="ml-2">{item.customization.color}</span>
+                                    </div>
+                                  )}
+                                  {item.customization.printArea && (
+                                    <div>
+                                      <span className="text-blue-600 font-medium">প্রিন্ট এরিয়া:</span>
+                                      <span className="ml-2">{item.customization.printArea}</span>
+                                    </div>
+                                  )}
+                                  {item.customization.customText && item.customization.customText.trim() && (
+                                    <div className="md:col-span-2">
+                                      <span className="text-blue-600 font-medium">কাস্টম টেক্সট:</span>
+                                      <p className="mt-1 p-3 bg-white rounded border whitespace-pre-wrap border-gray-300 text-gray-800">{item.customization.customText.trim()}</p>
+                                    </div>
+                                  )}
+                                  {item.customization.specialInstructions && item.customization.specialInstructions.trim() && (
+                                    <div className="md:col-span-2">
+                                      <span className="text-blue-600 font-medium">বিশেষ নির্দেশনা:</span>
+                                      <p className="mt-1 p-3 bg-white rounded border whitespace-pre-wrap border-gray-300 text-gray-800">{item.customization.specialInstructions.trim()}</p>
+                                    </div>
+                                  )}
+                                </div>
 
                               {/* Custom Images */}
                               {item.customization.customImage && (
@@ -326,8 +344,9 @@ export default function OrderDetailsModal({ isOpen, onClose, order }: OrderDetai
                                   </div>
                                 </div>
                               )}
-                            </div>
-                          )}
+                              </div>
+                            );
+                          })()}
 
                           {/* Legacy Customization Support */}
                           {(!item.customization || Object.keys(item.customization).length === 0) && (item.customText || item.specialInstructions || item.customImages || item.customImage) && (
