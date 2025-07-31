@@ -1,70 +1,58 @@
-import { Route, Switch } from "wouter";
-import { QueryClientProvider } from "@tanstack/react-query";
-import { queryClient } from "./lib/queryClient";
-import { Toaster } from "@/components/ui/toaster";
-import Home from "./pages/home";
-import Products from "./pages/products";
-import Contact from "./pages/contact";
-import Tracking from "./pages/tracking";
-import Admin from "./pages/admin";
-import Offers from "./pages/offers";
-import Profile from "./pages/profile";
-import Orders from "./pages/orders";
-import NotFound from "./pages/not-found";
-import RefundPolicy from "./pages/refund-policy";
-import ReturnPolicy from "./pages/return-policy";
-import TermsConditions from "./pages/terms-conditions";
-import { TooltipProvider } from "@/components/ui/tooltip";
 import { useEffect } from "react";
-import { initGA, initFacebookPixel } from "./lib/analytics";
-import { useAnalytics } from "./hooks/use-analytics";
-import DebugInfo from "@/components/debug-info";
+import { Switch, Route } from "wouter";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { Toaster } from "@/components/ui/toaster";
+import Home from "@/pages/home";
+import Products from "@/pages/products";
+import Contact from "@/pages/contact";
+import Tracking from "@/pages/tracking";
+import Admin from "@/pages/admin";
+import Profile from "@/pages/profile";
+import Orders from "@/pages/orders";
+import Offers from "@/pages/offers";
+import NotFound from "@/pages/not-found";
+import TermsConditions from "@/pages/terms-conditions";
+import ReturnPolicy from "@/pages/return-policy"; 
+import RefundPolicy from "@/pages/refund-policy";
+import "./index.css";
 
-function Router() {
-  // Track page views when routes change
-  useAnalytics();
-
-  return (
-    <Switch>
-      <Route path="/" component={Home} />
-      <Route path="/products" component={Products} />
-      <Route path="/offers" component={Offers} />
-      <Route path="/contact" component={Contact} />
-      <Route path="/admin" component={Admin} />
-      <Route path="/tracking" component={Tracking} />
-      <Route path="/profile" component={Profile} />
-      <Route path="/orders" component={Orders} />
-      <Route path="/refund-policy" component={RefundPolicy} />
-      <Route path="/return-policy" component={ReturnPolicy} />
-      <Route path="/terms-conditions" component={TermsConditions} />
-      <Route component={NotFound} />
-    </Switch>
-  );
-}
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 3,
+      staleTime: 5 * 60 * 1000, // 5 minutes
+    },
+  },
+});
 
 function App() {
-  // Initialize analytics when app loads
   useEffect(() => {
-    // Initialize Google Analytics
-    if (import.meta.env.VITE_GA_MEASUREMENT_ID) {
-      initGA();
-    }
-
-    // Initialize Facebook Pixel
-    if (import.meta.env.VITE_FB_PIXEL_ID) {
-      initFacebookPixel(import.meta.env.VITE_FB_PIXEL_ID);
-    }
+    // Initialize categories on app startup
+    fetch('/api/init-categories')
+      .then(response => response.json())
+      .then(data => console.log('Categories initialized:', data))
+      .catch(error => console.error('Error initializing categories:', error));
   }, []);
 
   return (
     <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <div className="font-bengali">
-          <Toaster />
-          <Router />
-          <DebugInfo />
-        </div>
-      </TooltipProvider>
+      <div className="min-h-screen bg-gray-50">
+        <Switch>
+          <Route path="/" component={Home} />
+          <Route path="/products" component={Products} />
+          <Route path="/contact" component={Contact} />
+          <Route path="/tracking" component={Tracking} />
+          <Route path="/admin" component={Admin} />
+          <Route path="/profile" component={Profile} />
+          <Route path="/orders" component={Orders} />
+          <Route path="/offers" component={Offers} />
+          <Route path="/terms-conditions" component={TermsConditions} />
+          <Route path="/return-policy" component={ReturnPolicy} />
+          <Route path="/refund-policy" component={RefundPolicy} />
+          <Route component={NotFound} />
+        </Switch>
+        <Toaster />
+      </div>
     </QueryClientProvider>
   );
 }
