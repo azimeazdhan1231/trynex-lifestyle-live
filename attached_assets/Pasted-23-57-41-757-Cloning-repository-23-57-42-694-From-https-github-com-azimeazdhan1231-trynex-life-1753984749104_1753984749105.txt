@@ -1,0 +1,119 @@
+23:57:41.757	Cloning repository...
+23:57:42.694	From https://github.com/azimeazdhan1231/trynex-lifestyle
+23:57:42.694	 * branch            ad4a0b5e5854908778edcdf7a5f4170bf860f429 -> FETCH_HEAD
+23:57:42.694	
+23:57:42.762	HEAD is now at ad4a0b5 Assistant checkpoint: Fixed analytics errors and completed blog/pages implementation
+23:57:42.763	
+23:57:42.844	
+23:57:42.844	Using v2 root directory strategy
+23:57:42.865	Success: Finished cloning repository files
+23:57:44.723	Restoring from dependencies cache
+23:57:44.740	Restoring from build output cache
+23:57:45.954	Checking for configuration in a Wrangler configuration file (BETA)
+23:57:45.955	
+23:57:45.957	Found wrangler.toml file. Reading build configuration...
+23:57:45.963	pages_build_output_dir: dist/public
+23:57:45.964	Build environment variables: (none found)
+23:57:47.098	Successfully read wrangler.toml file.
+23:57:47.164	Detected the following tools from environment: npm@10.9.2, nodejs@22.16.0
+23:57:47.164	Installing project dependencies: npm clean-install --progress=false
+23:57:51.658	npm warn deprecated @esbuild-kit/core-utils@3.3.2: Merged into tsx: https://tsx.is
+23:57:51.675	npm warn deprecated @esbuild-kit/esm-loader@2.6.5: Merged into tsx: https://tsx.is
+23:57:56.489	
+23:57:56.489	added 516 packages, and audited 517 packages in 9s
+23:57:56.490	
+23:57:56.490	68 packages are looking for funding
+23:57:56.490	  run `npm fund` for details
+23:57:56.516	
+23:57:56.516	9 vulnerabilities (1 low, 8 moderate)
+23:57:56.517	
+23:57:56.517	To address issues that do not require attention, run:
+23:57:56.517	  npm audit fix
+23:57:56.517	
+23:57:56.517	To address all issues (including breaking changes), run:
+23:57:56.518	  npm audit fix --force
+23:57:56.518	
+23:57:56.518	Run `npm audit` for details.
+23:57:56.545	Executing user command: npm run build
+23:57:56.936	
+23:57:56.936	> rest-express@1.0.0 build
+23:57:56.936	> vite build && esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist
+23:57:56.937	
+23:57:57.200	vite v5.4.19 building for production...
+23:57:57.251	transforming...
+23:57:57.547	Browserslist: browsers data (caniuse-lite) is 9 months old. Please run:
+23:57:57.547	  npx update-browserslist-db@latest
+23:57:57.547	  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+23:57:58.690	✓ 33 modules transformed.
+23:57:58.691	x Build failed in 1.47s
+23:57:58.692	error during build:
+23:57:58.692	[vite:esbuild] Transform failed with 6 errors:
+23:57:58.692	/opt/buildhome/repo/client/src/lib/analytics.ts:168:13: ERROR: Multiple exports with the same name "loadFacebookPixelFromSettings"
+23:57:58.692	/opt/buildhome/repo/client/src/lib/analytics.ts:168:13: ERROR: The symbol "loadFacebookPixelFromSettings" has already been declared
+23:57:58.692	/opt/buildhome/repo/client/src/lib/analytics.ts:208:13: ERROR: Multiple exports with the same name "trackPageView"
+23:57:58.692	/opt/buildhome/repo/client/src/lib/analytics.ts:208:13: ERROR: The symbol "trackPageView" has already been declared
+23:57:58.692	/opt/buildhome/repo/client/src/lib/analytics.ts:222:13: ERROR: Multiple exports with the same name "trackEvent"
+23:57:58.693	...
+23:57:58.693	file: /opt/buildhome/repo/client/src/lib/analytics.ts:168:13
+23:57:58.693	
+23:57:58.693	Multiple exports with the same name "loadFacebookPixelFromSettings"
+23:57:58.693	166|  
+23:57:58.693	167|  // Facebook Pixel Integration
+23:57:58.694	168|  export const loadFacebookPixelFromSettings = async () => {
+23:57:58.694	   |               ^
+23:57:58.694	169|    try {
+23:57:58.694	170|      const response = await fetch('/api/settings');
+23:57:58.694	
+23:57:58.694	The symbol "loadFacebookPixelFromSettings" has already been declared
+23:57:58.694	166|  
+23:57:58.695	167|  // Facebook Pixel Integration
+23:57:58.695	168|  export const loadFacebookPixelFromSettings = async () => {
+23:57:58.695	   |               ^
+23:57:58.695	169|    try {
+23:57:58.696	170|      const response = await fetch('/api/settings');
+23:57:58.696	
+23:57:58.696	Multiple exports with the same name "trackPageView"
+23:57:58.696	206|  };
+23:57:58.696	207|  
+23:57:58.697	208|  export const trackPageView = (path: string) => {
+23:57:58.697	   |               ^
+23:57:58.697	209|    // Google Analytics
+23:57:58.697	210|    if (typeof gtag !== 'undefined') {
+23:57:58.697	
+23:57:58.697	The symbol "trackPageView" has already been declared
+23:57:58.697	206|  };
+23:57:58.697	207|  
+23:57:58.698	208|  export const trackPageView = (path: string) => {
+23:57:58.698	   |               ^
+23:57:58.698	209|    // Google Analytics
+23:57:58.698	210|    if (typeof gtag !== 'undefined') {
+23:57:58.699	
+23:57:58.699	Multiple exports with the same name "trackEvent"
+23:57:58.699	220|  };
+23:57:58.699	221|  
+23:57:58.699	222|  export const trackEvent = (eventName: string, parameters?: any) => {
+23:57:58.699	   |               ^
+23:57:58.699	223|    // Google Analytics
+23:57:58.699	224|    if (typeof gtag !== 'undefined') {
+23:57:58.700	
+23:57:58.700	The symbol "trackEvent" has already been declared
+23:57:58.700	220|  };
+23:57:58.700	221|  
+23:57:58.700	222|  export const trackEvent = (eventName: string, parameters?: any) => {
+23:57:58.700	   |               ^
+23:57:58.700	223|    // Google Analytics
+23:57:58.700	224|    if (typeof gtag !== 'undefined') {
+23:57:58.700	
+23:57:58.700	    at failureErrorWithLog (/opt/buildhome/repo/node_modules/vite/node_modules/esbuild/lib/main.js:1472:15)
+23:57:58.701	    at /opt/buildhome/repo/node_modules/vite/node_modules/esbuild/lib/main.js:755:50
+23:57:58.701	    at responseCallbacks.<computed> (/opt/buildhome/repo/node_modules/vite/node_modules/esbuild/lib/main.js:622:9)
+23:57:58.701	    at handleIncomingPacket (/opt/buildhome/repo/node_modules/vite/node_modules/esbuild/lib/main.js:677:12)
+23:57:58.701	    at Socket.readFromStdout (/opt/buildhome/repo/node_modules/vite/node_modules/esbuild/lib/main.js:600:7)
+23:57:58.701	    at Socket.emit (node:events:518:28)
+23:57:58.701	    at addChunk (node:internal/streams/readable:561:12)
+23:57:58.701	    at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+23:57:58.701	    at Readable.push (node:internal/streams/readable:392:5)
+23:57:58.701	    at Pipe.onStreamRead (node:internal/stream_base_commons:189:23)
+23:57:58.714	Failed: Error while executing user command. Exited with error code: 1
+23:57:58.725	Failed: build command exited with code: 1
+23:57:59.844	Failed: error occurred while running build command
