@@ -101,15 +101,28 @@ export default function Auth() {
     setIsLoading(true);
     
     try {
-      // Store form data in localStorage for after auth
       if (activeTab === "signup") {
+        // Store signup data for processing after auth
         localStorage.setItem('pendingSignupData', JSON.stringify({
           firstName: formData.firstName,
           lastName: formData.lastName,
           phone: formData.phone,
           email: formData.email
         }));
+        
+        toast({
+          title: "সাইনআপ প্রক্রিয়া শুরু",
+          description: "অনুগ্রহ করে Replit এর মাধ্যমে সাইনআপ সম্পন্ন করুন",
+        });
+      } else {
+        toast({
+          title: "লগইন প্রক্রিয়া শুরু",
+          description: "অনুগ্রহ করে Replit এর মাধ্যমে লগইন করুন",
+        });
       }
+      
+      // Small delay to show toast before redirect
+      await new Promise(resolve => setTimeout(resolve, 1000));
       
       // Redirect to Replit Auth for both login and signup
       window.location.href = "/api/login";

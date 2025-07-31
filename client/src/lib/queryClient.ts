@@ -14,9 +14,16 @@ export const queryClient = new QueryClient({
           url += `?${params}`;
         }
 
-        const response = await fetch(url, { signal });
+        const response = await fetch(url, { 
+          signal, 
+          credentials: 'include' // Include credentials for auth endpoints
+        });
 
         if (!response.ok) {
+          // For auth endpoints, don't throw for 401s as they're expected when not logged in
+          if (url.includes('/api/auth/user') && response.status === 401) {
+            throw new Error('Not authenticated');
+          }
           throw new Error(`HTTP error! status: ${response.status}`);
         }
 

@@ -129,9 +129,36 @@
     position: relative;
     width: 100%;
     min-height: 100vh;
+    min-height: -webkit-fill-available;
     background: #f9fafb;
     transform: translateZ(0);
     -webkit-transform: translateZ(0);
+    overflow-x: hidden;
+  }
+
+  /* Mobile admin panel specific fixes */
+  @media screen and (max-width: 768px) {
+    .admin-panel-container {
+      padding: 0;
+      margin: 0;
+    }
+    
+    /* Fix for tab scrolling on mobile */
+    .mobile-tabs-scroll {
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+    
+    .mobile-tabs-scroll::-webkit-scrollbar {
+      display: none;
+    }
+
+    /* Ensure cards don't break layout on small screens */
+    .admin-stats-card {
+      min-width: 0;
+      flex: 1;
+    }
   }
 }
 

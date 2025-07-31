@@ -408,11 +408,11 @@ export default function EnhancedAdminTabs() {
 
 
   return (
-    <div className="container mx-auto p-6">
-      {/* Notification Header */}
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">অ্যাডমিন প্যানেল</h1>
-        <div className="flex items-center gap-4">
+    <div className="w-full max-w-full overflow-x-hidden">
+      {/* Mobile-optimized Notification Header */}
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-4 mb-4 sm:mb-6 px-1">
+        <h1 className="text-lg sm:text-2xl lg:text-3xl font-bold text-gray-800 truncate">অ্যাডমিন প্যানেল</h1>
+        <div className="flex items-center gap-2 sm:gap-4 flex-wrap">
           {/* Notification Bell */}
           <div className="relative">
             <Button
@@ -454,36 +454,39 @@ export default function EnhancedAdminTabs() {
         </div>
       </div>
 
-      <Tabs defaultValue="dashboard" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-9">
-          <TabsTrigger value="dashboard" className="relative">
-            ড্যাশবোর্ড
-            {activeTab === "dashboard" && newOrdersCount > 0 && (
-              <Badge variant="destructive" className="absolute -top-2 -right-2 text-xs">
-                {newOrdersCount}
-              </Badge>
-            )}
-          </TabsTrigger>
-          <TabsTrigger value="orders" className="relative">
-            অর্ডার
-            {newOrdersCount > 0 && (
-              <Badge variant="destructive" className="absolute -top-2 -right-2 text-xs">
-                {newOrdersCount}
-              </Badge>
-            )}
-          </TabsTrigger>
-          <TabsTrigger value="products">পণ্য</TabsTrigger>
-          <TabsTrigger value="categories">ক্যাটাগরি</TabsTrigger>
-          <TabsTrigger value="offers">অফার</TabsTrigger>
-          <TabsTrigger value="promo-codes">প্রমো কোড</TabsTrigger>
-          <TabsTrigger value="users">ব্যবহারকারী</TabsTrigger>
-          <TabsTrigger value="analytics">অ্যানালিটিক্স</TabsTrigger>
-          <TabsTrigger value="settings">সেটিংস</TabsTrigger>
-        </TabsList>
+      <Tabs defaultValue="dashboard" className="space-y-4 sm:space-y-6">
+        {/* Mobile-responsive scrollable tab list */}
+        <div className="w-full overflow-x-auto pb-1 mobile-tabs-scroll">
+          <TabsList className="inline-flex w-max min-w-full sm:grid sm:w-full sm:grid-cols-9 h-auto p-1 bg-muted rounded-md">
+            <TabsTrigger value="dashboard" className="relative whitespace-nowrap px-2 sm:px-3 py-2 text-xs sm:text-sm">
+              ড্যাশবোর্ড
+              {activeTab === "dashboard" && newOrdersCount > 0 && (
+                <Badge variant="destructive" className="absolute -top-1 -right-1 text-xs w-4 h-4 p-0 flex items-center justify-center">
+                  {newOrdersCount}
+                </Badge>
+              )}
+            </TabsTrigger>
+            <TabsTrigger value="orders" className="relative whitespace-nowrap px-2 sm:px-3 py-2 text-xs sm:text-sm">
+              অর্ডার
+              {newOrdersCount > 0 && (
+                <Badge variant="destructive" className="absolute -top-1 -right-1 text-xs w-4 h-4 p-0 flex items-center justify-center">
+                  {newOrdersCount}
+                </Badge>
+              )}
+            </TabsTrigger>
+            <TabsTrigger value="products" className="whitespace-nowrap px-2 sm:px-3 py-2 text-xs sm:text-sm">পণ্য</TabsTrigger>
+            <TabsTrigger value="categories" className="whitespace-nowrap px-2 sm:px-3 py-2 text-xs sm:text-sm">ক্যাটাগরি</TabsTrigger>
+            <TabsTrigger value="offers" className="whitespace-nowrap px-2 sm:px-3 py-2 text-xs sm:text-sm">অফার</TabsTrigger>
+            <TabsTrigger value="promo-codes" className="whitespace-nowrap px-2 sm:px-3 py-2 text-xs sm:text-sm">প্রমো কোড</TabsTrigger>
+            <TabsTrigger value="users" className="whitespace-nowrap px-2 sm:px-3 py-2 text-xs sm:text-sm">ব্যবহারকারী</TabsTrigger>
+            <TabsTrigger value="analytics" className="whitespace-nowrap px-2 sm:px-3 py-2 text-xs sm:text-sm">অ্যানালিটিক্স</TabsTrigger>
+            <TabsTrigger value="settings" className="whitespace-nowrap px-2 sm:px-3 py-2 text-xs sm:text-sm">সেটিংস</TabsTrigger>
+          </TabsList>
+        </div>
 
-        {/* Dashboard Tab */}
-        <TabsContent value="dashboard" className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {/* Dashboard Tab - Mobile Optimized */}
+        <TabsContent value="dashboard" className="space-y-4 sm:space-y-6">
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">মোট আয়</CardTitle>

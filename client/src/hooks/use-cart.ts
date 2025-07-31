@@ -33,16 +33,55 @@ const getStoredCart = (): CartItem[] => {
 const saveCartToStorage = (cart: CartItem[]): void => {
   if (typeof window === 'undefined') return;
   try {
-    localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
+    // Validate cart data before saving
+    const validCart = cart.filter(item => 
+      item && 
+      typeof item.id === 'string' && 
+      typeof item.name === 'string' && 
+      typeof item.price === 'number' && 
+      typeof item.quantity === 'number' && 
+      item.quantity > 0
+    );
+    localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(validCart));
   } catch (error) {
     console.error('Error saving cart to localStorage:', error);
+    // Clear corrupted data
+    try {
+      localStorage.removeItem(CART_STORAGE_KEY);
+    } catch (clearError) {
+      console.error('Error clearing cart from localStorage:', clearError);
+    }
   }
 };
 
 const updateGlobalCart = (newCart: CartItem[]): void => {
-  globalCart = newCart;
-  saveCartToStorage(newCart);
-  cartListeners.forEach(listener => listener(newCart));
+  try {
+    // Validate and sanitize cart items
+    const sanitizedCart = newCart.filter(item => {
+      if (!item || typeof item !== 'object') return false;
+      if (!item.id || !item.name || typeof item.price !== 'number' || typeof item.quantity !== 'number') return false;
+      if (item.quantity <= 0 || isNaN(item.price) || isNaN(item.quantity)) return false;
+      return true;
+    }).map(item => ({
+      ...item,
+      price: Number(item.price) || 0,
+      quantity: Math.max(1, Math.floor(Number(item.quantity) || 1))
+    }));
+
+    globalCart = sanitizedCart;
+    saveCartToStorage(sanitizedCart);
+    
+    // Notify listeners with error handling
+    cartListeners.forEach(listener => {
+      try {
+        listener(sanitizedCart);
+      } catch (error) {
+        console.error('Error in cart listener:', error);
+      }
+    });
+  } catch (error) {
+    console.error('Error updating global cart:', error);
+  }
 };
 
 // Initialize global cart on first load
@@ -100,19 +139,54 @@ export function useCart(): UseCartReturn {
       }
     }
 
-    const cartItem: CartItem = {
-      id: crypto.randomUUID(),
-      name: product.name,
-      price: parseFloat(product.price.toString()),
-      image_url: product.image_url,
-      quantity: processedCustomization?.quantity || 1,
-      customization: processedCustomization,
-    };
+    // Check if the same product with same customization already exists
+    const existingItemIndex = globalCart.findIndex(item => {
+      const sameProduct = item.name === product.name && item.price === parseFloat(product.price.toString());
+      
+      // If no customization for both items, they're the same
+      if (!processedCustomization && !item.customization) {
+        return sameProduct;
+      }
+      
+      // If one has customization and other doesn't, they're different
+      if ((!processedCustomization && item.customization) || (processedCustomization && !item.customization)) {
+        return false;
+      }
+      
+      // If both have customization, compare them
+      if (processedCustomization && item.customization) {
+        return sameProduct && 
+               processedCustomization.size === item.customization.size &&
+               processedCustomization.color === item.customization.color &&
+               processedCustomization.printArea === item.customization.printArea &&
+               processedCustomization.customText === item.customization.customText &&
+               processedCustomization.specialInstructions === item.customization.specialInstructions;
+      }
+      
+      return sameProduct;
+    });
 
-    console.log('Adding item to cart:', cartItem);
-    
-    const newCart = [...globalCart, cartItem];
-    updateGlobalCart(newCart);
+    if (existingItemIndex !== -1) {
+      // Update quantity of existing item
+      const newCart = [...globalCart];
+      newCart[existingItemIndex].quantity += processedCustomization?.quantity || 1;
+      updateGlobalCart(newCart);
+    } else {
+      // Add new item to cart
+      const cartItem: CartItem = {
+        id: crypto.randomUUID(),
+        name: product.name,
+        price: parseFloat(product.price.toString()),
+        image_url: product.image_url || product.image,
+        quantity: processedCustomization?.quantity || 1,
+        customization: processedCustomization,
+      };
+
+      console.log('Adding new item to cart:', cartItem);
+      
+      const newCart = [...globalCart, cartItem];
+      updateGlobalCart(newCart);
+    }
   };
 
   const updateQuantity = useCallback((id: string, quantity: number) => {
@@ -124,7 +198,7 @@ export function useCart(): UseCartReturn {
     }
 
     const newCart = globalCart.map(item =>
-      item.id === id ? { ...item, quantity } : item
+      item.id === id ? { ...item, quantity: Math.max(1, quantity) } : item
     );
 
     updateGlobalCart(newCart);
@@ -142,8 +216,12 @@ export function useCart(): UseCartReturn {
     updateGlobalCart([]);
   }, []);
 
-  const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
-  const totalPrice = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  const totalItems = cart.reduce((sum, item) => sum + (item.quantity || 0), 0);
+  const totalPrice = cart.reduce((sum, item) => {
+    const price = typeof item.price === 'string' ? parseFloat(item.price) : item.price;
+    const quantity = item.quantity || 0;
+    return sum + (price * quantity);
+  }, 0);
 
   return {
     cart,

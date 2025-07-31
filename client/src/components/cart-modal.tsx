@@ -18,9 +18,12 @@ export default function CartModal({ isOpen, onClose }: CartModalProps) {
   const { cart, updateQuantity, removeFromCart, totalItems, totalPrice, clearCart } = useCart();
   
   // Force re-render when modal opens to ensure cart state is fresh
-  const [, forceUpdate] = useState({});
+  const [refreshKey, setRefreshKey] = useState(0);
 
   const handleCheckout = () => {
+    if (cart.length === 0) {
+      return;
+    }
     onClose();
     setIsCheckoutOpen(true);
   };
@@ -28,7 +31,7 @@ export default function CartModal({ isOpen, onClose }: CartModalProps) {
   // Force cart state sync when modal opens
   useEffect(() => {
     if (isOpen) {
-      forceUpdate({});
+      setRefreshKey(prev => prev + 1);
     }
   }, [isOpen]);
 
@@ -134,7 +137,12 @@ export default function CartModal({ isOpen, onClose }: CartModalProps) {
                   <span className="text-2xl font-bold text-primary">{formatPrice(totalPrice)}</span>
                 </div>
 
-                <Button onClick={handleCheckout} className="w-full" size="lg">
+                <Button 
+                  onClick={handleCheckout} 
+                  className="w-full" 
+                  size="lg"
+                  disabled={cart.length === 0 || totalItems === 0}
+                >
                   চেকআউট করুন ({totalItems} টি পণ্য)
                 </Button>
               </div>
