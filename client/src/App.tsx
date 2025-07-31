@@ -114,17 +114,7 @@ export default function App() {
       document.head.appendChild(viewport);
     }
 
-    // Set up error handling for unhandled promises
-    const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
-      console.error('Unhandled promise rejection:', event.reason);
-      event.preventDefault(); // Prevent the default browser error handling
-    };
-
-    window.addEventListener('unhandledrejection', handleUnhandledRejection);
-
-    return () => {
-      window.removeEventListener('unhandledrejection', handleUnhandledRejection);
-    };
+    // Basic viewport setup only
   }, []);
 
   return (
