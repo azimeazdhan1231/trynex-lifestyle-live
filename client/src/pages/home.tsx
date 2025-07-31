@@ -55,7 +55,7 @@ function ProductCard({ product, onAddToCart, onViewProduct, onCustomize, showBad
   };
 
   return (
-    <Card className="group hover:shadow-2xl transition-all duration-500 border border-gray-100 overflow-hidden bg-white hover:border-primary/30 transform hover:-translate-y-2">
+    <Card className="group hover:shadow-xl transition-all duration-300 border border-gray-100 overflow-hidden bg-white hover:border-primary/30 transform hover:-translate-y-1 sm:hover:-translate-y-2">
       <div className="relative">
         <div 
           className="aspect-square overflow-hidden cursor-pointer bg-gray-50"
@@ -64,7 +64,7 @@ function ProductCard({ product, onAddToCart, onViewProduct, onCustomize, showBad
           <img
             src={product.image_url || "https://images.unsplash.com/photo-1544787219-7f47ccb76574?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"}
             alt={product.name}
-            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+            className="w-full h-full object-cover group-hover:scale-105 sm:group-hover:scale-110 transition-transform duration-300 sm:duration-500"
             loading="lazy"
           />
         </div>
@@ -274,7 +274,7 @@ function ProductSection({
           <div className="w-24 h-1 bg-gradient-to-r from-primary to-primary/50 mx-auto mt-6 rounded-full"></div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 lg:gap-8 mb-8 sm:mb-12">
           {products.map((product) => (
             <ProductCard 
               key={product.id} 
@@ -404,8 +404,8 @@ export default function Home() {
 
       {/* Hero Section */}
       <section 
-        className="relative bg-gradient-to-br from-primary via-primary/90 to-emerald-700 text-white py-24 overflow-hidden"
-        style={{ marginTop: (location === "/" || location === "/products") ? "120px" : "64px" }}
+        className="relative bg-gradient-to-br from-primary via-primary/90 to-emerald-700 text-white py-16 sm:py-20 lg:py-24 overflow-hidden"
+        style={{ marginTop: "56px" }}
       >
         {/* Background Pattern */}
         <div className="absolute inset-0 opacity-10">
@@ -414,37 +414,37 @@ export default function Home() {
           }}></div>
         </div>
 
-        <div className="container mx-auto px-4 text-center relative z-10">
+        <div className="container mx-auto px-3 sm:px-4 text-center relative z-10">
           <div className="max-w-4xl mx-auto">
-            <h1 className="text-5xl md:text-7xl font-bold mb-8 leading-tight">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold mb-6 sm:mb-8 leading-tight">
               বিশেষ গিফট কালেকশন
             </h1>
-            <p className="text-xl md:text-3xl mb-12 text-emerald-100 leading-relaxed">
+            <p className="text-lg sm:text-xl md:text-2xl lg:text-3xl mb-8 sm:mb-10 lg:mb-12 text-emerald-100 leading-relaxed px-2">
               আপনার প্রিয়জনের জন্য সেরা উপহার এবং লাইফস্টাইল পণ্য
             </p>
 
-            <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
+            <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center items-center px-2">
               <Button 
                 onClick={scrollToProducts}
                 size="lg"
-                className="bg-white text-primary hover:bg-gray-100 text-xl px-10 py-6 rounded-full shadow-xl transform hover:scale-105 transition-all duration-300"
+                className="bg-white text-primary hover:bg-gray-100 text-lg sm:text-xl px-6 sm:px-8 lg:px-10 py-4 sm:py-5 lg:py-6 rounded-full shadow-xl transform hover:scale-105 transition-all duration-300 w-full sm:w-auto"
               >
                 এখনই কিনুন 
-                <ArrowRight className="ml-3 w-6 h-6" />
+                <ArrowRight className="ml-2 sm:ml-3 w-5 h-5 sm:w-6 sm:h-6" />
               </Button>
 
               <Button 
                 asChild
                 size="lg"
                 variant="outline"
-                className="border-white text-white hover:bg-white hover:text-primary text-xl px-10 py-6 rounded-full shadow-xl transform hover:scale-105 transition-all duration-300"
+                className="border-white text-white hover:bg-white hover:text-primary text-lg sm:text-xl px-6 sm:px-8 lg:px-10 py-4 sm:py-5 lg:py-6 rounded-full shadow-xl transform hover:scale-105 transition-all duration-300 w-full sm:w-auto"
               >
                 <a
                   href={createWhatsAppUrl("আসসালামু আলাইকুম। আমি Trynex Lifestyle সম্পর্কে জানতে চাই।")}
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  <MessageCircle className="mr-3 w-6 h-6" />
+                  <MessageCircle className="mr-2 sm:mr-3 w-5 h-5 sm:w-6 sm:h-6" />
                   হোয়াটসঅ্যাপে যোগাযোগ
                 </a>
               </Button>
@@ -453,11 +453,11 @@ export default function Home() {
         </div>
 
         {/* Floating Elements */}
-        <div className="absolute top-20 left-10 animate-bounce">
-          <Gift className="w-12 h-12 text-white/30" />
+        <div className="absolute top-10 sm:top-20 left-4 sm:left-10 animate-bounce">
+          <Gift className="w-8 h-8 sm:w-12 sm:h-12 text-white/30" />
         </div>
-        <div className="absolute bottom-20 right-10 animate-bounce delay-700">
-          <Star className="w-16 h-16 text-white/20" />
+        <div className="absolute bottom-10 sm:bottom-20 right-4 sm:right-10 animate-bounce delay-700">
+          <Star className="w-10 h-10 sm:w-16 sm:h-16 text-white/20" />
         </div>
       </section>
 

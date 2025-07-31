@@ -155,37 +155,37 @@ export default function Products() {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
       <Header />
       {/* Hero Section */}
-      <div className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 text-white py-16 mt-16">
-        <div className="container mx-auto px-4 text-center">
-          <h1 className="text-4xl md:text-6xl font-bold mb-4">আমাদের পণ্যসমূহ</h1>
-          <p className="text-xl md:text-2xl opacity-90">বিশেষ কাস্টম গিফট এবং লাইফস্টাইল পণ্য</p>
-          <div className="mt-8 flex justify-center">
-            <div className="bg-white/10 backdrop-blur-sm rounded-full px-8 py-4">
-              <span className="text-lg font-semibold">{products.length}+ পণ্য উপলব্ধ</span>
+      <div className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 text-white py-12 sm:py-16 mt-14 sm:mt-16">
+        <div className="container mx-auto px-3 sm:px-4 text-center">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold mb-3 sm:mb-4">আমাদের পণ্যসমূহ</h1>
+          <p className="text-base sm:text-lg md:text-xl lg:text-2xl opacity-90 px-2">বিশেষ কাস্টম গিফট এবং লাইফস্টাইল পণ্য</p>
+          <div className="mt-6 sm:mt-8 flex justify-center">
+            <div className="bg-white/10 backdrop-blur-sm rounded-full px-4 sm:px-6 lg:px-8 py-2 sm:py-3 lg:py-4">
+              <span className="text-sm sm:text-base lg:text-lg font-semibold">{products.length}+ পণ্য উপলব্ধ</span>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-3 sm:px-4 py-6 sm:py-8">
         {/* Search and Filters */}
-        <div className="bg-white rounded-xl shadow-lg p-6 mb-8 border border-gray-100">
-          <div className="flex flex-col lg:flex-row gap-4 items-center">
+        <div className="bg-white rounded-xl shadow-lg p-4 sm:p-6 mb-6 sm:mb-8 border border-gray-100">
+          <div className="flex flex-col gap-3 sm:gap-4 lg:flex-row lg:items-center">
             {/* Search */}
-            <div className="relative flex-1 w-full lg:w-auto">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+            <div className="relative flex-1 w-full">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4 sm:h-5 sm:w-5" />
               <Input
                 type="search"
                 placeholder="পণ্য খুঁজুন..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 h-12 border-2 border-gray-200 focus:border-blue-500 rounded-lg"
+                className="pl-9 sm:pl-10 h-10 sm:h-12 border-2 border-gray-200 focus:border-blue-500 rounded-lg text-sm sm:text-base"
               />
             </div>
 
             {/* Category Filter */}
             <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-              <SelectTrigger className="w-full lg:w-56 h-12 border-2 border-gray-200">
+              <SelectTrigger className="w-full sm:w-auto sm:min-w-[200px] lg:w-56 h-10 sm:h-12 border-2 border-gray-200 text-sm sm:text-base">
                 <SelectValue placeholder="ক্যাটেগরি নির্বাচন করুন" />
               </SelectTrigger>
               <SelectContent className="max-h-[300px] overflow-y-auto">
@@ -215,7 +215,7 @@ export default function Products() {
 
             {/* Sort */}
             <Select value={sortBy} onValueChange={setSortBy}>
-              <SelectTrigger className="w-full lg:w-48 h-12 border-2 border-gray-200">
+              <SelectTrigger className="w-full sm:w-auto sm:min-w-[160px] lg:w-48 h-10 sm:h-12 border-2 border-gray-200 text-sm sm:text-base">
                 <SelectValue placeholder="সাজান" />
               </SelectTrigger>
               <SelectContent>
@@ -228,7 +228,7 @@ export default function Products() {
 
             {/* Price Range */}
             <Select value={priceRange} onValueChange={setPriceRange}>
-              <SelectTrigger className="w-full lg:w-48 h-12 border-2 border-gray-200">
+              <SelectTrigger className="w-full sm:w-auto sm:min-w-[160px] lg:w-48 h-10 sm:h-12 border-2 border-gray-200 text-sm sm:text-base">
                 <SelectValue placeholder="দামের রেঞ্জ" />
               </SelectTrigger>
               <SelectContent>
@@ -246,43 +246,43 @@ export default function Products() {
                 variant={viewMode === "grid" ? "default" : "ghost"}
                 size="sm"
                 onClick={() => setViewMode("grid")}
-                className="rounded-none h-12 px-4"
+                className="rounded-none h-10 sm:h-12 px-3 sm:px-4"
               >
-                <Grid3X3 className="h-4 w-4" />
+                <Grid3X3 className="h-3 w-3 sm:h-4 sm:w-4" />
               </Button>
               <Button
                 variant={viewMode === "list" ? "default" : "ghost"}
                 size="sm"
                 onClick={() => setViewMode("list")}
-                className="rounded-none h-12 px-4"
+                className="rounded-none h-10 sm:h-12 px-3 sm:px-4"
               >
-                <List className="h-4 w-4" />
+                <List className="h-3 w-3 sm:h-4 sm:w-4" />
               </Button>
             </div>
           </div>
         </div>
 
         {/* Category Tabs */}
-        <div className="mb-8">
+        <div className="mb-6 sm:mb-8">
           <Tabs value={selectedCategory} onValueChange={setSelectedCategory} className="w-full">
-            <div className="flex justify-center mb-6">
-              <TabsList className="grid w-full max-w-4xl h-auto p-2 bg-white shadow-lg rounded-xl border border-gray-200" 
+            <div className="flex justify-center mb-4 sm:mb-6">
+              <TabsList className="grid w-full max-w-4xl h-auto p-1 sm:p-2 bg-white shadow-lg rounded-xl border border-gray-200 overflow-x-auto" 
                 style={{gridTemplateColumns: `repeat(${Math.min(categories.filter(cat => cat.is_active).length + 1, 6)}, 1fr)`}}>
                 <TabsTrigger 
                   value="all" 
-                  className="h-12 text-sm font-semibold px-4 rounded-lg data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-purple-500 data-[state=active]:text-white"
+                  className="h-10 sm:h-12 text-xs sm:text-sm font-semibold px-2 sm:px-4 rounded-lg data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-purple-500 data-[state=active]:text-white whitespace-nowrap"
                 >
-                  <Package className="w-4 h-4 mr-2" />
+                  <Package className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
                   সব পণ্য
                 </TabsTrigger>
                 {categories.filter(cat => cat.is_active).map((category) => (
                   <TabsTrigger 
                     key={category.name} 
                     value={category.name}
-                    className="h-12 text-sm font-semibold px-4 rounded-lg data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-purple-500 data-[state=active]:text-white"
+                    className="h-10 sm:h-12 text-xs sm:text-sm font-semibold px-2 sm:px-4 rounded-lg data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-purple-500 data-[state=active]:text-white whitespace-nowrap"
                   >
                     {category.image_url && (
-                      <img src={category.image_url} alt="" className="w-4 h-4 mr-2 rounded" />
+                      <img src={category.image_url} alt="" className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 rounded" />
                     )}
                     {category.name_bengali}
                   </TabsTrigger>
@@ -315,12 +315,12 @@ export default function Products() {
         </div>
 
         {/* Results Summary */}
-        <div className="flex justify-between items-center mb-6">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 sm:gap-0 mb-4 sm:mb-6">
           <div className="text-gray-600">
-            <span className="font-semibold text-lg">{filteredAndSortedProducts.length}</span> টি পণ্য পাওয়া গেছে
+            <span className="font-semibold text-base sm:text-lg">{filteredAndSortedProducts.length}</span> টি পণ্য পাওয়া গেছে
           </div>
           {searchTerm && (
-            <div className="text-sm text-gray-500">
+            <div className="text-xs sm:text-sm text-gray-500">
               "<span className="font-semibold">{searchTerm}</span>" এর জন্য ফলাফল
             </div>
           )}
