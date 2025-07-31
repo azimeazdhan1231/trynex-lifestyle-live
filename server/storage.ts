@@ -31,6 +31,7 @@ export interface IStorage {
   getOrder(trackingId: string): Promise<Order | undefined>;
   createOrder(order: InsertOrder): Promise<Order>;
   updateOrderStatus(id: string, status: string): Promise<Order>;
+  clearAllOrders(): Promise<{ clearedCount: number; backupKey: string }>;
 
   // Offers
   getActiveOffers(): Promise<Offer[]>;
@@ -69,11 +70,11 @@ export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
   upsertUser(user: UpsertUser): Promise<User>;
   getUsers(): Promise<User[]>; // For admin panel
-  
+
   // User Carts
   getUserCart(userId: string): Promise<UserCart | undefined>;
   updateUserCart(userId: string, items: any[]): Promise<UserCart>;
-  
+
   // User Orders
   getUserOrders(userId: string): Promise<Order[]>;
   linkOrderToUser(orderId: string, userId: string): Promise<void>;
@@ -151,12 +152,38 @@ export class DatabaseStorage implements IStorage {
     const result = await db.update(orders).set({ 
       status
     }).where(eq(orders.id, id)).returning();
-    
+
     if (result.length === 0) {
       throw new Error("Order not found");
     }
-    
+
     return result[0];
+  }
+
+  async clearAllOrders(): Promise<{ clearedCount: number; backupKey: string }> {
+    // First, get all orders for backup
+    const allOrders = await db.select().from(orders);
+
+    // Create backup table entry (you might want to implement a proper backup system)
+    const backupData = {
+      key: `orders_backup_${new Date().toISOString()}`,
+      value: JSON.stringify(allOrders),
+      description: `Backup of ${allOrders.length} orders before clearing`
+    };
+
+    // Store backup in site_settings table
+    await db.insert(siteSettings).values(backupData).returning();
+
+    // Clear all orders
+    const deleteResult = await db.delete(orders).returning();
+
+    // Also clear user_orders relationships
+    await db.delete(userOrders).returning();
+
+    return {
+      clearedCount: allOrders.length,
+      backupKey: backupData.key
+    };
   }
 
   async getActiveOffers(): Promise<Offer[]> {
@@ -369,7 +396,7 @@ export class DatabaseStorage implements IStorage {
 
   async updateUserCart(userId: string, items: any[]): Promise<UserCart> {
     const existing = await this.getUserCart(userId);
-    
+
     if (existing) {
       const result = await db.update(userCarts)
         .set({ items: JSON.stringify(items), updated_at: new Date() })

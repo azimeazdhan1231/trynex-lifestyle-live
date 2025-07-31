@@ -1,300 +1,138 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
-import { ShoppingCart, MessageCircle, Eye, Palette } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
-import { PRODUCT_CATEGORIES, formatPrice, createWhatsAppUrl } from "@/lib/constants";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Search, Package, Filter } from "lucide-react";
+import { formatPrice } from "@/lib/constants";
 import ProductModal from "@/components/product-modal";
 import CustomizeModal from "@/components/customize-modal";
-import Header from "@/components/header";
 import { useCart } from "@/hooks/use-cart";
-import { trackProductView, trackAddToCart } from "@/lib/analytics";
+import { useAnalytics } from "@/hooks/use-analytics";
 import type { Product, Category } from "@shared/schema";
 
-export default function ProductsPage() {
+export default function Products() {
+  const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isCustomizeModalOpen, setIsCustomizeModalOpen] = useState(false);
-  
-  const { toast } = useToast();
-  const { addToCart, totalItems } = useCart();
+  const [showCustomizeModal, setShowCustomizeModal] = useState(false);
+  const { addToCart } = useCart();
+  const { trackEvent } = useAnalytics();
 
-  // Load products and categories
-  const { data: products = [], isLoading, error } = useQuery<Product[]>({
+  const { data: products = [] } = useQuery<Product[]>({
     queryKey: ["/api/products"],
-    retry: 3,
-    retryDelay: 1000,
   });
 
   const { data: categories = [] } = useQuery<Category[]>({
     queryKey: ["/api/categories"],
-    retry: 3,
-    retryDelay: 1000,
   });
 
-  // Filter products by category
-  const productsFiltered = selectedCategory === "all" 
-    ? products 
-    : products.filter(product => {
-        // Match by category id or name
-        return product.category === selectedCategory || 
-               PRODUCT_CATEGORIES.find(cat => cat.id === selectedCategory)?.name === product.category ||
-               categories.find(cat => cat.id === selectedCategory)?.name === product.category;
-      });
+  const filteredProducts = products.filter((product) =>
+    product.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  return (
+    <div className="container py-12">
+      <div className="flex flex-col space-y-4">
+        <div className="flex items-center space-x-2">
+          <Input
+            type="search"
+            placeholder="Search products..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+          <Search className="h-5 w-5 text-gray-500" />
+        </div>
+
+        <Tabs defaultValue="all" className="w-full">
+          <TabsList className="grid w-full mb-6" style={{gridTemplateColumns: `repeat(${Math.min(categories.length + 1, 6)}, 1fr)`}}>
+            <TabsTrigger value="all" className="text-xs sm:text-sm">সব প্রোডাক্ট</TabsTrigger>
+            {categories.filter(cat => cat.is_active).map((category) => (
+              <TabsTrigger key={category.name} value={category.name} className="text-xs sm:text-sm">
+                {category.name_bengali}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+          
+          <TabsContent value="all">
+            <ProductGrid products={filteredProducts} />
+          </TabsContent>
+
+          {categories.filter(cat => cat.is_active).map((category) => (
+            <TabsContent key={category.name} value={category.name}>
+              <ProductGrid 
+                products={filteredProducts.filter(p => p.category === category.name)} 
+              />
+            </TabsContent>
+          ))}
+        </Tabs>
+      </div>
+    </div>
+  );
+}
+
+interface ProductGridProps {
+  products: Product[];
+}
+
+function ProductGrid({ products }: ProductGridProps) {
+  const { addToCart } = useCart();
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [showCustomizeModal, setShowCustomizeModal] = useState(false);
 
   const handleAddToCart = (product: Product) => {
-    if (product.stock === 0) {
-      toast({
-        title: "স্টক নেই",
-        description: "এই পণ্যটি বর্তমানে স্টকে নেই",
-        variant: "destructive",
-      });
-      return;
-    }
-
     addToCart({
       id: product.id,
       name: product.name,
       price: Number(product.price),
     });
-
-    // Track add to cart event
-    if (typeof window !== 'undefined') {
-      import('@/lib/analytics').then(({ trackAddToCart }) => {
-        const price = typeof product.price === 'string' ? parseFloat(product.price) : product.price;
-        trackAddToCart(product.id, product.name, price);
-      });
-    }
-
-    toast({
-      title: "কার্টে যোগ করা হয়েছে",
-      description: `${product.name} কার্টে যোগ করা হয়েছে`,
-    });
   };
 
-  const handleWhatsAppOrder = (product: Product) => {
-    const message = `আমি ${product.name} কিনতে চাই। দাম ${formatPrice(product.price)}`;
-    window.open(createWhatsAppUrl(message), '_blank');
-  };
-
-  const handleProductClick = (product: Product) => {
+  const handleCustomizeClick = (product: Product) => {
     setSelectedProduct(product);
-    setIsModalOpen(true);
+    setShowCustomizeModal(true);
   };
 
-  const handleModalClose = () => {
-    setIsModalOpen(false);
+  const handleCloseCustomizeModal = () => {
+    setShowCustomizeModal(false);
     setSelectedProduct(null);
   };
 
-  
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gray-50">
-        <Header cartCount={totalItems} onCartOpen={() => {}} />
-        <div className="pt-20 container mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {[...Array(8)].map((_, i) => (
-              <div key={i} className="animate-pulse">
-                <div className="bg-gray-300 h-48 rounded-lg mb-4"></div>
-                <div className="bg-gray-300 h-4 rounded mb-2"></div>
-                <div className="bg-gray-300 h-4 rounded w-2/3"></div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    console.error("Product loading error:", error);
-    return (
-      <div className="min-h-screen bg-gray-50">
-        <Header cartCount={totalItems} onCartOpen={() => {}} />
-        <div className="pt-20 text-center py-8">
-          <p className="text-red-600">পণ্য লোড করতে সমস্যা হয়েছে</p>
-          <p className="text-sm text-gray-500 mt-2">দয়া করে আবার চেষ্টা করুন</p>
-        </div>
-      </div>
-    );
-  }
-
-  const trackProductView = (product: Product) => {
-    try {
-      if (typeof window !== 'undefined' && window.gtag) {
-        window.gtag('event', 'view_item', {
-          currency: 'BDT',
-          value: product.price,
-          items: [{
-            item_id: product.id,
-            item_name: product.name,
-            price: product.price,
-            quantity: 1
-          }]
-        });
-      }
-    } catch (error) {
-      console.error('Analytics tracking error:', error);
-    }
-  };
-
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Header cartCount={totalItems} onCartOpen={() => {}} />
-
-      <div className="pt-20 py-16">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h1 className="text-4xl md:text-5xl font-bold text-gray-800 mb-4">আমাদের পণ্যসমূহ</h1>
-            <p className="text-gray-600 text-lg">সেরা মানের কাস্টম গিফট এবং লাইফস্টাইল পণ্য</p>
-          </div>
-
-          {/* Product Categories */}
-          <div className="mb-8">
-            <div className="max-w-6xl mx-auto">
-              {/* Categories Grid */}
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
-                {PRODUCT_CATEGORIES.map((category) => (
-                  <Button
-                    key={category.id}
-                    variant={selectedCategory === category.id ? "default" : "outline"}
-                    onClick={() => setSelectedCategory(category.id)}
-                    className="h-auto py-3 px-4 flex flex-col items-center space-y-1 text-center rounded-lg font-medium hover:shadow-md transition-all duration-200"
-                  >
-                    <span className="text-lg">{category.icon}</span>
-                    <span className="text-xs leading-tight">{category.name}</span>
-                  </Button>
-                ))}
-              </div>
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+      {products.map((product) => (
+        <Card key={product.id} className="bg-white shadow-md rounded-lg overflow-hidden">
+          <CardHeader className="px-4 py-2">
+            <CardTitle className="text-lg font-semibold">{product.name}</CardTitle>
+          </CardHeader>
+          <CardContent className="p-4">
+            <div className="aspect-w-4 aspect-h-3 mb-4">
+              <img
+                src={product.image_url}
+                alt={product.name}
+                className="object-cover rounded-md"
+              />
             </div>
-          </div>
-
-          {/* Product Count */}
-          <div className="text-center mb-6">
-            <p className="text-gray-600">
-              {selectedCategory === "all" 
-                ? `সর্বমোট ${productsFiltered.length} টি পণ্য`
-                : `${productsFiltered.length} টি পণ্য "${PRODUCT_CATEGORIES.find(c => c.id === selectedCategory)?.name}" ক্যাটেগরিতে`
-              }
-            </p>
-          </div>
-
-          {/* Product Grid */}
-          {productsFiltered.length === 0 ? (
-            <div className="text-center py-12">
-              <p className="text-gray-500 text-lg">এই ক্যাটেগরিতে কোন পণ্য পাওয়া যায়নি</p>
+            <p className="text-gray-600">Price: {formatPrice(product.price)}</p>
+            <div className="flex justify-between items-center mt-4">
+              <Badge>{product.stock > 0 ? "In Stock" : "Out of Stock"}</Badge>
+              <Button size="sm" onClick={() => handleAddToCart(product)}>
+                Add to Cart
+              </Button>
             </div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {productsFiltered.map((product) => {
-                trackProductView(product);
-                return (
-                  <Card key={product.id} className="overflow-hidden hover:shadow-lg transition-all duration-300 cursor-pointer group">
-                    <div
-                      className="aspect-square overflow-hidden relative"
-                      onClick={() => handleProductClick(product)}
-                    >
-                      <img
-                        src={product.image_url || "https://images.unsplash.com/photo-1544787219-7f47ccb76574?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"}
-                        alt={product.name}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                      />
-                      <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all duration-300 flex items-center justify-center">
-                        <Eye className="w-8 h-8 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                      </div>
-                    </div>
-                    <CardContent className="p-4">
-                      <h4
-                        className="font-semibold text-lg mb-2 text-gray-800 hover:text-primary transition-colors cursor-pointer"
-                        onClick={() => handleProductClick(product)}
-                      >
-                        {product.name}
-                      </h4>
-                      <div className="flex items-center justify-between mb-4">
-                        <span className="text-2xl font-bold text-primary">{formatPrice(product.price)}</span>
-                        <Badge variant={product.stock > 0 ? "secondary" : "destructive"}>
-                          স্টক: {product.stock}
-                        </Badge>
-                      </div>
-                      <div className="space-y-2">
-                        <Button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleAddToCart(product);
-                          }}
-                          disabled={product.stock === 0}
-                          className="w-full"
-                          variant={product.stock === 0 ? "secondary" : "default"}
-                        >
-                          <ShoppingCart className="w-4 h-4 mr-2" />
-                          {product.stock === 0 ? "স্টক নেই" : "কার্টে যোগ করুন"}
-                        </Button>
-                        <div className="grid grid-cols-2 gap-2">
-                          <Button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleProductClick(product);
-                            }}
-                            variant="outline"
-                            size="sm"
-                          >
-                            <Eye className="w-4 h-4 mr-1" />
-                            দেখুন
-                          </Button>
-                          <Button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setSelectedProduct(product);
-                              setIsCustomizeModalOpen(true);
-                            }}
-                            variant="outline"
-                            className="bg-purple-500 text-white hover:bg-purple-600 border-purple-500"
-                            size="sm"
-                          >
-                            <Palette className="w-4 h-4 mr-1" />
-                            Customize This
-                          </Button>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                );
-              })}
-            </div>
-          )}
-
-          <ProductModal
-            product={selectedProduct}
-            isOpen={isModalOpen}
-            onClose={handleModalClose}
-            onAddToCart={handleAddToCart}
-            onCustomize={(product) => {
-              setSelectedProduct(product);
-              setIsCustomizeModalOpen(true);
-              setIsModalOpen(false);
-            }}
-          />
-
-          <CustomizeModal
-            product={selectedProduct}
-            isOpen={isCustomizeModalOpen}
-            onClose={() => {
-              setIsCustomizeModalOpen(false);
-              setSelectedProduct(null);
-            }}
-            onAddToCart={(product, customization) => {
-              handleAddToCart(product);
-              console.log('Customization details:', customization);
-            }}
-          />
-        </div>
-      </div>
+            <Button size="sm" onClick={() => handleCustomizeClick(product)}>
+              Customize
+            </Button>
+          </CardContent>
+        </Card>
+      ))}
+      <CustomizeModal
+        isOpen={showCustomizeModal}
+        onClose={handleCloseCustomizeModal}
+        product={selectedProduct}
+      />
     </div>
   );
 }

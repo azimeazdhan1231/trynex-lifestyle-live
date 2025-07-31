@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -47,14 +46,17 @@ export default function CustomizeModal({ product, isOpen, onClose, onAddToCart }
   const [customization, setCustomization] = useState({
     size: "",
     color: "",
-    printArea: "",
     customText: "",
     customImage: null as File | null,
-    specialInstructions: "",
-    quantity: 1
+    instructions: "",
+    quantity: 1,
+    urgency: "normal",
+    deliveryPreference: "standard",
+    additionalRequests: ""
   });
 
   const { toast } = useToast();
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
 
   if (!product) return null;
 
@@ -104,7 +106,10 @@ export default function CustomizeModal({ product, isOpen, onClose, onAddToCart }
       customText: customization.customText?.trim() || "",
       specialInstructions: customization.specialInstructions?.trim() || "",
       customImage: customization.customImage, // Keep as File object for now
-      customImageName: customization.customImage?.name || null
+      customImageName: customization.customImage?.name || null,
+      urgency: customization.urgency,
+      deliveryPreference: customization.deliveryPreference,
+      additionalRequests: customization.additionalRequests
     };
 
     // Remove empty fields to avoid confusion
@@ -135,11 +140,27 @@ export default function CustomizeModal({ product, isOpen, onClose, onAddToCart }
 • পরিমাণ: ${customization.quantity}
 • মূল্য: ${formatPrice(parseFloat(product.price.toString()) * customization.quantity)}
     `;
-    
+
     window.open(createWhatsAppUrl(customDetails.trim()), '_blank');
   };
 
   const totalPrice = parseFloat(product.price.toString()) * customization.quantity;
+
+    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            setCustomization(prev => ({ ...prev, customImage: file }));
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setImagePreview(reader.result as string);
+            };
+            reader.readAsDataURL(file);
+        } else {
+            setCustomization(prev => ({ ...prev, customImage: null }));
+            setImagePreview(null);
+        }
+    };
+
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -215,32 +236,94 @@ export default function CustomizeModal({ product, isOpen, onClose, onAddToCart }
           <div className="space-y-6">
             {/* Basic Options */}
             <div className="space-y-4">
-              <div>
-                <Label className="text-base font-semibold">সাইজ নির্বাচন করুন *</Label>
-                <Select value={customization.size} onValueChange={(value) => setCustomization(prev => ({ ...prev, size: value }))}>
-                  <SelectTrigger className="mt-2">
-                    <SelectValue placeholder="সাইজ নির্বাচন করুন" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {options.sizes.map((size) => (
-                      <SelectItem key={size} value={size}>{size}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="size">সাইজ</Label>
+                  <Select value={customization.size} onValueChange={(value) => 
+                    setCustomization({...customization, size: value})
+                  }>
+                    <SelectTrigger className="mt-2">
+                      <SelectValue placeholder="সাইজ নির্বাচন করুন" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="XS">XS</SelectItem>
+                      <SelectItem value="S">S</SelectItem>
+                      <SelectItem value="M">M</SelectItem>
+                      <SelectItem value="L">L</SelectItem>
+                      <SelectItem value="XL">XL</SelectItem>
+                      <SelectItem value="XXL">XXL</SelectItem>
+                      <SelectItem value="XXXL">XXXL</SelectItem>
+                      <SelectItem value="custom">কাস্টম সাইজ</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <Label htmlFor="color">রঙ</Label>
+                  <Select value={customization.color} onValueChange={(value) => 
+                    setCustomization({...customization, color: value})
+                  }>
+                    <SelectTrigger className="mt-2">
+                      <SelectValue placeholder="রঙ নির্বাচন করুন" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="red">লাল</SelectItem>
+                      <SelectItem value="blue">নীল</SelectItem>
+                      <SelectItem value="green">সবুজ</SelectItem>
+                      <SelectItem value="black">কালো</SelectItem>
+                      <SelectItem value="white">সাদা</SelectItem>
+                      <SelectItem value="yellow">হলুদ</SelectItem>
+                      <SelectItem value="pink">গোলাপী</SelectItem>
+                      <SelectItem value="purple">বেগুনী</SelectItem>
+                      <SelectItem value="orange">কমলা</SelectItem>
+                      <SelectItem value="gray">ধূসর</SelectItem>
+                      <SelectItem value="custom">কাস্টম রঙ</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
 
-              <div>
-                <Label className="text-base font-semibold">রং নির্বাচন করুন *</Label>
-                <Select value={customization.color} onValueChange={(value) => setCustomization(prev => ({ ...prev, color: value }))}>
-                  <SelectTrigger className="mt-2">
-                    <SelectValue placeholder="রং নির্বাচন করুন" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {options.colors.map((color) => (
-                      <SelectItem key={color} value={color}>{color}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-base font-semibold">পরিমাণ</Label>
+                  <div className="flex items-center space-x-3 mt-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => setCustomization(prev => ({ ...prev, quantity: Math.max(1, prev.quantity - 1) }))}
+                      className="w-10 h-10 p-0"
+                    >
+                      -
+                    </Button>
+                    <span className="text-lg font-semibold min-w-[3rem] text-center">
+                      {customization.quantity}
+                    </span>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => setCustomization(prev => ({ ...prev, quantity: Math.min(product.stock, prev.quantity + 1) }))}
+                      className="w-10 h-10 p-0"
+                    >
+                      +
+                    </Button>
+                  </div>
+                </div>
+
+                <div>
+                  <Label htmlFor="urgency" className="text-base font-semibold">জরুরী প্রয়োজন</Label>
+                  <Select value={customization.urgency} onValueChange={(value) => 
+                    setCustomization({...customization, urgency: value})
+                  }>
+                    <SelectTrigger className="mt-2">
+                      <SelectValue placeholder="জরুরীতা নির্বাচন করুন" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="normal">সাধারণ</SelectItem>
+                      <SelectItem value="urgent">জরুরী (২-৩ দিন)</SelectItem>
+                      <SelectItem value="express">অতি জরুরী (১-২ দিন)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
 
               <div>
@@ -256,44 +339,18 @@ export default function CustomizeModal({ product, isOpen, onClose, onAddToCart }
                   </SelectContent>
                 </Select>
               </div>
-
-              {/* Quantity */}
-              <div>
-                <Label className="text-base font-semibold">পরিমাণ</Label>
-                <div className="flex items-center space-x-3 mt-2">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => setCustomization(prev => ({ ...prev, quantity: Math.max(1, prev.quantity - 1) }))}
-                    className="w-10 h-10 p-0"
-                  >
-                    -
-                  </Button>
-                  <span className="text-lg font-semibold min-w-[3rem] text-center">
-                    {customization.quantity}
-                  </span>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => setCustomization(prev => ({ ...prev, quantity: Math.min(product.stock, prev.quantity + 1) }))}
-                    className="w-10 h-10 p-0"
-                  >
-                    +
-                  </Button>
-                </div>
-              </div>
             </div>
 
             {/* Custom Text */}
             <div>
               <Label className="text-base font-semibold flex items-center gap-2">
                 <Type className="w-4 h-4" />
-                কাস্টম টেক্সট
+                কাস্টম টেক্সট / ডিজাইন
               </Label>
               <Input
                 value={customization.customText}
                 onChange={(e) => setCustomization(prev => ({ ...prev, customText: e.target.value }))}
-                placeholder="আপনার নাম, বার্তা বা যেকোনো টেক্সট লিখুন"
+                placeholder="আপনার পছন্দের টেক্সট বা ডিজাইনের বর্ণনা লিখুন"
                 className="mt-2"
               />
             </div>
@@ -308,34 +365,55 @@ export default function CustomizeModal({ product, isOpen, onClose, onAddToCart }
                 <Input
                   type="file"
                   accept="image/*"
-                  onChange={handleImageUpload}
+                  onChange={handleImageChange}
                   className="mb-2"
                 />
-                {customization.customImage && (
-                  <div className="text-sm text-green-600 flex items-center gap-2">
-                    <Upload className="w-4 h-4" />
-                    {customization.customImage.name}
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => setCustomization(prev => ({ ...prev, customImage: null }))}
-                    >
-                      <X className="w-4 h-4" />
-                    </Button>
+                {imagePreview && (
+                  <div className="mt-2">
+                    <p className="text-sm text-gray-600 mb-2">প্রিভিউ:</p>
+                    <img src={imagePreview} alt="Preview" className="w-32 h-32 object-cover rounded-lg border" />
                   </div>
                 )}
                 <p className="text-xs text-gray-500">সর্বোচ্চ ৫MB, JPG/PNG ফরম্যাট</p>
               </div>
             </div>
 
+            <div>
+                <Label htmlFor="deliveryPreference" className="text-base font-semibold">ডেলিভারি পছন্দ</Label>
+                <Select value={customization.deliveryPreference} onValueChange={(value) => 
+                  setCustomization({...customization, deliveryPreference: value})
+                }>
+                  <SelectTrigger className="mt-2">
+                    <SelectValue placeholder="ডেলিভারি পছন্দ নির্বাচন করুন" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="standard">স্ট্যান্ডার্ড (৫-৭ দিন)</SelectItem>
+                    <SelectItem value="fast">দ্রুত (৩-৪ দিন)</SelectItem>
+                    <SelectItem value="express">এক্সপ্রেস (১-২ দিন)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
             {/* Special Instructions */}
             <div>
               <Label className="text-base font-semibold">বিশেষ নির্দেশনা</Label>
               <Textarea
-                value={customization.specialInstructions}
-                onChange={(e) => setCustomization(prev => ({ ...prev, specialInstructions: e.target.value }))}
-                placeholder="আপনার যেকোনো বিশেষ চাহিদা বা নির্দেশনা লিখুন"
+                value={customization.instructions}
+                onChange={(e) => setCustomization(prev => ({ ...prev, instructions: e.target.value }))}
+                placeholder="অতিরিক্ত নির্দেশনা, পছন্দের রঙের কোড, মাপের বিস্তারিত, ডিজাইনের বিশেষত্ব ইত্যাদি লিখুন..."
                 className="mt-2"
+                rows={3}
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="additionalRequests" className="text-base font-semibold">অতিরিক্ত অনুরোধ</Label>
+              <Textarea
+                id="additionalRequests"
+                value={customization.additionalRequests}
+                onChange={(e) => setCustomization({...customization, additionalRequests: e.target.value})}
+                placeholder="প্যাকেজিং, গিফট র‍্যাপিং, বিশেষ কোনো অনুরোধ থাকলে লিখুন..."
+                className="min-h-[80px] mt-2"
                 rows={3}
               />
             </div>

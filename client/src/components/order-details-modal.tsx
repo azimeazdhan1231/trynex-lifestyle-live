@@ -263,7 +263,7 @@ export default function OrderDetailsModal({ isOpen, onClose, order }: OrderDetai
                           {(() => {
                             // Always show customization section for better visibility
                             const hasAnyCustomization = item.customization || item.customText || item.specialInstructions || item.customImage || item.customImages;
-                            
+
                             if (!hasAnyCustomization) {
                               return (
                                 <div className="mt-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
@@ -275,7 +275,7 @@ export default function OrderDetailsModal({ isOpen, onClose, order }: OrderDetai
                                 </div>
                               );
                             }
-                            
+
                             return (
                               <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
                                 <h5 className="font-semibold text-blue-900 mb-3 flex items-center gap-2">
@@ -395,7 +395,7 @@ export default function OrderDetailsModal({ isOpen, onClose, order }: OrderDetai
                             const hasLegacyCustomization = (item.customText && item.customText.trim()) || 
                                                            (item.specialInstructions && item.specialInstructions.trim()) || 
                                                            item.customImages || item.customImage;
-                            
+
                             return !hasNewCustomization && !hasLegacyCustomization;
                           })() && (
                             <div className="mt-4 bg-gray-100 rounded-lg p-4 text-center text-gray-500">

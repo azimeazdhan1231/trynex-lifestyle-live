@@ -199,6 +199,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Clear all orders endpoint (with backup)
+  app.delete("/api/orders/clear-all", async (req, res) => {
+    try {
+      const result = await storage.clearAllOrders();
+      res.json({ 
+        message: "All orders cleared successfully",
+        cleared_count: result.clearedCount,
+        backup_created: true
+      });
+    } catch (error) {
+      console.error("Error clearing all orders:", error);
+      res.status(500).json({ message: "Error clearing orders" });
+    }
+  });
+
   // Offers
   app.get("/api/offers", async (req, res) => {
     try {

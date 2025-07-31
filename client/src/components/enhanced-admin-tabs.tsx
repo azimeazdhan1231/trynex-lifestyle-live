@@ -27,7 +27,7 @@ export default function EnhancedAdminTabs() {
   const [isInitialized, setIsInitialized] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  
+
   // Order notifications
   const { 
     orders: notificationOrders, 
@@ -41,7 +41,7 @@ export default function EnhancedAdminTabs() {
     if (!isInitialized) {
       // Only request notification permission if not on mobile or if explicitly supported
       const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-      
+
       if (!isMobile || ('Notification' in window && typeof Notification.requestPermission === 'function')) {
         try {
           requestNotificationPermission();
@@ -49,14 +49,14 @@ export default function EnhancedAdminTabs() {
           console.warn('Notification permission request failed:', error);
         }
       }
-      
+
       // Show welcome message only once - shorter for mobile
       toast({
         title: "অ্যাডমিন প্যানেল সক্রিয়",
         description: isMobile ? "মোবাইল ড্যাশবোর্ড লোড হয়েছে" : "রিয়েল-টাইম নোটিফিকেশন চালু আছে",
         duration: 3000,
       });
-      
+
       setIsInitialized(true);
     }
   }, [isInitialized, requestNotificationPermission, toast]);
@@ -83,6 +83,7 @@ export default function EnhancedAdminTabs() {
   const [isProductDialogOpen, setIsProductDialogOpen] = useState(false);
   const [isCategoryDialogOpen, setIsCategoryDialogOpen] = useState(false);
   const [isOfferDialogOpen, setIsOfferDialogOpen] = useState(false);
+  const [showClearConfirm, setShowClearConfirm] = useState(false);
 
   // Fetch data
   const { data: orders = [] } = useQuery<Order[]>({ queryKey: ["/api/orders"] });
@@ -279,6 +280,14 @@ export default function EnhancedAdminTabs() {
       toast({ title: "অফার সফলভাবে ডিলিট হয়েছে!" });
     },
   });
+    const clearAllOrdersMutation = useMutation({
+    mutationFn: () => apiRequest("/api/orders", "DELETE"),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/orders"] });
+      toast({ title: "সব অর্ডার মুছে ফেলা হয়েছে!" });
+    },
+    onError: () => toast({ title: "অর্ডার মুছতে সমস্যা হয়েছে", variant: "destructive" })
+  });
 
   // Form reset functions
   const resetProductForm = () => {
@@ -419,7 +428,7 @@ export default function EnhancedAdminTabs() {
               </div>
             )}
           </div>
-          
+
           {/* Notification Status */}
           <div className="flex items-center gap-2 text-sm">
             <div className={`w-2 h-2 rounded-full ${hasNotificationPermission ? 'bg-green-500' : 'bg-yellow-500'}`}></div>
@@ -537,7 +546,7 @@ export default function EnhancedAdminTabs() {
 
         {/* Orders Tab */}
         <TabsContent value="orders" className="space-y-6">
-          <Card>
+            <Card>
             <CardHeader>
               <CardTitle>অর্ডার ম্যানেজমেন্ট</CardTitle>
             </CardHeader>
@@ -739,7 +748,8 @@ export default function EnhancedAdminTabs() {
                     </div>
                     <div className="flex items-center justify-between">
                       <Label htmlFor="is_best_selling" className="flex items-center space-x-2">
-                        <TrendingUp className="w-4 h-4 text-green-500" />
+                        <TrendingUp className="w-4 h-4```text
+ text-green-500" />
                         <span>বেস্ট সেলিং</span>
                       </Label>
                       <Switch
@@ -1311,6 +1321,42 @@ export default function EnhancedAdminTabs() {
         isOpen={orderDetailsOpen}
         onClose={() => setOrderDetailsOpen(false)} 
       />
+       {/* Clear All Orders Confirmation Dialog */}
+       <Dialog open={showClearConfirm} onOpenChange={setShowClearConfirm}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="text-red-600">সব অর্ডার মুছে ফেলুন</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-sm text-gray-600">
+              আপনি কি নিশ্চিত যে আপনি সব অর্ডার মুছে ফেলতে চান? এই কাজটি অপরিবর্তনীয়।
+            </p>
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+              <p className="text-sm text-yellow-800">
+                <strong>বর্তমান অর্ডার সংখ্যা: {orders.length}</strong>
+              </p>
+              <p className="text-xs text-yellow-600 mt-1">
+                সব অর্ডার ডাটাবেস থেকে স্থায়ীভাবে মুছে যাবে কিন্তু ব্যাকআপ রাখা হবে।
+              </p>
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setShowClearConfirm(false)}>
+                বাতিল
+              </Button>
+              <Button 
+                variant="destructive" 
+                onClick={() => {
+                  clearAllOrdersMutation.mutate();
+                  setShowClearConfirm(false);
+                }}
+                disabled={clearAllOrdersMutation.isPending}
+              >
+                {clearAllOrdersMutation.isPending ? "মুছে ফেলা হচ্ছে..." : "হ্যাঁ, মুছে ফেলুন"}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
