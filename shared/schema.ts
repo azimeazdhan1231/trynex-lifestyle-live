@@ -210,10 +210,6 @@ export type UserCart = typeof userCarts.$inferSelect;
 export type InsertUserCart = z.infer<typeof insertUserCartSchema>;
 export type UserOrder = typeof userOrders.$inferSelect;
 export type InsertUserOrder = z.infer<typeof insertUserOrderSchema>;
-export type Blog = typeof blogs.$inferSelect;
-export type InsertBlog = z.infer<typeof insertBlogSchema>;
-export type Page = typeof pages.$inferSelect;
-export type InsertPage = z.infer<typeof insertPageSchema>;
 
 // Blog table
 export const customOrders = pgTable('custom_orders', {

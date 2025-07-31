@@ -266,7 +266,7 @@ export default function Products() {
 
       <div className="container mx-auto px-4 py-8">
         {/* Advanced Search and Filters */}
-        <div className="bg-white rounded-2xl shadow-xl p-6 mb-8 border border-gray-100 backdrop-blur-sm">
+        <div className="bg-white rounded-2xl shadow-xl p-4 md:p-6 mb-8 border border-gray-100 backdrop-blur-sm">
           <div className="flex flex-col lg:flex-row gap-4">
             {/* Search */}
             <div className="relative flex-1">
@@ -573,23 +573,23 @@ function PremiumProductGrid({
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
       {products.map((product) => (
-        <Card key={product.id} className="group overflow-hidden hover:shadow-2xl transition-all duration-500 border-0 shadow-lg bg-white transform hover:-translate-y-2">
+        <Card key={product.id} className="group overflow-hidden hover:shadow-2xl transition-all duration-500 border-0 shadow-lg bg-white transform hover:-translate-y-2 rounded-2xl">
           <div className="relative">
-            {/* Bigger Product Image */}
+            {/* Much Bigger Product Image */}
             <div 
-              className="aspect-[4/5] overflow-hidden bg-gray-50 cursor-pointer relative"
+              className="aspect-[1/1.2] overflow-hidden bg-gray-50 cursor-pointer relative rounded-t-2xl"
               onClick={() => onViewProduct(product)}
             >
               <LazyImage
-                src={product.image_url || "https://via.placeholder.com/400x500/f3f4f6/9ca3af?text=No+Image"}
+                src={product.image_url || "https://via.placeholder.com/500x600/f3f4f6/9ca3af?text=No+Image"}
                 alt={product.name}
                 className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
               />
               
               {/* Premium Overlay */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center justify-center">
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center justify-center">
                 <div className="text-center space-y-3">
                   <Button 
                     size="sm" 
@@ -597,10 +597,10 @@ function PremiumProductGrid({
                       e.stopPropagation();
                       onViewProduct(product);
                     }}
-                    className="bg-white/90 text-gray-800 hover:bg-white backdrop-blur-sm"
+                    className="bg-white/95 text-gray-800 hover:bg-white backdrop-blur-sm shadow-lg"
                   >
                     <Eye className="w-4 h-4 mr-2" />
-                    দেখুন
+                    বিস্তারিত
                   </Button>
                 </div>
               </div>
@@ -632,7 +632,7 @@ function PremiumProductGrid({
 
           <CardContent className="p-6">
             <h3 
-              className="font-bold text-xl text-gray-800 mb-3 line-clamp-2 group-hover:text-blue-600 transition-colors cursor-pointer leading-tight"
+              className="font-bold text-lg md:text-xl text-gray-800 mb-3 line-clamp-2 group-hover:text-blue-600 transition-colors cursor-pointer leading-tight"
               onClick={() => onViewProduct(product)}
             >
               {product.name}
@@ -642,10 +642,10 @@ function PremiumProductGrid({
               {product.description || "বিশেষ কাস্টম পণ্য - আপনার পছন্দ অনুযায়ী কাস্টমাইজ করুন"}
             </p>
 
-            <div className="flex items-center justify-between mb-4">
-              <span className="text-2xl font-bold text-blue-600">{formatPrice(product.price)}</span>
+            <div className="flex items-center justify-between mb-5">
+              <span className="text-xl md:text-2xl font-bold text-blue-600">{formatPrice(product.price)}</span>
               {product.category && (
-                <Badge variant="outline" className="text-xs">
+                <Badge variant="outline" className="text-xs px-2 py-1">
                   {product.category}
                 </Badge>
               )}
@@ -655,7 +655,7 @@ function PremiumProductGrid({
               <Button
                 onClick={() => onAddToCart(product)}
                 disabled={product.stock === 0}
-                className="w-full bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 transform hover:scale-105 transition-all duration-200 shadow-lg hover:shadow-xl"
+                className="w-full bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 transform hover:scale-105 transition-all duration-200 shadow-lg hover:shadow-xl py-3 font-semibold"
               >
                 <ShoppingCart className="w-4 h-4 mr-2" />
                 কার্টে যোগ করুন
@@ -664,7 +664,7 @@ function PremiumProductGrid({
               <Button
                 variant="outline"
                 onClick={() => onCustomizeProduct(product)}
-                className="w-full border-purple-500 text-purple-600 hover:bg-purple-50 hover:border-purple-600 transition-all"
+                className="w-full border-purple-500 text-purple-600 hover:bg-purple-50 hover:border-purple-600 transition-all py-3 font-semibold"
               >
                 <Settings className="w-4 h-4 mr-2" />
                 কাস্টমাইজ করুন
