@@ -8,6 +8,9 @@ import { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { COMPANY_NAME } from "@/lib/constants";
 import CartModal from "@/components/cart-modal";
+import SearchBar from "@/components/search-bar";
+import ProductModal from "@/components/product-modal";
+import type { Product } from "@shared/schema";
 
 interface HeaderProps {
   cartCount: number;
@@ -17,6 +20,8 @@ interface HeaderProps {
 export default function Header({ cartCount, onCartOpen }: HeaderProps) {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [isProductModalOpen, setIsProductModalOpen] = useState(false);
   const [location] = useLocation();
 
   const navItems = [
@@ -30,9 +35,27 @@ export default function Header({ cartCount, onCartOpen }: HeaderProps) {
     return location === href;
   };
 
+  const handleProductSelect = (product: Product) => {
+    setSelectedProduct(product);
+    setIsProductModalOpen(true);
+  };
+
   return (
     <>
       <header className="bg-white shadow-lg fixed top-0 left-0 right-0 z-50">
+        {/* Search Section - Visible on homepage and products page */}
+        {(location === "/" || location === "/products") && (
+          <div className="bg-gray-50 border-b border-gray-200">
+            <div className="container mx-auto px-4 py-3">
+              <SearchBar
+                onProductSelect={handleProductSelect}
+                placeholder="পণ্য খুঁজুন... (নাম, ক্যাটেগরি, বিবরণ)"
+                className="mx-auto"
+              />
+            </div>
+          </div>
+        )}
+        
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             {/* Logo */}
@@ -109,6 +132,19 @@ export default function Header({ cartCount, onCartOpen }: HeaderProps) {
       </header>
 
       <CartModal isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
+      
+      {/* Product Modal from Search */}
+      {selectedProduct && (
+        <ProductModal
+          product={selectedProduct}
+          isOpen={isProductModalOpen}
+          onClose={() => {
+            setIsProductModalOpen(false);
+            setSelectedProduct(null);
+          }}
+          onAddToCart={() => {}} // Handle add to cart if needed
+        />
+      )}
     </>
   );
 }

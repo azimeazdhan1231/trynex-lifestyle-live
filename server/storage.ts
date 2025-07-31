@@ -133,8 +133,7 @@ export class DatabaseStorage implements IStorage {
 
   async updateOrderStatus(id: string, status: string): Promise<Order> {
     const result = await db.update(orders).set({ 
-      status,
-      updated_at: new Date() 
+      status
     }).where(eq(orders.id, id)).returning();
     
     if (result.length === 0) {
@@ -237,7 +236,7 @@ export class DatabaseStorage implements IStorage {
       return { valid: false, discount: 0, message: "প্রমো কোডের মেয়াদ শেষ" };
     }
 
-    if (promoCode.usage_limit && promoCode.used_count >= promoCode.usage_limit) {
+    if (promoCode.usage_limit && (promoCode.used_count || 0) >= promoCode.usage_limit) {
       return { valid: false, discount: 0, message: "প্রমো কোডের ব্যবহারের সীমা শেষ" };
     }
 
@@ -282,7 +281,8 @@ export class DatabaseStorage implements IStorage {
     }
 
     if (conditions.length > 0) {
-      query = query.where(and(...conditions));
+      const result = await query.where(and(...conditions)).orderBy(desc(analytics.created_at));
+      return result;
     }
 
     const result = await query.orderBy(desc(analytics.created_at));

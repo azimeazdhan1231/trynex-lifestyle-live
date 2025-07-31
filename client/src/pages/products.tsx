@@ -4,12 +4,13 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ShoppingCart, MessageCircle, Eye } from "lucide-react";
+import { ShoppingCart, MessageCircle, Eye, Filter } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { formatPrice, createWhatsAppUrl } from "@/lib/constants";
 import ProductModal from "@/components/product-modal";
 import Header from "@/components/header";
 import { useCart } from "@/hooks/use-cart";
+import { trackProductView, trackAddToCart } from "@/lib/analytics";
 import type { Product, Category } from "@shared/schema";
 
 export default function ProductsPage() {

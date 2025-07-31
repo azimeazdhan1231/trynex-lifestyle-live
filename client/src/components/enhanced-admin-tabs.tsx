@@ -11,9 +11,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { Plus, Edit, Trash2, Eye, Package, ShoppingCart, TrendingUp, Users, Gift, Tag, Settings, DollarSign, Star } from "lucide-react";
+import { Plus, Edit, Trash2, Eye, Package, ShoppingCart, TrendingUp, Users, Gift, Tag, Settings, DollarSign, Star, BarChart3 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { ORDER_STATUSES, PRODUCT_CATEGORIES, formatPrice } from "@/lib/constants";
+import AnalyticsAdmin from "@/components/analytics-admin";
 import type { Product, Order, Category, PromoCode } from "@shared/schema";
 
 export default function EnhancedAdminTabs() {
@@ -313,13 +314,14 @@ export default function EnhancedAdminTabs() {
   return (
     <div className="container mx-auto p-6">
       <Tabs defaultValue="dashboard" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-7">
+        <TabsList className="grid w-full grid-cols-8">
           <TabsTrigger value="dashboard">ড্যাশবোর্ড</TabsTrigger>
           <TabsTrigger value="orders">অর্ডার</TabsTrigger>
           <TabsTrigger value="products">পণ্য</TabsTrigger>
           <TabsTrigger value="categories">ক্যাটাগরি</TabsTrigger>
           <TabsTrigger value="offers">অফার</TabsTrigger>
           <TabsTrigger value="promo-codes">প্রমো কোড</TabsTrigger>
+          <TabsTrigger value="analytics">অ্যানালিটিক্স</TabsTrigger>
           <TabsTrigger value="settings">সেটিংস</TabsTrigger>
         </TabsList>
 
@@ -1154,6 +1156,11 @@ export default function EnhancedAdminTabs() {
               </CardContent>
             </Card>
           </div>
+        </TabsContent>
+
+        {/* Analytics Tab */}
+        <TabsContent value="analytics">
+          <AnalyticsAdmin />
         </TabsContent>
       </Tabs>
     </div>
