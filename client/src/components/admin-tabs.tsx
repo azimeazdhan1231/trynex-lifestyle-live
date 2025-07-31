@@ -15,6 +15,7 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { formatPrice, ORDER_STATUSES } from "@/lib/constants";
 import OrderDetailsModal from "./order-details-modal";
+// import type { Product, Order, Offer } from "@shared/schema";
 
 interface Product {
   id: string;
@@ -52,6 +53,8 @@ interface Offer {
   is_active: boolean;
   created_at: string;
 }
+
+
 
 const categories = [
   { value: "gifts", label: "গিফট" },
@@ -249,6 +252,7 @@ export default function AdminTabs() {
   };
 
   const handleViewOrderDetails = (order: Order) => {
+    console.log('Viewing order details for:', order);
     setSelectedOrder(order);
     setIsOrderDetailsOpen(true);
   };
