@@ -46,9 +46,11 @@ export default function CustomizeModal({ product, isOpen, onClose, onAddToCart }
   const [customization, setCustomization] = useState({
     size: "",
     color: "",
+    printArea: "",
     customText: "",
     customImage: null as File | null,
     instructions: "",
+    specialInstructions: "",
     quantity: 1,
     urgency: "normal",
     deliveryPreference: "standard",
@@ -170,14 +172,6 @@ export default function CustomizeModal({ product, isOpen, onClose, onAddToCart }
             <Palette className="w-6 h-6 text-primary" />
             {product.name} কাস্টমাইজ করুন
           </DialogTitle>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="absolute right-4 top-4"
-            onClick={onClose}
-          >
-            <X className="h-4 w-4" />
-          </Button>
         </DialogHeader>
 
         <div className="grid md:grid-cols-2 gap-6">
@@ -398,8 +392,8 @@ export default function CustomizeModal({ product, isOpen, onClose, onAddToCart }
             <div>
               <Label className="text-base font-semibold">বিশেষ নির্দেশনা</Label>
               <Textarea
-                value={customization.instructions}
-                onChange={(e) => setCustomization(prev => ({ ...prev, instructions: e.target.value }))}
+                value={customization.specialInstructions}
+                onChange={(e) => setCustomization(prev => ({ ...prev, specialInstructions: e.target.value }))}
                 placeholder="অতিরিক্ত নির্দেশনা, পছন্দের রঙের কোড, মাপের বিস্তারিত, ডিজাইনের বিশেষত্ব ইত্যাদি লিখুন..."
                 className="mt-2"
                 rows={3}

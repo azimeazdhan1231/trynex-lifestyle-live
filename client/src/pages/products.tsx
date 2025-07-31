@@ -26,7 +26,7 @@ export default function Products() {
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [priceRange, setPriceRange] = useState("all");
   const { addToCart } = useCart();
-  const { trackEvent } = useAnalytics();
+  useAnalytics(); // Initialize analytics tracking
   const { toast } = useToast();
 
   const { data: products = [], isLoading: productsLoading } = useQuery<Product[]>({
@@ -75,7 +75,7 @@ export default function Products() {
           return a.name.localeCompare(b.name);
         case "newest":
         default:
-          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+          return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime();
       }
     });
 
@@ -103,12 +103,9 @@ export default function Products() {
         description: `${product.name} কার্টে যোগ করা হয়েছে`,
       });
 
-      trackEvent('add_to_cart', {
-        item_id: product.id,
-        item_name: product.name,
-        price: product.price,
-        quantity: 1
-      });
+      // Track add to cart using analytics function directly
+      const { trackAddToCart } = await import("@/lib/analytics");
+      trackAddToCart(product.id, product.name, Number(product.price));
     } catch (error) {
       toast({
         title: "ত্রুটি",
@@ -121,10 +118,9 @@ export default function Products() {
   const handleViewProduct = (product: Product) => {
     setSelectedProduct(product);
     setShowProductModal(true);
-    trackEvent('view_item', {
-      item_id: product.id,
-      item_name: product.name,
-      price: product.price
+    // Track view product using analytics function directly
+    import("@/lib/analytics").then(({ trackProductView }) => {
+      trackProductView(product.id, product.name, product.category || "uncategorized");
     });
   };
 
