@@ -1,5 +1,15 @@
 export const COMPANY_NAME = "Trynex Lifestyle";
 export const COMPANY_TAGLINE = "আপনার স্বপ্নের লাইফস্টাইল";
+export const COMPANY_DESCRIPTION = "উন্নত মানের প্রোডাক্ট এবং সেবা প্রদানকারী";
+export const FACEBOOK_PAGE = "https://facebook.com/trynexlifestyle";
+export const INSTAGRAM_PAGE = "https://instagram.com/trynexlifestyle";
+export const YOUTUBE_CHANNEL = "https://youtube.com/@trynexlifestyle";
+export const CUSTOMER_SUPPORT_PHONE = "+8801609916966";
+export const CUSTOMER_SUPPORT_EMAIL = "support@trynexlifestyle.com";
+export const BUSINESS_ADDRESS = "ঢাকা, বাংলাদেশ";
+export const DELIVERY_TIME = "২-৫ কার্যদিবস";
+export const RETURN_POLICY_DAYS = 7;
+export const WARRANTY_PERIOD = "১ বছর";
 
 export const PRODUCT_CATEGORIES = [
   { id: "all", name: "সব পণ্য", icon: "🛍️" },
@@ -94,3 +104,21 @@ export const PAYMENT_METHODS = [
   { id: "nagad", name: "নগদ", icon: "💳" },
   { id: "rocket", name: "রকেট", icon: "🚀" }
 ];
+
+export const SOCIAL_LINKS = {
+  facebook: FACEBOOK_PAGE,
+  instagram: INSTAGRAM_PAGE,
+  youtube: YOUTUBE_CHANNEL,
+  whatsapp: `https://wa.me/${WHATSAPP_NUMBER}`
+};
+
+export const CONTACT_INFO = {
+  phone: CUSTOMER_SUPPORT_PHONE,
+  email: CUSTOMER_SUPPORT_EMAIL,
+  address: BUSINESS_ADDRESS,
+  whatsapp: WHATSAPP_NUMBER
+};
+
+export const BUSINESS_HOURS = "সকাল ৯টা - রাত ১০টা";
+export const MIN_ORDER_AMOUNT = 500;
+export const FREE_DELIVERY_THRESHOLD = 1000;
