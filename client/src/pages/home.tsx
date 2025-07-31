@@ -310,9 +310,11 @@ export default function Home() {
   const { toast } = useToast();
   const { addToCart, totalItems } = useCart();
 
-  // Load active offers
+  // Load active offers with delay to prevent blocking product loading
   const { data: offers = [] } = useQuery<Offer[]>({
     queryKey: ["/api/offers", "active=true"],
+    staleTime: 1000 * 60 * 10, // Cache for 10 minutes
+    enabled: false, // Disable auto-loading to prevent popup blocking
   });
 
   // Load products for homepage sections

@@ -29,14 +29,11 @@ export const queryClient = new QueryClient({
 
         return response.json();
       },
-      retry: (failureCount, error) => {
-        if (error instanceof Error && error.message.includes('404')) {
-          return false;
-        }
-        return failureCount < 3;
-      },
-      staleTime: 30000, // 30 seconds
+      retry: 1, // Only retry once for faster failures
+      staleTime: 1000 * 60 * 5, // 5 minutes - much longer cache
+      gcTime: 1000 * 60 * 10, // 10 minutes
       refetchOnWindowFocus: false,
+      refetchOnReconnect: false,
     },
   },
 });

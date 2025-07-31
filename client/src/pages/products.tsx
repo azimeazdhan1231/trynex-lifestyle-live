@@ -12,6 +12,7 @@ import { formatPrice, createWhatsAppUrl } from "@/lib/constants";
 import Header from "@/components/header";
 import ProductModal from "@/components/product-modal";
 import CustomizeModal from "@/components/customize-modal";
+import LazyImage from "@/components/LazyImage";
 import { useCart } from "@/hooks/use-cart";
 import { useAnalytics } from "@/hooks/use-analytics";
 import { useToast } from "@/hooks/use-toast";
@@ -470,13 +471,13 @@ function ProductGrid({ products, viewMode, onAddToCart, onViewProduct, onCustomi
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
       {products.map((product) => (
-        <Card key={product.id} className="group overflow-hidden hover:shadow-2xl transition-all duration-500 border border-gray-100 bg-white hover:border-blue-300 transform hover:-translate-y-2">
+        <Card key={product.id} className="group overflow-hidden hover:shadow-2xl transition-all duration-300 border border-gray-100 bg-white hover:border-blue-300 transform hover:-translate-y-1">
           <div className="relative">
             <div className="aspect-square overflow-hidden bg-gray-50">
-              <img
-                src={product.image_url || "https://images.unsplash.com/photo-1544787219-7f47ccb76574?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"}
+              <LazyImage
+                src={product.image_url || "https://via.placeholder.com/300x300/f3f4f6/9ca3af?text=No+Image"}
                 alt={product.name}
-                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
               />
             </div>
             

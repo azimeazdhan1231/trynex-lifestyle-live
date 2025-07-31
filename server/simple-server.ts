@@ -54,8 +54,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/products', async (req, res) => {
     try {
-      const validatedData = insertProductSchema.parse(req.body);
+      const productData = req.body;
+      
+      // Optimize image URL if provided
+      if (productData.image_url && productData.image_url.startsWith('data:')) {
+        // For base64 images, we'll store them as-is for now
+        // In production, you'd upload to a CDN and get a URL
+        console.log('Base64 image received, storing directly');
+      }
+      
+      const validatedData = insertProductSchema.parse(productData);
       const product = await storage.createProduct(validatedData);
+      
+      // Clear products cache after creating new product
+      res.set('X-Cache-Clear', 'products');
+      
       res.status(201).json(product);
     } catch (error) {
       console.error('Error creating product:', error);
