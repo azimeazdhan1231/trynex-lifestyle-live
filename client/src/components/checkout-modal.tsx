@@ -97,7 +97,7 @@ export default function CheckoutModal({ isOpen, onClose, cart, onOrderComplete }
     },
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!formData.customer_name || !formData.phone || !formData.district || !formData.thana) {
@@ -121,14 +121,44 @@ export default function CheckoutModal({ isOpen, onClose, cart, onOrderComplete }
     // Track checkout initiation
     trackInitiateCheckout(totalPrice, cart.length);
 
+    // Convert File objects to base64 for order items
+    const processedItems = await Promise.all(cart.map(async (item: any) => {
+      const processedItem = { ...item, delivery_fee: deliveryFee };
+      
+      if (item.customization && item.customization.customImage && item.customization.customImage instanceof File) {
+        try {
+          const base64 = await new Promise<string>((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result as string);
+            reader.onerror = reject;
+            reader.readAsDataURL(item.customization.customImage);
+          });
+          
+          processedItem.customization = {
+            ...item.customization,
+            customImage: base64
+          };
+        } catch (error) {
+          console.error('Error converting image to base64:', error);
+          // Continue without the image if conversion fails
+          processedItem.customization = {
+            ...item.customization,
+            customImage: null
+          };
+        }
+      }
+      
+      return processedItem;
+    }));
+
     const orderData = {
       ...formData,
-      items: cart.map(item => ({...item, delivery_fee: deliveryFee})),
+      items: processedItems,
       total: totalPrice.toString(),
       delivery_fee: deliveryFee,
     };
 
-    console.log('Submitting order:', orderData);
+    console.log('Submitting order with processed items:', orderData);
     createOrderMutation.mutate(orderData);
   };
 

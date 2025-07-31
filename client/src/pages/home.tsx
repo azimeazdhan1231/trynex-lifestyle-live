@@ -643,7 +643,7 @@ export default function Home() {
 
           <div className="border-t border-gray-700 mt-12 pt-8 text-center">
             <p className="text-gray-400">
-              © 2024 {COMPANY_NAME}. সর্বস্বত্ব সংরক্ষিত।
+              © 2025 {COMPANY_NAME}. সর্বস্বত্ব সংরক্ষিত।
             </p>
           </div>
         </div>

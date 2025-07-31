@@ -315,6 +315,9 @@ export default function OrderDetailsModal({ isOpen, onClose, order }: OrderDetai
                         if (item.customization.customImage && typeof item.customization.customImage === 'string') {
                           images.push(item.customization.customImage);
                         }
+                        if (Array.isArray(item.customization.images)) {
+                          images.push(...item.customization.images);
+                        }
                       }
 
                       // Fallback sources
@@ -323,6 +326,9 @@ export default function OrderDetailsModal({ isOpen, onClose, order }: OrderDetai
                       }
                       if (item.customImage && typeof item.customImage === 'string') {
                         images.push(item.customImage);
+                      }
+                      if (Array.isArray(item.images)) {
+                        images.push(...item.images);
                       }
 
                       const uniqueImages = Array.from(new Set(images))
