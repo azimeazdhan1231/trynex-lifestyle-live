@@ -5,6 +5,7 @@ export interface CartItem {
   name: string;
   price: number;
   quantity: number;
+  customization?: any;
 }
 
 const CART_STORAGE_KEY = 'trynex-cart';

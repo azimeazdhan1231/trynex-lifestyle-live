@@ -4,6 +4,18 @@
 A comprehensive Bengali-friendly eCommerce store with advanced admin panel, analytics integration, and responsive design. Live at https://trynex-lifestyle.pages.dev/
 
 ## Recent Changes
+✅ **Admin Panel Order Details & Customization System** (2025-01-31)
+- Fixed admin panel "বিস্তারিত" button to show comprehensive order details modal
+- Added complete order details view with customer info, items, payment, and tracking
+- Implemented dynamic customization display in admin order details (size, color, text, images, instructions)
+- Enhanced order management with responsive design and complete customization visibility
+
+✅ **Homepage Product Customization** (2025-01-31)
+- Added "কাস্টমাইজ" button to all homepage product cards
+- Integrated CustomizeModal functionality from products page to homepage
+- Fixed customization modal not working on homepage (previously only worked on products page)
+- Enhanced cart system to support customization data storage and persistence
+
 ✅ **Product Enhancement** (2025-01-30)
 - Implemented responsive product modal with quantity selector and detailed product views
 - Enhanced product grid with hover effects and quick action buttons  

@@ -10,10 +10,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Plus, Edit, Trash2, Package, Gift, TrendingUp, Users, Clock } from "lucide-react";
+import { Plus, Edit, Trash2, Package, Gift, TrendingUp, Users, Clock, Eye } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { formatPrice, ORDER_STATUSES } from "@/lib/constants";
+import OrderDetailsModal from "./order-details-modal";
 
 interface Product {
   id: string;
@@ -78,6 +79,10 @@ export default function AdminTabs() {
   });
   const [editingOffer, setEditingOffer] = useState<Offer | null>(null);
   const [isOfferDialogOpen, setIsOfferDialogOpen] = useState(false);
+
+  // Order Details Modal State
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [isOrderDetailsOpen, setIsOrderDetailsOpen] = useState(false);
 
   // Fetch data
   const { data: orders = [] } = useQuery<Order[]>({ queryKey: ["/api/orders"] });
@@ -212,7 +217,7 @@ export default function AdminTabs() {
       setEditingProduct(product);
       setProductForm({
         name: product.name,
-        price: typeof product.price === 'string' ? product.price : product.price.toString(),
+        price: String(product.price),
         image_url: product.image_url,
         category: product.category,
         stock: product.stock
@@ -241,6 +246,11 @@ export default function AdminTabs() {
       setOfferForm({ title: "", description: "", discount_percentage: 0, min_order_amount: 0, max_discount_amount: 0, expires_at: "", is_active: true });
     }
     setIsOfferDialogOpen(true);
+  };
+
+  const handleViewOrderDetails = (order: Order) => {
+    setSelectedOrder(order);
+    setIsOrderDetailsOpen(true);
   };
 
   return (
@@ -361,7 +371,12 @@ export default function AdminTabs() {
                         {new Date(order.created_at).toLocaleDateString('en-US')}
                       </TableCell>
                       <TableCell>
-                        <Button variant="outline" size="sm">
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => handleViewOrderDetails(order)}
+                        >
+                          <Eye className="w-4 h-4 mr-1" />
                           বিস্তারিত
                         </Button>
                       </TableCell>
@@ -675,6 +690,13 @@ export default function AdminTabs() {
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* Order Details Modal */}
+      <OrderDetailsModal
+        order={selectedOrder}
+        isOpen={isOrderDetailsOpen}
+        onClose={() => setIsOrderDetailsOpen(false)}
+      />
     </div>
   );
 }

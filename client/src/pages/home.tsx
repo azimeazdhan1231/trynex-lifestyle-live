@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowRight, Gift, MessageCircle, ArrowUp, Star, Clock, TrendingUp, ShoppingCart, Eye, Heart, Share2, Phone, ChevronRight, Sparkles } from "lucide-react";
+import { ArrowRight, Gift, MessageCircle, ArrowUp, Star, Clock, TrendingUp, ShoppingCart, Eye, Heart, Share2, Phone, ChevronRight, Sparkles, Palette } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -9,6 +9,7 @@ import Header from "@/components/header";
 import TrackingSection from "@/components/tracking-section";
 import PopupOffer from "../components/popup-offer";
 import ProductModal from "@/components/product-modal";
+import CustomizeModal from "@/components/customize-modal";
 import { useToast } from "@/hooks/use-toast";
 import { useCart } from "@/hooks/use-cart";
 import { Link, useLocation } from "wouter";
@@ -20,10 +21,11 @@ interface ProductCardProps {
   product: Product;
   onAddToCart: (product: Product) => void;
   onViewProduct: (product: Product) => void;
+  onCustomize?: (product: Product) => void;
   showBadge?: boolean;
 }
 
-function ProductCard({ product, onAddToCart, onViewProduct, showBadge = true }: ProductCardProps) {
+function ProductCard({ product, onAddToCart, onViewProduct, onCustomize, showBadge = true }: ProductCardProps) {
   const [isFavorite, setIsFavorite] = useState(false);
 
   const handleWhatsAppOrder = () => {
@@ -43,6 +45,13 @@ function ProductCard({ product, onAddToCart, onViewProduct, showBadge = true }: 
   const handleToggleFavorite = (e: React.MouseEvent) => {
     e.stopPropagation();
     setIsFavorite(!isFavorite);
+  };
+
+  const handleCustomize = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (onCustomize) {
+      onCustomize(product);
+    }
   };
 
   return (
@@ -175,14 +184,27 @@ function ProductCard({ product, onAddToCart, onViewProduct, showBadge = true }: 
               {product.stock === 0 ? "স্টক নেই" : "কার্টে যোগ করুন"}
             </Button>
 
-            <Button 
-              onClick={handleWhatsAppOrder}
-              variant="outline"
-              className="w-full border-green-500 text-green-600 hover:bg-green-50 font-medium py-3 rounded-lg transition-all duration-300"
-            >
-              <MessageCircle className="w-4 h-4 mr-2" />
-              হোয়াটসঅ্যাপে অর্ডার
-            </Button>
+            <div className="flex gap-2">
+              <Button 
+                onClick={handleWhatsAppOrder}
+                variant="outline"
+                className="flex-1 border-green-500 text-green-600 hover:bg-green-50 font-medium py-3 rounded-lg transition-all duration-300"
+              >
+                <MessageCircle className="w-4 h-4 mr-1" />
+                অর্ডার
+              </Button>
+              
+              {onCustomize && (
+                <Button
+                  onClick={handleCustomize}
+                  variant="outline"
+                  className="flex-1 bg-purple-500 text-white hover:bg-purple-600 border-purple-500 font-medium py-3 rounded-lg transition-all duration-300"
+                >
+                  <Palette className="w-4 h-4 mr-1" />
+                  কাস্টমাইজ
+                </Button>
+              )}
+            </div>
           </div>
         </div>
       </CardContent>
@@ -198,6 +220,7 @@ function ProductSection({
   isLoading, 
   onAddToCart, 
   onViewProduct,
+  onCustomize,
   bgColor = "bg-white",
   titleColor = "text-gray-800"
 }: {
@@ -208,6 +231,7 @@ function ProductSection({
   isLoading: boolean;
   onAddToCart: (product: Product) => void;
   onViewProduct: (product: Product) => void;
+  onCustomize?: (product: Product) => void;
   bgColor?: string;
   titleColor?: string;
 }) {
@@ -257,6 +281,7 @@ function ProductSection({
               product={product} 
               onAddToCart={onAddToCart}
               onViewProduct={onViewProduct}
+              onCustomize={onCustomize}
             />
           ))}
         </div>
@@ -278,6 +303,8 @@ export default function Home() {
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [customizeProduct, setCustomizeProduct] = useState<Product | null>(null);
+  const [isCustomizeModalOpen, setIsCustomizeModalOpen] = useState(false);
   const [location] = useLocation();
   const { toast } = useToast();
   const { addToCart, totalItems } = useCart();
@@ -338,6 +365,25 @@ export default function Home() {
     setSelectedProduct(product);
     setIsModalOpen(true);
     trackProductView(product.id, product.name, product.category || 'uncategorized');
+  };
+
+  const handleCustomizeProduct = (product: Product) => {
+    setCustomizeProduct(product);
+    setIsCustomizeModalOpen(true);
+  };
+
+  const handleCustomizeAddToCart = (product: Product, customization: any) => {
+    addToCart({
+      id: product.id,
+      name: product.name,
+      price: Number(product.price),
+      customization: customization,
+    });
+    
+    toast({
+      title: "কাস্টমাইজড পণ্য যোগ করা হয়েছে!",
+      description: `${product.name} আপনার পছন্দমতো কাস্টমাইজ করে কার্টে যোগ করা হয়েছে`,
+    });
   };
 
   const scrollToProducts = () => {
@@ -441,6 +487,7 @@ export default function Home() {
           isLoading={productsLoading}
           onAddToCart={handleAddToCart}
           onViewProduct={handleProductView}
+          onCustomize={handleCustomizeProduct}
           bgColor="bg-white"
           titleColor="text-gray-800"
         />
@@ -455,6 +502,7 @@ export default function Home() {
         isLoading={productsLoading}
         onAddToCart={handleAddToCart}
         onViewProduct={handleProductView}
+        onCustomize={handleCustomizeProduct}
         bgColor="bg-gradient-to-br from-gray-50 to-blue-50"
         titleColor="text-gray-800"
       />
@@ -468,6 +516,7 @@ export default function Home() {
         isLoading={productsLoading}
         onAddToCart={handleAddToCart}
         onViewProduct={handleProductView}
+        onCustomize={handleCustomizeProduct}
         bgColor="bg-white"
         titleColor="text-gray-800"
       />
@@ -621,6 +670,19 @@ export default function Home() {
             setSelectedProduct(null);
           }}
           onAddToCart={handleAddToCart}
+        />
+      )}
+
+      {/* Customize Modal */}
+      {customizeProduct && (
+        <CustomizeModal
+          product={customizeProduct}
+          isOpen={isCustomizeModalOpen}
+          onClose={() => {
+            setIsCustomizeModalOpen(false);
+            setCustomizeProduct(null);
+          }}
+          onAddToCart={handleCustomizeAddToCart}
         />
       )}
     </div>
