@@ -772,7 +772,7 @@ export default function EnhancedAdminTabs() {
                   <TableRow>
                     <TableHead>ছবি</TableHead>
                     <TableHead>নাম</TableHead>
-                    <TableHead>                    <TableHead>দাম</TableHead>
+                    <TableHead>দাম</TableHead>
                     <TableHead>ক্যাটাগরি</TableHead>
                     <TableHead>স্টক</TableHead>
                     <TableHead>ফিচার</TableHead>
