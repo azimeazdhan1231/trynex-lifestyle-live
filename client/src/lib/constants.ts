@@ -1,4 +1,5 @@
 export const COMPANY_NAME = "Trynex Lifestyle";
+export const COMPANY_TAGLINE = "আপনার স্বপ্নের লাইফস্টাইল";
 
 export const PRODUCT_CATEGORIES = [
   { id: "all", name: "সব পণ্য", icon: "🛍️" },
