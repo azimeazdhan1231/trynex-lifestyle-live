@@ -670,6 +670,7 @@ export default function Home() {
             setSelectedProduct(null);
           }}
           onAddToCart={handleAddToCart}
+          onCustomize={handleCustomizeProduct}
         />
       )}
 

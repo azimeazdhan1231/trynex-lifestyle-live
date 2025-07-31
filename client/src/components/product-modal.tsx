@@ -13,9 +13,10 @@ interface ProductModalProps {
   isOpen: boolean;
   onClose: () => void;
   onAddToCart: (product: Product) => void;
+  onCustomize?: (product: Product) => void;
 }
 
-export default function ProductModal({ product, isOpen, onClose, onAddToCart }: ProductModalProps) {
+export default function ProductModal({ product, isOpen, onClose, onAddToCart, onCustomize }: ProductModalProps) {
   const [quantity, setQuantity] = useState(1);
   const { toast } = useToast();
 
@@ -172,12 +173,15 @@ export default function ProductModal({ product, isOpen, onClose, onAddToCart }: 
                 </Button>
                 <Button
                   onClick={() => {
-                    // This will be handled by parent component
-                    console.log('Customize button clicked');
+                    if (onCustomize) {
+                      onCustomize(product);
+                      onClose();
+                    }
                   }}
                   variant="outline"
                   className="bg-purple-500 text-white hover:bg-purple-600 border-purple-500"
                   size="lg"
+                  disabled={!onCustomize}
                 >
                   <Palette className="w-5 h-5 mr-2" />
                   কাস্টমাইজ করুন

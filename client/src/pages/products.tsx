@@ -274,6 +274,11 @@ export default function ProductsPage() {
             isOpen={isModalOpen}
             onClose={handleModalClose}
             onAddToCart={handleAddToCart}
+            onCustomize={(product) => {
+              setSelectedProduct(product);
+              setIsCustomizeModalOpen(true);
+              setIsModalOpen(false);
+            }}
           />
 
           <CustomizeModal

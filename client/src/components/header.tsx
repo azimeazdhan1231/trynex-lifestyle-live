@@ -149,9 +149,9 @@ export default function Header({ cartCount, onCartOpen }: HeaderProps) {
             setIsProductModalOpen(false);
             setSelectedProduct(null);
           }}
-          onAddToCart={(product, quantity) => {
+          onAddToCart={(product) => {
             // Handle add to cart functionality
-            console.log('Adding to cart:', product.name, 'Quantity:', quantity);
+            console.log('Adding to cart:', product.name);
             // Close modal after adding to cart
             setIsProductModalOpen(false);
             setSelectedProduct(null);
