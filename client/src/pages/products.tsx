@@ -181,6 +181,36 @@ export default function Products() {
               />
             </div>
 
+            {/* Category Filter */}
+            <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+              <SelectTrigger className="w-full lg:w-56 h-12 border-2 border-gray-200">
+                <SelectValue placeholder="ক্যাটেগরি নির্বাচন করুন" />
+              </SelectTrigger>
+              <SelectContent className="max-h-[300px] overflow-y-auto">
+                <SelectItem value="all">সব ক্যাটেগরি</SelectItem>
+                <SelectItem value="Gift for Him">পুরুষদের জন্য গিফট</SelectItem>
+                <SelectItem value="Gift for Her">মহিলাদের জন্য গিফট</SelectItem>
+                <SelectItem value="Baby Gifts">শিশুদের গিফট</SelectItem>
+                <SelectItem value="Men Gifts">পুরুষদের গিফট</SelectItem>
+                <SelectItem value="Women Gifts">মহিলাদের গিফট</SelectItem>
+                <SelectItem value="Kids Gifts">বাচ্চাদের গিফট</SelectItem>
+                <SelectItem value="Mugs">মগ</SelectItem>
+                <SelectItem value="T-Shirts">টি-শার্ট</SelectItem>
+                <SelectItem value="Keychains">কিচেইন</SelectItem>
+                <SelectItem value="Water Bottles">পানির বোতল</SelectItem>
+                <SelectItem value="Personalized Gifts">ব্যক্তিগত গিফট</SelectItem>
+                <SelectItem value="Corporate Gifts">কর্পোরেট গিফট</SelectItem>
+                <SelectItem value="Anniversary Gifts">বার্ষিকী গিফট</SelectItem>
+                <SelectItem value="Birthday Gifts">জন্মদিনের গিফট</SelectItem>
+                <SelectItem value="Holiday Gifts">ছুটির দিনের গিফট</SelectItem>
+                <SelectItem value="Custom Prints">কাস্টম প্রিন্ট</SelectItem>
+                <SelectItem value="Gift Packages">গিফট প্যাকেজ</SelectItem>
+                <SelectItem value="Home Decor Gifts">ঘর সাজানোর গিফট</SelectItem>
+                <SelectItem value="Fashion Accessories">ফ্যাশন এক্সেসরিজ</SelectItem>
+                <SelectItem value="Seasonal Specials">সিজনাল স্পেশাল</SelectItem>
+              </SelectContent>
+            </Select>
+
             {/* Sort */}
             <Select value={sortBy} onValueChange={setSortBy}>
               <SelectTrigger className="w-full lg:w-48 h-12 border-2 border-gray-200">
