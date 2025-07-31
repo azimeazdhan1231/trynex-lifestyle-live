@@ -259,150 +259,135 @@ export default function OrderDetailsModal({ isOpen, onClose, order }: OrderDetai
                             )}
                           </div>
 
-                          {/* Customization Details */}
-                          {(() => {
-                            // Always show customization section for better visibility
-                            const hasAnyCustomization = item.customization || item.customText || item.specialInstructions || item.customImage || item.customImages;
+                          {/* Enhanced Customization Details - Always Show Section */}
+                          <div className="mt-4 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
+                            <h5 className="font-semibold text-blue-900 mb-4 flex items-center gap-2">
+                              <Settings className="w-5 h-5" />
+                              কাস্টমাইজেশন বিবরণ
+                            </h5>
+                            
+                            {/* Debug info - shows raw customization data */}
+                            <div className="mb-4 p-2 bg-gray-100 rounded text-xs">
+                              <details>
+                                <summary className="cursor-pointer text-gray-600">Debug: Raw Data</summary>
+                                <pre className="mt-2 text-xs overflow-auto max-h-32">
+                                  {JSON.stringify({
+                                    customization: item.customization,
+                                    customText: item.customText,
+                                    customImage: item.customImage,
+                                    specialInstructions: item.specialInstructions
+                                  }, null, 2)}
+                                </pre>
+                              </details>
+                            </div>
 
-                            if (!hasAnyCustomization) {
-                              return (
-                                <div className="mt-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
-                                  <h5 className="font-semibold text-gray-700 mb-2 flex items-center gap-2">
-                                    <Settings className="w-4 h-4" />
-                                    কাস্টমাইজেশন বিবরণ
-                                  </h5>
-                                  <p className="text-gray-500 text-sm">এই পণ্যের জন্য কোনো কাস্টমাইজেশন নেই</p>
-                                </div>
-                              );
-                            }
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                              <div className="p-3 bg-white rounded border">
+                                <span className="text-blue-600 font-medium">সাইজ:</span>
+                                <span className="ml-2 font-semibold">
+                                  {item.customization?.size || item.size || 'নির্দিষ্ট করা হয়নি'}
+                                </span>
+                              </div>
+                              <div className="p-3 bg-white rounded border">
+                                <span className="text-blue-600 font-medium">রং:</span>
+                                <span className="ml-2 font-semibold">
+                                  {item.customization?.color || item.color || 'নির্দিষ্ট করা হয়নি'}
+                                </span>
+                              </div>
+                              <div className="p-3 bg-white rounded border">
+                                <span className="text-blue-600 font-medium">প্রিন্ট এরিয়া:</span>
+                                <span className="ml-2 font-semibold">
+                                  {item.customization?.printArea || item.printArea || 'নির্দিষ্ট করা হয়নি'}
+                                </span>
+                              </div>
+                              <div className="p-3 bg-white rounded border">
+                                <span className="text-blue-600 font-medium">কাস্টমাইজ টাইপ:</span>
+                                <span className="ml-2 font-semibold">
+                                  {(item.customization && Object.keys(item.customization).length > 0) ? 'কাস্টমাইজড' : 'স্ট্যান্ডার্ড'}
+                                </span>
+                              </div>
+                            </div>
 
-                            return (
-                              <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
-                                <h5 className="font-semibold text-blue-900 mb-3 flex items-center gap-2">
-                                  <Settings className="w-4 h-4" />
-                                  কাস্টমাইজেশন বিবরণ
-                                </h5>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
-                                  <div>
-                                    <span className="text-blue-600 font-medium">সাইজ:</span>
-                                    <span className="ml-2">{item.customization?.size || 'N/A'}</span>
-                                  </div>
-                                  <div>
-                                    <span className="text-blue-600 font-medium">রং:</span>
-                                    <span className="ml-2">{item.customization?.color || 'N/A'}</span>
-                                  </div>
-                                  <div>
-                                    <span className="text-blue-600 font-medium">প্রিন্ট এরিয়া:</span>
-                                    <span className="ml-2">{item.customization?.printArea || 'N/A'}</span>
-                                  </div>
-                                  <div className="md:col-span-2">
-                                    <span className="text-blue-600 font-medium">কাস্টম টেক্সট:</span>
-                                    {(item.customization?.customText && item.customization.customText.trim()) ? (
-                                      <p className="mt-1 p-3 bg-white rounded border whitespace-pre-wrap border-gray-300 text-gray-800">{item.customization.customText.trim()}</p>
-                                    ) : (
-                                      <span className="ml-2 text-gray-500">N/A</span>
-                                    )}
-                                  </div>
-                                  <div className="md:col-span-2">
-                                    <span className="text-blue-600 font-medium">বিশেষ নির্দেশনা:</span>
-                                    {(item.customization?.specialInstructions && item.customization.specialInstructions.trim()) ? (
-                                      <p className="mt-1 p-3 bg-white rounded border whitespace-pre-wrap border-gray-300 text-gray-800">{item.customization.specialInstructions.trim()}</p>
-                                    ) : (
-                                      <span className="ml-2 text-gray-500">N/A</span>
-                                    )}
-                                  </div>
-                                </div>
-
-                              {/* Custom Images */}
-                              <div className="mt-4">
-                                <span className="text-blue-600 font-medium block mb-2">কাস্টম ছবি:</span>
-                                {item.customization?.customImage ? (
-                                  <div className="flex gap-3 items-start">
-                                    {renderImage(item.customization.customImage, `কাস্টম ছবি ${index + 1}`, index)}
-                                    <div className="flex flex-col gap-2">
-                                      <Button 
-                                        size="sm" 
-                                        variant="outline"
-                                        onClick={() => handleImageView(item.customization.customImage)}
-                                        className="flex items-center gap-2"
-                                      >
-                                        <Eye className="w-4 h-4" />
-                                        দেখুন
-                                      </Button>
-                                      <Button 
-                                        size="sm" 
-                                        variant="outline"
-                                        onClick={() => handleDownloadImage(
-                                          item.customization.customImage, 
-                                          item.customization.customImageName || `custom-image-${index + 1}.jpg`
-                                        )}
-                                        className="flex items-center gap-2"
-                                      >
-                                        <Download className="w-4 h-4" />
-                                        ডাউনলোড
-                                      </Button>
-                                    </div>
+                            {/* Custom Text Section */}
+                            <div className="mt-4">
+                              <span className="text-blue-600 font-medium block mb-2">কাস্টম টেক্সট:</span>
+                              {(() => {
+                                const customText = item.customization?.customText || item.customText;
+                                return customText && customText.trim() ? (
+                                  <div className="p-4 bg-white rounded border border-gray-300 whitespace-pre-wrap text-gray-800 font-medium">
+                                    {customText.trim()}
                                   </div>
                                 ) : (
-                                  <span className="text-gray-500">N/A</span>
-                                )}
-                              </div>
-                              </div>
-                            );
-                          })()}
-
-                          {/* Legacy Customization Support */}
-                          {(!item.customization || Object.keys(item.customization).length === 0) && (item.customText || item.specialInstructions || item.customImages || item.customImage) && (
-                            <div className="mt-4 p-3 bg-yellow-50 rounded-lg border border-yellow-200">
-                              <h5 className="font-semibold text-yellow-900 mb-3 flex items-center gap-2">
-                                <Settings className="w-4 h-4" />
-                                কাস্টমাইজেশন তথ্য
-                              </h5>
-                              {item.customText && item.customText.trim() && (
-                                <div className="mb-3">
-                                  <span className="text-yellow-600 font-medium">কাস্টম টেক্সট:</span>
-                                  <p className="mt-1 p-2 bg-white rounded border whitespace-pre-wrap">{item.customText.trim()}</p>
-                                </div>
-                              )}
-                              {item.specialInstructions && item.specialInstructions.trim() && (
-                                <div className="mb-3">
-                                  <span className="text-yellow-600 font-medium">বিশেষ নির্দেশনা:</span>
-                                  <p className="mt-1 p-2 bg-white rounded border whitespace-pre-wrap">{item.specialInstructions.trim()}</p>
-                                </div>
-                              )}
-                              {(item.customImages || item.customImage) && (
-                                <div>
-                                  <span className="text-yellow-600 font-medium block mb-2">কাস্টম ছবি:</span>
-                                  <div className="flex gap-2 flex-wrap">
-                                    {item.customImage && renderImage(item.customImage, `কাস্টম ছবি`, index)}
-                                    {item.customImages && Array.isArray(item.customImages) && 
-                                      item.customImages.map((img: string, imgIndex: number) => 
-                                        renderImage(img, `কাস্টম ছবি ${imgIndex + 1}`, imgIndex)
-                                      )
-                                    }
+                                  <div className="p-3 bg-gray-50 rounded border text-gray-500 italic">
+                                    কোনো কাস্টম টেক্সট প্রদান করা হয়নি
                                   </div>
-                                </div>
-                              )}
+                                );
+                              })()}
                             </div>
-                          )}
 
-                          {/* Check if there's any customization data */}
-                          {(() => {
-                            const hasNewCustomization = item.customization && Object.keys(item.customization).some(key => {
-                              const value = item.customization[key];
-                              return value && (typeof value === 'string' ? value.trim() : value);
-                            });
-                            const hasLegacyCustomization = (item.customText && item.customText.trim()) || 
-                                                           (item.specialInstructions && item.specialInstructions.trim()) || 
-                                                           item.customImages || item.customImage;
-
-                            return !hasNewCustomization && !hasLegacyCustomization;
-                          })() && (
-                            <div className="mt-4 bg-gray-100 rounded-lg p-4 text-center text-gray-500">
-                              <Package className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                              <p>এই পণ্যের জন্য কোনো কাস্টমাইজেশন নেই</p>
+                            {/* Special Instructions Section */}
+                            <div className="mt-4">
+                              <span className="text-blue-600 font-medium block mb-2">বিশেষ নির্দেশনা:</span>
+                              {(() => {
+                                const instructions = item.customization?.specialInstructions || item.specialInstructions;
+                                return instructions && instructions.trim() ? (
+                                  <div className="p-4 bg-white rounded border border-gray-300 whitespace-pre-wrap text-gray-800 font-medium">
+                                    {instructions.trim()}
+                                  </div>
+                                ) : (
+                                  <div className="p-3 bg-gray-50 rounded border text-gray-500 italic">
+                                    কোনো বিশেষ নির্দেশনা প্রদান করা হয়নি
+                                  </div>
+                                );
+                              })()}
                             </div>
-                          )}
+
+                            {/* Custom Images Section */}
+                            <div className="mt-4">
+                              <span className="text-blue-600 font-medium block mb-3">কাস্টম ছবি:</span>
+                              {(() => {
+                                const customImage = item.customization?.customImage || item.customImage;
+                                if (customImage && customImage.trim()) {
+                                  return (
+                                    <div className="flex gap-4 items-start p-3 bg-white rounded border">
+                                      {renderImage(customImage, `কাস্টম ছবি ${index + 1}`, index)}
+                                      <div className="flex flex-col gap-2">
+                                        <Button 
+                                          size="sm" 
+                                          variant="outline"
+                                          onClick={() => handleImageView(customImage)}
+                                          className="flex items-center gap-2"
+                                        >
+                                          <Eye className="w-4 h-4" />
+                                          সম্পূর্ণ দেখুন
+                                        </Button>
+                                        <Button 
+                                          size="sm" 
+                                          variant="outline"
+                                          onClick={() => handleDownloadImage(
+                                            customImage, 
+                                            item.customization?.customImageName || `custom-image-${index + 1}.jpg`
+                                          )}
+                                          className="flex items-center gap-2"
+                                        >
+                                          <Download className="w-4 h-4" />
+                                          ডাউনলোড করুন
+                                        </Button>
+                                      </div>
+                                    </div>
+                                  );
+                                } else {
+                                  return (
+                                    <div className="p-3 bg-gray-50 rounded border text-gray-500 italic">
+                                      কোনো কাস্টম ছবি আপলোড করা হয়নি
+                                    </div>
+                                  );
+                                }
+                              })()}
+                            </div>
+                          </div>
+
+
                         </div>
                       </div>
                     </div>
