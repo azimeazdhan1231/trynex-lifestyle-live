@@ -354,7 +354,80 @@ export default function TrackingPage() {
                                 <div className="flex items-start gap-2">
                                   <Package className="w-4 h-4 text-blue-600 mt-1" />
                                   <div className="flex-1">
-                                    <span className="font-medium text-blue-800">কাস্টম ছবি:</span>
+                                    <span className="font-medium text-blue-800">কাস্টম ইমেজ:</span>
+                                    <div className="mt-2">
+                                      <img 
+                                        src={item.customization.customImage} 
+                                        alt="Custom Design" 
+                                        className="w-32 h-32 object-cover rounded-lg border cursor-pointer hover:opacity-80 transition-opacity"
+                                        onClick={() => window.open(item.customization.customImage, '_blank')}
+                                      />
+                                      <p className="text-sm text-blue-600 mt-1 cursor-pointer hover:underline"
+                                         onClick={() => window.open(item.customization.customImage, '_blank')}>
+                                        ক্লিক করে বড় করে দেখুন
+                                      </p>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Handle customImages array (multiple images) */}
+                            {item.customization.customImages && Array.isArray(item.customization.customImages) && item.customization.customImages.length > 0 && (
+                              <div className="mt-3">
+                                <div className="flex items-start gap-2">
+                                  <Package className="w-4 h-4 text-blue-600 mt-1" />
+                                  <div className="flex-1">
+                                    <span className="font-medium text-blue-800">কাস্টম ইমেজসমূহ ({item.customization.customImages.length}টি):</span>
+                                    <div className="grid grid-cols-3 gap-2 mt-2">
+                                      {item.customization.customImages.map((imageUrl: string, imgIndex: number) => (
+                                        <div key={imgIndex} className="relative group">
+                                          <img 
+                                            src={imageUrl} 
+                                            alt={`Custom Design ${imgIndex + 1}`}
+                                            className="w-full h-20 object-cover rounded-lg border cursor-pointer hover:opacity-80 transition-opacity"
+                                            onClick={() => window.open(imageUrl, '_blank')}
+                                          />
+                                          <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 rounded-lg transition-all flex items-center justify-center">
+                                            <span className="text-white text-xs opacity-0 group-hover:opacity-100 transition-opacity">
+                                              ইমেজ {imgIndex + 1}
+                                            </span>
+                                          </div>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Handle direct customImages in item (fallback) */}
+                            {item.customImages && Array.isArray(item.customImages) && item.customImages.length > 0 && (
+                              <div className="mt-3">
+                                <div className="flex items-start gap-2">
+                                  <Package className="w-4 h-4 text-blue-600 mt-1" />
+                                  <div className="flex-1">
+                                    <span className="font-medium text-blue-800">আপলোড করা ইমেজসমূহ ({item.customImages.length}টি):</span>
+                                    <div className="grid grid-cols-3 gap-2 mt-2">
+                                      {item.customImages.map((imageUrl: string, imgIndex: number) => (
+                                        <div key={imgIndex} className="relative group">
+                                          <img 
+                                            src={imageUrl} 
+                                            alt={`Uploaded ${imgIndex + 1}`}
+                                            className="w-full h-20 object-cover rounded-lg border cursor-pointer hover:opacity-80 transition-opacity"
+                                            onClick={() => window.open(imageUrl, '_blank')}
+                                          />
+                                          <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 rounded-lg transition-all flex items-center justify-center">
+                                            <span className="text-white text-xs opacity-0 group-hover:opacity-100 transition-opacity">
+                                              ইমেজ {imgIndex + 1}
+                                            </span>
+                                          </div>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>span className="font-medium text-blue-800">কাস্টম ছবি:</span>
                                     <div className="mt-2">
                                       {typeof item.customization.customImage === 'string' ? (
                                         <img 

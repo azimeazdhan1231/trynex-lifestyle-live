@@ -4,11 +4,14 @@ import { queryClient } from "./lib/queryClient";
 import { Toaster } from "@/components/ui/toaster";
 import Home from "./pages/home";
 import Products from "./pages/products";
-import Offers from "./pages/offers";
 import Contact from "./pages/contact";
-import Admin from "./pages/admin";
 import Tracking from "./pages/tracking";
+import Admin from "./pages/admin";
+import Offers from "./pages/offers";
 import NotFound from "./pages/not-found";
+import RefundPolicy from "./pages/refund-policy";
+import ReturnPolicy from "./pages/return-policy";
+import TermsConditions from "./pages/terms-conditions";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useEffect } from "react";
 import { initGA, initFacebookPixel } from "./lib/analytics";
@@ -27,6 +30,9 @@ function Router() {
       <Route path="/contact" component={Contact} />
       <Route path="/admin" component={Admin} />
       <Route path="/tracking" component={Tracking} />
+      <Route path="/refund-policy" component={RefundPolicy} />
+      <Route path="/return-policy" component={ReturnPolicy} />
+      <Route path="/terms-conditions" component={TermsConditions} />
       <Route component={NotFound} />
     </Switch>
   );
