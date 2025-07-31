@@ -3,6 +3,7 @@ declare global {
   interface Window {
     dataLayer: any[];
     gtag: (...args: any[]) => void;
+    fbq: any;
   }
 }
 
@@ -32,34 +33,6 @@ export const initGA = () => {
   document.head.appendChild(script2);
 };
 
-// Track page views - useful for single-page applications
-export const trackPageView = (url: string) => {
-  if (typeof window === 'undefined' || !window.gtag) return;
-
-  const measurementId = import.meta.env.VITE_GA_MEASUREMENT_ID;
-  if (!measurementId) return;
-
-  window.gtag('config', measurementId, {
-    page_path: url
-  });
-};
-
-// Track events
-export const trackEvent = (
-  action: string, 
-  category?: string, 
-  label?: string, 
-  value?: number
-) => {
-  if (typeof window === 'undefined' || !window.gtag) return;
-
-  window.gtag('event', action, {
-    event_category: category,
-    event_label: label,
-    value: value,
-  });
-};
-
 // Facebook Pixel Integration
 export const initFacebookPixel = (pixelId: string) => {
   if (!pixelId) {
@@ -86,10 +59,10 @@ export const initFacebookPixel = (pixelId: string) => {
   const noscript = document.createElement('noscript');
   noscript.innerHTML = `<img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=${pixelId}&ev=PageView&noscript=1">`;
   document.head.appendChild(noscript);
-}
+};
 
 // Load Facebook Pixel from site settings
-export async function loadFacebookPixelFromSettings() {
+export const loadFacebookPixelFromSettings = async () => {
   try {
     const response = await fetch('/api/settings');
     const settings = await response.json();
@@ -103,10 +76,58 @@ export async function loadFacebookPixelFromSettings() {
   }
 };
 
+// Track page views - useful for single-page applications
+export const trackPageView = (url: string) => {
+  if (typeof window === 'undefined') return;
+
+  // Google Analytics
+  if (window.gtag) {
+    const measurementId = import.meta.env.VITE_GA_MEASUREMENT_ID;
+    if (measurementId) {
+      window.gtag('config', measurementId, {
+        page_path: url
+      });
+    }
+  }
+
+  // Facebook Pixel
+  if (window.fbq) {
+    window.fbq('track', 'PageView');
+  }
+};
+
+// Track events
+export const trackEvent = (
+  action: string, 
+  category?: string, 
+  label?: string, 
+  value?: number
+) => {
+  if (typeof window === 'undefined') return;
+
+  // Google Analytics
+  if (window.gtag) {
+    window.gtag('event', action, {
+      event_category: category,
+      event_label: label,
+      value: value,
+    });
+  }
+
+  // Facebook Pixel
+  if (window.fbq) {
+    window.fbq('track', action, {
+      event_category: category,
+      event_label: label,
+      value: value,
+    });
+  }
+};
+
 // Track Facebook Pixel events
 export const trackFBEvent = (eventName: string, parameters?: any) => {
-  if (typeof window !== 'undefined' && (window as any).fbq) {
-    (window as any).fbq('track', eventName, parameters);
+  if (typeof window !== 'undefined' && window.fbq) {
+    window.fbq('track', eventName, parameters);
   }
 };
 
@@ -163,77 +184,3 @@ export const trackInitiateCheckout = (value: number, numItems: number) => {
     content_type: 'product'
   });
 };
-
-// Facebook Pixel Integration
-export const loadFacebookPixelFromSettings = async () => {
-  try {
-    const response = await fetch('/api/settings');
-    const settings = await response.json();
-
-    if (settings?.facebook_pixel_id && settings.facebook_pixel_id.trim()) {
-      loadFacebookPixel(settings.facebook_pixel_id);
-    }
-  } catch (error) {
-    console.error('Failed to load Facebook Pixel from settings:', error);
-  }
-};
-
-export const loadFacebookPixel = (pixelId: string) => {
-  if (typeof window === 'undefined' || !pixelId) return;
-
-  // Check if pixel is already loaded
-  if (window.fbq) return;
-
-  const script = document.createElement('script');
-  script.innerHTML = `
-    !function(f,b,e,v,n,t,s)
-    {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-    n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-    if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-    n.queue=[];t=b.createElement(e);t.async=!0;
-    t.src=v;s=b.getElementsByTagName(e)[0];
-    s.parentNode.insertBefore(t,s)}(window, document,'script',
-    'https://connect.facebook.net/en_US/fbevents.js');
-    fbq('init', '${pixelId}');
-    fbq('track', 'PageView');
-  `;
-  document.head.appendChild(script);
-
-  // Add noscript pixel
-  const noscript = document.createElement('noscript');
-  noscript.innerHTML = `<img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=${pixelId}&ev=PageView&noscript=1" />`;
-  document.head.appendChild(noscript);
-};
-
-export const trackPageView = (path: string) => {
-  // Google Analytics
-  if (typeof gtag !== 'undefined') {
-    gtag('config', 'GA_MEASUREMENT_ID', {
-      page_path: path,
-    });
-  }
-
-  // Facebook Pixel
-  if (typeof window !== 'undefined' && window.fbq) {
-    window.fbq('track', 'PageView');
-  }
-};
-
-export const trackEvent = (eventName: string, parameters?: any) => {
-  // Google Analytics
-  if (typeof gtag !== 'undefined') {
-    gtag('event', eventName, parameters);
-  }
-
-  // Facebook Pixel
-  if (typeof window !== 'undefined' && window.fbq) {
-    window.fbq('track', eventName, parameters);
-  }
-};
-
-// Add Facebook Pixel types to window
-declare global {
-  interface Window {
-    fbq: any;
-  }
-}

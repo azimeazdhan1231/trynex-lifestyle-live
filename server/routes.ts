@@ -9,6 +9,7 @@ import {
 } from "@shared/schema";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import { z } from "zod";
 
 const JWT_SECRET = process.env.JWT_SECRET || "trynex_secret_key_2025";
 
