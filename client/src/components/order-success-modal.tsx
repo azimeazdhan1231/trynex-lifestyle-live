@@ -105,9 +105,10 @@ export default function OrderSuccessModal({ isOpen, onClose, order }: OrderSucce
               <div className="space-y-3">
                 <h5 className="font-medium">অর্ডারকৃত পণ্য:</h5>
                 {orderItems.map((item: any, index: number) => (
-                  <div key={index} className="flex justify-between items-center text-sm">
-                    <span>{item.name} × {item.quantity}</span>
-                    <span className="font-semibold">{formatPrice(item.price * item.quantity)}</span>
+                  <div key={index}>
+                    <div className="flex justify-between items-center text-sm">
+                      <span>{item.name} × {item.quantity}</span>
+                      <span className="font-semibold">{formatPrice(item.price * item.quantity)}</span>
                     </div>
 
                     {/* Show customization details if present */}
