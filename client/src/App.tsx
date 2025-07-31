@@ -10,6 +10,7 @@ import Admin from "./pages/admin";
 import Offers from "./pages/offers";
 import Profile from "./pages/profile";
 import Orders from "./pages/orders";
+import Auth from "./pages/auth";
 import NotFound from "./pages/not-found";
 import RefundPolicy from "./pages/refund-policy";
 import ReturnPolicy from "./pages/return-policy";
@@ -34,6 +35,9 @@ function Router() {
       <Route path="/tracking" component={Tracking} />
       <Route path="/profile" component={Profile} />
       <Route path="/orders" component={Orders} />
+      <Route path="/auth" component={Auth} />
+      <Route path="/login" component={Auth} />
+      <Route path="/signup" component={Auth} />
       <Route path="/refund-policy" component={RefundPolicy} />
       <Route path="/return-policy" component={ReturnPolicy} />
       <Route path="/terms-conditions" component={TermsConditions} />
