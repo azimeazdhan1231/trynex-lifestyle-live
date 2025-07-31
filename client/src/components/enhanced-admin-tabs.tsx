@@ -1,7 +1,12 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -16,6 +21,7 @@ import { useToast } from "@/hooks/use-toast";
 import { ORDER_STATUSES, PRODUCT_CATEGORIES, formatPrice } from "@/lib/constants";
 import AnalyticsAdmin from "@/components/analytics-admin";
 import type { Product, Order, Category, PromoCode } from "@shared/schema";
+import OrderDetailsModal from "./order-details-modal";
 
 export default function EnhancedAdminTabs() {
   const { toast } = useToast();
@@ -29,7 +35,7 @@ export default function EnhancedAdminTabs() {
   const [categoryForm, setCategoryForm] = useState({
     name: "", name_bengali: "", description: "", image_url: "", is_active: true, sort_order: 0
   });
-  
+
   const [offerForm, setOfferForm] = useState({
     title: "", description: "", image_url: "", discount_percentage: 0, 
     min_order_amount: "", button_text: "অর্ডার করুন", button_link: "/products",
@@ -311,6 +317,9 @@ export default function EnhancedAdminTabs() {
     setIsCategoryDialogOpen(true);
   };
 
+  // order state
+  const [selectedOrder, setSelectedOrder] = useState(null);
+
   return (
     <div className="container mx-auto p-6">
       <Tabs defaultValue="dashboard" className="space-y-6">
@@ -452,8 +461,14 @@ export default function EnhancedAdminTabs() {
                         {new Date(order.created_at || Date.now()).toLocaleDateString('bn-BD')}
                       </TableCell>
                       <TableCell>
-                        <Button variant="outline" size="sm">
-                          <Eye className="w-4 h-4" />
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setSelectedOrder(order)}
+                          className="text-blue-600 border-blue-300 hover:bg-blue-50"
+                        >
+                          <Eye className="w-4 h-4 mr-1" />
+                          বিস্তারিত
                         </Button>
                       </TableCell>
                     </TableRow>
@@ -573,7 +588,7 @@ export default function EnhancedAdminTabs() {
                       )}
                     </div>
                   </div>
-                  
+
                   {/* Feature Toggles */}
                   <div className="space-y-4 border-t pt-4">
                     <Label className="text-base font-semibold">হোমপেজে প্রদর্শন সেটিংস</Label>
@@ -745,8 +760,7 @@ export default function EnhancedAdminTabs() {
                         id="category-image-file"
                         type="file"
                         accept="image/*"
-                        onChange={handleCategoryImageUpload}
-                        className="cursor-pointer"
+                        onChange={handleCategoryImageUpload}className="cursor-pointer"
                       />
                       <div className="text-xs text-gray-500 text-center">অথবা</div>
                       <Input
@@ -1163,6 +1177,7 @@ export default function EnhancedAdminTabs() {
           <AnalyticsAdmin />
         </TabsContent>
       </Tabs>
+      <OrderDetailsModal order={selectedOrder} onClose={() => setSelectedOrder(null)} />
     </div>
   );
 }

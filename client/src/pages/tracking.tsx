@@ -1,7 +1,7 @@
-
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Search, Package, Clock, CheckCircle, Truck, MapPin, Phone, User, Calendar, Hash, Banknote } from "lucide-react";
+import { Search, Package, Clock, CheckCircle, Truck, MapPin, Phone, User, Calendar, Hash, Banknote, Settings,
+  FileText, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -17,6 +17,7 @@ interface OrderItem {
   name: string;
   price: number;
   quantity: number;
+  customization?: any;
 }
 
 interface Order {
@@ -121,7 +122,7 @@ export default function TrackingPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <Header cartCount={totalItems} onCartOpen={() => {}} />
-      
+
       <div className="container mx-auto px-4 py-8 mt-16">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-8">
@@ -223,7 +224,7 @@ export default function TrackingPage() {
                         <p className="font-mono font-semibold">{order.tracking_id}</p>
                       </div>
                     </div>
-                    
+
                     <div className="flex items-center gap-3">
                       <User className="w-5 h-5 text-gray-500" />
                       <div>
@@ -231,7 +232,7 @@ export default function TrackingPage() {
                         <p className="font-semibold">{order.customer_name}</p>
                       </div>
                     </div>
-                    
+
                     <div className="flex items-center gap-3">
                       <Phone className="w-5 h-5 text-gray-500" />
                       <div>
@@ -239,7 +240,7 @@ export default function TrackingPage() {
                         <p className="font-semibold">{order.phone}</p>
                       </div>
                     </div>
-                    
+
                     <div className="flex items-center gap-3">
                       <Calendar className="w-5 h-5 text-gray-500" />
                       <div>
@@ -248,9 +249,9 @@ export default function TrackingPage() {
                       </div>
                     </div>
                   </div>
-                  
+
                   <Separator />
-                  
+
                   <div className="flex items-start gap-3">
                     <MapPin className="w-5 h-5 text-gray-500 mt-1" />
                     <div className="flex-1">
@@ -267,25 +268,116 @@ export default function TrackingPage() {
               {/* Order Items */}
               <Card>
                 <CardHeader>
-                  <CardTitle>অর্ডার আইটেম</CardTitle>
+                  <CardTitle>অর্ডারকৃত পণ্য</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-3">
-                    {orderItems.map((item, index) => (
-                      <div key={index} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                        <div className="flex-1">
-                          <h4 className="font-semibold">{item.name}</h4>
-                          <p className="text-sm text-gray-600">পরিমাণ: {item.quantity}</p>
+                  <div className="space-y-4">
+                    {orderItems.map((item: any, index: number) => (
+                      <div key={index} className="border rounded-lg p-4">
+                        <div className="flex justify-between items-start mb-3">
+                          <div className="flex-1">
+                            <h4 className="font-semibold text-lg">{item.name}</h4>
+                            <div className="flex items-center gap-4 text-sm text-gray-600 mt-1">
+                              <span>পরিমাণ: {item.quantity}</span>
+                              <span>মূল্য: {formatPrice(item.price)}</span>
+                              <span className="font-medium">মোট: {formatPrice(item.price * item.quantity)}</span>
+                            </div>
+                          </div>
                         </div>
-                        <div className="text-right">
-                          <p className="font-semibold">{formatPrice(item.price * item.quantity)}</p>
-                          <p className="text-sm text-gray-600">{formatPrice(item.price)} x {item.quantity}</p>
-                        </div>
+
+                        {/* Customization Details */}
+                        {item.customization && (
+                          <div className="bg-blue-50 rounded-lg p-3 mt-3">
+                            <h5 className="font-semibold text-blue-900 mb-2 flex items-center gap-2">
+                              <Settings className="w-4 h-4" />
+                              কাস্টমাইজেশন বিবরণ
+                            </h5>
+
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
+                              {item.customization.size && (
+                                <div>
+                                  <span className="font-medium text-blue-800">সাইজ:</span>
+                                  <span className="ml-2">{item.customization.size}</span>
+                                </div>
+                              )}
+
+                              {item.customization.color && (
+                                <div>
+                                  <span className="font-medium text-blue-800">রং:</span>
+                                  <span className="ml-2">{item.customization.color}</span>
+                                </div>
+                              )}
+
+                              {item.customization.printArea && (
+                                <div>
+                                  <span className="font-medium text-blue-800">প্রিন্ট এরিয়া:</span>
+                                  <span className="ml-2">{item.customization.printArea}</span>
+                                </div>
+                              )}
+                            </div>
+
+                            {item.customization.customText && (
+                              <div className="mt-3">
+                                <div className="flex items-start gap-2">
+                                  <FileText className="w-4 h-4 text-blue-600 mt-0.5" />
+                                  <div>
+                                    <span className="font-medium text-blue-800">কাস্টম টেক্সট:</span>
+                                    <p className="mt-1 text-gray-700 bg-white p-2 rounded border">{item.customization.customText}</p>
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+
+                            {item.customization.customImage && (
+                              <div className="mt-3">
+                                <div className="flex items-start gap-2">
+                                  <Package className="w-4 h-4 text-blue-600 mt-1" />
+                                  <div className="flex-1">
+                                    <span className="font-medium text-blue-800">কাস্টম ছবি:</span>
+                                    <div className="mt-2">
+                                      {typeof item.customization.customImage === 'string' ? (
+                                        <img 
+                                          src={item.customization.customImage} 
+                                          alt="Custom uploaded image" 
+                                          className="max-w-xs max-h-48 rounded-lg border shadow-sm"
+                                        />
+                                      ) : item.customization.customImage.url ? (
+                                        <img 
+                                          src={item.customization.customImage.url} 
+                                          alt="Custom uploaded image" 
+                                          className="max-w-xs max-h-48 rounded-lg border shadow-sm"
+                                        />
+                                      ) : (
+                                        <div className="bg-white p-3 rounded-lg border text-sm">
+                                          <p className="text-green-600 font-medium">
+                                            {item.customization.customImage.name || "ছবি আপলোড করা হয়েছে"}
+                                          </p>
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+
+                            {item.customization.specialInstructions && (
+                              <div className="mt-3">
+                                <div className="flex items-start gap-2">
+                                  <AlertCircle className="w-4 h-4 text-blue-600 mt-0.5" />
+                                  <div>
+                                    <span className="font-medium text-blue-800">বিশেষ নির্দেশনা:</span>
+                                    <p className="mt-1 text-gray-700 bg-white p-2 rounded border">{item.customization.specialInstructions}</p>
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        )}
                       </div>
                     ))}
-                    
+
                     <Separator />
-                    
+
                     <div className="flex justify-between items-center p-3 bg-blue-50 rounded-lg">
                       <div className="flex items-center gap-2">
                         <Banknote className="w-5 h-5 text-blue-600" />

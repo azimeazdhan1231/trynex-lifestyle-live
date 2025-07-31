@@ -188,10 +188,37 @@ export default function OrderDetailsModal({ order, isOpen, onClose }: OrderDetai
 
                           {item.customization.customImage && (
                             <div className="mt-3">
-                              <div className="flex items-center gap-2">
-                                <ImageIcon className="w-4 h-4 text-blue-600" />
-                                <span className="font-medium text-blue-800">কাস্টম ছবি:</span>
-                                <span className="text-green-600">{item.customization.customImage.name || "আপলোড করা হয়েছে"}</span>
+                              <div className="flex items-start gap-2">
+                                <ImageIcon className="w-4 h-4 text-blue-600 mt-1" />
+                                <div className="flex-1">
+                                  <span className="font-medium text-blue-800">কাস্টম ছবি:</span>
+                                  <div className="mt-2">
+                                    {typeof item.customization.customImage === 'string' ? (
+                                      <img 
+                                        src={item.customization.customImage} 
+                                        alt="Custom uploaded image" 
+                                        className="max-w-xs max-h-48 rounded-lg border shadow-sm"
+                                      />
+                                    ) : item.customization.customImage.url ? (
+                                      <img 
+                                        src={item.customization.customImage.url} 
+                                        alt="Custom uploaded image" 
+                                        className="max-w-xs max-h-48 rounded-lg border shadow-sm"
+                                      />
+                                    ) : (
+                                      <div className="bg-gray-100 p-3 rounded-lg border text-sm">
+                                        <p className="text-green-600 font-medium">
+                                          {item.customization.customImage.name || "ছবি আপলোড করা হয়েছে"}
+                                        </p>
+                                        {item.customization.customImage.size && (
+                                          <p className="text-gray-500 text-xs mt-1">
+                                            Size: {(item.customization.customImage.size / 1024).toFixed(1)} KB
+                                          </p>
+                                        )}
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
                               </div>
                             </div>
                           )}

@@ -71,7 +71,7 @@ export default function OrderSuccessModal({ isOpen, onClose, order }: OrderSucce
           <Card>
             <CardContent className="p-6">
               <h4 className="font-semibold text-lg mb-4">অর্ডার বিবরণ</h4>
-              
+
               {/* Tracking ID */}
               <div className="bg-blue-50 p-4 rounded-lg border border-blue-200 mb-4">
                 <div className="flex items-center justify-between">
@@ -107,7 +107,21 @@ export default function OrderSuccessModal({ isOpen, onClose, order }: OrderSucce
                 {orderItems.map((item: any, index: number) => (
                   <div key={index} className="flex justify-between items-center text-sm">
                     <span>{item.name} × {item.quantity}</span>
-                    <span className="font-medium">{formatPrice(item.price * item.quantity)}</span>
+                    <span className="font-semibold">{formatPrice(item.price * item.quantity)}</span>
+                    </div>
+
+                    {/* Show customization details if present */}
+                    {item.customization && (
+                      <div className="text-xs text-gray-600 bg-gray-50 p-2 rounded mt-1">
+                        <p className="font-medium text-gray-800 mb-1">কাস্টমাইজেশন:</p>
+                        {item.customization.size && <p>সাইজ: {item.customization.size}</p>}
+                        {item.customization.color && <p>রং: {item.customization.color}</p>}
+                        {item.customization.printArea && <p>প্রিন্ট এরিয়া: {item.customization.printArea}</p>}
+                        {item.customization.customText && <p>কাস্টম টেক্সট: {item.customization.customText}</p>}
+                        {item.customization.customImage && <p>কাস্টম ছবি: আপলোড করা হয়েছে</p>}
+                        {item.customization.specialInstructions && <p>বিশেষ নির্দেশনা: {item.customization.specialInstructions}</p>}
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
@@ -148,7 +162,7 @@ export default function OrderSuccessModal({ isOpen, onClose, order }: OrderSucce
               <Eye className="w-5 h-5 mr-2" />
               অর্ডার ট্র্যাক করুন
             </Button>
-            
+
             <Button
               onClick={handleWhatsAppContact}
               variant="outline"
