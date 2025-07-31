@@ -81,10 +81,11 @@ export const formatPrice = (price: number | string): string => {
   return `৳${numPrice.toFixed(0)}`;
 };
 
+export const WHATSAPP_NUMBER = "8801609916966";
+
 export const createWhatsAppUrl = (message: string): string => {
-  const phoneNumber = "8801609916966"; // Replace with actual WhatsApp number
   const encodedMessage = encodeURIComponent(message);
-  return `https://wa.me/${phoneNumber}?text=${encodedMessage}`;
+  return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodedMessage}`;
 };
 
 export const PAYMENT_METHODS = [
