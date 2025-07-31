@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { pgTable, text, varchar, numeric, integer, timestamp, jsonb, uuid, boolean } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, numeric, integer, timestamp, jsonb, uuid, boolean, serial, decimal } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -210,6 +210,10 @@ export type UserCart = typeof userCarts.$inferSelect;
 export type InsertUserCart = z.infer<typeof insertUserCartSchema>;
 export type UserOrder = typeof userOrders.$inferSelect;
 export type InsertUserOrder = z.infer<typeof insertUserOrderSchema>;
+export type Blog = typeof blogs.$inferSelect;
+export type InsertBlog = z.infer<typeof insertBlogSchema>;
+export type Page = typeof pages.$inferSelect;
+export type InsertPage = z.infer<typeof insertPageSchema>;
 
 // Blog table
 export const customOrders = pgTable('custom_orders', {
@@ -256,9 +260,24 @@ export const pages = pgTable('pages', {
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
 
+// Blog and Page schemas (after table definitions)
+export const insertBlogSchema = createInsertSchema(blogs).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertPageSchema = createInsertSchema(pages).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 export type CustomOrder = typeof customOrders.$inferSelect;
 export type NewCustomOrder = typeof customOrders.$inferInsert;
 export type Blog = typeof blogs.$inferSelect;
 export type NewBlog = typeof blogs.$inferInsert;
+export type InsertBlog = z.infer<typeof insertBlogSchema>;
 export type Page = typeof pages.$inferSelect;
 export type NewPage = typeof pages.$inferInsert;
+export type InsertPage = z.infer<typeof insertPageSchema>;

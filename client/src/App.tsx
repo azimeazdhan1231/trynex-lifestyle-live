@@ -11,7 +11,7 @@ import Offers from "./pages/offers";
 import Profile from "./pages/profile";
 import Orders from "./pages/orders";
 import Auth from "./pages/auth";
-import SimpleAuth from "./components/simple-auth";
+import PhoneAuth from "./components/PhoneAuth";
 import About from "./pages/about";
 import BlogPage from "./pages/blog";
 import NotFound from "./pages/not-found";
@@ -42,9 +42,9 @@ function Router() {
       <Route path="/tracking" component={Tracking} />
       <Route path="/profile" component={Profile} />
       <Route path="/orders" component={Orders} />
-      <Route path="/auth" component={SimpleAuth} />
-      <Route path="/login" component={SimpleAuth} />
-      <Route path="/signup" component={SimpleAuth} />
+      <Route path="/auth" component={PhoneAuth} />
+      <Route path="/login" component={PhoneAuth} />
+      <Route path="/signup" component={PhoneAuth} />
       <Route path="/auth-old" component={Auth} />
       <Route path="/refund-policy" component={RefundPolicyDynamic} />
       <Route path="/return-policy" component={ReturnPolicy} />
