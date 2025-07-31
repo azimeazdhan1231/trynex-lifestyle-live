@@ -2,7 +2,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ShoppingCart, MessageCircle, X, Plus, Minus, Palette } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { formatPrice, createWhatsAppUrl } from "@/lib/constants";
 import { useToast } from "@/hooks/use-toast";
 import { trackProductView, trackAddToCart } from "@/lib/analytics";
@@ -20,12 +20,21 @@ export default function ProductModal({ product, isOpen, onClose, onAddToCart, on
   const [quantity, setQuantity] = useState(1);
   const { toast } = useToast();
 
-  if (!product) return null;
+  // Debug logging
+  if (!product) {
+    console.log("❌ ProductModal: No product provided");
+    return null;
+  }
+
+  console.log("✅ ProductModal: Rendering with product:", product.name, "isOpen:", isOpen);
 
   // Track product view when modal opens
-  if (isOpen && product) {
-    trackProductView(product.id, product.name, product.category || "uncategorized");
-  }
+  useEffect(() => {
+    if (isOpen && product) {
+      console.log("📈 Tracking product view:", product.name);
+      trackProductView(product.id, product.name, product.category || "uncategorized");
+    }
+  }, [isOpen, product]);
 
   const handleAddToCart = () => {
     if (product.stock === 0) {

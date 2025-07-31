@@ -192,9 +192,11 @@ export default function Products() {
   };
 
   const handleViewProduct = (product: Product) => {
-    console.log("Opening product modal for:", product.name);
+    console.log("🔍 Opening product modal for:", product.name, product);
+    console.log("🔍 Current modal state:", showProductModal);
     setSelectedProduct(product);
     setShowProductModal(true);
+    console.log("🔍 Modal should now be open");
     // Track product view immediately
     import("@/lib/analytics").then(({ trackProductView }) => {
       trackProductView(product.id, product.name, product.category || "uncategorized");
@@ -596,7 +598,12 @@ function PremiumProductGrid({
             {/* Much Bigger Product Image */}
             <div 
               className="aspect-[1/1.2] overflow-hidden bg-gray-50 cursor-pointer relative rounded-t-2xl"
-              onClick={() => onViewProduct(product)}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log("🖱️ Image clicked for product:", product.name);
+                onViewProduct(product);
+              }}
             >
               {product.image_url ? (
                 <LazyImage
@@ -620,7 +627,9 @@ function PremiumProductGrid({
                   <Button 
                     size="sm" 
                     onClick={(e) => {
+                      e.preventDefault();
                       e.stopPropagation();
+                      console.log("🖱️ Eye button clicked for product:", product.name);
                       onViewProduct(product);
                     }}
                     className="bg-white/95 text-gray-800 hover:bg-white backdrop-blur-sm shadow-lg"
@@ -659,7 +668,12 @@ function PremiumProductGrid({
           <CardContent className="p-6">
             <h3 
               className="font-bold text-lg md:text-xl text-gray-800 mb-3 line-clamp-2 group-hover:text-blue-600 transition-colors cursor-pointer leading-tight"
-              onClick={() => onViewProduct(product)}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log("🖱️ Title clicked for product:", product.name);
+                onViewProduct(product);
+              }}
             >
               {product.name}
             </h3>
