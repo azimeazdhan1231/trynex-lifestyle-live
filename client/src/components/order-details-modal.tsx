@@ -325,7 +325,7 @@ export default function OrderDetailsModal({ isOpen, onClose, order }: OrderDetai
                         images.push(item.customImage);
                       }
 
-                      const uniqueImages = [...new Set(images)]
+                      const uniqueImages = Array.from(new Set(images))
                         .filter(img => img && typeof img === 'string' && img.trim())
                         .map(img => img.trim());
 

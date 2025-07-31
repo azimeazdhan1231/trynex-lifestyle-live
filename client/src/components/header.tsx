@@ -158,37 +158,6 @@ export default function Header({ cartCount, onCartOpen }: HeaderProps) {
           }}
         />
       )}
-
-      <footer className="mt-16 py-8 border-t border-gray-200">
-          <div className="container mx-auto px-4">
-            <div className="grid md:grid-cols-3 gap-6 mb-6">
-              <div>
-                <h3 className="font-semibold mb-3">যোগাযোগ</h3>
-                <p className="text-sm text-gray-600">ফোন: ০১৭৪৭২৯২২৭৭</p>
-                <p className="text-sm text-gray-600">ইমেইল: info@trynexlifestyle.com</p>
-              </div>
-              <div>
-                <h3 className="font-semibold mb-3">নীতিমালা</h3>
-                <div className="space-y-2">
-                  <Link to="/refund-policy" className="block text-sm text-gray-600 hover:text-primary">রিফান্ড নীতি</Link>
-                  <Link to="/return-policy" className="block text-sm text-gray-600 hover:text-primary">রিটার্ন নীতি</Link>
-                  <Link to="/terms-conditions" className="block text-sm text-gray-600 hover:text-primary">শর্তাবলী</Link>
-                </div>
-              </div>
-              <div>
-                <h3 className="font-semibold mb-3">দ্রুত লিংক</h3>
-                <div className="space-y-2">
-                  <Link to="/tracking" className="block text-sm text-gray-600 hover:text-primary">অর্ডার ট্র্যাক</Link>
-                  <Link to="/contact" className="block text-sm text-gray-600 hover:text-primary">যোগাযোগ</Link>
-                  <Link to="/offers" className="block text-sm text-gray-600 hover:text-primary">অফার</Link>
-                </div>
-              </div>
-            </div>
-            <div className="text-center text-gray-600 pt-4 border-t">
-              <p>&copy; 2025 ট্রাইনেক্স লাইফস্টাইল। সর্বস্বত্ব সংরক্ষিত।</p>
-            </div>
-          </div>
-        </footer>
     </>
   );
 }
