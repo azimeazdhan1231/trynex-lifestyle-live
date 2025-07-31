@@ -26,7 +26,6 @@ import { useEffect } from "react";
 import { initGA, loadFacebookPixelFromSettings } from "./lib/analytics";
 import { useAnalytics } from "./hooks/use-analytics";
 import DebugInfo from "@/components/debug-info";
-import PerformanceMonitor from "@/components/PerformanceMonitor";
 
 function Router() {
   // Track page views when routes change
@@ -74,7 +73,7 @@ function App() {
       <TooltipProvider>
         <div className="font-bengali">
           <Toaster />
-          <PerformanceMonitor />
+          <Router />
           <DebugInfo />
         </div>
       </TooltipProvider>
