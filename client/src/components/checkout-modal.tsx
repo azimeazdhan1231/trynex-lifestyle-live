@@ -156,15 +156,6 @@ export default function CheckoutModal({ isOpen, onClose, cart, onOrderComplete }
         }
       }
       
-      return processedItem;nsole.error('Error converting image to base64:', error);
-          // Continue without the image if conversion fails
-          processedItem.customization = {
-            ...item.customization,
-            customImage: null
-          };
-        }
-      }
-      
       return processedItem;
     }));
 
