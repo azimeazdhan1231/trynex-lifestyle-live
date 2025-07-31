@@ -17,6 +17,14 @@ interface CustomizeModalProps {
   isOpen: boolean;
   onClose: () => void;
   onAddToCart: (product: Product, customization: any) => Promise<void>;
+  productVariant?: string; // For handling multiple product variants in same page
+}
+
+interface ProductVariant {
+  id: string;
+  name: string;
+  image?: string;
+  basePrice: number;
 }
 
 const CUSTOMIZATION_OPTIONS = {
@@ -42,7 +50,17 @@ const CUSTOMIZATION_OPTIONS = {
   }
 };
 
-export default function CustomizeModal({ product, isOpen, onClose, onAddToCart }: CustomizeModalProps) {
+// Helper function to convert File to base64
+const convertFileToBase64 = (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = error => reject(error);
+  });
+};
+
+export default function CustomizeModal({ product, isOpen, onClose, onAddToCart, productVariant }: CustomizeModalProps) {
   const [customization, setCustomization] = useState({
     size: "",
     color: "",
@@ -71,8 +89,42 @@ export default function CustomizeModal({ product, isOpen, onClose, onAddToCart }
     return "T-Shirts"; // Default
   };
 
-  const productType = getProductType(product.name);
+  // Support product variants from same page
+  const currentProductName = productVariant || product.name;
+  const productType = getProductType(currentProductName);
   const options = CUSTOMIZATION_OPTIONS[productType];
+
+  // Detect if there are multiple product variants (from name or description)
+  const detectProductVariants = (product: Product): ProductVariant[] => {
+    const variants: ProductVariant[] = [];
+    const description = product.description || "";
+    
+    // If product description mentions multiple items
+    if (description.includes("2") && (description.includes("product") || description.includes("item") || description.includes("পণ্য"))) {
+      // Create variants based on the product type
+      if (productType === "T-Shirts") {
+        variants.push(
+          { id: "variant1", name: `${product.name} - Design 1`, basePrice: Number(product.price) },
+          { id: "variant2", name: `${product.name} - Design 2`, basePrice: Number(product.price) }
+        );
+      } else if (productType === "Mugs") {
+        variants.push(
+          { id: "variant1", name: `${product.name} - Front Design`, basePrice: Number(product.price) },
+          { id: "variant2", name: `${product.name} - Back Design`, basePrice: Number(product.price) }
+        );
+      } else {
+        variants.push(
+          { id: "variant1", name: `${product.name} - Option 1`, basePrice: Number(product.price) },
+          { id: "variant2", name: `${product.name} - Option 2`, basePrice: Number(product.price) }
+        );
+      }
+    }
+    
+    return variants;
+  };
+
+  const productVariants = detectProductVariants(product);
+  const [selectedVariant, setSelectedVariant] = useState<string>(productVariants.length > 0 ? productVariants[0].id : "");
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -150,6 +202,45 @@ export default function CustomizeModal({ product, isOpen, onClose, onAddToCart }
       description: `${product.name} আপনার পছন্দমতো কাস্টমাইজ করে কার্টে যোগ করা হয়েছে`,
     });
     onClose();
+  };
+
+  const handleDirectBuyNow = () => {
+    if (!customization.size || !customization.color) {
+      toast({
+        title: "তথ্য অসম্পূর্ণ",
+        description: "দয়া করে সাইজ এবং রং নির্বাচন করুন",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const advancePayment = Math.max(80, Math.round(totalPrice * 0.3));
+    const customDetails = `
+🎯 *নতুন কাস্টম অর্ডার*
+
+📝 *কাস্টমাইজেশন বিবরণ:*
+• পণ্য: ${product.name}
+• সাইজ: ${customization.size}
+• রং: ${customization.color}
+• প্রিন্ট এরিয়া: ${customization.printArea || "নির্দিষ্ট নয়"}
+• কাস্টম টেক্সট: ${customization.customText || "নেই"}
+• বিশেষ নির্দেশনা: ${customization.specialInstructions || "নেই"}
+• অতিরিক্ত অনুরোধ: ${customization.additionalRequests || "নেই"}
+• পরিমাণ: ${customization.quantity}
+• জরুরীতা: ${customization.urgency}
+• ডেলিভারি পছন্দ: ${customization.deliveryPreference}
+
+💰 *মূল্য তথ্য:*
+• পণ্যের মূল্য: ${formatPrice(totalPrice)}
+• অগ্রিম পেমেন্ট: ${formatPrice(advancePayment)}
+• পেমেন্ট নম্বর: 01747292277 (bKash/Nagad)
+
+${customization.customImage ? "📎 কাস্টম ছবি আপলোড করা হয়েছে" : ""}
+
+অনুগ্রহ করে ${formatPrice(advancePayment)} অগ্রিম পেমেন্ট করে অর্ডার কনফার্ম করুন।
+    `;
+
+    window.open(createWhatsAppUrl(customDetails.trim()), '_blank');
   };
 
   const handleWhatsAppOrder = () => {
@@ -250,6 +341,27 @@ export default function CustomizeModal({ product, isOpen, onClose, onAddToCart }
 
           {/* Customization Options */}
           <div className="space-y-6">
+            {/* Product Variant Selection */}
+            {productVariants.length > 0 && (
+              <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                <Label className="text-base font-semibold text-yellow-800 mb-3 block">
+                  🎯 এই পণ্যে একাধিক অপশন রয়েছে - আপনার পছন্দের অপশন নির্বাচন করুন:
+                </Label>
+                <Select value={selectedVariant} onValueChange={setSelectedVariant}>
+                  <SelectTrigger className="mt-2">
+                    <SelectValue placeholder="পণ্যের ভ্যারিয়েন্ট নির্বাচন করুন" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {productVariants.map((variant) => (
+                      <SelectItem key={variant.id} value={variant.id}>
+                        {variant.name} - {formatPrice(variant.basePrice)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+
             {/* Basic Options */}
             <div className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -434,26 +546,52 @@ export default function CustomizeModal({ product, isOpen, onClose, onAddToCart }
               />
             </div>
 
+            {/* Payment Information */}
+            <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+              <h4 className="font-semibold text-blue-800 mb-2">💰 পেমেন্ট তথ্য</h4>
+              <div className="space-y-2 text-sm text-blue-700">
+                <p><strong>মোট মূল্য:</strong> {formatPrice(totalPrice)}</p>
+                <p><strong>ডেলিভারি চার্জ:</strong> 80-120৳ (এলাকা অনুযায়ী)</p>
+                <p><strong>অগ্রিম পেমেন্ট:</strong> সর্বনিম্ন 80৳ (ডেলিভারি চার্জ)</p>
+                <div className="mt-3 p-2 bg-white rounded border">
+                  <p className="font-medium text-gray-800">পেমেন্ট নম্বর:</p>
+                  <p>📱 bKash/Nagad: <span className="font-bold">01747292277</span></p>
+                </div>
+              </div>
+            </div>
+
             {/* Action Buttons */}
             <div className="space-y-3 pt-4 border-t">
               <Button
-                onClick={handleAddToCart}
-                className="w-full"
+                onClick={handleDirectBuyNow}
+                className="w-full bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white"
                 size="lg"
                 disabled={!customization.size || !customization.color}
               >
-                <ShoppingCart className="w-5 h-5 mr-2" />
-                কার্টে যোগ করুন ({formatPrice(totalPrice)})
-              </Button>
-              <Button
-                onClick={handleWhatsAppOrder}
-                variant="outline"
-                className="w-full bg-green-500 text-white hover:bg-green-600 border-green-500"
-                size="lg"
-              >
                 <MessageCircle className="w-5 h-5 mr-2" />
-                হোয়াটসঅ্যাপে কাস্টম অর্ডার
+                এখনই কিনুন - অগ্রিম পেমেন্ট ({formatPrice(Math.max(80, Math.round(totalPrice * 0.3)))})
               </Button>
+              
+              <div className="grid grid-cols-2 gap-2">
+                <Button
+                  onClick={handleAddToCart}
+                  variant="outline"
+                  size="sm"
+                  disabled={!customization.size || !customization.color}
+                >
+                  <ShoppingCart className="w-4 h-4 mr-1" />
+                  কার্টে যোগ করুন
+                </Button>
+                <Button
+                  onClick={handleWhatsAppOrder}
+                  variant="outline"
+                  className="bg-green-50 text-green-700 hover:bg-green-100 border-green-300"
+                  size="sm"
+                >
+                  <MessageCircle className="w-4 h-4 mr-1" />
+                  হোয়াটসঅ্যাপে অর্ডার
+                </Button>
+              </div>
             </div>
           </div>
         </div>

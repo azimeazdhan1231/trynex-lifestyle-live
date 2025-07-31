@@ -14,7 +14,7 @@ export const DISTRICTS = [
 ];
 
 export const PRODUCT_CATEGORIES = [
-  { id: "all", name: "সব পণ্য", icon: "🛍️" },
+  { id: "all", name: "All Products", icon: "🛍️" },
   { id: "gift-for-him", name: "Gift for Him", icon: "🎁" },
   { id: "gift-for-her", name: "Gift for Her", icon: "💝" },
   { id: "baby-gifts", name: "Baby Gifts", icon: "👶" },

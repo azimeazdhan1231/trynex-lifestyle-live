@@ -163,18 +163,11 @@ export default function Header({ cartCount, onCartOpen }: HeaderProps) {
                     </DropdownMenu>
                   ) : (
                       <div className="flex items-center space-x-1 sm:space-x-2">
-                      <Button asChild variant="outline" size="sm" className="text-xs sm:text-sm px-2 sm:px-3">
-                        <Link href="/auth">
-                          <User className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
-                          <span className="hidden sm:inline">লগইন</span>
-                          <span className="sm:hidden">লগ</span>
-                        </Link>
-                      </Button>
                       <Button asChild variant="default" size="sm" className="text-xs sm:text-sm px-2 sm:px-3">
                         <a href="/api/login">
                           <User className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
-                          <span className="hidden sm:inline">দ্রুত লগইন</span>
-                          <span className="sm:hidden">দ্রুত</span>
+                          <span className="hidden sm:inline">লগইন</span>
+                          <span className="sm:hidden">লগ</span>
                         </a>
                       </Button>
                     </div>

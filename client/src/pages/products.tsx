@@ -153,7 +153,7 @@ export default function Products() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
-      <Header />
+      <Header cartCount={0} onCartOpen={() => {}} />
       {/* Hero Section */}
       <div className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 text-white py-12 sm:py-16 mt-14 sm:mt-16">
         <div className="container mx-auto px-3 sm:px-4 text-center">
