@@ -85,7 +85,7 @@ export default function CustomizeModal({ product, isOpen, onClose, onAddToCart }
     }
   };
 
-  const handleAddToCart = () => {
+  const handleAddToCart = async () => {
     if (!customization.size || !customization.color) {
       toast({
         title: "তথ্য অসম্পূর্ণ",
@@ -95,7 +95,26 @@ export default function CustomizeModal({ product, isOpen, onClose, onAddToCart }
       return;
     }
 
-    onAddToCart(product, customization);
+    // Convert image file to base64 if present
+    let customImageBase64 = null;
+    if (customization.customImage) {
+      try {
+        const arrayBuffer = await customization.customImage.arrayBuffer();
+        const bytes = new Uint8Array(arrayBuffer);
+        const base64 = btoa(String.fromCharCode.apply(null, Array.from(bytes)));
+        customImageBase64 = `data:${customization.customImage.type};base64,${base64}`;
+      } catch (error) {
+        console.error('Error converting image to base64:', error);
+      }
+    }
+
+    const customizationData = {
+      ...customization,
+      customImage: customImageBase64,
+      customImageName: customization.customImage?.name
+    };
+
+    onAddToCart(product, customizationData);
     toast({
       title: "কাস্টমাইজড পণ্য যোগ করা হয়েছে",
       description: `${product.name} আপনার পছন্দমতো কাস্টমাইজ করে কার্টে যোগ করা হয়েছে`,

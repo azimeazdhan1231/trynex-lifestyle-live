@@ -1,39 +1,19 @@
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Search, Package, Clock, CheckCircle, Truck, MapPin, Phone, User, Calendar, Hash, Banknote, Settings,
-  FileText, AlertCircle } from "lucide-react";
+import { useLocation } from "wouter";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import Header from "@/components/header";
-import { formatPrice } from "@/lib/constants";
 import { useCart } from "@/hooks/use-cart";
-import { useLocation } from "wouter";
-
-interface OrderItem {
-  id: string;
-  name: string;
-  price: number;
-  quantity: number;
-  customization?: any;
-}
-
-interface Order {
-  id: string;
-  tracking_id: string;
-  customer_name: string;
-  phone: string;
-  district: string;
-  thana: string;
-  address: string;
-  status: string;
-  items: OrderItem[];
-  total: string;
-  payment_info?: any;
-  created_at: string;
-}
+import { 
+  Search, Package, CheckCircle, Clock, Truck, 
+  User, Phone, MapPin, Calendar, Hash, Banknote,
+  Settings
+} from "lucide-react";
+import type { Order } from "@shared/schema";
+import { formatPrice } from "@/lib/constants";
 
 const statusMap = {
   pending: { label: "অপেক্ষমান", color: "bg-yellow-500", icon: Clock },
@@ -71,7 +51,7 @@ export default function TrackingPage() {
       return response.json();
     },
     enabled: !!searchId,
-    refetchInterval: 2000, // Refetch every 2 seconds for real-time updates
+    refetchInterval: 2000, // Refetch every 2 second for real-time updates
     refetchIntervalInBackground: true,
     retry: 3,
     retryDelay: 1000,
@@ -120,58 +100,60 @@ export default function TrackingPage() {
   const orderTotal = order ? parseFloat(order.total.toString()) : 0;
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Header cartCount={totalItems} onCartOpen={() => {}} />
-
-      <div className="container mx-auto px-4 py-8 mt-16">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-green-50 pt-20">
+      <div className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
+          {/* Header with Cart Info */}
           <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">অর্ডার ট্র্যাকিং</h1>
-            <p className="text-gray-600">আপনার অর্ডারের বর্তমান অবস্থা দেখুন</p>
+            <h1 className="text-4xl font-bold text-gray-800 mb-2">অর্ডার ট্র্যাকিং</h1>
+            <p className="text-gray-600">আপনার অর্ডারের বর্তমান অবস্থা জানুন</p>
+            {totalItems > 0 && (
+              <div className="mt-4 p-3 bg-orange-100 rounded-lg border border-orange-200">
+                <p className="text-orange-800">
+                  আপনার কার্টে {totalItems}টি পণ্য রয়েছে। 
+                  <a href="/cart" className="font-semibold underline ml-2">চেকআউট করুন</a>
+                </p>
+              </div>
+            )}
           </div>
 
           {/* Search Section */}
-          <Card className="mb-8">
+          <Card className="mb-8 shadow-lg">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Search className="w-5 h-5" />
-                ট্র্যাকিং আইডি দিন
-              </CardTitle>
+              <CardTitle className="text-center">ট্র্যাকিং আইডি দিয়ে খোঁজ করুন</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="flex gap-2">
+              <div className="flex flex-col sm:flex-row gap-4">
                 <Input
-                  placeholder="ট্র্যাকিং আইডি লিখুন (যেমন: TRX123456789)"
+                  type="text"
                   value={trackingId}
                   onChange={(e) => setTrackingId(e.target.value)}
+                  placeholder="ট্র্যাকিং আইডি লিখুন (যেমন: TRX1234567890123)"
+                  className="flex-1 text-lg py-3"
                   onKeyPress={handleKeyPress}
-                  className="flex-1"
                 />
-                <Button onClick={handleSearch} disabled={isLoading}>
-                  <Search className="w-4 h-4 mr-2" />
-                  {isLoading ? "খোঁজা হচ্ছে..." : "খুঁজুন"}
+                <Button 
+                  onClick={handleSearch} 
+                  disabled={isLoading || !trackingId.trim()}
+                  className="px-8 py-3 text-lg"
+                >
+                  <Search className="w-5 h-5 mr-2" />
+                  {isLoading ? "খোঁজা হচ্ছে..." : "খোঁজ করুন"}
                 </Button>
               </div>
             </CardContent>
           </Card>
 
-          {/* Loading State */}
-          {isLoading && searchId && (
-            <Card>
-              <CardContent className="p-8 text-center">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-                <p className="text-gray-600">অর্ডার খোঁজা হচ্ছে...</p>
-              </CardContent>
-            </Card>
-          )}
-
           {/* Error State */}
-          {error && searchId && !isLoading && (
-            <Card>
-              <CardContent className="p-8 text-center">
-                <Package className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">অর্ডার পাওয়া যায়নি</h3>
-                <p className="text-gray-600">দয়া করে সঠিক ট্র্যাকিং আইডি দিন এবং আবার চেষ্টা করুন।</p>
+          {error && searchId && (
+            <Card className="border-red-200 bg-red-50">
+              <CardContent className="p-6 text-center">
+                <Package className="w-12 h-12 text-red-400 mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-red-800 mb-2">অর্ডার খুঁজে পাওয়া যায়নি</h3>
+                <p className="text-red-600">
+                  "{searchId}" এই ট্র্যাকিং আইডিতে কোনো অর্ডার পাওয়া যায়নি। 
+                  অনুগ্রহ করে সঠিক ট্র্যাকিং আইডি দিন।
+                </p>
               </CardContent>
             </Card>
           )}
@@ -305,212 +287,82 @@ export default function TrackingPage() {
                             </div>
                           </div>
                         </div>
-
+                        
                         {/* Customization Details */}
                         {item.customization && (
-                          <div className="bg-blue-50 rounded-lg p-3 mt-3">
-                            <h5 className="font-semibold text-blue-900 mb-2 flex items-center gap-2">
+                          <div className="mt-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                            <h5 className="font-medium text-blue-900 mb-2 flex items-center gap-2">
                               <Settings className="w-4 h-4" />
                               কাস্টমাইজেশন বিবরণ
                             </h5>
-
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
+                            <div className="text-sm text-blue-700 space-y-2">
                               {item.customization.size && (
-                                <div>
-                                  <span className="font-medium text-blue-800">সাইজ:</span>
-                                  <span className="ml-2">{item.customization.size}</span>
+                                <div className="flex items-center gap-2">
+                                  <span className="font-medium">সাইজ:</span>
+                                  <span>{item.customization.size}</span>
                                 </div>
                               )}
-
                               {item.customization.color && (
-                                <div>
-                                  <span className="font-medium text-blue-800">রং:</span>
-                                  <span className="ml-2">{item.customization.color}</span>
+                                <div className="flex items-center gap-2">
+                                  <span className="font-medium">রং:</span>
+                                  <span>{item.customization.color}</span>
                                 </div>
                               )}
-
                               {item.customization.printArea && (
+                                <div className="flex items-center gap-2">
+                                  <span className="font-medium">প্রিন্ট এরিয়া:</span>
+                                  <span>{item.customization.printArea}</span>
+                                </div>
+                              )}
+                              {item.customization.customText && (
                                 <div>
-                                  <span className="font-medium text-blue-800">প্রিন্ট এরিয়া:</span>
-                                  <span className="ml-2">{item.customization.printArea}</span>
+                                  <span className="font-medium">কাস্টম টেক্সট:</span>
+                                  <p className="mt-1 p-2 bg-white rounded border text-gray-900">{item.customization.customText}</p>
+                                </div>
+                              )}
+                              {item.customization.specialInstructions && (
+                                <div>
+                                  <span className="font-medium">বিশেষ নির্দেশনা:</span>
+                                  <p className="mt-1 p-2 bg-white rounded border text-gray-900">{item.customization.specialInstructions}</p>
+                                </div>
+                              )}
+                              {item.customization.customImage && (
+                                <div className="flex items-center gap-2">
+                                  <CheckCircle className="w-4 h-4 text-green-600" />
+                                  <span className="text-green-600 font-medium">কাস্টম ছবি আপলোড করা হয়েছে</span>
                                 </div>
                               )}
                             </div>
-
-                            {item.customization.customText && (
-                              <div className="mt-3">
-                                <div className="flex items-start gap-2">
-                                  <FileText className="w-4 h-4 text-blue-600 mt-0.5" />
-                                  <div>
-                                    <span className="font-medium text-blue-800">কাস্টম টেক্সট:</span>
-                                    <p className="mt-1 text-gray-700 bg-white p-2 rounded border">{item.customization.customText}</p>
-                                  </div>
+                          </div>
+                        )}
+                        
+                        {/* Legacy customization support */}
+                        {!item.customization && (item.customText || item.specialInstructions || item.customImage || item.customImages) && (
+                          <div className="mt-3 p-3 bg-yellow-50 rounded-lg border border-yellow-200">
+                            <h5 className="font-medium text-yellow-900 mb-2 flex items-center gap-2">
+                              <Settings className="w-4 h-4" />
+                              কাস্টমাইজেশন তথ্য
+                            </h5>
+                            <div className="text-sm text-yellow-700 space-y-2">
+                              {item.customText && (
+                                <div>
+                                  <span className="font-medium">কাস্টম টেক্সট:</span>
+                                  <p className="mt-1 p-2 bg-white rounded border text-gray-900">{item.customText}</p>
                                 </div>
-                              </div>
-                            )}
-
-                            {item.customization.customImage && (
-                              <div className="mt-3">
-                                <div className="flex items-start gap-2">
-                                  <Package className="w-4 h-4 text-blue-600 mt-1" />
-                                  <div className="flex-1">
-                                    <span className="font-medium text-blue-800">কাস্টম ইমেজ:</span>
-                                    <div className="mt-2">
-                                      <img 
-                                        src={item.customization.customImage} 
-                                        alt="Custom Design" 
-                                        className="w-32 h-32 object-cover rounded-lg border cursor-pointer hover:opacity-80 transition-opacity"
-                                        onClick={() => window.open(item.customization.customImage, '_blank')}
-                                      />
-                                      <p className="text-sm text-blue-600 mt-1 cursor-pointer hover:underline"
-                                         onClick={() => window.open(item.customization.customImage, '_blank')}>
-                                        ক্লিক করে বড় করে দেখুন
-                                      </p>
-                                    </div>
-                                  </div>
+                              )}
+                              {item.specialInstructions && (
+                                <div>
+                                  <span className="font-medium">বিশেষ নির্দেশনা:</span>
+                                  <p className="mt-1 p-2 bg-white rounded border text-gray-900">{item.specialInstructions}</p>
                                 </div>
-                              </div>
-                            )}
-
-                            {/* All Custom Images - Unified handling with better fallback */}
-                            {(() => {
-                              // Collect all possible image sources from various fields
-                              const images = [];
-                              
-                              // From customization object
-                              if (item.customization) {
-                                if (Array.isArray(item.customization.customImages)) {
-                                  images.push(...item.customization.customImages);
-                                }
-                                if (item.customization.customImage && typeof item.customization.customImage === 'string') {
-                                  images.push(item.customization.customImage);
-                                }
-                              }
-                              
-                              // From item level (fallback)
-                              if (Array.isArray(item.customImages)) {
-                                images.push(...item.customImages);
-                              }
-                              if (item.customImage && typeof item.customImage === 'string') {
-                                images.push(item.customImage);
-                              }
-
-                              // Remove duplicates, empty values, and invalid URLs
-                              const uniqueImages = [...new Set(images)]
-                                .filter(img => img && typeof img === 'string' && img.trim())
-                                .map(img => img.trim());
-
-                              if (uniqueImages.length === 0) return null;
-
-                              const showImage = (imageUrl: string) => {
-                                const overlay = document.createElement('div');
-                                overlay.className = 'fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-[99999] p-4 cursor-pointer';
-                                overlay.innerHTML = `
-                                  <div class="relative max-w-[95vw] max-h-[95vh] flex items-center justify-center">
-                                    <img 
-                                      src="${imageUrl}" 
-                                      alt="Preview" 
-                                      class="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
-                                      style="max-width: 95vw; max-height: 95vh;"
-                                    >
-                                    <button 
-                                      class="absolute -top-12 right-0 bg-white text-black rounded-full p-3 hover:bg-gray-100 transition-colors shadow-lg" 
-                                      onclick="this.closest('.fixed').remove()"
-                                      title="বন্ধ করুন"
-                                    >
-                                      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                                      </svg>
-                                    </button>
-                                  </div>
-                                `;
-                                document.body.appendChild(overlay);
-                                overlay.addEventListener('click', (e) => {
-                                  if (e.target === overlay) overlay.remove();
-                                });
-                                
-                                // ESC key to close
-                                const handleEsc = (e: KeyboardEvent) => {
-                                  if (e.key === 'Escape') {
-                                    overlay.remove();
-                                    document.removeEventListener('keydown', handleEsc);
-                                  }
-                                };
-                                document.addEventListener('keydown', handleEsc);
-                              };
-
-                              return (
-                                <div className="mt-3">
-                                  <div className="flex items-start gap-2">
-                                    <Package className="w-4 h-4 text-blue-600 mt-1 flex-shrink-0" />
-                                    <div className="flex-1">
-                                      <span className="font-medium text-blue-800">
-                                        কাস্টম ইমেজসমূহ ({uniqueImages.length}টি):
-                                      </span>
-                                      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 mt-3">
-                                        {uniqueImages.map((imageUrl: string, imgIndex: number) => (
-                                          <div key={imgIndex} className="relative group border rounded-lg overflow-hidden bg-gray-50">
-                                            <img 
-                                              src={imageUrl} 
-                                              alt={`Custom Design ${imgIndex + 1}`}
-                                              className="w-full h-24 object-cover cursor-pointer transition-all duration-200 group-hover:scale-105"
-                                              onClick={() => showImage(imageUrl)}
-                                              onError={(e) => {
-                                                const target = e.target as HTMLImageElement;
-                                                target.style.display = 'none';
-                                                const parent = target.parentElement;
-                                                if (parent) {
-                                                  parent.innerHTML = `
-                                                    <div class="w-full h-24 bg-gray-200 flex flex-col items-center justify-center text-gray-500">
-                                                      <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                                                      </svg>
-                                                      <span class="text-xs">ইমেজ লোড করা যায়নি</span>
-                                                    </div>
-                                                  `;
-                                                }
-                                              }}
-                                              loading="lazy"
-                                            />
-                                            <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-200 flex items-center justify-center">
-                                              <div className="bg-white bg-opacity-90 rounded-full p-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                <svg className="w-4 h-4 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
-                                                </svg>
-                                              </div>
-                                            </div>
-                                            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/50 to-transparent p-2">
-                                              <span className="text-white text-xs font-medium">
-                                                ইমেজ {imgIndex + 1}
-                                              </span>
-                                            </div>
-                                          </div>
-                                        ))}
-                                      </div>
-                                      <p className="text-sm text-blue-600 mt-2 flex items-center gap-1">
-                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                        </svg>
-                                        ইমেজে ক্লিক করে বড় করে দেখুন
-                                      </p>
-                                    </div>
-                                  </div>
+                              )}
+                              {(item.customImage || item.customImages) && (
+                                <div className="flex items-center gap-2">
+                                  <CheckCircle className="w-4 h-4 text-green-600" />
+                                  <span className="text-green-600 font-medium">কাস্টম ছবি আপলোড করা হয়েছে</span>
                                 </div>
-                              );
-                            })()}
-
-                            {item.customization.specialInstructions && (
-                              <div className="mt-3">
-                                <div className="flex items-start gap-2">
-                                  <AlertCircle className="w-4 h-4 text-blue-600 mt-0.5" />
-                                  <div>
-                                    <span className="font-medium text-blue-800">বিশেষ নির্দেশনা:</span>
-                                    <p className="mt-1 text-gray-700 bg-white p-2 rounded border">{item.customization.specialInstructions}</p>
-                                  </div>
-                                </div>
-                              </div>
-                            )}
+                              )}
+                            </div>
                           </div>
                         )}
                       </div>

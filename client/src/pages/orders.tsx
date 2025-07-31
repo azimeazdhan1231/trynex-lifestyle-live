@@ -5,7 +5,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Package, Calendar, MapPin, Phone, CreditCard, Eye } from "lucide-react";
+import { Package, Calendar, MapPin, Phone, CreditCard, Eye, Settings, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { Order } from "@shared/schema";
 
@@ -142,13 +142,30 @@ export default function OrdersPage() {
                       {/* Order Items */}
                       <div>
                         <h4 className="font-medium text-gray-900 mb-3">অর্ডার আইটেম</h4>
-                        <div className="space-y-2">
+                        <div className="space-y-3">
                           {Array.isArray(order.items) ? order.items.map((item: any, index: number) => (
-                            <div key={index} className="flex justify-between items-center text-sm">
-                              <span className="text-gray-700">
-                                {item.name} × {item.quantity}
-                              </span>
-                              <span className="font-medium">৳{item.price}</span>
+                            <div key={index} className="border rounded p-2 bg-gray-50">
+                              <div className="flex justify-between items-center text-sm mb-2">
+                                <span className="text-gray-700 font-medium">
+                                  {item.name} × {item.quantity}
+                                </span>
+                                <span className="font-medium">৳{item.price}</span>
+                              </div>
+                              
+                              {/* Customization indicator */}
+                              {(item.customization || item.customText || item.specialInstructions || item.customImage || item.customImages) && (
+                                <div className="flex items-center gap-2 text-xs text-blue-600">
+                                  <Settings className="w-3 h-3" />
+                                  <span>কাস্টমাইজড পণ্য</span>
+                                  {(item.customization?.customImage || item.customImage || item.customImages) && (
+                                    <>
+                                      <span>•</span>
+                                      <CheckCircle className="w-3 h-3 text-green-600" />
+                                      <span className="text-green-600">ছবি সহ</span>
+                                    </>
+                                  )}
+                                </div>
+                              )}
                             </div>
                           )) : (
                             <p className="text-sm text-gray-500">আইটেম লোড করা হচ্ছে...</p>
