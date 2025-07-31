@@ -4,10 +4,11 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ShoppingCart, MessageCircle, Eye } from "lucide-react";
+import { ShoppingCart, MessageCircle, Eye, Palette } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { PRODUCT_CATEGORIES, formatPrice, createWhatsAppUrl } from "@/lib/constants";
 import ProductModal from "@/components/product-modal";
+import CustomizeModal from "@/components/customize-modal";
 import Header from "@/components/header";
 import { useCart } from "@/hooks/use-cart";
 import { trackProductView, trackAddToCart } from "@/lib/analytics";
@@ -17,6 +18,7 @@ export default function ProductsPage() {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isCustomizeModalOpen, setIsCustomizeModalOpen] = useState(false);
   
   const { toast } = useToast();
   const { addToCart, totalItems } = useCart();
@@ -248,14 +250,15 @@ export default function ProductsPage() {
                           <Button
                             onClick={(e) => {
                               e.stopPropagation();
-                              handleWhatsAppOrder(product);
+                              setSelectedProduct(product);
+                              setIsCustomizeModalOpen(true);
                             }}
                             variant="outline"
-                            className="bg-green-500 text-white hover:bg-green-600 border-green-500"
+                            className="bg-purple-500 text-white hover:bg-purple-600 border-purple-500"
                             size="sm"
                           >
-                            <MessageCircle className="w-4 h-4 mr-1" />
-                            WhatsApp
+                            <Palette className="w-4 h-4 mr-1" />
+                            Customize This
                           </Button>
                         </div>
                       </div>
@@ -271,6 +274,19 @@ export default function ProductsPage() {
             isOpen={isModalOpen}
             onClose={handleModalClose}
             onAddToCart={handleAddToCart}
+          />
+
+          <CustomizeModal
+            product={selectedProduct}
+            isOpen={isCustomizeModalOpen}
+            onClose={() => {
+              setIsCustomizeModalOpen(false);
+              setSelectedProduct(null);
+            }}
+            onAddToCart={(product, customization) => {
+              handleAddToCart(product);
+              console.log('Customization details:', customization);
+            }}
           />
         </div>
       </div>

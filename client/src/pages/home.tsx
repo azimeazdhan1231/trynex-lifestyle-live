@@ -59,7 +59,7 @@ function ProductCard({ product, onAddToCart, onViewProduct, showBadge = true }: 
             loading="lazy"
           />
         </div>
-        
+
         {/* Product Badges */}
         {showBadge && (
           <div className="absolute top-3 left-3 space-y-2">
@@ -145,7 +145,7 @@ function ProductCard({ product, onAddToCart, onViewProduct, showBadge = true }: 
           </div>
         </div>
       </div>
-      
+
       <CardContent className="p-6">
         <div className="space-y-4">
           <h4 
@@ -154,7 +154,7 @@ function ProductCard({ product, onAddToCart, onViewProduct, showBadge = true }: 
           >
             {product.name}
           </h4>
-          
+
           <div className="flex items-center justify-between">
             <div className="flex flex-col">
               <span className="text-2xl font-bold text-primary">{formatPrice(product.price)}</span>
@@ -164,7 +164,7 @@ function ProductCard({ product, onAddToCart, onViewProduct, showBadge = true }: 
               স্টক: {product.stock}
             </Badge>
           </div>
-          
+
           <div className="space-y-2">
             <Button 
               onClick={handleAddToCart}
@@ -174,7 +174,7 @@ function ProductCard({ product, onAddToCart, onViewProduct, showBadge = true }: 
               <ShoppingCart className="w-4 h-4 mr-2" />
               {product.stock === 0 ? "স্টক নেই" : "কার্টে যোগ করুন"}
             </Button>
-            
+
             <Button 
               onClick={handleWhatsAppOrder}
               variant="outline"
@@ -249,7 +249,7 @@ function ProductSection({
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">{subtitle}</p>
           <div className="w-24 h-1 bg-gradient-to-r from-primary to-primary/50 mx-auto mt-6 rounded-full"></div>
         </div>
-        
+
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
           {products.map((product) => (
             <ProductCard 
@@ -260,7 +260,7 @@ function ProductSection({
             />
           ))}
         </div>
-        
+
         <div className="text-center">
           <Button asChild size="lg" variant="outline" className="group">
             <Link href="/products">
@@ -296,7 +296,7 @@ export default function Home() {
   const featuredProducts = products.filter(p => p.is_featured);
   const latestProducts = products.filter(p => p.is_latest);
   const bestSellingProducts = products.filter(p => p.is_best_selling);
-  
+
   // If no products are marked, use defaults
   const defaultFeatured = featuredProducts.length > 0 ? featuredProducts.slice(0, 4) : products.slice(0, 4);
   const defaultLatest = latestProducts.length > 0 ? latestProducts.slice(0, 4) : products.slice(4, 8);
@@ -325,9 +325,9 @@ export default function Home() {
       name: product.name,
       price: Number(product.price),
     });
-    
+
     trackAddToCart(product.id, product.name, Number(product.price));
-    
+
     toast({
       title: "কার্টে যোগ করা হয়েছে!",
       description: `${product.name} সফলভাবে কার্টে যোগ করা হয়েছে`,
@@ -367,7 +367,7 @@ export default function Home() {
             backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.1'%3E%3Ccircle cx='30' cy='30' r='4'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
           }}></div>
         </div>
-        
+
         <div className="container mx-auto px-4 text-center relative z-10">
           <div className="max-w-4xl mx-auto">
             <h1 className="text-5xl md:text-7xl font-bold mb-8 leading-tight">
@@ -376,7 +376,7 @@ export default function Home() {
             <p className="text-xl md:text-3xl mb-12 text-emerald-100 leading-relaxed">
               আপনার প্রিয়জনের জন্য সেরা উপহার এবং লাইফস্টাইল পণ্য
             </p>
-            
+
             <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
               <Button 
                 onClick={scrollToProducts}
@@ -386,7 +386,7 @@ export default function Home() {
                 এখনই কিনুন 
                 <ArrowRight className="ml-3 w-6 h-6" />
               </Button>
-              
+
               <Button 
                 asChild
                 size="lg"
@@ -405,7 +405,7 @@ export default function Home() {
             </div>
           </div>
         </div>
-        
+
         {/* Floating Elements */}
         <div className="absolute top-20 left-10 animate-bounce">
           <Gift className="w-12 h-12 text-white/30" />
@@ -487,7 +487,7 @@ export default function Home() {
                   হোয়াটসঅ্যাপে যোগাযোগ করে তাৎক্ষণিক অর্ডার করুন এবং বিশেষ ছাড় পান
                 </p>
               </div>
-              
+
               <div className="flex flex-col sm:flex-row gap-6 justify-center">
                 <Button
                   asChild
@@ -503,7 +503,7 @@ export default function Home() {
                     হোয়াটসঅ্যাপে অর্ডার করুন
                   </a>
                 </Button>
-                
+
                 <Button
                   asChild
                   size="lg"
@@ -518,7 +518,7 @@ export default function Home() {
                   </a>
                 </Button>
               </div>
-              
+
               <div className="mt-8 p-6 bg-green-50 rounded-2xl">
                 <p className="text-green-800 font-semibold">
                   📞 {WHATSAPP_NUMBER} | 🕐 সার্ভিস টাইম: সকাল ৯টা - রাত ১০টা
@@ -539,23 +539,38 @@ export default function Home() {
                 {COMPANY_TAGLINE}। আমরা গুণগত মানের পণ্য এবং সেবা প্রদানে প্রতিশ্রুতিবদ্ধ।
               </p>
               <div className="flex space-x-4">
-                <Button asChild variant="outline" size="sm">
-                  <a href={createWhatsAppUrl("হ্যালো")} target="_blank" rel="noopener noreferrer">
-                    <MessageCircle className="w-4 h-4 mr-2" />
-                    WhatsApp
+                <Button 
+                  asChild
+                  variant="outline" 
+                  className="bg-blue-600 hover:bg-blue-700 text-white border-blue-600 hover:border-blue-700 font-medium"
+                >
+                  <a 
+                    href="https://www.facebook.com/people/TryNex-Lifestyle/61576151563336/" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="flex items-center space-x-2 text-white hover:text-white"
+                  >
+                    <span className="text-lg">📘</span>
+                    <span className="text-white font-medium">Facebook Page</span>
                   </a>
                 </Button>
-                <Button asChild variant="outline" size="sm">
-                  <a href="https://www.facebook.com/people/TryNex-Lifestyle/61576151563336/" target="_blank" rel="noopener noreferrer">
-                    <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
-                    </svg>
-                    Facebook
+                <Button 
+                  asChild
+                  className="bg-green-600 hover:bg-green-700 text-white border-green-600 font-medium"
+                >
+                  <a 
+                    href="https://wa.me/8801747292277" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="flex items-center space-x-2 text-white hover:text-white"
+                  >
+                    <span className="text-lg">💬</span>
+                    <span className="text-white font-medium">WhatsApp</span>
                   </a>
                 </Button>
               </div>
             </div>
-            
+
             <div>
               <h4 className="text-lg font-semibold mb-4">দ্রুত লিংক</h4>
               <ul className="space-y-2">
@@ -565,7 +580,7 @@ export default function Home() {
                 <li><Link href="/contact" className="text-gray-300 hover:text-white transition-colors">যোগাযোগ</Link></li>
               </ul>
             </div>
-            
+
             <div>
               <h4 className="text-lg font-semibold mb-4">যোগাযোগ</h4>
               <ul className="space-y-2 text-gray-300">
@@ -576,7 +591,7 @@ export default function Home() {
               </ul>
             </div>
           </div>
-          
+
           <div className="border-t border-gray-700 mt-12 pt-8 text-center">
             <p className="text-gray-400">
               © 2024 {COMPANY_NAME}. সর্বস্বত্ব সংরক্ষিত।

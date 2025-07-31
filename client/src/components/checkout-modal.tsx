@@ -248,17 +248,55 @@ export default function CheckoutModal({ isOpen, onClose, cart, onOrderComplete }
               <span className="text-lg text-primary">{formatPrice(totalPrice)}</span>
             </div>
             <div className="bg-orange-50 p-4 rounded-lg border border-orange-200">
-              <p className="text-sm text-orange-700 font-medium mb-2">
-                ডেলিভারি নিশ্চিত করতে পেমেন্ট করুন:
+              <p className="text-sm text-orange-700 font-medium mb-3">
+                অর্ডার নিশ্চিত করতে পেমেন্ট করুন:
               </p>
-              <p className="text-orange-900 font-bold text-lg">
+              <p className="text-orange-900 font-bold text-lg mb-2">
                 bKash/Nagad: 01747292277
               </p>
-              <p className="text-xs text-orange-600 mt-2">
-                পেমেন্ট করার পর ট্রানজেকশন আইডি দিয়ে WhatsApp করুন
-              </p>
-              <p className="text-xs text-orange-600">
-                পেমেন্ট ছাড়া অর্ডার ডেলিভার করা হবে না
+              <div className="bg-orange-100 p-3 rounded-md mb-3">
+                <p className="text-orange-800 font-semibold text-sm mb-1">
+                  পেমেন্ট অপশন:
+                </p>
+                <p className="text-orange-700 text-xs mb-1">
+                  • সর্বনিম্ন: {formatPrice(deliveryFee)} (শুধু ডেলিভারি চার্জ)
+                </p>
+                <p className="text-orange-700 text-xs">
+                  • সুপারিশকৃত: {formatPrice(totalPrice)} (সম্পূর্ণ অর্ডার পরিমাণ)
+                </p>
+              </div>
+              <div className="space-y-2">
+                <div>
+                  <Label htmlFor="payment_number" className="text-xs text-orange-700">পেমেন্ট নম্বরের শেষ ৪ সংখ্যা</Label>
+                  <Input
+                    id="payment_number"
+                    type="text"
+                    maxLength={4}
+                    placeholder="যেমন: 2277"
+                    className="text-sm"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="trx_id" className="text-xs text-orange-700">ট্রানজেকশন আইডি</Label>
+                  <Input
+                    id="trx_id"
+                    type="text"
+                    placeholder="TrxID12345"
+                    className="text-sm"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="payment_screenshot" className="text-xs text-orange-700">পেমেন্ট স্ক্রিনশট (ঐচ্ছিক)</Label>
+                  <Input
+                    id="payment_screenshot"
+                    type="file"
+                    accept="image/*"
+                    className="text-sm"
+                  />
+                </div>
+              </div>
+              <p className="text-xs text-orange-600 mt-3 border-t border-orange-200 pt-2">
+                পেমেন্ট করার পর ট্রানজেকশন তথ্য সহ WhatsApp করুন: 01747292277
               </p>
             </div>
           </div>

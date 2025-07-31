@@ -1,7 +1,7 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ShoppingCart, MessageCircle, X, Plus, Minus } from "lucide-react";
+import { ShoppingCart, MessageCircle, X, Plus, Minus, Palette } from "lucide-react";
 import { useState } from "react";
 import { formatPrice, createWhatsAppUrl } from "@/lib/constants";
 import { useToast } from "@/hooks/use-toast";
@@ -160,15 +160,29 @@ export default function ProductModal({ product, isOpen, onClose, onAddToCart }: 
                 <ShoppingCart className="w-5 h-5 mr-2" />
                 {product.stock === 0 ? "স্টক নেই" : "কার্টে যোগ করুন"}
               </Button>
-              <Button
-                onClick={handleWhatsAppOrder}
-                variant="outline"
-                className="w-full bg-green-500 text-white hover:bg-green-600 border-green-500"
-                size="lg"
-              >
-                <MessageCircle className="w-5 h-5 mr-2" />
-                হোয়াটসঅ্যাপে অর্ডার
-              </Button>
+              <div className="grid grid-cols-2 gap-3">
+                <Button
+                  onClick={handleWhatsAppOrder}
+                  variant="outline"
+                  className="bg-green-500 text-white hover:bg-green-600 border-green-500"
+                  size="lg"
+                >
+                  <MessageCircle className="w-5 h-5 mr-2" />
+                  হোয়াটসঅ্যাপে অর্ডার
+                </Button>
+                <Button
+                  onClick={() => {
+                    // This will be handled by parent component
+                    console.log('Customize button clicked');
+                  }}
+                  variant="outline"
+                  className="bg-purple-500 text-white hover:bg-purple-600 border-purple-500"
+                  size="lg"
+                >
+                  <Palette className="w-5 h-5 mr-2" />
+                  কাস্টমাইজ করুন
+                </Button>
+              </div>
             </div>
 
             {/* Product Description */}
