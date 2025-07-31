@@ -409,7 +409,10 @@ function ProductGrid({ products, viewMode, onAddToCart, onViewProduct, onCustomi
         {products.map((product) => (
           <Card key={product.id} className="overflow-hidden hover:shadow-xl transition-all duration-300 border border-gray-200">
             <div className="flex flex-col md:flex-row">
-              <div className="md:w-1/3 relative group">
+              <div 
+                className="md:w-1/3 relative group cursor-pointer"
+                onClick={() => onViewProduct(product)}
+              >
                 <img
                   src={product.image_url || "https://images.unsplash.com/photo-1544787219-7f47ccb76574?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"}
                   alt={product.name}
@@ -429,7 +432,12 @@ function ProductGrid({ products, viewMode, onAddToCart, onViewProduct, onCustomi
               <div className="md:w-2/3 p-6">
                 <div className="flex justify-between items-start mb-4">
                   <div>
-                    <h3 className="text-xl font-bold text-gray-800 mb-2">{product.name}</h3>
+                    <h3 
+                      className="text-xl font-bold text-gray-800 mb-2 cursor-pointer hover:text-blue-600 transition-colors"
+                      onClick={() => onViewProduct(product)}
+                    >
+                      {product.name}
+                    </h3>
                     <p className="text-gray-600 text-sm line-clamp-2">{product.description}</p>
                   </div>
                   <Button
@@ -483,7 +491,10 @@ function ProductGrid({ products, viewMode, onAddToCart, onViewProduct, onCustomi
       {products.map((product) => (
         <Card key={product.id} className="group overflow-hidden hover:shadow-2xl transition-all duration-300 border border-gray-100 bg-white hover:border-blue-300 transform hover:-translate-y-1">
           <div className="relative">
-            <div className="aspect-[4/5] overflow-hidden bg-gray-50">
+            <div 
+              className="aspect-[4/5] overflow-hidden bg-gray-50 cursor-pointer"
+              onClick={() => onViewProduct(product)}
+            >
               <LazyImage
                 src={product.image_url || "https://via.placeholder.com/300x300/f3f4f6/9ca3af?text=No+Image"}
                 alt={product.name}
@@ -526,7 +537,10 @@ function ProductGrid({ products, viewMode, onAddToCart, onViewProduct, onCustomi
           </div>
 
           <CardContent className="p-4">
-            <h3 className="font-bold text-lg text-gray-800 mb-2 line-clamp-1 group-hover:text-blue-600 transition-colors">
+            <h3 
+              className="font-bold text-lg text-gray-800 mb-2 line-clamp-1 group-hover:text-blue-600 transition-colors cursor-pointer"
+              onClick={() => onViewProduct(product)}
+            >
               {product.name}
             </h3>
             
