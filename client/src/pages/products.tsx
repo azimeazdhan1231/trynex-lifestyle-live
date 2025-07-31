@@ -411,7 +411,11 @@ function ProductGrid({ products, viewMode, onAddToCart, onViewProduct, onCustomi
             <div className="flex flex-col md:flex-row">
               <div 
                 className="md:w-1/3 relative group cursor-pointer"
-                onClick={() => onViewProduct(product)}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  onViewProduct(product);
+                }}
               >
                 <img
                   src={product.image_url || "https://images.unsplash.com/photo-1544787219-7f47ccb76574?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"}
@@ -421,7 +425,11 @@ function ProductGrid({ products, viewMode, onAddToCart, onViewProduct, onCustomi
                 <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
                   <Button 
                     size="sm" 
-                    onClick={() => onViewProduct(product)}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      onViewProduct(product);
+                    }}
                     className="bg-white/90 text-gray-800 hover:bg-white"
                   >
                     <Eye className="w-4 h-4 mr-2" />
@@ -434,7 +442,11 @@ function ProductGrid({ products, viewMode, onAddToCart, onViewProduct, onCustomi
                   <div>
                     <h3 
                       className="text-xl font-bold text-gray-800 mb-2 cursor-pointer hover:text-blue-600 transition-colors"
-                      onClick={() => onViewProduct(product)}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        onViewProduct(product);
+                      }}
                     >
                       {product.name}
                     </h3>
@@ -493,7 +505,11 @@ function ProductGrid({ products, viewMode, onAddToCart, onViewProduct, onCustomi
           <div className="relative">
             <div 
               className="aspect-[4/5] overflow-hidden bg-gray-50 cursor-pointer"
-              onClick={() => onViewProduct(product)}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onViewProduct(product);
+              }}
             >
               <LazyImage
                 src={product.image_url || "https://via.placeholder.com/300x300/f3f4f6/9ca3af?text=No+Image"}
@@ -506,14 +522,22 @@ function ProductGrid({ products, viewMode, onAddToCart, onViewProduct, onCustomi
             <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center space-x-2">
               <Button 
                 size="sm" 
-                onClick={() => onViewProduct(product)}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  onViewProduct(product);
+                }}
                 className="bg-white/90 text-gray-800 hover:bg-white"
               >
                 <Eye className="w-4 h-4" />
               </Button>
               <Button
                 size="sm"
-                onClick={() => toggleFavorite(product.id)}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  toggleFavorite(product.id);
+                }}
                 className="bg-white/90 text-gray-800 hover:bg-white"
               >
                 <Heart className={`w-4 h-4 ${favorites.includes(product.id) ? 'fill-red-500 text-red-500' : ''}`} />
@@ -539,7 +563,11 @@ function ProductGrid({ products, viewMode, onAddToCart, onViewProduct, onCustomi
           <CardContent className="p-4">
             <h3 
               className="font-bold text-lg text-gray-800 mb-2 line-clamp-1 group-hover:text-blue-600 transition-colors cursor-pointer"
-              onClick={() => onViewProduct(product)}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onViewProduct(product);
+              }}
             >
               {product.name}
             </h3>
