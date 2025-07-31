@@ -16,11 +16,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
-      const user = await storage.getUser(userId);
+      let user = await storage.getUser(userId);
+      
+      if (!user) {
+        // Create user if doesn't exist (fallback)
+        const email = req.user.claims.email;
+        const name = req.user.claims.name || '';
+        const profileImage = req.user.claims.picture || '';
+        
+        const nameParts = name.split(' ');
+        const firstName = nameParts[0] || '';
+        const lastName = nameParts.slice(1).join(' ') || '';
+        
+        user = await storage.createUser({
+          id: userId,
+          email: email,
+          firstName: firstName,
+          lastName: lastName,
+          profileImageUrl: profileImage,
+        });
+      }
+      
       res.json(user);
     } catch (error) {
       console.error("Error fetching user:", error);
       res.status(500).json({ message: "Failed to fetch user" });
+    }
+  });
+
+  app.post('/api/auth/logout', (req: any, res) => {
+    try {
+      // Clear authentication
+      req.session = null;
+      res.json({ success: true, message: "Logged out successfully" });
+    } catch (error) {
+      console.error("Error during logout:", error);
+      res.status(500).json({ message: "Logout failed" });
     }
   });
 

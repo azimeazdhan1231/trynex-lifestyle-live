@@ -11,8 +11,10 @@ import type { User as UserType } from "@shared/schema";
 export default function UsersManagement() {
   const [searchTerm, setSearchTerm] = useState("");
 
-  const { data: users, isLoading } = useQuery<UserType[]>({
+  const { data: users, isLoading, error } = useQuery<UserType[]>({
     queryKey: ["/api/users"],
+    retry: 2,
+    refetchInterval: 30000, // Refresh every 30 seconds
   });
 
   const filteredUsers = users?.filter(user =>
@@ -32,7 +34,10 @@ export default function UsersManagement() {
         </div>
         <div className="flex items-center gap-2">
           <Badge variant="secondary" className="text-sm">
-            মোট: {users?.length || 0}
+            মোট ব্যবহারকারী: {users?.length || 0}
+          </Badge>
+          <Badge variant="outline" className="text-sm">
+            অনলাইন: {users?.filter(u => u.createdAt && new Date(u.createdAt) > new Date(Date.now() - 24*60*60*1000)).length || 0}
           </Badge>
         </div>
       </div>
