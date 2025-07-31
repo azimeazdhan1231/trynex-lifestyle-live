@@ -57,41 +57,69 @@ export default function CartModal({ isOpen, onClose }: CartModalProps) {
           ) : (
             <div className="space-y-4">
               {/* Cart Items */}
-              <div className="space-y-3 max-h-64 overflow-y-auto">
+              <div className="space-y-3 max-h-96 overflow-y-auto">
                 {cart.map((item) => (
-                  <div key={item.id} className="flex items-center justify-between py-3 border-b">
-                    <div className="flex-1">
-                      <h5 className="font-medium text-sm">{item.name}</h5>
-                      <p className="text-gray-600 text-sm">{formatPrice(item.price)} প্রতিটি</p>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                        className="w-8 h-8 p-0"
-                      >
-                        <Minus className="w-4 h-4" />
-                      </Button>
-                      <Badge variant="secondary" className="w-8 text-center">
-                        {item.quantity}
-                      </Badge>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                        className="w-8 h-8 p-0"
-                      >
-                        <Plus className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="destructive"
-                        onClick={() => removeFromCart(item.id)}
-                        className="w-8 h-8 p-0 ml-2"
-                      >
-                        <X className="w-4 h-4" />
-                      </Button>
+                  <div key={item.id} className="border rounded-lg p-3">
+                    <div className="flex items-start justify-between mb-2">
+                      <div className="flex-1">
+                        <h5 className="font-medium text-sm">{item.name}</h5>
+                        <p className="text-gray-600 text-sm">{formatPrice(item.price)} প্রতিটি</p>
+                        
+                        {/* Customization Display */}
+                        {item.customization && (
+                          <div className="mt-2 p-2 bg-blue-50 rounded-md text-xs">
+                            <p className="font-medium text-blue-800 mb-1">কাস্টমাইজেশন:</p>
+                            {item.customization.size && <p>সাইজ: {item.customization.size}</p>}
+                            {item.customization.color && <p>রং: {item.customization.color}</p>}
+                            {item.customization.printArea && <p>প্রিন্ট এরিয়া: {item.customization.printArea}</p>}
+                            {item.customization.customText && item.customization.customText.trim() && (
+                              <p>কাস্টম টেক্সট: {item.customization.customText.trim()}</p>
+                            )}
+                            {item.customization.specialInstructions && item.customization.specialInstructions.trim() && (
+                              <p>বিশেষ নির্দেশনা: {item.customization.specialInstructions.trim()}</p>
+                            )}
+                            {item.customization.customImage && (
+                              <div className="mt-2">
+                                <p className="mb-1">কাস্টম ছবি:</p>
+                                <img 
+                                  src={typeof item.customization.customImage === 'string' ? item.customization.customImage : URL.createObjectURL(item.customization.customImage)}
+                                  alt="Custom upload"
+                                  className="w-12 h-12 object-cover rounded border"
+                                />
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex items-center space-x-2 ml-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                          className="w-8 h-8 p-0"
+                        >
+                          <Minus className="w-4 h-4" />
+                        </Button>
+                        <Badge variant="secondary" className="w-8 text-center">
+                          {item.quantity}
+                        </Badge>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                          className="w-8 h-8 p-0"
+                        >
+                          <Plus className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          onClick={() => removeFromCart(item.id)}
+                          className="w-8 h-8 p-0 ml-2"
+                        >
+                          <X className="w-4 h-4" />
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 ))}

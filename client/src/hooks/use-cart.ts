@@ -49,52 +49,75 @@ if (typeof window !== 'undefined' && globalCart.length === 0) {
   globalCart = getStoredCart();
 }
 
-export function useCart() {
-  const [cart, setCart] = useState<CartItem[]>(globalCart);
+interface UseCartReturn {
+  cart: CartItem[];
+  addToCart: (product: Product, customization?: any) => Promise<void>;
+  updateQuantity: (id: string, quantity: number) => void;
+  removeFromCart: (id: string) => void;
+  clearCart: () => void;
+  totalItems: number;
+  totalPrice: number;
+}
 
-  // Subscribe to cart changes
-  useEffect(() => {
-    const listener = (newCart: CartItem[]) => {
-      setCart([...newCart]); // Force re-render with new array reference
-    };
-    cartListeners.add(listener);
-    
-    // Sync with current global state immediately
-    setCart([...globalCart]);
-    
-    return () => {
-      cartListeners.delete(listener);
-    };
-  }, []);
-
-  // Additional effect to ensure cart is always in sync
-  useEffect(() => {
-    setCart([...globalCart]);
-  }, [globalCart.length]);
-
-  const addToCart = useCallback((item: Omit<CartItem, 'quantity'>) => {
-    const newCart = [...globalCart];
-    const existingItem = newCart.find(cartItem => cartItem.id === item.id);
-    
-    if (existingItem) {
-      existingItem.quantity += 1;
-    } else {
-      newCart.push({ ...item, quantity: 1 });
+export function useCart(): UseCartReturn {
+  const [cart, setCart] = useState<CartItem[]>(() => {
+    try {
+      const stored = localStorage.getItem('cart');
+      return stored ? JSON.parse(stored) : [];
+    } catch {
+      return [];
     }
-    
-    updateGlobalCart(newCart);
-  }, []);
+  });
+
+  const addToCart = async (product: any, customization?: any) => {
+    // Process custom image if it's a File object
+    let processedCustomization = { ...customization };
+
+    if (customization?.customImage && customization.customImage instanceof File) {
+      try {
+        const base64 = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result as string);
+          reader.onerror = reject;
+          reader.readAsDataURL(customization.customImage);
+        });
+
+        processedCustomization = {
+          ...customization,
+          customImage: base64,
+          customImageName: customization.customImage.name
+        };
+      } catch (error) {
+        console.error('Error converting image to base64:', error);
+      }
+    }
+
+    const cartItem: CartItem = {
+      id: crypto.randomUUID(),
+      name: product.name,
+      price: parseFloat(product.price.toString()),
+      image_url: product.image_url,
+      quantity: processedCustomization?.quantity || 1,
+      customization: processedCustomization,
+    };
+
+    setCart(prev => {
+      const updated = [...prev, cartItem];
+      localStorage.setItem('cart', JSON.stringify(updated));
+      return updated;
+    });
+  };
 
   const updateQuantity = useCallback((id: string, quantity: number) => {
     if (quantity <= 0) {
       removeFromCart(id);
       return;
     }
-    
+
     const newCart = globalCart.map(item =>
       item.id === id ? { ...item, quantity } : item
     );
-    
+
     updateGlobalCart(newCart);
   }, []);
 

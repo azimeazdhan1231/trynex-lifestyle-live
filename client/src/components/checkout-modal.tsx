@@ -125,21 +125,38 @@ export default function CheckoutModal({ isOpen, onClose, cart, onOrderComplete }
     const processedItems = await Promise.all(cart.map(async (item: any) => {
       const processedItem = { ...item, delivery_fee: deliveryFee };
       
-      if (item.customization && item.customization.customImage && item.customization.customImage instanceof File) {
+      if (item.customization && item.customization.customImage) {
         try {
-          const base64 = await new Promise<string>((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = () => resolve(reader.result as string);
-            reader.onerror = reject;
-            reader.readAsDataURL(item.customization.customImage);
-          });
+          let base64Image = null;
+          
+          if (item.customization.customImage instanceof File) {
+            base64Image = await new Promise<string>((resolve, reject) => {
+              const reader = new FileReader();
+              reader.onload = () => resolve(reader.result as string);
+              reader.onerror = reject;
+              reader.readAsDataURL(item.customization.customImage);
+            });
+          } else if (typeof item.customization.customImage === 'string') {
+            // Already base64 encoded
+            base64Image = item.customization.customImage;
+          }
           
           processedItem.customization = {
             ...item.customization,
-            customImage: base64
+            customImage: base64Image,
+            customImageName: item.customization.customImageName || item.customization.customImage?.name || 'custom-image.jpg'
           };
         } catch (error) {
-          console.error('Error converting image to base64:', error);
+          console.error('Error processing custom image:', error);
+          // Keep other customization data even if image fails
+          processedItem.customization = {
+            ...item.customization,
+            customImage: null
+          };
+        }
+      }
+      
+      return processedItem;nsole.error('Error converting image to base64:', error);
           // Continue without the image if conversion fails
           processedItem.customization = {
             ...item.customization,

@@ -261,17 +261,20 @@ export default function OrderDetailsModal({ isOpen, onClose, order }: OrderDetai
 
                           {/* Customization Details */}
                           {(() => {
-                            // Check if there's any customization data to show
-                            const hasCustomization = item.customization && (
-                              item.customization.size || 
-                              item.customization.color || 
-                              item.customization.printArea || 
-                              (item.customization.customText && item.customization.customText.trim()) ||
-                              (item.customization.specialInstructions && item.customization.specialInstructions.trim()) ||
-                              item.customization.customImage
-                            );
+                            // Always show customization section for better visibility
+                            const hasAnyCustomization = item.customization || item.customText || item.specialInstructions || item.customImage || item.customImages;
                             
-                            if (!hasCustomization) return null;
+                            if (!hasAnyCustomization) {
+                              return (
+                                <div className="mt-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                                  <h5 className="font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                                    <Settings className="w-4 h-4" />
+                                    কাস্টমাইজেশন বিবরণ
+                                  </h5>
+                                  <p className="text-gray-500 text-sm">এই পণ্যের জন্য কোনো কাস্টমাইজেশন নেই</p>
+                                </div>
+                              );
+                            }
                             
                             return (
                               <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
@@ -280,43 +283,41 @@ export default function OrderDetailsModal({ isOpen, onClose, order }: OrderDetai
                                   কাস্টমাইজেশন বিবরণ
                                 </h5>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
-                                  {item.customization.size && (
-                                    <div>
-                                      <span className="text-blue-600 font-medium">সাইজ:</span>
-                                      <span className="ml-2">{item.customization.size}</span>
-                                    </div>
-                                  )}
-                                  {item.customization.color && (
-                                    <div>
-                                      <span className="text-blue-600 font-medium">রং:</span>
-                                      <span className="ml-2">{item.customization.color}</span>
-                                    </div>
-                                  )}
-                                  {item.customization.printArea && (
-                                    <div>
-                                      <span className="text-blue-600 font-medium">প্রিন্ট এরিয়া:</span>
-                                      <span className="ml-2">{item.customization.printArea}</span>
-                                    </div>
-                                  )}
-                                  {item.customization.customText && item.customization.customText.trim() && (
-                                    <div className="md:col-span-2">
-                                      <span className="text-blue-600 font-medium">কাস্টম টেক্সট:</span>
+                                  <div>
+                                    <span className="text-blue-600 font-medium">সাইজ:</span>
+                                    <span className="ml-2">{item.customization?.size || 'N/A'}</span>
+                                  </div>
+                                  <div>
+                                    <span className="text-blue-600 font-medium">রং:</span>
+                                    <span className="ml-2">{item.customization?.color || 'N/A'}</span>
+                                  </div>
+                                  <div>
+                                    <span className="text-blue-600 font-medium">প্রিন্ট এরিয়া:</span>
+                                    <span className="ml-2">{item.customization?.printArea || 'N/A'}</span>
+                                  </div>
+                                  <div className="md:col-span-2">
+                                    <span className="text-blue-600 font-medium">কাস্টম টেক্সট:</span>
+                                    {(item.customization?.customText && item.customization.customText.trim()) ? (
                                       <p className="mt-1 p-3 bg-white rounded border whitespace-pre-wrap border-gray-300 text-gray-800">{item.customization.customText.trim()}</p>
-                                    </div>
-                                  )}
-                                  {item.customization.specialInstructions && item.customization.specialInstructions.trim() && (
-                                    <div className="md:col-span-2">
-                                      <span className="text-blue-600 font-medium">বিশেষ নির্দেশনা:</span>
+                                    ) : (
+                                      <span className="ml-2 text-gray-500">N/A</span>
+                                    )}
+                                  </div>
+                                  <div className="md:col-span-2">
+                                    <span className="text-blue-600 font-medium">বিশেষ নির্দেশনা:</span>
+                                    {(item.customization?.specialInstructions && item.customization.specialInstructions.trim()) ? (
                                       <p className="mt-1 p-3 bg-white rounded border whitespace-pre-wrap border-gray-300 text-gray-800">{item.customization.specialInstructions.trim()}</p>
-                                    </div>
-                                  )}
+                                    ) : (
+                                      <span className="ml-2 text-gray-500">N/A</span>
+                                    )}
+                                  </div>
                                 </div>
 
                               {/* Custom Images */}
-                              {item.customization.customImage && (
-                                <div className="mt-4">
-                                  <span className="text-blue-600 font-medium block mb-2">কাস্টম ছবি:</span>
-                                  <div className="flex gap-3">
+                              <div className="mt-4">
+                                <span className="text-blue-600 font-medium block mb-2">কাস্টম ছবি:</span>
+                                {item.customization?.customImage ? (
+                                  <div className="flex gap-3 items-start">
                                     {renderImage(item.customization.customImage, `কাস্টম ছবি ${index + 1}`, index)}
                                     <div className="flex flex-col gap-2">
                                       <Button 
@@ -342,8 +343,10 @@ export default function OrderDetailsModal({ isOpen, onClose, order }: OrderDetai
                                       </Button>
                                     </div>
                                   </div>
-                                </div>
-                              )}
+                                ) : (
+                                  <span className="text-gray-500">N/A</span>
+                                )}
+                              </div>
                               </div>
                             );
                           })()}
