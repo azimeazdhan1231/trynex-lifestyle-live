@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowRight, Gift, MessageCircle, ArrowUp, Star, Clock, TrendingUp, ShoppingCart, Eye } from "lucide-react";
+import { ArrowRight, Gift, MessageCircle, ArrowUp, Star, Clock, TrendingUp, ShoppingCart, Eye, Heart, Share2, Phone, ChevronRight, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import Header from "@/components/header";
 import TrackingSection from "@/components/tracking-section";
 import PopupOffer from "../components/popup-offer";
@@ -14,6 +15,264 @@ import { Link, useLocation } from "wouter";
 import { COMPANY_NAME, COMPANY_TAGLINE, WHATSAPP_NUMBER, createWhatsAppUrl, formatPrice } from "@/lib/constants";
 import { trackProductView, trackAddToCart } from "@/lib/analytics";
 import type { Product, Offer } from "@shared/schema";
+
+interface ProductCardProps {
+  product: Product;
+  onAddToCart: (product: Product) => void;
+  onViewProduct: (product: Product) => void;
+  showBadge?: boolean;
+}
+
+function ProductCard({ product, onAddToCart, onViewProduct, showBadge = true }: ProductCardProps) {
+  const [isFavorite, setIsFavorite] = useState(false);
+
+  const handleWhatsAppOrder = () => {
+    const message = `আমি ${product.name} কিনতে চাই। দাম ${formatPrice(product.price)}`;
+    window.open(createWhatsAppUrl(message), '_blank');
+    trackProductView(product.id, product.name, product.category || 'uncategorized');
+  };
+
+  const handleAddToCart = () => {
+    onAddToCart(product);
+  };
+
+  const handleProductView = () => {
+    onViewProduct(product);
+  };
+
+  const handleToggleFavorite = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsFavorite(!isFavorite);
+  };
+
+  return (
+    <Card className="group hover:shadow-2xl transition-all duration-500 border border-gray-100 overflow-hidden bg-white hover:border-primary/30 transform hover:-translate-y-2">
+      <div className="relative">
+        <div 
+          className="aspect-square overflow-hidden cursor-pointer bg-gray-50"
+          onClick={handleProductView}
+        >
+          <img
+            src={product.image_url || "https://images.unsplash.com/photo-1544787219-7f47ccb76574?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"}
+            alt={product.name}
+            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+            loading="lazy"
+          />
+        </div>
+        
+        {/* Product Badges */}
+        {showBadge && (
+          <div className="absolute top-3 left-3 space-y-2">
+            {product.is_featured && (
+              <Badge className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white font-bold shadow-lg">
+                <Star className="w-3 h-3 mr-1" />
+                ফিচার্ড
+              </Badge>
+            )}
+            {product.is_latest && (
+              <Badge className="bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg">
+                <Sparkles className="w-3 h-3 mr-1" />
+                নতুন
+              </Badge>
+            )}
+            {product.is_best_selling && (
+              <Badge className="bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-lg">
+                <TrendingUp className="w-3 h-3 mr-1" />
+                বেস্ট সেলার
+              </Badge>
+            )}
+          </div>
+        )}
+
+        {/* Stock Status */}
+        <div className="absolute top-3 right-3">
+          {product.stock <= 5 && product.stock > 0 && (
+            <Badge className="bg-orange-500 text-white shadow-lg animate-pulse">
+              মাত্র {product.stock}টি বাকি
+            </Badge>
+          )}
+          {product.stock === 0 && (
+            <Badge className="bg-red-500 text-white shadow-lg">
+              স্টক নেই
+            </Badge>
+          )}
+        </div>
+
+        {/* Action Buttons */}
+        <div className="absolute top-3 right-3 space-y-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+          <Button
+            onClick={handleToggleFavorite}
+            size="sm"
+            variant="outline"
+            className={`w-9 h-9 p-0 bg-white/90 backdrop-blur-sm border-white/50 ${
+              isFavorite ? 'text-red-500' : 'text-gray-600'
+            }`}
+          >
+            <Heart className={`w-4 h-4 ${isFavorite ? 'fill-current' : ''}`} />
+          </Button>
+        </div>
+
+        {/* Stock Out Overlay */}
+        {product.stock === 0 && (
+          <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+            <Badge variant="destructive" className="text-white font-bold text-lg px-4 py-2">
+              স্টক শেষ
+            </Badge>
+          </div>
+        )}
+
+        {/* Quick Action Bar */}
+        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+          <div className="flex space-x-2">
+            <Button
+              onClick={handleProductView}
+              size="sm"
+              variant="outline"
+              className="flex-1 bg-white/20 backdrop-blur-sm border-white/30 text-white hover:bg-white/30"
+            >
+              <Eye className="w-4 h-4 mr-1" />
+              দেখুন
+            </Button>
+            <Button
+              onClick={handleWhatsAppOrder}
+              size="sm"
+              variant="outline"
+              className="flex-1 bg-white/20 backdrop-blur-sm border-white/30 text-white hover:bg-white/30"
+            >
+              <Phone className="w-4 h-4 mr-1" />
+              অর্ডার
+            </Button>
+          </div>
+        </div>
+      </div>
+      
+      <CardContent className="p-6">
+        <div className="space-y-4">
+          <h4 
+            className="font-semibold text-lg text-gray-800 line-clamp-2 group-hover:text-primary transition-colors cursor-pointer leading-tight" 
+            onClick={handleProductView}
+          >
+            {product.name}
+          </h4>
+          
+          <div className="flex items-center justify-between">
+            <div className="flex flex-col">
+              <span className="text-2xl font-bold text-primary">{formatPrice(product.price)}</span>
+              <span className="text-sm text-gray-500">বিনামূল্যে ডেলিভারি</span>
+            </div>
+            <Badge variant={product.stock > 0 ? "secondary" : "destructive"} className="px-3 py-1">
+              স্টক: {product.stock}
+            </Badge>
+          </div>
+          
+          <div className="space-y-2">
+            <Button 
+              onClick={handleAddToCart}
+              disabled={product.stock === 0}
+              className="w-full bg-gradient-to-r from-primary to-primary/80 hover:from-primary/80 hover:to-primary text-white font-medium py-3 rounded-lg transition-all duration-300 transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <ShoppingCart className="w-4 h-4 mr-2" />
+              {product.stock === 0 ? "স্টক নেই" : "কার্টে যোগ করুন"}
+            </Button>
+            
+            <Button 
+              onClick={handleWhatsAppOrder}
+              variant="outline"
+              className="w-full border-green-500 text-green-600 hover:bg-green-50 font-medium py-3 rounded-lg transition-all duration-300"
+            >
+              <MessageCircle className="w-4 h-4 mr-2" />
+              হোয়াটসঅ্যাপে অর্ডার
+            </Button>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function ProductSection({ 
+  title, 
+  subtitle, 
+  icon: Icon, 
+  products, 
+  isLoading, 
+  onAddToCart, 
+  onViewProduct,
+  bgColor = "bg-white",
+  titleColor = "text-gray-800"
+}: {
+  title: string;
+  subtitle: string;
+  icon: any;
+  products: Product[];
+  isLoading: boolean;
+  onAddToCart: (product: Product) => void;
+  onViewProduct: (product: Product) => void;
+  bgColor?: string;
+  titleColor?: string;
+}) {
+  if (isLoading) {
+    return (
+      <section className={`py-20 ${bgColor}`}>
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12">
+            <Skeleton className="h-8 w-48 mx-auto mb-4" />
+            <Skeleton className="h-4 w-64 mx-auto" />
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+            {[...Array(4)].map((_, i) => (
+              <div key={i} className="space-y-4">
+                <Skeleton className="aspect-square rounded-lg" />
+                <Skeleton className="h-4 w-3/4" />
+                <Skeleton className="h-4 w-1/2" />
+                <Skeleton className="h-10 w-full" />
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  if (products.length === 0) {
+    return null;
+  }
+
+  return (
+    <section className={`py-20 ${bgColor}`}>
+      <div className="container mx-auto px-4">
+        <div className="text-center mb-16">
+          <div className="flex items-center justify-center space-x-3 mb-4">
+            <Icon className="w-10 h-10 text-primary" />
+            <h2 className={`text-4xl font-bold ${titleColor}`}>{title}</h2>
+          </div>
+          <p className="text-xl text-gray-600 max-w-2xl mx-auto">{subtitle}</p>
+          <div className="w-24 h-1 bg-gradient-to-r from-primary to-primary/50 mx-auto mt-6 rounded-full"></div>
+        </div>
+        
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
+          {products.map((product) => (
+            <ProductCard 
+              key={product.id} 
+              product={product} 
+              onAddToCart={onAddToCart}
+              onViewProduct={onViewProduct}
+            />
+          ))}
+        </div>
+        
+        <div className="text-center">
+          <Button asChild size="lg" variant="outline" className="group">
+            <Link href="/products">
+              সব পণ্য দেখুন
+              <ChevronRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
+            </Link>
+          </Button>
+        </div>
+      </div>
+    </section>
+  );
+}
 
 export default function Home() {
   const [showScrollTop, setShowScrollTop] = useState(false);
@@ -29,19 +288,19 @@ export default function Home() {
   });
 
   // Load products for homepage sections
-  const { data: products = [] } = useQuery<Product[]>({
+  const { data: products = [], isLoading: productsLoading } = useQuery<Product[]>({
     queryKey: ["/api/products"],
   });
 
-  // Filter products for different sections - if no specific products, show some defaults
-  const featuredProducts = products.filter(p => p.is_featured).slice(0, 4);
-  const latestProducts = products.filter(p => p.is_latest).slice(0, 4);
-  const bestSellingProducts = products.filter(p => p.is_best_selling).slice(0, 4);
+  // Filter products for different sections with fallbacks
+  const featuredProducts = products.filter(p => p.is_featured);
+  const latestProducts = products.filter(p => p.is_latest);
+  const bestSellingProducts = products.filter(p => p.is_best_selling);
   
-  // If no products are marked, show some default products for each section
-  const defaultFeatured = featuredProducts.length === 0 ? products.slice(0, 4) : featuredProducts;
-  const defaultLatest = latestProducts.length === 0 ? products.slice(4, 8) : latestProducts;
-  const defaultBestSelling = bestSellingProducts.length === 0 ? products.slice(8, 12) : bestSellingProducts;
+  // If no products are marked, use defaults
+  const defaultFeatured = featuredProducts.length > 0 ? featuredProducts.slice(0, 4) : products.slice(0, 4);
+  const defaultLatest = latestProducts.length > 0 ? latestProducts.slice(0, 4) : products.slice(4, 8);
+  const defaultBestSelling = bestSellingProducts.length > 0 ? bestSellingProducts.slice(0, 4) : products.slice(8, 12);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -52,15 +311,26 @@ export default function Home() {
   }, []);
 
   const handleAddToCart = (product: Product) => {
+    if (product.stock === 0) {
+      toast({
+        title: "স্টক নেই",
+        description: "এই পণ্যটি বর্তমানে স্টকে নেই",
+        variant: "destructive",
+      });
+      return;
+    }
+
     addToCart({
       id: product.id,
       name: product.name,
       price: Number(product.price),
     });
+    
     trackAddToCart(product.id, product.name, Number(product.price));
+    
     toast({
-      title: "কার্টে যোগ করা হয়েছে",
-      description: `${product.name} কার্টে যোগ করা হয়েছে`,
+      title: "কার্টে যোগ করা হয়েছে!",
+      description: `${product.name} সফলভাবে কার্টে যোগ করা হয়েছে`,
     });
   };
 
@@ -87,204 +357,236 @@ export default function Home() {
       <PopupOffer />
 
       {/* Hero Section */}
-      <section id="hero" className="bg-gradient-to-r from-primary to-emerald-700 text-white py-20" style={{ marginTop: (location === "/" || location === "/products") ? "120px" : "64px" }}>
-        <div className="container mx-auto px-4 text-center">
-          <h1 className="text-4xl md:text-6xl font-bold mb-6">বিশেষ গিফট কালেকশন</h1>
-          <p className="text-xl md:text-2xl mb-8 text-emerald-100">আপনার প্রিয়জনের জন্য সেরা উপহার</p>
-          <Button 
-            onClick={scrollToProducts}
-            size="lg"
-            className="bg-white text-primary hover:bg-gray-100 text-lg px-8 py-4"
-          >
-            এখনই কিনুন <ArrowRight className="ml-2 w-5 h-5" />
-          </Button>
+      <section 
+        className="relative bg-gradient-to-br from-primary via-primary/90 to-emerald-700 text-white py-24 overflow-hidden"
+        style={{ marginTop: (location === "/" || location === "/products") ? "120px" : "64px" }}
+      >
+        {/* Background Pattern */}
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute inset-0" style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.1'%3E%3Ccircle cx='30' cy='30' r='4'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
+          }}></div>
+        </div>
+        
+        <div className="container mx-auto px-4 text-center relative z-10">
+          <div className="max-w-4xl mx-auto">
+            <h1 className="text-5xl md:text-7xl font-bold mb-8 leading-tight">
+              বিশেষ গিফট কালেকশন
+            </h1>
+            <p className="text-xl md:text-3xl mb-12 text-emerald-100 leading-relaxed">
+              আপনার প্রিয়জনের জন্য সেরা উপহার এবং লাইফস্টাইল পণ্য
+            </p>
+            
+            <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
+              <Button 
+                onClick={scrollToProducts}
+                size="lg"
+                className="bg-white text-primary hover:bg-gray-100 text-xl px-10 py-6 rounded-full shadow-xl transform hover:scale-105 transition-all duration-300"
+              >
+                এখনই কিনুন 
+                <ArrowRight className="ml-3 w-6 h-6" />
+              </Button>
+              
+              <Button 
+                asChild
+                size="lg"
+                variant="outline"
+                className="border-white text-white hover:bg-white hover:text-primary text-xl px-10 py-6 rounded-full shadow-xl transform hover:scale-105 transition-all duration-300"
+              >
+                <a
+                  href={createWhatsAppUrl("আসসালামু আলাইকুম। আমি Trynex Lifestyle সম্পর্কে জানতে চাই।")}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <MessageCircle className="mr-3 w-6 h-6" />
+                  হোয়াটসঅ্যাপে যোগাযোগ
+                </a>
+              </Button>
+            </div>
+          </div>
+        </div>
+        
+        {/* Floating Elements */}
+        <div className="absolute top-20 left-10 animate-bounce">
+          <Gift className="w-12 h-12 text-white/30" />
+        </div>
+        <div className="absolute bottom-20 right-10 animate-bounce delay-700">
+          <Star className="w-16 h-16 text-white/20" />
         </div>
       </section>
 
       {/* Special Offers Banner */}
       {offers.length > 0 && (
-        <section className="bg-accent text-white py-4">
+        <section className="bg-gradient-to-r from-accent via-accent/90 to-accent text-white py-6 shadow-lg">
           <div className="container mx-auto px-4">
-            <div className="flex items-center justify-center space-x-4 text-center">
-              <Gift className="w-6 h-6 animate-bounce" />
-              <p className="text-lg font-semibold">
-                🎉 {offers[0].title} - {offers[0].description}
-              </p>
-              <Gift className="w-6 h-6 animate-bounce" />
+            <div className="flex items-center justify-center space-x-6 text-center">
+              <Gift className="w-8 h-8 animate-bounce" />
+              <div>
+                <p className="text-2xl font-bold mb-1">🎉 {offers[0].title}</p>
+                <p className="text-lg opacity-90">{offers[0].description}</p>
+              </div>
+              <Gift className="w-8 h-8 animate-bounce delay-500" />
             </div>
           </div>
         </section>
       )}
 
       {/* Featured Products Section */}
-      {(defaultFeatured.length > 0) && (
-        <section id="featured-products" className="py-16 bg-white">
-          <div className="container mx-auto px-4">
-            <div className="flex items-center justify-between mb-8">
-              <div className="flex items-center space-x-3">
-                <Star className="w-8 h-8 text-yellow-500" />
-                <h2 className="text-3xl font-bold text-gray-800">ফিচার্ড পণ্য</h2>
-              </div>
-              <Button asChild variant="outline">
-                <Link href="/products">সব পণ্য দেখুন</Link>
-              </Button>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {defaultFeatured.map((product) => (
-                <ProductCard 
-                  key={product.id} 
-                  product={product} 
-                  onAddToCart={handleAddToCart}
-                  onViewProduct={handleProductView}
-                />
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
+      <div id="featured-products">
+        <ProductSection
+          title="ফিচার্ড পণ্য"
+          subtitle="আমাদের বিশেষভাবে নির্বাচিত এবং জনপ্রিয় পণ্যসমূহ"
+          icon={Star}
+          products={defaultFeatured}
+          isLoading={productsLoading}
+          onAddToCart={handleAddToCart}
+          onViewProduct={handleProductView}
+          bgColor="bg-white"
+          titleColor="text-gray-800"
+        />
+      </div>
 
       {/* Latest Products Section */}
-      {(defaultLatest.length > 0) && (
-        <section className="py-16 bg-gray-50">
-          <div className="container mx-auto px-4">
-            <div className="flex items-center justify-between mb-8">
-              <div className="flex items-center space-x-3">
-                <Clock className="w-8 h-8 text-blue-500" />
-                <h2 className="text-3xl font-bold text-gray-800">নতুন পণ্য</h2>
-              </div>
-              <Button asChild variant="outline">
-                <Link href="/products">সব পণ্য দেখুন</Link>
-              </Button>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {defaultLatest.map((product) => (
-                <ProductCard 
-                  key={product.id} 
-                  product={product} 
-                  onAddToCart={handleAddToCart}
-                  onViewProduct={handleProductView}
-                />
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
+      <ProductSection
+        title="নতুন পণ্য"
+        subtitle="সদ্য এসেছে আমাদের লেটেস্ট কালেকশন"
+        icon={Clock}
+        products={defaultLatest}
+        isLoading={productsLoading}
+        onAddToCart={handleAddToCart}
+        onViewProduct={handleProductView}
+        bgColor="bg-gradient-to-br from-gray-50 to-blue-50"
+        titleColor="text-gray-800"
+      />
 
       {/* Best Selling Products Section */}
-      {(defaultBestSelling.length > 0) && (
-        <section className="py-16 bg-white">
-          <div className="container mx-auto px-4">
-            <div className="flex items-center justify-between mb-8">
-              <div className="flex items-center space-x-3">
-                <TrendingUp className="w-8 h-8 text-green-500" />
-                <h2 className="text-3xl font-bold text-gray-800">বেস্ট সেলিং</h2>
-              </div>
-              <Button asChild variant="outline">
-                <Link href="/products">সব পণ্য দেখুন</Link>
-              </Button>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {defaultBestSelling.map((product) => (
-                <ProductCard 
-                  key={product.id} 
-                  product={product} 
-                  onAddToCart={handleAddToCart}
-                  onViewProduct={handleProductView}
-                />
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
+      <ProductSection
+        title="বেস্ট সেলিং"
+        subtitle="গ্রাহকদের পছন্দের টপ রেটেড পণ্যসমূহ"
+        icon={TrendingUp}
+        products={defaultBestSelling}
+        isLoading={productsLoading}
+        onAddToCart={handleAddToCart}
+        onViewProduct={handleProductView}
+        bgColor="bg-white"
+        titleColor="text-gray-800"
+      />
 
       {/* Order Tracking */}
       <TrackingSection />
 
       {/* Contact Section */}
-      <section id="contact" className="py-16">
+      <section className="py-20 bg-gradient-to-br from-green-500 via-green-600 to-emerald-700">
         <div className="container mx-auto px-4">
-          <Card className="bg-gradient-to-r from-green-500 to-green-600 text-white border-0">
-            <CardContent className="p-8 text-center">
-              <h3 className="text-3xl font-bold mb-4">সরাসরি অর্ডার করুন</h3>
-              <p className="text-xl mb-6">হোয়াটসঅ্যাপে যোগাযোগ করে তাৎক্ষণিক অর্ডার করুন</p>
-              <Button
-                asChild
-                size="lg"
-                className="bg-white text-green-600 hover:bg-gray-100 text-lg px-8 py-4"
-              >
-                <a
-                  href={createWhatsAppUrl("আসসালামু আলাইকুম। আমি Trynex Lifestyle থেকে পণ্য কিনতে চাই।")}
-                  target="_blank"
-                  rel="noopener noreferrer"
+          <Card className="bg-white/95 backdrop-blur-sm border-0 shadow-2xl max-w-4xl mx-auto">
+            <CardContent className="p-12 text-center">
+              <div className="mb-8">
+                <MessageCircle className="w-20 h-20 text-green-600 mx-auto mb-6" />
+                <h3 className="text-4xl font-bold mb-4 text-gray-800">সরাসরি অর্ডার করুন</h3>
+                <p className="text-xl text-gray-600 leading-relaxed max-w-2xl mx-auto">
+                  হোয়াটসঅ্যাপে যোগাযোগ করে তাৎক্ষণিক অর্ডার করুন এবং বিশেষ ছাড় পান
+                </p>
+              </div>
+              
+              <div className="flex flex-col sm:flex-row gap-6 justify-center">
+                <Button
+                  asChild
+                  size="lg"
+                  className="bg-green-600 hover:bg-green-700 text-white text-xl px-10 py-6 rounded-full shadow-xl transform hover:scale-105 transition-all duration-300"
                 >
-                  <MessageCircle className="mr-3 w-6 h-6" />
-                  হোয়াটসঅ্যাপে অর্ডার করুন
-                </a>
-              </Button>
+                  <a
+                    href={createWhatsAppUrl("আসসালামু আলাইকুম। আমি Trynex Lifestyle থেকে পণ্য কিনতে চাই।")}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <MessageCircle className="mr-3 w-6 h-6" />
+                    হোয়াটসঅ্যাপে অর্ডার করুন
+                  </a>
+                </Button>
+                
+                <Button
+                  asChild
+                  size="lg"
+                  variant="outline"
+                  className="border-green-600 text-green-600 hover:bg-green-50 text-xl px-10 py-6 rounded-full shadow-xl transform hover:scale-105 transition-all duration-300"
+                >
+                  <a
+                    href={`tel:${WHATSAPP_NUMBER}`}
+                  >
+                    <Phone className="mr-3 w-6 h-6" />
+                    ফোন করুন
+                  </a>
+                </Button>
+              </div>
+              
+              <div className="mt-8 p-6 bg-green-50 rounded-2xl">
+                <p className="text-green-800 font-semibold">
+                  📞 {WHATSAPP_NUMBER} | 🕐 সার্ভিস টাইম: সকাল ৯টা - রাত ১০টা
+                </p>
+              </div>
             </CardContent>
           </Card>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="bg-gray-800 text-white py-12">
+      <footer className="bg-gray-900 text-white py-16">
         <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div>
-              <h5 className="text-xl font-bold mb-4">{COMPANY_NAME}</h5>
-              <p className="text-gray-300">বাংলাদেশের সেরা কাস্টম গিফট এবং লাইফস্টাইল পণ্যের দোকান।</p>
-            </div>
-            <div>
-              <h5 className="text-lg font-semibold mb-4">যোগাযোগ</h5>
-              <div className="space-y-2 text-gray-300">
-                <p>📞 {WHATSAPP_NUMBER}</p>
-                <p>✉️ trynexlifestyle@gmail.com</p>
-                <p>📍 ঢাকা, বাংলাদেশ</p>
-              </div>
-            </div>
-            <div>
-              <h5 className="text-lg font-semibold mb-4">সোশ্যাল মিডিয়া</h5>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+            <div className="md:col-span-2">
+              <h3 className="text-2xl font-bold mb-4">{COMPANY_NAME}</h3>
+              <p className="text-gray-300 mb-6 leading-relaxed">
+                {COMPANY_TAGLINE}। আমরা গুণগত মানের পণ্য এবং সেবা প্রদানে প্রতিশ্রুতিবদ্ধ।
+              </p>
               <div className="flex space-x-4">
-                <a href="#" className="text-gray-300 hover:text-white text-2xl">📘</a>
-                <a href="#" className="text-gray-300 hover:text-white text-2xl">📷</a>
-                <a href={createWhatsAppUrl("হ্যালো")} target="_blank" className="text-gray-300 hover:text-white text-2xl">💬</a>
+                <Button asChild variant="outline" size="sm">
+                  <a href={createWhatsAppUrl("হ্যালো")} target="_blank" rel="noopener noreferrer">
+                    <MessageCircle className="w-4 h-4 mr-2" />
+                    WhatsApp
+                  </a>
+                </Button>
               </div>
+            </div>
+            
+            <div>
+              <h4 className="text-lg font-semibold mb-4">দ্রুত লিংক</h4>
+              <ul className="space-y-2">
+                <li><Link href="/" className="text-gray-300 hover:text-white transition-colors">হোম</Link></li>
+                <li><Link href="/products" className="text-gray-300 hover:text-white transition-colors">পণ্য</Link></li>
+                <li><Link href="/offers" className="text-gray-300 hover:text-white transition-colors">অফার</Link></li>
+                <li><Link href="/contact" className="text-gray-300 hover:text-white transition-colors">যোগাযোগ</Link></li>
+              </ul>
+            </div>
+            
+            <div>
+              <h4 className="text-lg font-semibold mb-4">যোগাযোগ</h4>
+              <ul className="space-y-2 text-gray-300">
+                <li>📱 {WHATSAPP_NUMBER}</li>
+                <li>🕐 সকাল ৯টা - রাত ১০টা</li>
+                <li>🚚 সারা বাংলাদেশে ডেলিভারি</li>
+                <li>💳 ক্যাশ অন ডেলিভারি</li>
+              </ul>
             </div>
           </div>
-          <div className="border-t border-gray-700 mt-8 pt-8 text-center text-gray-300">
-            <p>&copy; ২০২৫ {COMPANY_NAME}. সকল অধিকার সংরক্ষিত।</p>
+          
+          <div className="border-t border-gray-700 mt-12 pt-8 text-center">
+            <p className="text-gray-400">
+              © 2024 {COMPANY_NAME}. সর্বস্বত্ব সংরক্ষিত।
+            </p>
           </div>
         </div>
       </footer>
 
-      {/* Floating Action Buttons */}
-      <div className="fixed bottom-6 right-6 flex flex-col space-y-3 z-40">
+      {/* Scroll to Top Button */}
+      {showScrollTop && (
         <Button
-          asChild
-          size="sm"
-          className="bg-green-500 hover:bg-green-600 text-white p-4 rounded-full shadow-lg"
-          title="হোয়াটসঅ্যাপে যোগাযোগ"
+          onClick={scrollToTop}
+          className="fixed bottom-8 right-8 z-50 rounded-full w-14 h-14 shadow-2xl bg-primary hover:bg-primary/80 transform hover:scale-110 transition-all duration-300"
+          size="lg"
         >
-          <a
-            href={createWhatsAppUrl("আসসালামু আলাইকুম। আমি সাহায্য চাই।")}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <MessageCircle className="w-6 h-6" />
-          </a>
+          <ArrowUp className="w-6 h-6" />
         </Button>
-
-        {showScrollTop && (
-          <Button
-            onClick={scrollToTop}
-            size="sm"
-            className="p-4 rounded-full shadow-lg"
-            title="উপরে যান"
-          >
-            <ArrowUp className="w-5 h-5" />
-          </Button>
-        )}
-      </div>
+      )}
 
       {/* Product Modal */}
       {selectedProduct && (
@@ -299,124 +601,5 @@ export default function Home() {
         />
       )}
     </div>
-  );
-}
-
-// Product Card Component
-interface ProductCardProps {
-  product: Product;
-  onAddToCart: (product: Product) => void;
-  onViewProduct: (product: Product) => void;
-}
-
-function ProductCard({ product, onAddToCart, onViewProduct }: ProductCardProps) {
-  const handleWhatsAppOrder = () => {
-    const message = `আমি ${product.name} কিনতে চাই। দাম ${formatPrice(product.price)}`;
-    window.open(createWhatsAppUrl(message), '_blank');
-    trackProductView(product.id, product.name, product.category || 'uncategorized');
-  };
-
-  const handleAddToCart = () => {
-    onAddToCart(product);
-  };
-
-  const handleProductView = () => {
-    onViewProduct(product);
-  };
-
-  return (
-    <Card className="group hover:shadow-xl transition-all duration-300 border border-gray-200 overflow-hidden bg-white">
-      <div className="relative">
-        <div 
-          className="aspect-square overflow-hidden cursor-pointer"
-          onClick={handleProductView}
-        >
-          <img
-            src={product.image_url || "https://images.unsplash.com/photo-1544787219-7f47ccb76574?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"}
-            alt={product.name}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-          />
-        </div>
-        
-        {/* Product Badges */}
-        <div className="absolute top-2 left-2 space-y-1">
-          {product.is_featured && (
-            <Badge className="bg-yellow-500 text-black font-bold">ফিচার্ড</Badge>
-          )}
-          {product.is_latest && (
-            <Badge className="bg-blue-500">নতুন</Badge>
-          )}
-          {product.is_best_selling && (
-            <Badge className="bg-green-500">বেস্ট সেলার</Badge>
-          )}
-        </div>
-
-        {/* Stock Status */}
-        <div className="absolute top-2 right-2">
-          {product.stock <= 5 && product.stock > 0 && (
-            <Badge className="bg-orange-500">
-              মাত্র {product.stock}টি বাকি
-            </Badge>
-          )}
-          {product.stock === 0 && (
-            <Badge className="bg-red-500">
-              স্টক নেই
-            </Badge>
-          )}
-        </div>
-
-        {/* Stock Out Overlay */}
-        {product.stock === 0 && (
-          <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-            <Badge variant="destructive" className="text-white font-bold">স্টক নেই</Badge>
-          </div>
-        )}
-
-        {/* Quick View Button */}
-        <Button
-          onClick={handleProductView}
-          size="sm"
-          variant="outline"
-          className="absolute bottom-2 left-2 opacity-0 group-hover:opacity-100 transition-opacity bg-white"
-        >
-          <Eye className="w-4 h-4 mr-1" />
-          দেখুন
-        </Button>
-      </div>
-      
-      <CardContent className="p-4">
-        <h4 className="font-semibold text-lg mb-2 text-gray-800 line-clamp-2 group-hover:text-primary transition-colors cursor-pointer" onClick={handleProductView}>
-          {product.name}
-        </h4>
-        
-        <div className="flex items-center justify-between mb-4">
-          <span className="text-2xl font-bold text-primary">{formatPrice(product.price)}</span>
-          <Badge variant={product.stock > 0 ? "secondary" : "destructive"}>
-            স্টক: {product.stock}
-          </Badge>
-        </div>
-        
-        <div className="space-y-2">
-          <Button
-            onClick={handleAddToCart}
-            disabled={product.stock === 0}
-            className="w-full"
-            variant={product.stock === 0 ? "secondary" : "default"}
-          >
-            <ShoppingCart className="w-4 h-4 mr-2" />
-            {product.stock === 0 ? "স্টক নেই" : "কার্টে যোগ করুন"}
-          </Button>
-          
-          <Button
-            onClick={handleWhatsAppOrder}
-            variant="outline"
-            className="w-full text-green-600 border-green-600 hover:bg-green-50"
-          >
-            <MessageCircle className="w-4 h-4 mr-2" />
-            হোয়াটসঅ্যাপে অর্ডার
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
   );
 }
