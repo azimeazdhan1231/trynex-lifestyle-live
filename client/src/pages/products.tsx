@@ -32,10 +32,14 @@ export default function Products() {
 
   const { data: products = [], isLoading: productsLoading } = useQuery<Product[]>({
     queryKey: ["/api/products"],
+    staleTime: 1000 * 60 * 5, // Cache for 5 minutes
+    gcTime: 1000 * 60 * 10, // Keep in cache for 10 minutes
   });
 
   const { data: categories = [], isLoading: categoriesLoading } = useQuery<Category[]>({
     queryKey: ["/api/categories"],
+    staleTime: 1000 * 60 * 15, // Cache for 15 minutes (categories change less frequently)
+    gcTime: 1000 * 60 * 30, // Keep in cache for 30 minutes
   });
 
   // Filter and sort products

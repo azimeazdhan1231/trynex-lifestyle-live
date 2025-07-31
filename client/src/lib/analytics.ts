@@ -71,9 +71,20 @@ export const loadFacebookPixel = (pixelId: string) => {
 export const loadFacebookPixelFromSettings = async () => {
   try {
     const response = await fetch('/api/settings');
+    if (!response.ok) {
+      throw new Error('Failed to fetch settings');
+    }
+    
     const settings = await response.json();
-    if (settings?.facebook_pixel_id?.trim()) {
-      loadFacebookPixel(settings.facebook_pixel_id);
+    
+    // Check for Facebook Pixel ID in various possible keys
+    const pixelId = settings.facebook_pixel_id || settings.fb_pixel_id || settings.fbPixelId;
+    
+    if (pixelId && pixelId.trim()) {
+      console.log('Loading Facebook Pixel with ID:', pixelId);
+      loadFacebookPixel(pixelId.trim());
+    } else {
+      console.log('No Facebook Pixel ID found in settings');
     }
   } catch (error) {
     console.error('Failed to load Facebook Pixel from settings:', error);

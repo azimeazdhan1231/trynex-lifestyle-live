@@ -12,6 +12,7 @@ import Profile from "./pages/profile";
 import Orders from "./pages/orders";
 import Auth from "./pages/auth";
 import PhoneAuth from "./components/PhoneAuth";
+import CustomOrderForm from "./components/CustomOrderForm";
 import About from "./pages/about";
 import BlogPage from "./pages/blog";
 import NotFound from "./pages/not-found";
@@ -45,6 +46,7 @@ function Router() {
       <Route path="/auth" component={PhoneAuth} />
       <Route path="/login" component={PhoneAuth} />
       <Route path="/signup" component={PhoneAuth} />
+      <Route path="/custom-order" component={CustomOrderForm} />
       <Route path="/auth-old" component={Auth} />
       <Route path="/refund-policy" component={RefundPolicyDynamic} />
       <Route path="/return-policy" component={ReturnPolicy} />

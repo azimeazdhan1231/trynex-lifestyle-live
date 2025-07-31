@@ -164,7 +164,26 @@ export class SimpleStorage {
   }
 
   async updateSetting(key: string, value: string): Promise<SiteSettings> {
-    const result = await db.update(siteSettings).set({ value }).where(eq(siteSettings.key, key)).returning();
+    // First try to update existing setting
+    const existing = await db.select().from(siteSettings).where(eq(siteSettings.key, key)).limit(1);
+    
+    if (existing.length > 0) {
+      const result = await db.update(siteSettings).set({ value, updated_at: new Date() }).where(eq(siteSettings.key, key)).returning();
+      return result[0];
+    } else {
+      // Create new setting if it doesn't exist
+      const result = await db.insert(siteSettings).values({
+        key,
+        value,
+        description: `Auto-generated setting for ${key}`,
+        updated_at: new Date()
+      }).returning();
+      return result[0];
+    }
+  }
+
+  async createSetting(setting: InsertSiteSettings): Promise<SiteSettings> {
+    const result = await db.insert(siteSettings).values(setting).returning();
     return result[0];
   }
 }
