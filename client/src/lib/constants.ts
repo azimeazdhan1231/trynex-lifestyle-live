@@ -74,6 +74,8 @@ export const THANAS: Record<string, string[]> = {
   ]
 };
 
+export const COMPANY_NAME = "Trynex Lifestyle";
+
 export const formatPrice = (price: number | string): string => {
   const numPrice = typeof price === 'string' ? parseFloat(price) : price;
   return `৳${numPrice.toFixed(0)}`;

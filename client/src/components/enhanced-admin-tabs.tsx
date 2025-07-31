@@ -27,7 +27,7 @@ export default function EnhancedAdminTabs() {
   const [isInitialized, setIsInitialized] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  
+
   // Order notifications
   const { 
     orders: notificationOrders, 
@@ -41,14 +41,14 @@ export default function EnhancedAdminTabs() {
     if (!isInitialized) {
       // Auto-request notification permission
       requestNotificationPermission();
-      
+
       // Show welcome message only once
       toast({
         title: "🎯 অ্যাডমিন প্যানেল সক্রিয়",
         description: "নতুন অর্ডারের জন্য রিয়েল-টাইম নোটিফিকেশন চালু আছে",
         duration: 5000,
       });
-      
+
       setIsInitialized(true);
     }
   }, [isInitialized, requestNotificationPermission, toast]);
@@ -281,18 +281,32 @@ export default function EnhancedAdminTabs() {
     setEditingProduct(null);
   };
 
-  const resetCategoryForm = () => {
-    setCategoryForm({ name: "", name_bengali: "", description: "", image_url: "", is_active: true, sort_order: 0 });
-    setEditingCategory(null);
-  };
-
   const resetOfferForm = () => {
     setOfferForm({
-      title: "", description: "", image_url: "", discount_percentage: 0, 
-      min_order_amount: "", button_text: "অর্ডার করুন", button_link: "/products",
-      is_popup: false, popup_delay: 3000, active: true, expiry: ""
+      title: "",
+      description: "",
+      image_url: "",
+      discount_percentage: 0,
+      min_order_amount: "",
+      button_text: "অর্ডার করুন",
+      button_link: "/products",
+      is_popup: false,
+      popup_delay: 3000,
+      active: true, expiry: ""
     });
     setEditingOffer(null);
+  };
+
+  const resetCategoryForm = () => {
+    setCategoryForm({
+      name: "",
+      name_bengali: "",
+      description: "",
+      image_url: "",
+      is_active: true,
+      sort_order: 0
+    });
+    setEditingCategory(null);
   };
 
   // Form submit handlers
@@ -411,7 +425,7 @@ export default function EnhancedAdminTabs() {
               </div>
             )}
           </div>
-          
+
           {/* Notification Status */}
           <div className="flex items-center gap-2 text-sm">
             <div className={`w-2 h-2 rounded-full ${hasNotificationPermission ? 'bg-green-500' : 'bg-yellow-500'}`}></div>
@@ -758,7 +772,7 @@ export default function EnhancedAdminTabs() {
                   <TableRow>
                     <TableHead>ছবি</TableHead>
                     <TableHead>নাম</TableHead>
-                    <TableHead>দাম</TableHead>
+                    <TableHead>                    <TableHead>দাম</TableHead>
                     <TableHead>ক্যাটাগরি</TableHead>
                     <TableHead>স্টক</TableHead>
                     <TableHead>ফিচার</TableHead>
@@ -823,10 +837,10 @@ export default function EnhancedAdminTabs() {
         </TabsContent>
 
         {/* Categories Tab */}
-        <TabsContent value="categories" className="space-y-6">
-          <div className="flex justify-between items-center">
-            <h3 className="text-lg font-semibold">ক্যাটাগরি ম্যানেজমেন্ট</h3>
-            <Dialog open={isCategoryDialogOpen} onOpenChange={setIsCategoryDialogOpen}>
+          <TabsContent value="categories" className="space-y-6">
+            <div className="flex justify-between items-center">
+              <h3 className="text-lg font-semibold">ক্যাটাগরি ম্যানেজমেন্ট</h3>
+              <Dialog open={isCategoryDialogOpen} onOpenChange={setIsCategoryDialogOpen}>
               <DialogTrigger asChild>
                 <Button onClick={() => { setEditingCategory(null); resetCategoryForm(); }}>
                   <Plus className="w-4 h-4 mr-2" />

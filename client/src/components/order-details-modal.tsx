@@ -106,6 +106,24 @@ export default function OrderDetailsModal({ isOpen, onClose, order }: OrderDetai
     );
   };
 
+  const renderCustomImage = (imageUrl: string, alt: string, index?: any) => {
+    if (!imageUrl || !imageUrl.trim()) return null;
+  
+    return (
+      <div key={index} className="relative group">
+        <img
+          src={imageUrl}
+          alt={alt}
+          className="w-20 h-20 object-cover rounded-md border cursor-pointer"
+          onClick={() => handleImageView(imageUrl)}
+        />
+        <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-opacity flex items-center justify-center rounded-md">
+          <Eye className="w-5 h-5 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+        </div>
+      </div>
+    );
+  };
+
   return (
     <>
       <Dialog open={isOpen} onOpenChange={onClose}>
@@ -292,6 +310,38 @@ export default function OrderDetailsModal({ isOpen, onClose, order }: OrderDetai
                                     <p className="mt-1 p-2 bg-white rounded border whitespace-pre-wrap">{item.customization.specialInstructions.trim()}</p>
                                   </div>
                                 )}
+                                {/* Custom Images */}
+                                {item.customization.customImage && (
+                                  <div className="mt-4">
+                                    <span className="text-blue-600 font-medium block mb-2">কাস্টম ছবি:</span>
+                                    <div className="flex gap-3">
+                                      {renderImage(item.customization.customImage, `কাস্টম ছবি ${index + 1}`, index)}
+                                      <div className="flex flex-col gap-2">
+                                        <Button 
+                                          size="sm" 
+                                          variant="outline"
+                                          onClick={() => handleImageView(item.customization.customImage)}
+                                          className="flex items-center gap-2"
+                                        >
+                                          <Eye className="w-4 h-4" />
+                                          দেখুন
+                                        </Button>
+                                        <Button 
+                                          size="sm" 
+                                          variant="outline"
+                                          onClick={() => handleDownloadImage(
+                                            item.customization.customImage, 
+                                            item.customization.customImageName || `custom-image-${index + 1}.jpg`
+                                          )}
+                                          className="flex items-center gap-2"
+                                        >
+                                          <Download className="w-4 h-4" />
+                                          ডাউনলোড
+                                        </Button>
+                                      </div>
+                                    </div>
+                                  </div>
+                                )}
                               </div>
 
                               {/* Custom Images */}
@@ -373,7 +423,7 @@ export default function OrderDetailsModal({ isOpen, onClose, order }: OrderDetai
                             const hasLegacyCustomization = (item.customText && item.customText.trim()) || 
                                                            (item.specialInstructions && item.specialInstructions.trim()) || 
                                                            item.customImages || item.customImage;
-                            
+
                             return !hasNewCustomization && !hasLegacyCustomization;
                           })() && (
                             <div className="mt-4 bg-gray-100 rounded-lg p-4 text-center text-gray-500">
