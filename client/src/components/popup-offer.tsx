@@ -1,25 +1,45 @@
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { X, Gift } from "lucide-react";
+import { X, Gift, Truck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Link } from "wouter";
+import { useCart } from "@/hooks/use-cart";
 import type { Offer } from "@shared/schema";
 
 export default function PopupOffer() {
   const [isOpen, setIsOpen] = useState(false);
   const [hasShown, setHasShown] = useState(false);
+  const { totalPrice, cart } = useCart();
 
   // Load popup offers
   const { data: offers = [] } = useQuery<Offer[]>({
     queryKey: ["/api/offers"],
   });
 
+  // Check if cart total is 1500+ and show free delivery popup
+  const shouldShowFreeDelivery = totalPrice >= 1500 && cart.length > 0;
+  const freeDeliveryOffer = offers.find(offer => 
+    offer.active && 
+    offer.is_popup && 
+    offer.title?.includes('ফ্রি ডেলিভারি')
+  );
+  
   const popupOffer = offers.find(offer => offer.active && offer.is_popup);
 
   useEffect(() => {
-    if (popupOffer && !hasShown) {
+    // Show free delivery popup when cart reaches 1500+
+    if (shouldShowFreeDelivery && !hasShown) {
+      const timer = setTimeout(() => {
+        setIsOpen(true);
+        setHasShown(true);
+      }, 1000);
+
+      return () => clearTimeout(timer);
+    }
+    // Show regular popup offers
+    else if (popupOffer && !hasShown && !shouldShowFreeDelivery) {
       const timer = setTimeout(() => {
         setIsOpen(true);
         setHasShown(true);
@@ -27,13 +47,21 @@ export default function PopupOffer() {
 
       return () => clearTimeout(timer);
     }
-  }, [popupOffer, hasShown]);
+  }, [popupOffer, hasShown, shouldShowFreeDelivery]);
 
-  if (!popupOffer) return null;
+  // Show free delivery popup if cart is 1500+ or regular offer popup
+  const currentOffer = shouldShowFreeDelivery ? {
+    title: "🎉 ফ্রি ডেলিভারি আনলক!",
+    description: `আপনার অর্ডার ৳${totalPrice.toFixed(0)} - ফ্রি ডেলিভারি পেয়ে গেছেন!`,
+    is_popup: true,
+    active: true
+  } : popupOffer;
+
+  if (!currentOffer) return null;
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogContent className="max-w-md p-0 overflow-hidden bg-gradient-to-br from-primary to-emerald-600 text-white border-0">
+      <DialogContent className="max-w-md p-0 overflow-hidden bg-gradient-to-br from-green-500 to-emerald-600 text-white border-0">
         <Button
           variant="ghost"
           size="sm"
@@ -45,31 +73,42 @@ export default function PopupOffer() {
 
         <div className="p-6 text-center">
           <div className="flex justify-center mb-4">
-            <Gift className="w-16 h-16 text-yellow-300 animate-bounce" />
+            {shouldShowFreeDelivery ? 
+              <Truck className="w-16 h-16 text-yellow-300 animate-bounce" /> :
+              <Gift className="w-16 h-16 text-yellow-300 animate-bounce" />
+            }
           </div>
           
-          <h3 className="text-2xl font-bold mb-2">{popupOffer.title}</h3>
+          <h3 className="text-2xl font-bold mb-2">{currentOffer.title}</h3>
           
-          {popupOffer.description && (
-            <p className="text-lg mb-4 text-emerald-100">{popupOffer.description}</p>
+          {currentOffer.description && (
+            <p className="text-lg mb-4 text-emerald-100">{currentOffer.description}</p>
           )}
 
-          {popupOffer.discount_percentage && popupOffer.discount_percentage > 0 && (
+          {shouldShowFreeDelivery ? (
             <div className="bg-yellow-400 text-gray-900 rounded-full px-4 py-2 font-bold text-xl mb-4 inline-block">
-              {popupOffer.discount_percentage}% ছাড়!
+              ফ্রি ডেলিভারি!
             </div>
-          )}
+          ) : (
+            <>
+              {'discount_percentage' in currentOffer && currentOffer.discount_percentage && currentOffer.discount_percentage > 0 && (
+                <div className="bg-yellow-400 text-gray-900 rounded-full px-4 py-2 font-bold text-xl mb-4 inline-block">
+                  {currentOffer.discount_percentage}% ছাড়!
+                </div>
+              )}
 
-          {popupOffer.min_order_amount && Number(popupOffer.min_order_amount) > 0 && (
-            <p className="text-sm text-emerald-200 mb-4">
-              ন্যূনতম অর্ডার: ৳{popupOffer.min_order_amount}
-            </p>
-          )}
+              {'min_order_amount' in currentOffer && currentOffer.min_order_amount && Number(currentOffer.min_order_amount) > 0 && (
+                <p className="text-sm text-emerald-200 mb-4">
+                  ন্যূনতম অর্ডার: ৳{currentOffer.min_order_amount}
+                </p>
+              )}
 
-          {popupOffer.expiry && (
-            <p className="text-sm text-emerald-200 mb-6">
-              মেয়াদ: {new Date(popupOffer.expiry).toLocaleDateString('bn-BD')}
-            </p>
+              {'expiry' in currentOffer && currentOffer.expiry && (
+                <p className="text-sm text-emerald-200 mb-6">
+                  মেয়াদ: {new Date(currentOffer.expiry).toLocaleDateString('bn-BD')}
+                </p>
+              )}
+            </>
           )}
 
           <Button
@@ -77,17 +116,17 @@ export default function PopupOffer() {
             size="lg"
             className="bg-white text-primary hover:bg-gray-100 font-bold text-lg px-8 py-3 w-full"
           >
-            <Link href={popupOffer.button_link || "/products"}>
-              {popupOffer.button_text || "অর্ডার করুন"}
+            <Link href={('button_link' in currentOffer && currentOffer.button_link) || "/products"}>
+              {('button_text' in currentOffer && currentOffer.button_text) || "অর্ডার করুন"}
             </Link>
           </Button>
         </div>
 
-        {popupOffer.image_url && (
+        {'image_url' in currentOffer && currentOffer.image_url && (
           <div className="h-32 bg-white/10 flex items-center justify-center">
             <img
-              src={popupOffer.image_url}
-              alt={popupOffer.title}
+              src={currentOffer.image_url}
+              alt={currentOffer.title}
               className="max-h-full max-w-full object-contain"
             />
           </div>

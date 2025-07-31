@@ -5,6 +5,7 @@ export interface CartItem {
   name: string;
   price: number;
   quantity: number;
+  image_url?: string;
   customization?: any;
 }
 
@@ -51,7 +52,7 @@ if (typeof window !== 'undefined' && globalCart.length === 0) {
 
 interface UseCartReturn {
   cart: CartItem[];
-  addToCart: (product: Product, customization?: any) => Promise<void>;
+  addToCart: (product: any, customization?: any) => Promise<void>;
   updateQuantity: (id: string, quantity: number) => void;
   removeFromCart: (id: string) => void;
   clearCart: () => void;
@@ -60,14 +61,21 @@ interface UseCartReturn {
 }
 
 export function useCart(): UseCartReturn {
-  const [cart, setCart] = useState<CartItem[]>(() => {
-    try {
-      const stored = localStorage.getItem('cart');
-      return stored ? JSON.parse(stored) : [];
-    } catch {
-      return [];
-    }
-  });
+  const [cart, setCart] = useState<CartItem[]>(() => globalCart);
+
+  // Subscribe to global cart changes
+  useEffect(() => {
+    const updateCart = (newCart: CartItem[]) => {
+      setCart(newCart);
+    };
+    
+    cartListeners.add(updateCart);
+    setCart(globalCart); // Sync on mount
+    
+    return () => {
+      cartListeners.delete(updateCart);
+    };
+  }, []);
 
   const addToCart = async (product: any, customization?: any) => {
     // Process custom image if it's a File object
@@ -101,14 +109,15 @@ export function useCart(): UseCartReturn {
       customization: processedCustomization,
     };
 
-    setCart(prev => {
-      const updated = [...prev, cartItem];
-      localStorage.setItem('cart', JSON.stringify(updated));
-      return updated;
-    });
+    console.log('Adding item to cart:', cartItem);
+    
+    const newCart = [...globalCart, cartItem];
+    updateGlobalCart(newCart);
   };
 
   const updateQuantity = useCallback((id: string, quantity: number) => {
+    console.log('Updating quantity for item:', id, 'to:', quantity);
+    
     if (quantity <= 0) {
       removeFromCart(id);
       return;
@@ -122,11 +131,14 @@ export function useCart(): UseCartReturn {
   }, []);
 
   const removeFromCart = useCallback((id: string) => {
+    console.log('Removing item from cart:', id);
+    
     const newCart = globalCart.filter(item => item.id !== id);
     updateGlobalCart(newCart);
   }, []);
 
   const clearCart = useCallback(() => {
+    console.log('Clearing cart');
     updateGlobalCart([]);
   }, []);
 
