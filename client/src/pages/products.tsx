@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ShoppingCart, MessageCircle, Eye, Filter, ChevronDown, ChevronRight } from "lucide-react";
+import { ShoppingCart, MessageCircle, Eye } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { PRODUCT_CATEGORIES, formatPrice, createWhatsAppUrl } from "@/lib/constants";
 import ProductModal from "@/components/product-modal";
@@ -17,7 +17,7 @@ export default function ProductsPage() {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
+  
   const { toast } = useToast();
   const { addToCart, totalItems } = useCart();
 
@@ -38,22 +38,7 @@ export default function ProductsPage() {
   const productsFiltered = selectedCategory === "all" 
     ? products 
     : products.filter(product => {
-        // Check if product category matches selected category or its parent
-        const selectedCat = PRODUCT_CATEGORIES.find(cat => cat.id === selectedCategory);
-        if (!selectedCat) return false;
-        
-        // If it's a parent category, show all products from its children
-        if (selectedCat.isParent) {
-          const childCategories = PRODUCT_CATEGORIES
-            .filter(cat => cat.parent === selectedCategory)
-            .map(cat => cat.id);
-          return childCategories.includes(product.category) || 
-                 childCategories.some(catId => 
-                   PRODUCT_CATEGORIES.find(c => c.id === catId)?.name === product.category
-                 );
-        }
-        
-        // Otherwise, match by category id or name
+        // Match by category id or name
         return product.category === selectedCategory || 
                PRODUCT_CATEGORIES.find(cat => cat.id === selectedCategory)?.name === product.category ||
                categories.find(cat => cat.id === selectedCategory)?.name === product.category;
@@ -104,20 +89,7 @@ export default function ProductsPage() {
     setSelectedProduct(null);
   };
 
-  const toggleCategoryExpansion = (categoryId: string) => {
-    const newExpanded = new Set(expandedCategories);
-    if (newExpanded.has(categoryId)) {
-      newExpanded.delete(categoryId);
-    } else {
-      newExpanded.add(categoryId);
-    }
-    setExpandedCategories(newExpanded);
-  };
-
-  // Get parent categories for display
-  const parentCategories = PRODUCT_CATEGORIES.filter(cat => cat.isParent);
-  const getChildCategories = (parentId: string) => 
-    PRODUCT_CATEGORIES.filter(cat => cat.parent === parentId);
+  
 
   if (isLoading) {
     return (
@@ -183,69 +155,20 @@ export default function ProductsPage() {
 
           {/* Product Categories */}
           <div className="mb-8">
-            <div className="max-w-4xl mx-auto">
-              {/* All Products Button */}
-              <div className="text-center mb-6">
-                <Button
-                  variant={selectedCategory === "all" ? "default" : "outline"}
-                  onClick={() => setSelectedCategory("all")}
-                  className="rounded-full font-medium text-lg px-8 py-6"
-                  size="lg"
-                >
-                  🛍️ সব পণ্য
-                </Button>
-              </div>
-
-              {/* Hierarchical Categories */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {parentCategories.map((parentCategory) => {
-                  const childCategories = getChildCategories(parentCategory.id);
-                  const isExpanded = expandedCategories.has(parentCategory.id);
-                  
-                  return (
-                    <div key={parentCategory.id} className="bg-white rounded-lg border shadow-sm">
-                      {/* Parent Category Header */}
-                      <div className="p-4 border-b">
-                        <div className="flex items-center justify-between">
-                          <Button
-                            variant={selectedCategory === parentCategory.id ? "default" : "ghost"}
-                            onClick={() => setSelectedCategory(parentCategory.id)}
-                            className="flex-1 justify-start text-left font-semibold"
-                          >
-                            {parentCategory.name}
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => toggleCategoryExpansion(parentCategory.id)}
-                            className="ml-2"
-                          >
-                            {isExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
-                          </Button>
-                        </div>
-                      </div>
-
-                      {/* Child Categories */}
-                      {isExpanded && (
-                        <div className="p-4">
-                          <div className="grid grid-cols-1 gap-2">
-                            {childCategories.map((childCategory) => (
-                              <Button
-                                key={childCategory.id}
-                                variant={selectedCategory === childCategory.id ? "default" : "outline"}
-                                onClick={() => setSelectedCategory(childCategory.id)}
-                                className="justify-start text-left text-sm"
-                                size="sm"
-                              >
-                                {childCategory.name}
-                              </Button>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
+            <div className="max-w-6xl mx-auto">
+              {/* Categories Grid */}
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+                {PRODUCT_CATEGORIES.map((category) => (
+                  <Button
+                    key={category.id}
+                    variant={selectedCategory === category.id ? "default" : "outline"}
+                    onClick={() => setSelectedCategory(category.id)}
+                    className="h-auto py-3 px-4 flex flex-col items-center space-y-1 text-center rounded-lg font-medium hover:shadow-md transition-all duration-200"
+                  >
+                    <span className="text-lg">{category.icon}</span>
+                    <span className="text-xs leading-tight">{category.name}</span>
+                  </Button>
+                ))}
               </div>
             </div>
           </div>
@@ -255,7 +178,7 @@ export default function ProductsPage() {
             <p className="text-gray-600">
               {selectedCategory === "all" 
                 ? `সর্বমোট ${productsFiltered.length} টি পণ্য`
-                : `${productsFiltered.length} টি পণ্য "${PRODUCT_CATEGORIES.find(c => c.id === selectedCategory)?.name || categories.find(c => c.id === selectedCategory)?.name_bengali}" ক্যাটেগরিতে`
+                : `${productsFiltered.length} টি পণ্য "${PRODUCT_CATEGORIES.find(c => c.id === selectedCategory)?.name}" ক্যাটেগরিতে`
               }
             </p>
           </div>
