@@ -318,6 +318,9 @@ export default function Home() {
   // Load products for homepage sections
   const { data: products = [], isLoading: productsLoading } = useQuery<Product[]>({
     queryKey: ["/api/products"],
+    staleTime: 1000 * 60 * 5, // Cache for 5 minutes
+    retry: 1, // Only retry once
+    refetchOnWindowFocus: false, // Don't refetch on window focus
   });
 
   // Filter products for different sections with fallbacks

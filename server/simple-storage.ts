@@ -22,7 +22,8 @@ const db = drizzle(client);
 export class SimpleStorage {
   // Products
   async getProducts(): Promise<Product[]> {
-    return await db.select().from(products).orderBy(desc(products.created_at));
+    // Optimized query with limit for faster loading
+    return await db.select().from(products).orderBy(desc(products.created_at)).limit(100);
   }
 
   async getProductsByCategory(category: string): Promise<Product[]> {

@@ -30,10 +30,12 @@ export default function Products() {
   useAnalytics(); // Initialize analytics tracking
   const { toast } = useToast();
 
-  const { data: products = [], isLoading: productsLoading } = useQuery<Product[]>({
+  const { data: products = [], isLoading: productsLoading, error: productsError } = useQuery<Product[]>({
     queryKey: ["/api/products"],
     staleTime: 1000 * 60 * 5, // Cache for 5 minutes
     gcTime: 1000 * 60 * 10, // Keep in cache for 10 minutes
+    retry: 1, // Only retry once on failure
+    refetchOnWindowFocus: false, // Don't refetch on window focus
   });
 
   const { data: categories = [], isLoading: categoriesLoading } = useQuery<Category[]>({
@@ -134,18 +136,21 @@ export default function Products() {
     setShowCustomizeModal(true);
   };
 
-  if (productsLoading || categoriesLoading) {
+  // Show products immediately if cached, otherwise show loading
+  if (productsLoading && products.length === 0) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
-        <div className="container mx-auto px-4 py-8">
+        <Header cartCount={0} onCartOpen={() => {}} />
+        <div className="container mx-auto px-4 py-8 mt-16">
           <div className="animate-pulse">
             <div className="h-8 bg-gray-200 rounded w-1/4 mb-6"></div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {[...Array(8)].map((_, i) => (
+              {[...Array(12)].map((_, i) => (
                 <div key={i} className="bg-white rounded-lg shadow-md p-4">
                   <div className="h-48 bg-gray-200 rounded mb-4"></div>
                   <div className="h-4 bg-gray-200 rounded mb-2"></div>
-                  <div className="h-4 bg-gray-200 rounded w-2/3"></div>
+                  <div className="h-4 bg-gray-200 rounded w-2/3 mb-2"></div>
+                  <div className="h-6 bg-gray-200 rounded w-1/2"></div>
                 </div>
               ))}
             </div>

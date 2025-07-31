@@ -12,9 +12,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Setup authentication routes
   setupAuthRoutes(app);
 
-  // Products API with caching
+  // Products API with caching and performance optimization
   app.get('/api/products', async (req, res) => {
     try {
+      const startTime = Date.now();
+      
       // Add cache headers for better performance
       res.set('Cache-Control', 'public, max-age=300'); // Cache for 5 minutes
       
@@ -26,6 +28,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       } else {
         products = await storage.getProducts();
       }
+      
+      const duration = Date.now() - startTime;
+      console.log(`Products fetched in ${duration}ms`);
       
       res.json(products);
     } catch (error) {
