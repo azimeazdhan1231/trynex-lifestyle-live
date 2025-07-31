@@ -8,17 +8,6 @@ import {
   insertSiteSettingsSchema
 } from "@shared/schema";
 
-// Health check endpoint
-export function setupHealthCheck(app: Express) {
-  app.get("/api/health", (req, res) => {
-    res.json({ 
-      status: "ok", 
-      timestamp: new Date().toISOString(),
-      uptime: process.uptime()
-    });
-  });
-}
-
 export async function registerRoutes(app: Express): Promise<Server> {
   // Setup authentication middleware
   await setupAuth(app);
@@ -168,12 +157,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const orderData = insertOrderSchema.parse(req.body);
       const order = await storage.createOrder(orderData);
-
+      
       // Link order to user if authenticated
       if (req.user?.claims?.sub) {
         await storage.linkOrderToUser(order.id, req.user.claims.sub);
       }
-
+      
       res.status(201).json(order);
     } catch (error) {
       console.error("Error creating order:", error);
@@ -428,30 +417,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Auth user endpoint (for useAuth hook)
-  app.get("/api/auth/user", async (req, res) => {
-    try {
-      // Return null for unauthenticated user (this is expected)
-      res.json(null);
-    } catch (error) {
-      console.error("Auth user error:", error);
-      res.status(500).json({ error: "Authentication check failed" });
-    }
-  });
-
-  // Admin login
+  // Admin authentication
   app.post("/api/admin/login", async (req, res) => {
     try {
       const { email, password } = req.body;
-
-      if (email === "admin@trynex.com" && password === "admin123") {
-        res.json({ success: true, message: "লগইন সফল হয়েছে" });
-      } else {
-        res.status(401).json({ error: "ভুল ইমেইল বা পাসওয়ার্ড" });
+      if (!email || !password) {
+        return res.status(400).json({ message: "Email and password are required" });
       }
+
+      const admin = await storage.getAdminByEmail(email);
+      if (!admin || admin.password !== password) {
+        return res.status(401).json({ message: "Invalid credentials" });
+      }
+
+      res.json({ success: true, admin: { id: admin.id, email: admin.email } });
     } catch (error) {
-      console.error("Admin login error:", error);
-      res.status(500).json({ error: "লগইন করতে সমস্যা হয়েছে" });
+      console.error("Error during admin login:", error);
+      res.status(500).json({ message: "Error during login" });
     }
   });
 

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -36,40 +36,26 @@ export default function EnhancedAdminTabs() {
     hasNotificationPermission 
   } = useOrderNotifications();
 
-  // Initialize notifications on mount - with better mobile safety checks
+  // Initialize notifications on mount - with mobile safety checks
   useEffect(() => {
     if (!isInitialized) {
-      // Detect mobile browsers more accurately
-      const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
-                       (window.innerWidth <= 768 && 'ontouchstart' in window);
+      // Only request notification permission if not on mobile or if explicitly supported
+      const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
-      // Only try notifications if supported and not in problematic browsers
-      const isChromeMobile = /Chrome/i.test(navigator.userAgent) && isMobile;
-      const shouldRequestNotification = 'Notification' in window && 
-                                       typeof Notification.requestPermission === 'function' &&
-                                       !isChromeMobile; // Skip Chrome mobile due to permission issues
-
-      if (shouldRequestNotification) {
+      if (!isMobile || ('Notification' in window && typeof Notification.requestPermission === 'function')) {
         try {
-          // Delay notification request to avoid blocking UI
-          setTimeout(() => {
-            requestNotificationPermission().catch(error => {
-              console.warn('Notification permission request failed:', error);
-            });
-          }, 1000);
+          requestNotificationPermission();
         } catch (error) {
-          console.warn('Notification setup failed:', error);
+          console.warn('Notification permission request failed:', error);
         }
       }
 
       // Show welcome message only once - shorter for mobile
-      setTimeout(() => {
-        toast({
-          title: "অ্যাডমিন প্যানেল সক্রিয়",
-          description: isMobile ? "মোবাইল ড্যাশবোর্ড প্রস্তুত" : "ড্যাশবোর্ড লোড সম্পূর্ণ",
-          duration: 2000,
-        });
-      }, 500);
+      toast({
+        title: "অ্যাডমিন প্যানেল সক্রিয়",
+        description: isMobile ? "মোবাইল ড্যাশবোর্ড লোড হয়েছে" : "রিয়েল-টাইম নোটিফিকেশন চালু আছে",
+        duration: 3000,
+      });
 
       setIsInitialized(true);
     }
@@ -407,107 +393,78 @@ export default function EnhancedAdminTabs() {
 
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="container mx-auto p-2 sm:p-4 lg:p-6 max-w-7xl">
-        {/* Notification Header - Mobile Responsive */}
-        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-4 sm:mb-6">
-          <div>
-            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-800">অ্যাডমিন প্যানেল</h1>
-            <p className="text-xs sm:text-sm text-gray-600 mt-1">Trynex Lifestyle ম্যানেজমেন্ট</p>
-          </div>
-          
-          <div className="flex items-center gap-2 sm:gap-4">
-            {/* Notification Bell - Mobile Optimized */}
-            <div className="relative">
-              <Button
-                variant={newOrdersCount > 0 ? "default" : "outline"}
-                size="sm"
-                className={`text-xs sm:text-sm ${newOrdersCount > 0 ? 'bg-red-500 hover:bg-red-600 animate-pulse' : ''}`}
-                onClick={() => {
-                  try {
-                    if (!hasNotificationPermission) {
-                      requestNotificationPermission().catch(console.warn);
-                    }
-                  } catch (error) {
-                    console.warn('Notification click failed:', error);
-                  }
-                }}
-              >
-                {newOrdersCount > 0 ? (
-                  <BellRing className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-                ) : (
-                  <Bell className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-                )}
-                <span className="hidden sm:inline">নোটিফিকেশন</span>
-                <span className="sm:hidden">নোটি</span>
-                {newOrdersCount > 0 && (
-                  <Badge variant="secondary" className="ml-1 sm:ml-2 bg-white text-red-500 text-xs">
-                    {newOrdersCount}
-                  </Badge>
-                )}
-              </Button>
-              {newOrdersCount > 0 && (
-                <div className="absolute -top-1 -right-1 sm:-top-2 sm:-right-2 bg-red-500 text-white text-xs rounded-full w-4 h-4 sm:w-5 sm:h-5 flex items-center justify-center animate-bounce">
-                  {newOrdersCount > 9 ? '9+' : newOrdersCount}
-                </div>
+    <div className="container mx-auto p-6">
+      {/* Notification Header */}
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-3xl font-bold">অ্যাডমিন প্যানেল</h1>
+        <div className="flex items-center gap-4">
+          {/* Notification Bell */}
+          <div className="relative">
+            <Button
+              variant={newOrdersCount > 0 ? "default" : "outline"}
+              size="sm"
+              className={`${newOrdersCount > 0 ? 'bg-red-500 hover:bg-red-600 animate-pulse' : ''}`}
+              onClick={() => {
+                if (!hasNotificationPermission) {
+                  requestNotificationPermission();
+                }
+              }}
+            >
+              {newOrdersCount > 0 ? (
+                <BellRing className="w-4 h-4 mr-2" />
+              ) : (
+                <Bell className="w-4 h-4 mr-2" />
               )}
-            </div>
+              নোটিফিকেশন
+              {newOrdersCount > 0 && (
+                <Badge variant="secondary" className="ml-2 bg-white text-red-500">
+                  {newOrdersCount}
+                </Badge>
+              )}
+            </Button>
+            {newOrdersCount > 0 && (
+              <div className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center animate-bounce">
+                {newOrdersCount}
+              </div>
+            )}
+          </div>
 
-            {/* Notification Status - Hidden on very small screens */}
-            <div className="hidden md:flex items-center gap-2 text-sm">
-              <div className={`w-2 h-2 rounded-full ${hasNotificationPermission ? 'bg-green-500' : 'bg-yellow-500'}`}></div>
-              <span className="text-gray-600 text-xs lg:text-sm">
-                {hasNotificationPermission ? 'নোটিফিকেশন সক্রিয়' : 'নোটিফিকেশন অনুমতি দিন'}
-              </span>
-            </div>
+          {/* Notification Status */}
+          <div className="flex items-center gap-2 text-sm">
+            <div className={`w-2 h-2 rounded-full ${hasNotificationPermission ? 'bg-green-500' : 'bg-yellow-500'}`}></div>
+            <span className="text-gray-600">
+              {hasNotificationPermission ? 'নোটিফিকেশন সক্রিয়' : 'নোটিফিকেশন অনুমতি দিন'}
+            </span>
           </div>
         </div>
+      </div>
 
-      <Tabs defaultValue="dashboard" className="space-y-4 sm:space-y-6" value={activeTab} onValueChange={setActiveTab}>
-          {/* Mobile-first responsive tabs */}
-          <div className="w-full overflow-x-auto">
-            <TabsList className="grid w-full min-w-[800px] sm:min-w-full grid-cols-9 h-auto sm:h-10">
-              <TabsTrigger value="dashboard" className="relative text-xs sm:text-sm p-1 sm:p-2">
-                <span className="hidden sm:inline">ড্যাশবোর্ড</span>
-                <span className="sm:hidden">ড্যাশ</span>
-                {activeTab === "dashboard" && newOrdersCount > 0 && (
-                  <Badge variant="destructive" className="absolute -top-1 -right-1 text-xs w-4 h-4 p-0 flex items-center justify-center">
-                    {newOrdersCount > 9 ? '9+' : newOrdersCount}
-                  </Badge>
-                )}
-              </TabsTrigger>
-              <TabsTrigger value="orders" className="relative text-xs sm:text-sm p-1 sm:p-2">
-                অর্ডার
-                {newOrdersCount > 0 && (
-                  <Badge variant="destructive" className="absolute -top-1 -right-1 text-xs w-4 h-4 p-0 flex items-center justify-center">
-                    {newOrdersCount > 9 ? '9+' : newOrdersCount}
-                  </Badge>
-                )}
-              </TabsTrigger>
-              <TabsTrigger value="products" className="text-xs sm:text-sm p-1 sm:p-2">পণ্য</TabsTrigger>
-              <TabsTrigger value="categories" className="text-xs sm:text-sm p-1 sm:p-2">
-                <span className="hidden sm:inline">ক্যাটাগরি</span>
-                <span className="sm:hidden">ক্যাট</span>
-              </TabsTrigger>
-              <TabsTrigger value="offers" className="text-xs sm:text-sm p-1 sm:p-2">অফার</TabsTrigger>
-              <TabsTrigger value="promo-codes" className="text-xs sm:text-sm p-1 sm:p-2">
-                <span className="hidden sm:inline">প্রমো কোড</span>
-                <span className="sm:hidden">প্রমো</span>
-              </TabsTrigger>
-              <TabsTrigger value="users" className="text-xs sm:text-sm p-1 sm:p-2">
-                <span className="hidden sm:inline">ব্যবহারকারী</span>
-                <span className="sm:hidden">ইউজার</span>
-              </TabsTrigger>
-              <TabsTrigger value="analytics" className="text-xs sm:text-sm p-1 sm:p-2">
-                <span className="hidden sm:inline">অ্যানালিটিক্স</span>
-                <span className="sm:hidden">চার্ট</span>
-              </TabsTrigger>
-              <TabsTrigger value="settings" className="text-xs sm:text-sm p-1 sm:p-2">
-                <span className="hidden sm:inline">সেটিংস</span>
-                <span className="sm:hidden">সেট</span>
-              </TabsTrigger>
-            </TabsList>
-          </div>
+      <Tabs defaultValue="dashboard" className="space-y-6">
+        <TabsList className="grid w-full grid-cols-9">
+          <TabsTrigger value="dashboard" className="relative">
+            ড্যাশবোর্ড
+            {activeTab === "dashboard" && newOrdersCount > 0 && (
+              <Badge variant="destructive" className="absolute -top-2 -right-2 text-xs">
+                {newOrdersCount}
+              </Badge>
+            )}
+          </TabsTrigger>
+          <TabsTrigger value="orders" className="relative">
+            অর্ডার
+            {newOrdersCount > 0 && (
+              <Badge variant="destructive" className="absolute -top-2 -right-2 text-xs">
+                {newOrdersCount}
+              </Badge>
+            )}
+          </TabsTrigger>
+          <TabsTrigger value="products">পণ্য</TabsTrigger>
+          <TabsTrigger value="categories">ক্যাটাগরি</TabsTrigger>
+          <TabsTrigger value="offers">অফার</TabsTrigger>
+          <TabsTrigger value="promo-codes">প্রমো কোড</TabsTrigger>
+          <TabsTrigger value="users">ব্যবহারকারী</TabsTrigger>
+          <TabsTrigger value="analytics">অ্যানালিটিক্স</TabsTrigger>
+          <TabsTrigger value="settings">সেটিংস</TabsTrigger>
+        </TabsList>
 
         {/* Dashboard Tab */}
         <TabsContent value="dashboard" className="space-y-6">
@@ -588,92 +545,65 @@ export default function EnhancedAdminTabs() {
         </TabsContent>
 
         {/* Orders Tab */}
-        <TabsContent value="orders" className="space-y-4 sm:space-y-6">
-          <Card>
-            <CardHeader className="pb-4">
-              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
-                <CardTitle className="text-lg sm:text-xl">অর্ডার ম্যানেজমেন্ট</CardTitle>
-                <div className="flex flex-col sm:flex-row gap-2">
-                  <Badge variant="secondary" className="text-xs sm:text-sm w-fit">
-                    মোট অর্ডার: {orders.length}
-                  </Badge>
-                  {orders.length > 0 && (
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      onClick={() => setShowClearConfirm(true)}
-                      className="text-xs sm:text-sm w-fit"
-                    >
-                      <Trash2 className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-                      সব অর্ডার মুছুন
-                    </Button>
-                  )}
-                </div>
-              </div>
+        <TabsContent value="orders" className="space-y-6">
+            <Card>
+            <CardHeader>
+              <CardTitle>অর্ডার ম্যানেজমেন্ট</CardTitle>
             </CardHeader>
             <CardContent className="p-0">
-              <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300">
+              <div className="overflow-x-auto">
                 <Table className="min-w-full">
                 <TableHeader>
-                  <TableRow className="text-xs sm:text-sm">
-                    <TableHead className="min-w-[120px]">ট্র্যাকিং আইডি</TableHead>
-                    <TableHead className="min-w-[100px]">গ্রাহক</TableHead>
-                    <TableHead className="min-w-[100px]">ফোন</TableHead>
-                    <TableHead className="min-w-[120px]">ঠিকানা</TableHead>
-                    <TableHead className="min-w-[80px]">পরিমাণ</TableHead>
-                    <TableHead className="min-w-[120px]">স্ট্যাটাস</TableHead>
-                    <TableHead className="min-w-[100px]">তারিখ</TableHead>
-                    <TableHead className="min-w-[80px]">অ্যাকশন</TableHead>
+                  <TableRow>
+                    <TableHead>ট্র্যাকিং আইডি</TableHead>
+                    <TableHead>গ্রাহক</TableHead>
+                    <TableHead>ফোন</TableHead>
+                    <TableHead>ঠিকানা</TableHead>
+                    <TableHead>পরিমাণ</TableHead>
+                    <TableHead>স্ট্যাটাস</TableHead>
+                    <TableHead>তারিখ</TableHead>
+                    <TableHead>অ্যাকশন</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {orders.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={8} className="text-center py-8 text-gray-500">
-                        কোন অর্ডার পাওয়া যায়নি
+                  {orders.map((order) => (
+                    <TableRow key={order.id}>
+                      <TableCell className="font-mono">{order.tracking_id}</TableCell>
+                      <TableCell>{order.customer_name}</TableCell>
+                      <TableCell>{order.phone}</TableCell>
+                      <TableCell>{order.district}, {order.thana}</TableCell>
+                      <TableCell>{formatPrice(order.total)}</TableCell>
+                      <TableCell>
+                        <Select
+                          value={order.status || "pending"}
+                          onValueChange={(status) => updateOrderStatusMutation.mutate({ id: order.id, status })}
+                        >
+                          <SelectTrigger className="w-[140px]">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {ORDER_STATUSES.map((status) => (
+                              <SelectItem key={status.id} value={status.id}>
+                                {status.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </TableCell>
+                      <TableCell>
+                        {new Date(order.created_at || Date.now()).toLocaleDateString('bn-BD')}
+                      </TableCell>
+                      <TableCell>
+                                <Button 
+                                  size="sm" 
+                                  variant="outline"
+                                  onClick={() => handleViewOrderDetails(order)}
+                                >
+                                  <Eye className="w-4 h-4" />
+                                </Button>
                       </TableCell>
                     </TableRow>
-                  ) : (
-                    orders.map((order) => (
-                      <TableRow key={order.id} className="text-xs sm:text-sm">
-                        <TableCell className="font-mono text-xs">{order.tracking_id}</TableCell>
-                        <TableCell className="max-w-[100px] truncate">{order.customer_name}</TableCell>
-                        <TableCell className="text-xs">{order.phone}</TableCell>
-                        <TableCell className="max-w-[120px] truncate">{order.district}, {order.thana}</TableCell>
-                        <TableCell className="font-semibold">{formatPrice(order.total)}</TableCell>
-                        <TableCell>
-                          <Select
-                            value={order.status || "pending"}
-                            onValueChange={(status) => updateOrderStatusMutation.mutate({ id: order.id, status })}
-                          >
-                            <SelectTrigger className="w-[120px] sm:w-[140px] text-xs">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {ORDER_STATUSES.map((status) => (
-                                <SelectItem key={status.id} value={status.id} className="text-xs">
-                                  {status.name}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </TableCell>
-                        <TableCell className="text-xs">
-                          {new Date(order.created_at || Date.now()).toLocaleDateString('bn-BD')}
-                        </TableCell>
-                        <TableCell>
-                          <Button 
-                            size="sm" 
-                            variant="outline"
-                            onClick={() => handleViewOrderDetails(order)}
-                            className="h-7 w-7 p-0"
-                          >
-                            <Eye className="w-3 h-3 sm:w-4 sm:h-4" />
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  )}
+                  ))}
                 </TableBody>
                 </Table>
               </div>
@@ -1385,52 +1315,48 @@ export default function EnhancedAdminTabs() {
           <AnalyticsAdmin />
         </TabsContent>
       </Tabs>
-
-        {/* Order Details Modal */}
-        <OrderDetailsModal
-          order={selectedOrder} 
-          isOpen={orderDetailsOpen}
-          onClose={() => setOrderDetailsOpen(false)} 
-        />
-
-        {/* Clear All Orders Confirmation Dialog */}
-        <Dialog open={showClearConfirm} onOpenChange={setShowClearConfirm}>
-          <DialogContent className="max-w-md mx-auto">
-            <DialogHeader>
-              <DialogTitle className="text-red-600">সব অর্ডার মুছে ফেলুন</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4">
-              <p className="text-sm text-gray-600">
-                আপনি কি নিশ্চিত যে আপনি সব অর্ডার মুছে ফেলতে চান? এই কাজটি অপরিবর্তনীয়।
+      {/* Order Details Modal */}
+      <OrderDetailsModal
+        order={selectedOrder} 
+        isOpen={orderDetailsOpen}
+        onClose={() => setOrderDetailsOpen(false)} 
+      />
+       {/* Clear All Orders Confirmation Dialog */}
+       <Dialog open={showClearConfirm} onOpenChange={setShowClearConfirm}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="text-red-600">সব অর্ডার মুছে ফেলুন</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-sm text-gray-600">
+              আপনি কি নিশ্চিত যে আপনি সব অর্ডার মুছে ফেলতে চান? এই কাজটি অপরিবর্তনীয়।
+            </p>
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+              <p className="text-sm text-yellow-800">
+                <strong>বর্তমান অর্ডার সংখ্যা: {orders.length}</strong>
               </p>
-              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
-                <p className="text-sm text-yellow-800">
-                  <strong>বর্তমান অর্ডার সংখ্যা: {orders.length}</strong>
-                </p>
-                <p className="text-xs text-yellow-600 mt-1">
-                  সব অর্ডার ডাটাবেস থেকে স্থায়ীভাবে মুছে যাবে কিন্তু ব্যাকআপ রাখা হবে।
-                </p>
-              </div>
-              <div className="flex flex-col sm:flex-row justify-end gap-2">
-                <Button variant="outline" onClick={() => setShowClearConfirm(false)} className="w-full sm:w-auto">
-                  বাতিল
-                </Button>
-                <Button 
-                  variant="destructive" 
-                  onClick={() => {
-                    clearAllOrdersMutation.mutate();
-                    setShowClearConfirm(false);
-                  }}
-                  disabled={clearAllOrdersMutation.isPending}
-                  className="w-full sm:w-auto"
-                >
-                  {clearAllOrdersMutation.isPending ? "মুছে ফেলা হচ্ছে..." : "হ্যাঁ, মুছে ফেলুন"}
-                </Button>
-              </div>
+              <p className="text-xs text-yellow-600 mt-1">
+                সব অর্ডার ডাটাবেস থেকে স্থায়ীভাবে মুছে যাবে কিন্তু ব্যাকআপ রাখা হবে।
+              </p>
             </div>
-          </DialogContent>
-        </Dialog>
-      </div>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setShowClearConfirm(false)}>
+                বাতিল
+              </Button>
+              <Button 
+                variant="destructive" 
+                onClick={() => {
+                  clearAllOrdersMutation.mutate();
+                  setShowClearConfirm(false);
+                }}
+                disabled={clearAllOrdersMutation.isPending}
+              >
+                {clearAllOrdersMutation.isPending ? "মুছে ফেলা হচ্ছে..." : "হ্যাঁ, মুছে ফেলুন"}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
