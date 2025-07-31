@@ -71,7 +71,7 @@ export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
   upsertUser(user: UpsertUser): Promise<User>;
   getUsers(): Promise<User[]>; // For admin panel
-  
+
   // Simple Authentication Methods
   getUserByPhone(phone: string): Promise<User | undefined>;
   createUser(user: { phone: string; password: string; firstName: string; lastName: string; address: string; email: string | null; profileImageUrl: string | null }): Promise<User>;
@@ -83,6 +83,21 @@ export interface IStorage {
   // User Orders
   getUserOrders(userId: string): Promise<Order[]>;
   linkOrderToUser(orderId: string, userId: string): Promise<void>;
+
+  // Blog operations
+  getBlogs(): Promise<Blog[]>;
+  getBlog(id: string): Promise<Blog | undefined>;
+  createBlog(blog: InsertBlog): Promise<Blog>;
+  updateBlog(id: string, updates: Partial<InsertBlog>): Promise<Blog>;
+  deleteBlog(id: string): Promise<void>;
+  incrementBlogViews(id: string): Promise<void>;
+
+  // Pages operations
+  getPages(): Promise<Page[]>;
+  getPage(slug: string): Promise<Page | undefined>;
+  createPage(page: InsertPage): Promise<Page>;
+  updatePage(slug: string, updates: Partial<InsertPage>): Promise<Page>;
+  deletePage(slug: string): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -399,68 +414,6 @@ export class DatabaseStorage implements IStorage {
   async getUsers(): Promise<User[]> {
     const result = await db.select().from(users).orderBy(desc(users.createdAt));
     return result;
-  }
-
-  // Blog operations
-  async getBlogs(): Promise<Blog[]> {
-    const result = await db.select().from(blogs).orderBy(desc(blogs.created_at));
-    return result;
-  }
-
-  async getBlog(id: string): Promise<Blog | undefined> {
-    const result = await db.select().from(blogs).where(eq(blogs.id, id)).limit(1);
-    return result[0];
-  }
-
-  async createBlog(blog: InsertBlog): Promise<Blog> {
-    const result = await db.insert(blogs).values(blog).returning();
-    return result[0];
-  }
-
-  async updateBlog(id: string, updates: Partial<InsertBlog>): Promise<Blog> {
-    const result = await db.update(blogs)
-      .set({ ...updates, updated_at: new Date() })
-      .where(eq(blogs.id, id))
-      .returning();
-    return result[0];
-  }
-
-  async deleteBlog(id: string): Promise<void> {
-    await db.delete(blogs).where(eq(blogs.id, id));
-  }
-
-  async incrementBlogViews(id: string): Promise<void> {
-    await db.update(blogs)
-      .set({ views: sql`${blogs.views} + 1` })
-      .where(eq(blogs.id, id));
-  }
-
-  // Pages operations
-  async getPages(): Promise<Page[]> {
-    const result = await db.select().from(pages).orderBy(desc(pages.updated_at));
-    return result;
-  }
-
-  async getPage(slug: string): Promise<Page | undefined> {
-    const result = await db.select().from(pages).where(eq(pages.slug, slug)).limit(1);
-    return result[0];
-  }
-
-  async createPage(page: InsertPage): Promise<Page> {
-    const result = await db.insert(pages).values(page).returning();
-    return result[0];
-  }
-
-  async updatePage(slug: string, updates: Partial<InsertPage>): Promise<Page> {
-    const result = await db.update(pages)
-      .set({ ...updates, updated_at: new Date() })
-      .where(eq(pages.slug, slug))
-      .returning();
-    return result[0];
-  }
-
-  async deletePage(slug: string): Promise<void> {
-    await db.delete(pages).where(eq(pages.slug, slug));
   }
 
   // User Cart operations

@@ -212,45 +212,53 @@ export type UserOrder = typeof userOrders.$inferSelect;
 export type InsertUserOrder = z.infer<typeof insertUserOrderSchema>;
 
 // Blog table
-export const blogs = pgTable("blogs", {
-  id: text("id").primaryKey().default(sql`gen_random_uuid()`),
-  title: text("title").notNull(),
-  content: text("content").notNull(),
-  excerpt: text("excerpt"),
-  featured_image: text("featured_image"),
-  category: text("category").notNull().default("general"),
-  author: text("author").notNull().default("Admin"),
-  status: text("status").notNull().default("published"),
-  is_featured: boolean("is_featured").default(false),
-  views: integer("views").default(0),
-  created_at: timestamp("created_at").defaultNow(),
-  updated_at: timestamp("updated_at").defaultNow(),
+export const customOrders = pgTable('custom_orders', {
+  id: serial('id').primaryKey(),
+  name: varchar('name', { length: 255 }).notNull(),
+  whatsapp: varchar('whatsapp', { length: 20 }).notNull(),
+  address: text('address').notNull(),
+  productName: varchar('product_name', { length: 255 }).notNull(),
+  customization: text('customization').notNull(),
+  quantity: integer('quantity').notNull().default(1),
+  totalPrice: decimal('total_price', { precision: 10, scale: 2 }).notNull(),
+  paymentMethod: varchar('payment_method', { length: 50 }).notNull(),
+  trxId: varchar('trx_id', { length: 100 }),
+  paymentScreenshot: text('payment_screenshot'),
+  status: varchar('status', { length: 20 }).notNull().default('pending'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
 
-// Pages table for dynamic content
-export const pages = pgTable("pages", {
-  id: text("id").primaryKey().default(sql`gen_random_uuid()`),
-  slug: text("slug").notNull().unique(),
-  title: text("title").notNull(),
-  content: text("content").notNull(),
-  is_active: boolean("is_active").default(true),
-  created_at: timestamp("created_at").defaultNow(),
-  updated_at: timestamp("updated_at").defaultNow(),
+export const blogs = pgTable('blogs', {
+  id: serial('id').primaryKey(),
+  title: varchar('title', { length: 255 }).notNull(),
+  content: text('content').notNull(),
+  excerpt: text('excerpt').notNull(),
+  author: varchar('author', { length: 100 }).notNull(),
+  status: varchar('status', { length: 20 }).notNull().default('draft'),
+  isFeatured: boolean('is_featured').notNull().default(false),
+  tags: varchar('tags', { length: 255 }),
+  metaTitle: varchar('meta_title', { length: 255 }),
+  metaDescription: text('meta_description'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
 
-export const insertBlogSchema = createInsertSchema(blogs).omit({
-  id: true,
-  created_at: true,
-  updated_at: true,
+export const pages = pgTable('pages', {
+  id: serial('id').primaryKey(),
+  title: varchar('title', { length: 255 }).notNull(),
+  slug: varchar('slug', { length: 255 }).notNull().unique(),
+  content: text('content').notNull(),
+  metaTitle: varchar('meta_title', { length: 255 }),
+  metaDescription: text('meta_description'),
+  isActive: boolean('is_active').notNull().default(true),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
 
-export const insertPageSchema = createInsertSchema(pages).omit({
-  id: true,
-  created_at: true,
-  updated_at: true,
-});
-
+export type CustomOrder = typeof customOrders.$inferSelect;
+export type NewCustomOrder = typeof customOrders.$inferInsert;
 export type Blog = typeof blogs.$inferSelect;
-export type InsertBlog = z.infer<typeof insertBlogSchema>;
+export type NewBlog = typeof blogs.$inferInsert;
 export type Page = typeof pages.$inferSelect;
-export type InsertPage = z.infer<typeof insertPageSchema>;
+export type NewPage = typeof pages.$inferInsert;

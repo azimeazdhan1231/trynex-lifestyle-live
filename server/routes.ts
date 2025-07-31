@@ -397,12 +397,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const orderData = insertOrderSchema.parse(req.body);
       const order = await storage.createOrder(orderData);
-      
+
       // Link order to user if authenticated
       if (req.user?.claims?.sub) {
         await storage.linkOrderToUser(order.id, req.user.claims.sub);
       }
-      
+
       res.status(201).json(order);
     } catch (error) {
       console.error("Error creating order:", error);
@@ -703,6 +703,184 @@ export async function registerRoutes(app: Express): Promise<Server> {
         success: false, 
         message: "Server error during login" 
       });
+    }
+  });
+
+  // Get custom order by ID
+  app.get('/api/custom-orders/:id', async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const customOrder = await storage.getCustomOrderById(id);
+
+      if (!customOrder) {
+        return res.status(404).json({ error: 'Custom order not found' });
+      }
+
+      res.json(customOrder);
+    } catch (error) {
+      console.error('Error fetching custom order:', error);
+      res.status(500).json({ error: 'Failed to fetch custom order' });
+    }
+  });
+
+  // Blog Routes
+  app.get('/api/blogs', async (req, res) => {
+    try {
+      const { published, featured } = req.query;
+
+      let blogs;
+      if (published === 'true') {
+        blogs = await storage.getPublishedBlogs();
+      } else if (featured === 'true') {
+        blogs = await storage.getFeaturedBlogs();
+      } else {
+        blogs = await storage.getBlogs();
+      }
+
+      res.json(blogs);
+    } catch (error) {
+      console.error('Error fetching blogs:', error);
+      res.status(500).json({ error: 'Failed to fetch blogs' });
+    }
+  });
+
+  app.get('/api/blogs/:id', async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const blog = await storage.getBlogById(id);
+
+      if (!blog) {
+        return res.status(404).json({ error: 'Blog not found' });
+      }
+
+      res.json(blog);
+    } catch (error) {
+      console.error('Error fetching blog:', error);
+      res.status(500).json({ error: 'Failed to fetch blog' });
+    }
+  });
+
+  app.post('/api/blogs', async (req, res) => {
+    try {
+      const blog = await storage.createBlog(req.body);
+      res.status(201).json(blog);
+    } catch (error) {
+      console.error('Error creating blog:', error);
+      res.status(500).json({ error: 'Failed to create blog' });
+    }
+  });
+
+  app.put('/api/blogs/:id', async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const blog = await storage.updateBlog(id, req.body);
+
+      if (!blog) {
+        return res.status(404).json({ error: 'Blog not found' });
+      }
+
+      res.json(blog);
+    } catch (error) {
+      console.error('Error updating blog:', error);
+      res.status(500).json({ error: 'Failed to update blog' });
+    }
+  });
+
+  app.delete('/api/blogs/:id', async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const success = await storage.deleteBlog(id);
+
+      if (!success) {
+        return res.status(404).json({ error: 'Blog not found' });
+      }
+
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Error deleting blog:', error);
+      res.status(500).json({ error: 'Failed to delete blog' });
+    }
+  });
+
+  // Pages Routes
+  app.get('/api/pages', async (req, res) => {
+    try {
+      const { active } = req.query;
+
+      let pages;
+      if (active === 'true') {
+        pages = await storage.getActivePages();
+      } else {
+        pages = await storage.getPages();
+      }
+
+      res.json(pages);
+    } catch (error) {
+      console.error('Error fetching pages:', error);
+      res.status(500).json({ error: 'Failed to fetch pages' });
+    }
+  });
+
+  app.get('/api/pages/:identifier', async (req, res) => {
+    try {
+      const identifier = req.params.identifier;
+      let page;
+
+      // Check if identifier is numeric (ID) or string (slug)
+      if (/^\d+$/.test(identifier)) {
+        page = await storage.getPageById(parseInt(identifier));
+      } else {
+        page = await storage.getPageBySlug(identifier);
+      }
+
+      if (!page) {
+        return res.status(404).json({ error: 'Page not found' });
+      }
+
+      res.json(page);
+    } catch (error) {
+      console.error('Error fetching page:', error);
+      res.status(500).json({ error: 'Failed to fetch page' });
+    }
+  });
+
+  app.post('/api/pages', async (req, res) => {
+    try {
+      const page = await storage.createPage(req.body);
+      res.status(201).json(page);
+    } catch (error) {
+      console.error('Error creating page:', error);
+      res.status(500).json({ error: 'Failed to create page' });
+    }
+  });
+
+  app.put('/api/pages/:id', async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const page = await storage.updatePage(id, req.body);
+
+      if (!page) {
+        return res.status(404).json({ error: 'Page not found' });
+      }
+
+      res.json(page);
+    } catch (error) {
+      console.error('Error updating page:', error);
+      res.status(500).json({ error: 'Failed to update page' });
+    }
+  });
+
+  app.delete('/api/pages/:id', async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const success = await storage.deletePage(id);
+
+      if (!success) {
+        return res.status(404).json({ error: 'Page not found' });
+      }      res.json({ success: true });
+    } catch (error) {
+      console.error('Error deleting page:', error);
+      res.status(500).json({ error: 'Failed to delete page' });
     }
   });
 

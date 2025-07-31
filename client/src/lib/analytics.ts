@@ -94,7 +94,7 @@ export async function loadFacebookPixelFromSettings() {
     const response = await fetch('/api/settings');
     const settings = await response.json();
     const fbPixelSetting = settings.find((s: any) => s.key === 'facebook_pixel_id');
-    
+
     if (fbPixelSetting && fbPixelSetting.value) {
       initFacebookPixel(fbPixelSetting.value);
     }
@@ -163,3 +163,77 @@ export const trackInitiateCheckout = (value: number, numItems: number) => {
     content_type: 'product'
   });
 };
+
+// Facebook Pixel Integration
+export const loadFacebookPixelFromSettings = async () => {
+  try {
+    const response = await fetch('/api/settings');
+    const settings = await response.json();
+
+    if (settings?.facebook_pixel_id && settings.facebook_pixel_id.trim()) {
+      loadFacebookPixel(settings.facebook_pixel_id);
+    }
+  } catch (error) {
+    console.error('Failed to load Facebook Pixel from settings:', error);
+  }
+};
+
+export const loadFacebookPixel = (pixelId: string) => {
+  if (typeof window === 'undefined' || !pixelId) return;
+
+  // Check if pixel is already loaded
+  if (window.fbq) return;
+
+  const script = document.createElement('script');
+  script.innerHTML = `
+    !function(f,b,e,v,n,t,s)
+    {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+    n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+    if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+    n.queue=[];t=b.createElement(e);t.async=!0;
+    t.src=v;s=b.getElementsByTagName(e)[0];
+    s.parentNode.insertBefore(t,s)}(window, document,'script',
+    'https://connect.facebook.net/en_US/fbevents.js');
+    fbq('init', '${pixelId}');
+    fbq('track', 'PageView');
+  `;
+  document.head.appendChild(script);
+
+  // Add noscript pixel
+  const noscript = document.createElement('noscript');
+  noscript.innerHTML = `<img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=${pixelId}&ev=PageView&noscript=1" />`;
+  document.head.appendChild(noscript);
+};
+
+export const trackPageView = (path: string) => {
+  // Google Analytics
+  if (typeof gtag !== 'undefined') {
+    gtag('config', 'GA_MEASUREMENT_ID', {
+      page_path: path,
+    });
+  }
+
+  // Facebook Pixel
+  if (typeof window !== 'undefined' && window.fbq) {
+    window.fbq('track', 'PageView');
+  }
+};
+
+export const trackEvent = (eventName: string, parameters?: any) => {
+  // Google Analytics
+  if (typeof gtag !== 'undefined') {
+    gtag('event', eventName, parameters);
+  }
+
+  // Facebook Pixel
+  if (typeof window !== 'undefined' && window.fbq) {
+    window.fbq('track', eventName, parameters);
+  }
+};
+
+// Add Facebook Pixel types to window
+declare global {
+  interface Window {
+    fbq: any;
+  }
+}
