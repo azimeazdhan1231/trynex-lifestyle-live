@@ -1,11 +1,12 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Search, X } from 'lucide-react';
+import { Search, X, Loader2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { PRODUCT_CATEGORIES, formatPrice } from '@/lib/constants';
-import { trackEvent } from '@/lib/analytics';
+import { useLocation } from 'wouter';
 import type { Product } from '@shared/schema';
 
 interface SearchBarProps {
@@ -22,117 +23,108 @@ export default function SearchBar({
   const [searchTerm, setSearchTerm] = useState('');
   const [isOpen, setIsOpen] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
+  const [isTyping, setIsTyping] = useState(false);
+  const searchRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [, setLocation] = useLocation();
 
-  // Load products with real-time updates
+  // Load products
   const { data: products = [], isLoading } = useQuery<Product[]>({
     queryKey: ["/api/products"],
-    staleTime: 1 * 60 * 1000, // 1 minute for fresher data
-    cacheTime: 5 * 60 * 1000, // 5 minutes cache
-    refetchOnWindowFocus: false,
+    staleTime: 30 * 1000, // 30 seconds
+    cacheTime: 2 * 60 * 1000, // 2 minutes
   });
 
-  // Enhanced real-time search with category matching
+  // Real-time search with debouncing
   const searchResults = useMemo(() => {
     if (!searchTerm.trim() || searchTerm.length < 1) return [];
 
     const query = searchTerm.toLowerCase().trim();
-    const words = query.split(/\s+/).filter(word => word.length > 0);
-
+    
     return products
-      .map(product => {
-        let score = 0;
+      .filter(product => {
+        // Search in product name, category, and description
         const productName = product.name.toLowerCase();
         const productCategory = product.category?.toLowerCase() || '';
         const productDescription = product.description?.toLowerCase() || '';
-
-        // Find matching category info
+        
+        // Find category display name
         const categoryInfo = PRODUCT_CATEGORIES.find(cat => 
-          cat.name.toLowerCase().includes(productCategory) || 
-          cat.id === productCategory
+          cat.id === productCategory || 
+          cat.name.toLowerCase().includes(productCategory)
         );
         const categoryName = categoryInfo?.name.toLowerCase() || productCategory;
-
-        const searchableText = [productName, categoryName, productDescription].join(' ');
-
-        // Exact name match (highest priority)
-        if (productName.includes(query)) {
-          score += productName.startsWith(query) ? 150 : 100;
-        }
-
-        // Category exact match
-        if (categoryName.includes(query)) {
-          score += 80;
-        }
-
-        // Word-by-word matching with Bengali support
-        words.forEach(word => {
-          if (word.length >= 2) {
-            if (productName.includes(word)) {
-              score += productName.startsWith(word) ? 50 : 30;
-            }
-            if (categoryName.includes(word)) {
-              score += 25;
-            }
-            if (productDescription.includes(word)) {
-              score += 15;
-            }
-
-            // Partial matching for longer words
-            if (word.length >= 3) {
-              const partial = word.substring(0, Math.max(2, word.length - 1));
-              if (searchableText.includes(partial)) {
-                score += 10;
-              }
-            }
-          }
-        });
-
-        // Boost score for in-stock items
-        if (product.stock > 0) {
-          score += 5;
-        }
-
-        // Boost featured/latest items
-        if (product.is_featured) score += 10;
-        if (product.is_latest) score += 8;
-        if (product.is_best_selling) score += 6;
-
-        return { product, score };
+        
+        // Check if query matches any field
+        return productName.includes(query) ||
+               categoryName.includes(query) ||
+               productDescription.includes(query) ||
+               // Split query into words and check each
+               query.split(' ').some(word => 
+                 productName.includes(word) || 
+                 categoryName.includes(word) ||
+                 productDescription.includes(word)
+               );
       })
-      .filter(item => item.score > 0)
       .sort((a, b) => {
-        // Sort by score first, then by stock, then by name
-        if (b.score !== a.score) return b.score - a.score;
-        if (b.product.stock !== a.product.stock) return b.product.stock - a.product.stock;
-        return a.product.name.localeCompare(b.product.name);
+        // Sort by relevance
+        const aName = a.name.toLowerCase();
+        const bName = b.name.toLowerCase();
+        
+        // Exact match first
+        if (aName.includes(query) && !bName.includes(query)) return -1;
+        if (bName.includes(query) && !aName.includes(query)) return 1;
+        
+        // Name starts with query
+        if (aName.startsWith(query) && !bName.startsWith(query)) return -1;
+        if (bName.startsWith(query) && !aName.startsWith(query)) return 1;
+        
+        // Stock priority
+        if (a.stock > 0 && b.stock === 0) return -1;
+        if (b.stock > 0 && a.stock === 0) return 1;
+        
+        // Alphabetical
+        return aName.localeCompare(bName);
       })
-      .slice(0, 10) // Show more results
-      .map(item => item.product);
+      .slice(0, 8); // Limit results
   }, [products, searchTerm]);
 
-  // Debounced search tracking
-  const trackSearch = useCallback(
-    debounce((query: string) => {
-      if (query.length >= 2) {
-        trackEvent('search_query', 'product_search', query);
-      }
-    }, 500),
-    []
-  );
+  // Handle input change with typing indicator
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setSearchTerm(value);
+    setIsOpen(value.length > 0);
+    setSelectedIndex(-1);
+    setIsTyping(true);
+    
+    // Stop typing indicator after 500ms
+    setTimeout(() => setIsTyping(false), 500);
+  };
 
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as Element;
-      if (!target.closest('.search-container')) {
-        setIsOpen(false);
-        setSelectedIndex(-1);
-      }
-    };
+  // Handle product selection
+  const handleProductSelect = (product: Product) => {
+    setSearchTerm('');
+    setIsOpen(false);
+    setSelectedIndex(-1);
+    
+    if (onProductSelect) {
+      onProductSelect(product);
+    } else {
+      // Navigate to products page with the selected product
+      setLocation('/products');
+    }
+    
+    // Blur the input
+    inputRef.current?.blur();
+  };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+  // Clear search
+  const clearSearch = () => {
+    setSearchTerm('');
+    setIsOpen(false);
+    setSelectedIndex(-1);
+    inputRef.current?.focus();
+  };
 
   // Handle keyboard navigation
   useEffect(() => {
@@ -155,12 +147,13 @@ export default function SearchBar({
         case 'Enter':
           event.preventDefault();
           if (selectedIndex >= 0 && searchResults[selectedIndex]) {
-            handleProductClick(searchResults[selectedIndex]);
+            handleProductSelect(searchResults[selectedIndex]);
           }
           break;
         case 'Escape':
           setIsOpen(false);
           setSelectedIndex(-1);
+          inputRef.current?.blur();
           break;
       }
     };
@@ -171,34 +164,20 @@ export default function SearchBar({
     }
   }, [isOpen, searchResults, selectedIndex]);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setSearchTerm(value);
-    setIsOpen(value.length > 0);
-    setSelectedIndex(-1);
+  // Handle click outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+        setSelectedIndex(-1);
+      }
+    };
 
-    // Track search with debouncing
-    trackSearch(value);
-  };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
-  const handleProductClick = (product: Product) => {
-    setSearchTerm('');
-    setIsOpen(false);
-    setSelectedIndex(-1);
-
-    trackEvent('search_result_click', 'product_search', product.name);
-
-    if (onProductSelect) {
-      onProductSelect(product);
-    }
-  };
-
-  const clearSearch = () => {
-    setSearchTerm('');
-    setIsOpen(false);
-    setSelectedIndex(-1);
-  };
-
+  // Get category display name
   const getCategoryDisplayName = (category: string) => {
     const categoryInfo = PRODUCT_CATEGORIES.find(cat => 
       cat.id === category || cat.name.toLowerCase().includes(category.toLowerCase())
@@ -207,17 +186,17 @@ export default function SearchBar({
   };
 
   return (
-    <div className={`search-container relative w-full max-w-md ${className}`}>
+    <div ref={searchRef} className={`relative w-full max-w-md ${className}`}>
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5 z-10" />
+        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 z-10" />
         <Input
+          ref={inputRef}
           type="text"
           value={searchTerm}
           onChange={handleInputChange}
           onFocus={() => searchTerm && setIsOpen(true)}
           placeholder={placeholder}
-          className="pl-10 pr-10 py-3 border-2 border-gray-200 focus:border-primary rounded-lg transition-all duration-200"
-          aria-label="Product search"
+          className="pl-10 pr-10 py-2 border-2 border-gray-200 focus:border-primary rounded-lg transition-all duration-200"
           autoComplete="off"
         />
         {searchTerm && (
@@ -226,54 +205,57 @@ export default function SearchBar({
             size="sm"
             onClick={clearSearch}
             className="absolute right-2 top-1/2 transform -translate-y-1/2 p-1 h-auto z-10 hover:bg-gray-100"
-            aria-label="Clear search"
           >
             <X className="w-4 h-4" />
           </Button>
+        )}
+        {isTyping && (
+          <div className="absolute right-8 top-1/2 transform -translate-y-1/2">
+            <Loader2 className="w-4 h-4 animate-spin text-gray-400" />
+          </div>
         )}
       </div>
 
       {/* Search Results Dropdown */}
       {isOpen && (
-        <div className="absolute top-full left-0 right-0 mt-2 bg-white border-2 border-gray-200 rounded-lg shadow-xl z-50 max-h-96 overflow-hidden">
+        <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-80 overflow-hidden">
           {isLoading ? (
             <div className="p-4 text-center text-gray-500">
-              <div className="animate-pulse">খুঁজছি...</div>
+              <Loader2 className="w-5 h-5 animate-spin mx-auto mb-2" />
+              <div>লোড হচ্ছে...</div>
             </div>
           ) : searchResults.length > 0 ? (
-            <div className="overflow-y-auto max-h-96">
+            <div className="overflow-y-auto max-h-80">
               {searchResults.map((product, index) => (
                 <div
                   key={product.id}
-                  onClick={() => handleProductClick(product)}
+                  onClick={() => handleProductSelect(product)}
                   className={`flex items-center p-3 hover:bg-blue-50 cursor-pointer border-b last:border-b-0 transition-colors ${
                     index === selectedIndex ? 'bg-blue-100' : ''
                   }`}
                 >
-                  <div className="flex-shrink-0 w-14 h-14 mr-3 relative">
+                  <div className="flex-shrink-0 w-12 h-12 mr-3">
                     <img
                       src={product.image_url || "https://images.unsplash.com/photo-1544787219-7f47ccb76574?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&h=100"}
                       alt={product.name}
-                      className="w-full h-full object-cover rounded-md border"
+                      className="w-full h-full object-cover rounded border"
                       loading="lazy"
                     />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h4 className="font-semibold text-gray-900 truncate text-sm">
+                    <h4 className="font-medium text-gray-900 truncate text-sm">
                       {product.name}
                     </h4>
                     <div className="flex items-center justify-between mt-1">
-                      <span className="text-lg font-bold text-primary">
+                      <span className="text-primary font-semibold">
                         {formatPrice(product.price)}
                       </span>
-                      <div className="flex items-center space-x-1">
-                        <Badge 
-                          variant={product.stock > 0 ? "secondary" : "destructive"}
-                          className="text-xs px-2 py-1"
-                        >
-                          {product.stock > 0 ? `স্টক: ${product.stock}` : 'স্টক নেই'}
-                        </Badge>
-                      </div>
+                      <Badge 
+                        variant={product.stock > 0 ? "secondary" : "destructive"}
+                        className="text-xs"
+                      >
+                        {product.stock > 0 ? `স্টক: ${product.stock}` : 'স্টক নেই'}
+                      </Badge>
                     </div>
                     {product.category && (
                       <div className="mt-1">
@@ -288,22 +270,13 @@ export default function SearchBar({
             </div>
           ) : searchTerm.length > 0 ? (
             <div className="p-6 text-center text-gray-500">
-              <Search className="w-12 h-12 mx-auto text-gray-300 mb-2" />
+              <Search className="w-10 h-10 mx-auto text-gray-300 mb-2" />
               <p className="font-medium">কোন পণ্য পাওয়া যায়নি</p>
-              <p className="text-sm mt-1">অন্য কিছু খুঁজে দেখুন</p>
+              <p className="text-sm mt-1">"{searchTerm}" এর জন্য কোন ফলাফল নেই</p>
             </div>
           ) : null}
         </div>
       )}
     </div>
   );
-}
-
-// Debounce utility function
-function debounce<T extends (...args: any[]) => any>(func: T, wait: number): T {
-  let timeout: NodeJS.Timeout;
-  return ((...args: any[]) => {
-    clearTimeout(timeout);
-    timeout = setTimeout(() => func.apply(null, args), wait);
-  }) as T;
 }
