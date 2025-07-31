@@ -20,6 +20,7 @@ interface HeaderProps {
 export default function Header({ cartCount, onCartOpen }: HeaderProps) {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
   const [location] = useLocation();
@@ -42,20 +43,7 @@ export default function Header({ cartCount, onCartOpen }: HeaderProps) {
 
   return (
     <>
-      <header className="bg-white shadow-lg fixed top-0 left-0 right-0 z-50">
-        {/* Search Section - Visible on homepage and products page */}
-        {(location === "/" || location === "/products") && (
-          <div className="bg-gray-50 border-b border-gray-200">
-            <div className="container mx-auto px-4 py-3">
-              <SearchBar
-                onProductSelect={handleProductSelect}
-                placeholder="পণ্য খুঁজুন... (নাম, ক্যাটেগরি, বিবরণ)"
-                className="mx-auto"
-              />
-            </div>
-          </div>
-        )}
-        
+      <header className="bg-white shadow-lg fixed top-0 left-0 right-0 z-50">        
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             {/* Logo */}
@@ -84,8 +72,17 @@ export default function Header({ cartCount, onCartOpen }: HeaderProps) {
               ))}
             </nav>
 
-            {/* Cart and Mobile Menu */}
+            {/* Search, Cart and Mobile Menu */}
             <div className="flex items-center space-x-4">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsSearchOpen(true)}
+                className="p-2 text-gray-700 hover:text-primary transition-colors"
+              >
+                <Search className="h-6 w-6" />
+              </Button>
+
               <Button
                 variant="ghost"
                 size="sm"
@@ -132,6 +129,23 @@ export default function Header({ cartCount, onCartOpen }: HeaderProps) {
       </header>
 
       <CartModal isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
+      
+      {/* Search Modal */}
+      <Sheet open={isSearchOpen} onOpenChange={setIsSearchOpen}>
+        <SheetContent side="top" className="h-auto max-h-[80vh] overflow-y-auto">
+          <div className="space-y-4 mt-6">
+            <h2 className="text-xl font-semibold text-center">পণ্য খুঁজুন</h2>
+            <SearchBar
+              onProductSelect={(product) => {
+                handleProductSelect(product);
+                setIsSearchOpen(false);
+              }}
+              placeholder="পণ্য খুঁজুন... (নাম, ক্যাটেগরি, বিবরণ)"
+              className="mx-auto"
+            />
+          </div>
+        </SheetContent>
+      </Sheet>
       
       {/* Product Modal from Search */}
       {selectedProduct && (
