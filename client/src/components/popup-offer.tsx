@@ -61,15 +61,7 @@ export default function PopupOffer() {
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogContent className="max-w-md p-0 overflow-hidden bg-gradient-to-br from-green-500 to-emerald-600 text-white border-0">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => setIsOpen(false)}
-          className="absolute right-2 top-2 text-white hover:bg-white/20 z-10"
-        >
-          <X className="w-4 h-4" />
-        </Button>
+      <DialogContent className="max-w-md p-0 overflow-hidden bg-gradient-to-br from-green-500 to-emerald-600 text-white border-0 [&>button]:text-white [&>button]:hover:bg-white/20">
 
         <div className="p-6 text-center">
           <div className="flex justify-center mb-4">

@@ -706,11 +706,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get custom order by ID
+  // Custom Orders API Routes
+  app.get("/api/custom-orders", async (req, res) => {
+    try {
+      const customOrders = await storage.getCustomOrders();
+      res.json(customOrders);
+    } catch (error) {
+      console.error("Error fetching custom orders:", error);
+      res.status(500).json({ message: "Error fetching custom orders" });
+    }
+  });
+
   app.get('/api/custom-orders/:id', async (req, res) => {
     try {
       const id = parseInt(req.params.id);
-      const customOrder = await storage.getCustomOrderById(id);
+      const customOrder = await storage.getCustomOrder(id);
 
       if (!customOrder) {
         return res.status(404).json({ error: 'Custom order not found' });
@@ -720,6 +730,60 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Error fetching custom order:', error);
       res.status(500).json({ error: 'Failed to fetch custom order' });
+    }
+  });
+
+  app.post("/api/custom-orders", async (req, res) => {
+    try {
+      const {
+        name,
+        whatsapp,
+        address,
+        productName,
+        customization,
+        quantity = 1,
+        totalPrice,
+        paymentMethod,
+        trxId,
+        paymentScreenshot
+      } = req.body;
+
+      if (!name || !whatsapp || !address || !productName || !customization || !paymentMethod) {
+        return res.status(400).json({ message: "All required fields must be provided" });
+      }
+
+      const customOrder = await storage.createCustomOrder({
+        name,
+        whatsapp,
+        address,
+        productName,
+        customization,
+        quantity,
+        totalPrice: totalPrice ? parseFloat(totalPrice).toString() : "100.00",
+        paymentMethod,
+        trxId: trxId || null,
+        paymentScreenshot: paymentScreenshot || null,
+        status: "pending"
+      });
+
+      res.status(201).json(customOrder);
+    } catch (error) {
+      console.error("Error creating custom order:", error);
+      res.status(400).json({ message: "Error creating custom order" });
+    }
+  });
+
+  app.patch("/api/custom-orders/:id/status", async (req, res) => {
+    try {
+      const { status } = req.body;
+      if (!status || typeof status !== "string") {
+        return res.status(400).json({ message: "Status is required" });
+      }
+      const customOrder = await storage.updateCustomOrderStatus(parseInt(req.params.id), status);
+      res.json(customOrder);
+    } catch (error) {
+      console.error("Error updating custom order status:", error);
+      res.status(400).json({ message: "Error updating custom order status" });
     }
   });
 

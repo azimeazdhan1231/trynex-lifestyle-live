@@ -3,18 +3,31 @@ import postgres from "postgres";
 import { eq, desc, and, gte, lte } from "drizzle-orm";
 import { 
   products, orders, offers, admins, categories, promoCodes, analytics, siteSettings,
-  users, userCarts, userOrders,
+  users, userCarts, userOrders, customOrders,
   type Product, type InsertProduct, type Order, type InsertOrder, 
   type Offer, type InsertOffer, type Admin, type InsertAdmin,
   type Category, type InsertCategory, type PromoCode, type InsertPromoCode,
   type Analytics, type InsertAnalytics, type SiteSettings, type InsertSiteSettings,
   type User, type UpsertUser, type UserCart, type InsertUserCart,
-  type UserOrder, type InsertUserOrder
+  type UserOrder, type InsertUserOrder, type CustomOrder, type NewCustomOrder
 } from "@shared/schema";
 
-const connectionString = process.env.DATABASE_URL;
+// Try to get DATABASE_URL, or construct it from individual PG environment variables
+let connectionString = process.env.DATABASE_URL;
+
 if (!connectionString) {
-  throw new Error("DATABASE_URL environment variable is not set");
+  const { PGHOST, PGPORT, PGUSER, PGPASSWORD, PGDATABASE } = process.env;
+  
+  // If we have individual PostgreSQL environment variables, construct the connection string
+  if (PGHOST && PGUSER && PGDATABASE) {
+    const port = PGPORT || '5432';
+    const password = PGPASSWORD ? `:${PGPASSWORD}` : '';
+    connectionString = `postgresql://${PGUSER}${password}@${PGHOST}:${port}/${PGDATABASE}`;
+  }
+}
+
+if (!connectionString) {
+  throw new Error("DATABASE_URL environment variable is not set, and could not construct from PG* variables");
 }
 const client = postgres(connectionString);
 const db = drizzle(client);
@@ -184,6 +197,29 @@ export class SimpleStorage {
 
   async createSetting(setting: InsertSiteSettings): Promise<SiteSettings> {
     const result = await db.insert(siteSettings).values(setting).returning();
+    return result[0];
+  }
+
+  // Custom Orders
+  async getCustomOrders(): Promise<CustomOrder[]> {
+    return await db.select().from(customOrders).orderBy(desc(customOrders.createdAt));
+  }
+
+  async getCustomOrder(id: number): Promise<CustomOrder | undefined> {
+    const result = await db.select().from(customOrders).where(eq(customOrders.id, id)).limit(1);
+    return result[0];
+  }
+
+  async createCustomOrder(customOrder: NewCustomOrder): Promise<CustomOrder> {
+    const result = await db.insert(customOrders).values(customOrder).returning();
+    return result[0];
+  }
+
+  async updateCustomOrderStatus(id: number, status: string): Promise<CustomOrder> {
+    const result = await db.update(customOrders).set({ 
+      status, 
+      updatedAt: new Date() 
+    }).where(eq(customOrders.id, id)).returning();
     return result[0];
   }
 }
