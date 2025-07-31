@@ -1,0 +1,73 @@
+14:40:14.346	Cloning repository...
+14:40:15.310	From https://github.com/azimeazdhan1231/trynex-lifestyle
+14:40:15.310	 * branch            5c9e0a5eb9138b0d3a4b94c10cdfd70b23f8a68c -> FETCH_HEAD
+14:40:15.310	
+14:40:15.358	HEAD is now at 5c9e0a5 Assistant checkpoint: Fixed syntax error and implemented complete order details modal
+14:40:15.359	
+14:40:15.434	
+14:40:15.435	Using v2 root directory strategy
+14:40:15.455	Success: Finished cloning repository files
+14:40:16.126	Restoring from dependencies cache
+14:40:16.144	Restoring from build output cache
+14:40:17.565	Success: Dependencies restored from build cache.
+14:40:18.618	Checking for configuration in a Wrangler configuration file (BETA)
+14:40:18.619	
+14:40:18.620	Found wrangler.toml file. Reading build configuration...
+14:40:19.723	A wrangler.toml file was found but it does not appear to be valid. Did you mean to use wrangler.toml to configure Pages? If so, then make sure the file is valid and contains the `pages_build_output_dir` property. Skipping file and continuing.
+14:40:19.788	Detected the following tools from environment: npm@10.9.2, nodejs@22.16.0
+14:40:19.789	Installing project dependencies: npm clean-install --progress=false
+14:40:23.282	npm warn deprecated @esbuild-kit/esm-loader@2.6.5: Merged into tsx: https://tsx.is
+14:40:23.374	npm warn deprecated @esbuild-kit/core-utils@3.3.2: Merged into tsx: https://tsx.is
+14:40:26.243	
+14:40:26.243	added 482 packages, and audited 483 packages in 6s
+14:40:26.243	
+14:40:26.244	65 packages are looking for funding
+14:40:26.244	  run `npm fund` for details
+14:40:26.267	
+14:40:26.267	11 vulnerabilities (3 low, 8 moderate)
+14:40:26.267	
+14:40:26.267	To address issues that do not require attention, run:
+14:40:26.267	  npm audit fix
+14:40:26.267	
+14:40:26.267	To address all issues (including breaking changes), run:
+14:40:26.267	  npm audit fix --force
+14:40:26.268	
+14:40:26.268	Run `npm audit` for details.
+14:40:26.297	Executing user command: npm run build
+14:40:26.682	
+14:40:26.682	> rest-express@1.0.0 build
+14:40:26.682	> vite build && esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist
+14:40:26.682	
+14:40:26.946	vite v5.4.19 building for production...
+14:40:26.995	transforming...
+14:40:27.273	Browserslist: browsers data (caniuse-lite) is 9 months old. Please run:
+14:40:27.273	  npx update-browserslist-db@latest
+14:40:27.274	  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+14:40:29.625	✓ 1712 modules transformed.
+14:40:29.626	x Build failed in 2.65s
+14:40:29.627	error during build:
+14:40:29.627	[vite:esbuild] Transform failed with 1 error:
+14:40:29.627	/opt/buildhome/repo/client/src/components/order-success-modal.tsx:113:20: ERROR: Expected ")" but found "{"
+14:40:29.627	file: /opt/buildhome/repo/client/src/components/order-success-modal.tsx:113:20
+14:40:29.627	
+14:40:29.627	Expected ")" but found "{"
+14:40:29.627	111|                      </div>
+14:40:29.627	112|  
+14:40:29.628	113|                      {/* Show customization details if present */}
+14:40:29.628	   |                      ^
+14:40:29.628	114|                      {item.customization && (
+14:40:29.628	115|                        <div className="text-xs text-gray-600 bg-gray-50 p-2 rounded mt-1">
+14:40:29.628	
+14:40:29.628	    at failureErrorWithLog (/opt/buildhome/repo/node_modules/vite/node_modules/esbuild/lib/main.js:1472:15)
+14:40:29.628	    at /opt/buildhome/repo/node_modules/vite/node_modules/esbuild/lib/main.js:755:50
+14:40:29.628	    at responseCallbacks.<computed> (/opt/buildhome/repo/node_modules/vite/node_modules/esbuild/lib/main.js:622:9)
+14:40:29.628	    at handleIncomingPacket (/opt/buildhome/repo/node_modules/vite/node_modules/esbuild/lib/main.js:677:12)
+14:40:29.629	    at Socket.readFromStdout (/opt/buildhome/repo/node_modules/vite/node_modules/esbuild/lib/main.js:600:7)
+14:40:29.629	    at Socket.emit (node:events:518:28)
+14:40:29.629	    at addChunk (node:internal/streams/readable:561:12)
+14:40:29.629	    at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+14:40:29.629	    at Readable.push (node:internal/streams/readable:392:5)
+14:40:29.629	    at Pipe.onStreamRead (node:internal/stream_base_commons:189:23)
+14:40:29.656	Failed: Error while executing user command. Exited with error code: 1
+14:40:29.667	Failed: build command exited with code: 1
+14:40:40.043	Failed: error occurred while running build command
