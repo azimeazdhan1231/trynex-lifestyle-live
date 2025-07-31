@@ -3,7 +3,7 @@ import type { User } from "@shared/schema";
 import { apiRequest } from "@/lib/queryClient";
 
 export function useAuth() {
-  const { data: user, isLoading, error } = useQuery<User>({
+  const { data: user, error } = useQuery<User>({
     queryKey: ["/api/auth/user"],
     queryFn: async () => {
       try {
@@ -19,11 +19,12 @@ export function useAuth() {
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
     refetchOnWindowFocus: false,
+    enabled: false, // Disable automatic fetching
   });
 
   return {
     user: error ? null : user,
-    isLoading,
+    isLoading: false, // Always return false to prevent loading screens
     isAuthenticated: !!user && !error,
   };
 }

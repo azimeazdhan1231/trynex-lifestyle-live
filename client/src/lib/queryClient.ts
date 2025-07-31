@@ -72,60 +72,20 @@ export async function apiRequest(
   }
 }
 
-// Enhanced Query Client with better defaults
+// Simple Query Client with minimal defaults
 export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 5 * 60 * 1000, // 5 minutes
-      gcTime: 10 * 60 * 1000, // 10 minutes (formerly cacheTime)
-      retry: (failureCount, error) => {
-        // Don't retry on 4xx errors or auth endpoints
-        if (error instanceof Error && (error.message.includes('4') || error.message.includes('auth'))) {
-          return false;
-        }
-        return failureCount < 2; // Reduced retries
-      },
-      retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 5000), // Shorter delays
+      staleTime: 0,
+      gcTime: 5 * 60 * 1000,
+      retry: false, // No retries
       refetchOnWindowFocus: false,
       refetchOnReconnect: false,
-      networkMode: 'online', // Changed to online mode
     },
     mutations: {
-      retry: (failureCount, error) => {
-        // Don't retry mutations on 4xx errors
-        if (error instanceof Error && error.message.includes('4')) {
-          return false;
-        }
-        return failureCount < 1; // Reduced mutation retries
-      },
-      retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 5000),
-      networkMode: 'online',
+      retry: false, // No retries
     },
   },
 });
 
-// Add global error handler
-queryClient.setMutationDefaults(['login'], {
-  mutationFn: async (data: any) => {
-    try {
-      const response = await apiRequest("POST", "/api/admin/login", data);
-      return await response.json();
-    } catch (error) {
-      console.error('Login mutation error:', error);
-      throw error;
-    }
-  },
-});
 
-// Add error logging
-queryClient.getQueryCache().subscribe((event) => {
-  if (event.type === 'observerResultsUpdated' && event.query.state.error) {
-    console.error('Query Error:', event.query.state.error);
-  }
-});
-
-queryClient.getMutationCache().subscribe((event) => {
-  if (event.type === 'updated' && event.mutation.state.error) {
-    console.error('Mutation Error:', event.mutation.state.error);
-  }
-});
