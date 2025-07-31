@@ -318,7 +318,8 @@ export default function EnhancedAdminTabs() {
   };
 
   // order state
-  const [selectedOrder, setSelectedOrder] = useState(null);
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [isOrderDetailsOpen, setIsOrderDetailsOpen] = useState(false);
 
   return (
     <div className="container mx-auto p-6">
@@ -464,7 +465,10 @@ export default function EnhancedAdminTabs() {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => setSelectedOrder(order)}
+                          onClick={() => {
+                            setSelectedOrder(order);
+                            setIsOrderDetailsOpen(true);
+                          }}
                           className="text-blue-600 border-blue-300 hover:bg-blue-50"
                         >
                           <Eye className="w-4 h-4 mr-1" />
@@ -1177,7 +1181,14 @@ export default function EnhancedAdminTabs() {
           <AnalyticsAdmin />
         </TabsContent>
       </Tabs>
-      <OrderDetailsModal order={selectedOrder} onClose={() => setSelectedOrder(null)} />
+      <OrderDetailsModal 
+        order={selectedOrder} 
+        isOpen={isOrderDetailsOpen}
+        onClose={() => {
+          setIsOrderDetailsOpen(false);
+          setSelectedOrder(null);
+        }} 
+      />
     </div>
   );
 }

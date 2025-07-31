@@ -82,7 +82,7 @@ export default function TrackingPage() {
     if (searchId) {
       const interval = setInterval(() => {
         refetch();
-      }, 2000);
+      }, 3000); // Reduced frequency to 3 seconds
       return () => clearInterval(interval);
     }
   }, [searchId, refetch]);
@@ -264,6 +264,27 @@ export default function TrackingPage() {
                   </div>
                 </CardContent>
               </Card>
+
+              {/* Order Instructions Alert for Customer */}
+              {order && order.items && order.items.some((item: any) => 
+                item.customization && (
+                  item.customization.customText || 
+                  item.customization.customImage || 
+                  item.customization.specialInstructions
+                )
+              ) && (
+                <Card className="border-green-200 bg-green-50">
+                  <CardContent className="p-4">
+                    <div className="flex items-center gap-2 mb-2">
+                      <CheckCircle className="w-5 h-5 text-green-600" />
+                      <h4 className="font-semibold text-green-800">আপনার কাস্টমাইজেশন নির্দেশনা গ্রহণ করা হয়েছে</h4>
+                    </div>
+                    <p className="text-green-700 text-sm">
+                      আমরা আপনার সব কাস্টমাইজেশন নির্দেশনা (টেক্সট, ছবি, বিশেষ নির্দেশনা) পেয়েছি এবং সেই অনুযায়ী পণ্য তৈরি করা হবে।
+                    </p>
+                  </CardContent>
+                </Card>
+              )}
 
               {/* Order Items */}
               <Card>
