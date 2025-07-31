@@ -101,10 +101,18 @@ export default function Auth() {
     setIsLoading(true);
     
     try {
-      // Redirect to Replit Auth
-      if (activeTab === "login" || activeTab === "signup") {
-        window.location.href = "/api/login";
+      // Store form data in localStorage for after auth
+      if (activeTab === "signup") {
+        localStorage.setItem('pendingSignupData', JSON.stringify({
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          phone: formData.phone,
+          email: formData.email
+        }));
       }
+      
+      // Redirect to Replit Auth for both login and signup
+      window.location.href = "/api/login";
       
     } catch (error) {
       console.error("Auth error:", error);
@@ -113,7 +121,6 @@ export default function Auth() {
         description: "আবার চেষ্টা করুন অথবা সাপোর্টে যোগাযোগ করুন",
         variant: "destructive",
       });
-    } finally {
       setIsLoading(false);
     }
   };
@@ -122,13 +129,8 @@ export default function Auth() {
     setIsLoading(true);
     
     try {
-      // Redirect to Replit Auth (handles both Google and other providers)
-      if (provider === "google") {
-        window.location.href = "/api/login";
-      } else if (provider === "facebook") {
-        // Facebook login through Replit Auth
-        window.location.href = "/api/login";
-      }
+      // All social logins go through Replit Auth
+      window.location.href = "/api/login";
     } catch (error) {
       console.error("Social login error:", error);
       toast({

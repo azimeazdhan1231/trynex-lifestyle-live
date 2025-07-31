@@ -24,6 +24,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Handle auth page fallback
+  app.get('/auth', (req, res, next) => {
+    if (req.isAuthenticated()) {
+      return res.redirect('/profile');
+    }
+    next();
+  });
+
   // User management routes (for admin)
   app.get('/api/users', async (req, res) => {
     try {
