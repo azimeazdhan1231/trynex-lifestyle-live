@@ -413,7 +413,7 @@ function ProductGrid({ products, viewMode, onAddToCart, onViewProduct, onCustomi
                 <img
                   src={product.image_url || "https://images.unsplash.com/photo-1544787219-7f47ccb76574?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"}
                   alt={product.name}
-                  className="w-full h-64 md:h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  className="w-full h-80 md:h-full object-cover group-hover:scale-105 transition-transform duration-300"
                 />
                 <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
                   <Button 
@@ -483,7 +483,7 @@ function ProductGrid({ products, viewMode, onAddToCart, onViewProduct, onCustomi
       {products.map((product) => (
         <Card key={product.id} className="group overflow-hidden hover:shadow-2xl transition-all duration-300 border border-gray-100 bg-white hover:border-blue-300 transform hover:-translate-y-1">
           <div className="relative">
-            <div className="aspect-square overflow-hidden bg-gray-50">
+            <div className="aspect-[4/5] overflow-hidden bg-gray-50">
               <LazyImage
                 src={product.image_url || "https://via.placeholder.com/300x300/f3f4f6/9ca3af?text=No+Image"}
                 alt={product.name}

@@ -63,7 +63,7 @@ const ProductCard = memo(function ProductCard({ product, onAddToCart, onViewProd
     <Card className="group hover:shadow-xl transition-all duration-300 border border-gray-100 overflow-hidden bg-white hover:border-primary/30 transform hover:-translate-y-1 sm:hover:-translate-y-2">
       <div className="relative">
         <div 
-          className="aspect-square overflow-hidden cursor-pointer bg-gray-50"
+          className="aspect-[4/5] overflow-hidden cursor-pointer bg-gray-50"
           onClick={handleProductView}
         >
           <img

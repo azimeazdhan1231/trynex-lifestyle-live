@@ -27,7 +27,7 @@ export const OptimizedProductCard: React.FC<OptimizedProductCardProps> = ({
   if (loading) {
     return (
       <Card className={cn("overflow-hidden group", className)}>
-        <div className="aspect-square bg-gray-200 dark:bg-gray-700 animate-pulse" />
+        <div className="aspect-[4/5] bg-gray-200 dark:bg-gray-700 animate-pulse" />
         <div className="p-4 space-y-3">
           <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
           <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-2/3 animate-pulse" />
@@ -49,8 +49,8 @@ export const OptimizedProductCard: React.FC<OptimizedProductCardProps> = ({
       "overflow-hidden group hover:shadow-lg transition-all duration-300 border-0 shadow-md hover:shadow-xl",
       className
     )}>
-      {/* Optimized Image with Lazy Loading */}
-      <div className="relative aspect-square overflow-hidden">
+      {/* Optimized Image with Lazy Loading - Increased Height */}
+      <div className="relative aspect-[4/5] overflow-hidden">
         <LazyImage
           src={product.image_url || '/placeholder-product.jpg'}
           alt={product.name}
