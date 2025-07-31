@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Search, Package, Filter, Grid3X3, List, SortAsc, SortDesc, Star, Heart, ShoppingCart, Eye } from "lucide-react";
 import { formatPrice, createWhatsAppUrl } from "@/lib/constants";
+import Header from "@/components/header";
 import ProductModal from "@/components/product-modal";
 import CustomizeModal from "@/components/customize-modal";
 import { useCart } from "@/hooks/use-cart";
@@ -152,8 +153,9 @@ export default function Products() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+      <Header />
       {/* Hero Section */}
-      <div className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 text-white py-16">
+      <div className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 text-white py-16 mt-16">
         <div className="container mx-auto px-4 text-center">
           <h1 className="text-4xl md:text-6xl font-bold mb-4">আমাদের পণ্যসমূহ</h1>
           <p className="text-xl md:text-2xl opacity-90">বিশেষ কাস্টম গিফট এবং লাইফস্টাইল পণ্য</p>

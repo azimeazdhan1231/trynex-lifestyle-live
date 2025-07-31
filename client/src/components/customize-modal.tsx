@@ -99,6 +99,26 @@ export default function CustomizeModal({ product, isOpen, onClose, onAddToCart }
       return;
     }
 
+    // Convert File to base64 string for storage
+    let customImageBase64 = null;
+    let customImageName = null;
+    
+    if (customization.customImage && customization.customImage instanceof File) {
+      try {
+        customImageBase64 = await convertFileToBase64(customization.customImage);
+        customImageName = customization.customImage.name;
+        console.log('Image converted to base64 successfully');
+      } catch (error) {
+        console.error('Failed to convert image:', error);
+        toast({
+          title: "ছবি আপলোড সমস্যা",
+          description: "ছবি প্রক্রিয়া করতে সমস্যা হয়েছে। আবার চেষ্টা করুন।",
+          variant: "destructive",
+        });
+        return;
+      }
+    }
+
     // Clean up customization data - remove empty values
     const customizationData = {
       size: customization.size,
@@ -107,11 +127,11 @@ export default function CustomizeModal({ product, isOpen, onClose, onAddToCart }
       quantity: customization.quantity,
       customText: customization.customText?.trim() || "",
       specialInstructions: customization.specialInstructions?.trim() || "",
-      customImage: customization.customImage, // Keep as File object for now
-      customImageName: customization.customImage?.name || null,
+      customImage: customImageBase64, // Store as base64 string
+      customImageName: customImageName,
       urgency: customization.urgency,
       deliveryPreference: customization.deliveryPreference,
-      additionalRequests: customization.additionalRequests
+      additionalRequests: customization.additionalRequests?.trim() || ""
     };
 
     // Remove empty fields to avoid confusion
@@ -121,6 +141,8 @@ export default function CustomizeModal({ product, isOpen, onClose, onAddToCart }
         delete customizationData[key as keyof typeof customizationData];
       }
     });
+
+    console.log('Sending customization data:', customizationData);
 
     await onAddToCart(product, customizationData);
     toast({
