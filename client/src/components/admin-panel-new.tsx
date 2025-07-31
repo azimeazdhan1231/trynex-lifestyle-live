@@ -101,11 +101,11 @@ export default function AdminPanelNew() {
   const { data: orders = [], isLoading: ordersLoading, error: ordersError } = useQuery<Order[]>({ 
     queryKey: ["/api/orders"]
   });
-
+  
   const { data: products = [], isLoading: productsLoading, error: productsError } = useQuery<Product[]>({ 
     queryKey: ["/api/products"]
   });
-
+  
   const { data: categories = [], isLoading: categoriesLoading, error: categoriesError } = useQuery<Category[]>({ 
     queryKey: ["/api/categories"]
   });
@@ -130,7 +130,7 @@ export default function AdminPanelNew() {
     const orderTotal = Number(order.total) || 0;
     return sum + orderTotal;
   }, 0) : 0;
-
+  
   const totalOrders = Array.isArray(orders) ? orders.length : 0;
   const pendingOrders = Array.isArray(orders) ? orders.filter((order: Order) => order.status === "pending").length : 0;
   const totalProducts = Array.isArray(products) ? products.length : 0;
@@ -252,7 +252,7 @@ export default function AdminPanelNew() {
     const file = e.target.files?.[0];
     if (file) {
       setSelectedImage(file);
-
+      
       // Create preview URL
       const reader = new FileReader();
       reader.onload = (e) => {
@@ -316,7 +316,7 @@ export default function AdminPanelNew() {
   const handleSubmitProduct = async () => {
     try {
       let finalProductForm = { ...productForm };
-
+      
       // If there's a selected image, it's already converted to base64 in handleImageChange
       if (selectedImage && imagePreview) {
         finalProductForm.image_url = imagePreview;
@@ -1177,7 +1177,7 @@ export default function AdminPanelNew() {
                     </div>
                   </div>
                 </div>
-
+                
                 <div>
                   <h3 className="text-lg font-semibold mb-4">অ্যানালিটিক্স</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
