@@ -1,4 +1,3 @@
-
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
@@ -13,35 +12,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Setup authentication middleware
   await setupAuth(app);
 
-  // Initialize default categories if none exist
-  app.get('/api/init-categories', async (req, res) => {
-    try {
-      const categories = await storage.getCategories();
-      if (categories.length === 0) {
-        const defaultCategories = [
-          { name: "gifts", name_bengali: "গিফট", description: "Special gift items", is_active: true, sort_order: 1 },
-          { name: "lifestyle", name_bengali: "লাইফস্টাইল", description: "Lifestyle products", is_active: true, sort_order: 2 },
-          { name: "accessories", name_bengali: "অ্যাক্সেসরিজ", description: "Fashion accessories", is_active: true, sort_order: 3 },
-          { name: "custom", name_bengali: "কাস্টম", description: "Custom products", is_active: true, sort_order: 4 },
-          { name: "electronics", name_bengali: "ইলেক্ট্রনিক্স", description: "Electronic gadgets", is_active: true, sort_order: 5 },
-          { name: "fashion", name_bengali: "ফ্যাশন", description: "Fashion items", is_active: true, sort_order: 6 },
-          { name: "home-decor", name_bengali: "হোম ডেকোর", description: "Home decoration items", is_active: true, sort_order: 7 },
-          { name: "books", name_bengali: "বই", description: "Books and stationery", is_active: true, sort_order: 8 },
-          { name: "sports", name_bengali: "খেলাধুলা", description: "Sports and fitness", is_active: true, sort_order: 9 },
-          { name: "health", name_bengali: "স্বাস্থ্য", description: "Health and wellness", is_active: true, sort_order: 10 }
-        ];
-
-        for (const category of defaultCategories) {
-          await storage.createCategory(category);
-        }
-      }
-      res.json({ message: "Categories initialized" });
-    } catch (error) {
-      console.error("Error initializing categories:", error);
-      res.status(500).json({ message: "Error initializing categories" });
-    }
-  });
-
   // Auth routes
   app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
     try {
@@ -52,11 +22,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error("Error fetching user:", error);
       res.status(500).json({ message: "Failed to fetch user" });
     }
-  });
-
-  app.post('/api/auth/logout', (req, res) => {
-    // Clear any session data if needed
-    res.json({ message: "Logged out successfully" });
   });
 
   // User management routes (for admin)
@@ -105,7 +70,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Error fetching orders" });
     }
   });
-  
   // Products
   app.get("/api/products", async (req, res) => {
     try {
@@ -260,7 +224,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.patch("/api/offers/:id", async (req, res) => {
+  app.put("/api/offers/:id", async (req, res) => {
     try {
       const offerData = insertOfferSchema.partial().parse(req.body);
       const offer = await storage.updateOffer(req.params.id, offerData);

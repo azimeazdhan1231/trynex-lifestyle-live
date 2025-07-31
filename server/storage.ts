@@ -1,568 +1,403 @@
-
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
-import { eq, desc, and, gte, lte, sql } from "drizzle-orm";
-import * as schema from "@shared/schema";
-import type { 
-  InsertProduct, InsertOrder, InsertOffer, InsertCategory, 
-  InsertPromoCode, InsertAnalytics, InsertSiteSettings, User 
+import { eq, desc, and, gte, lte } from "drizzle-orm";
+import { 
+  products, orders, offers, admins, categories, promoCodes, analytics, siteSettings,
+  users, userCarts, userOrders,
+  type Product, type InsertProduct, type Order, type InsertOrder, 
+  type Offer, type InsertOffer, type Admin, type InsertAdmin,
+  type Category, type InsertCategory, type PromoCode, type InsertPromoCode,
+  type Analytics, type InsertAnalytics, type SiteSettings, type InsertSiteSettings,
+  type User, type UpsertUser, type UserCart, type InsertUserCart,
+  type UserOrder, type InsertUserOrder
 } from "@shared/schema";
 
-if (!process.env.DATABASE_URL) {
-  throw new Error("DATABASE_URL environment variable is required");
-}
+const connectionString = process.env.DATABASE_URL || "postgresql://postgres.lxhhgdqfxmeohayceshb:Amiomito1Amiomito1@aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres";
 
-const client = postgres(process.env.DATABASE_URL);
-export const db = drizzle(client, { schema });
+const client = postgres(connectionString);
+const db = drizzle(client);
 
-export const storage = {
-  // Users
-  async createOrUpdateUser(userData: { id: string; name: string; email: string; avatar_url?: string }) {
-    try {
-      const existingUser = await db.select().from(schema.users).where(eq(schema.users.id, userData.id)).limit(1);
-      
-      if (existingUser.length > 0) {
-        // Update existing user
-        const [updatedUser] = await db
-          .update(schema.users)
-          .set({
-            name: userData.name,
-            email: userData.email,
-            avatar_url: userData.avatar_url,
-            updated_at: new Date(),
-          })
-          .where(eq(schema.users.id, userData.id))
-          .returning();
-        return updatedUser;
-      } else {
-        // Create new user
-        const [newUser] = await db
-          .insert(schema.users)
-          .values({
-            id: userData.id,
-            name: userData.name,
-            email: userData.email,
-            avatar_url: userData.avatar_url,
-            created_at: new Date(),
-            updated_at: new Date(),
-          })
-          .returning();
-        return newUser;
-      }
-    } catch (error) {
-      console.error("Error creating/updating user:", error);
-      throw error;
-    }
-  },
-
-  async getUser(userId: string) {
-    try {
-      const [user] = await db.select().from(schema.users).where(eq(schema.users.id, userId)).limit(1);
-      return user;
-    } catch (error) {
-      console.error("Error fetching user:", error);
-      throw error;
-    }
-  },
-
-  async getUsers() {
-    try {
-      return await db.select().from(schema.users).orderBy(desc(schema.users.created_at));
-    } catch (error) {
-      console.error("Error fetching users:", error);
-      throw error;
-    }
-  },
-
-  // User Cart
-  async getUserCart(userId: string) {
-    try {
-      const [cart] = await db.select().from(schema.userCarts).where(eq(schema.userCarts.user_id, userId)).limit(1);
-      return cart;
-    } catch (error) {
-      console.error("Error fetching user cart:", error);
-      return null;
-    }
-  },
-
-  async updateUserCart(userId: string, items: any[]) {
-    try {
-      const existingCart = await this.getUserCart(userId);
-      
-      if (existingCart) {
-        const [updatedCart] = await db
-          .update(schema.userCarts)
-          .set({
-            items: JSON.stringify(items),
-            updated_at: new Date(),
-          })
-          .where(eq(schema.userCarts.user_id, userId))
-          .returning();
-        return updatedCart;
-      } else {
-        const [newCart] = await db
-          .insert(schema.userCarts)
-          .values({
-            user_id: userId,
-            items: JSON.stringify(items),
-            created_at: new Date(),
-            updated_at: new Date(),
-          })
-          .returning();
-        return newCart;
-      }
-    } catch (error) {
-      console.error("Error updating user cart:", error);
-      throw error;
-    }
-  },
-
-  // User Orders
-  async getUserOrders(userId: string) {
-    try {
-      const userOrderLinks = await db
-        .select()
-        .from(schema.userOrders)
-        .where(eq(schema.userOrders.user_id, userId));
-      
-      if (userOrderLinks.length === 0) return [];
-      
-      const orderIds = userOrderLinks.map(link => link.order_id);
-      const orders = await db
-        .select()
-        .from(schema.orders)
-        .where(sql`id = ANY(${orderIds})`)
-        .orderBy(desc(schema.orders.created_at));
-      
-      return orders;
-    } catch (error) {
-      console.error("Error fetching user orders:", error);
-      throw error;
-    }
-  },
-
-  async linkOrderToUser(orderId: string, userId: string) {
-    try {
-      await db.insert(schema.userOrders).values({
-        user_id: userId,
-        order_id: orderId,
-        created_at: new Date(),
-      });
-    } catch (error) {
-      console.error("Error linking order to user:", error);
-      throw error;
-    }
-  },
-
+export interface IStorage {
   // Products
-  async getProducts() {
-    try {
-      return await db.select().from(schema.products).orderBy(desc(schema.products.created_at));
-    } catch (error) {
-      console.error("Error fetching products:", error);
-      throw error;
-    }
-  },
-
-  async getProduct(id: string) {
-    try {
-      const [product] = await db.select().from(schema.products).where(eq(schema.products.id, id)).limit(1);
-      return product;
-    } catch (error) {
-      console.error("Error fetching product:", error);
-      throw error;
-    }
-  },
-
-  async getProductsByCategory(category: string) {
-    try {
-      return await db.select().from(schema.products).where(eq(schema.products.category, category));
-    } catch (error) {
-      console.error("Error fetching products by category:", error);
-      throw error;
-    }
-  },
-
-  async createProduct(product: InsertProduct) {
-    try {
-      const [newProduct] = await db.insert(schema.products).values({
-        ...product,
-        created_at: new Date(),
-      }).returning();
-      return newProduct;
-    } catch (error) {
-      console.error("Error creating product:", error);
-      throw error;
-    }
-  },
-
-  async updateProduct(id: string, product: Partial<InsertProduct>) {
-    try {
-      const [updatedProduct] = await db
-        .update(schema.products)
-        .set(product)
-        .where(eq(schema.products.id, id))
-        .returning();
-      return updatedProduct;
-    } catch (error) {
-      console.error("Error updating product:", error);
-      throw error;
-    }
-  },
-
-  async deleteProduct(id: string) {
-    try {
-      await db.delete(schema.products).where(eq(schema.products.id, id));
-    } catch (error) {
-      console.error("Error deleting product:", error);
-      throw error;
-    }
-  },
+  getProducts(): Promise<Product[]>;
+  getProductsByCategory(category: string): Promise<Product[]>;
+  getProduct(id: string): Promise<Product | undefined>;
+  createProduct(product: InsertProduct): Promise<Product>;
+  updateProduct(id: string, product: Partial<InsertProduct>): Promise<Product>;
+  deleteProduct(id: string): Promise<void>;
 
   // Orders
-  async getOrders() {
-    try {
-      return await db.select().from(schema.orders).orderBy(desc(schema.orders.created_at));
-    } catch (error) {
-      console.error("Error fetching orders:", error);
-      throw error;
-    }
-  },
-
-  async getOrder(trackingId: string) {
-    try {
-      const [order] = await db
-        .select()
-        .from(schema.orders)
-        .where(eq(schema.orders.tracking_id, trackingId))
-        .limit(1);
-      return order;
-    } catch (error) {
-      console.error("Error fetching order:", error);
-      throw error;
-    }
-  },
-
-  async createOrder(order: InsertOrder) {
-    try {
-      const trackingId = `TN${Date.now()}${Math.floor(Math.random() * 1000)}`;
-      
-      const [newOrder] = await db.insert(schema.orders).values({
-        ...order,
-        tracking_id: trackingId,
-        status: "pending",
-        created_at: new Date(),
-      }).returning();
-      return newOrder;
-    } catch (error) {
-      console.error("Error creating order:", error);
-      throw error;
-    }
-  },
-
-  async updateOrderStatus(id: string, status: string) {
-    try {
-      const [updatedOrder] = await db
-        .update(schema.orders)
-        .set({ status })
-        .where(eq(schema.orders.id, id))
-        .returning();
-      return updatedOrder;
-    } catch (error) {
-      console.error("Error updating order status:", error);
-      throw error;
-    }
-  },
-
-  // Categories
-  async getCategories() {
-    try {
-      return await db.select().from(schema.categories).orderBy(schema.categories.sort_order);
-    } catch (error) {
-      console.error("Error fetching categories:", error);
-      throw error;
-    }
-  },
-
-  async createCategory(category: InsertCategory) {
-    try {
-      const [newCategory] = await db.insert(schema.categories).values({
-        ...category,
-        created_at: new Date(),
-      }).returning();
-      return newCategory;
-    } catch (error) {
-      console.error("Error creating category:", error);
-      throw error;
-    }
-  },
-
-  async updateCategory(id: string, category: Partial<InsertCategory>) {
-    try {
-      const [updatedCategory] = await db
-        .update(schema.categories)
-        .set(category)
-        .where(eq(schema.categories.id, id))
-        .returning();
-      return updatedCategory;
-    } catch (error) {
-      console.error("Error updating category:", error);
-      throw error;
-    }
-  },
-
-  async deleteCategory(id: string) {
-    try {
-      await db.delete(schema.categories).where(eq(schema.categories.id, id));
-    } catch (error) {
-      console.error("Error deleting category:", error);
-      throw error;
-    }
-  },
+  getOrders(): Promise<Order[]>;
+  getOrder(trackingId: string): Promise<Order | undefined>;
+  createOrder(order: InsertOrder): Promise<Order>;
+  updateOrderStatus(id: string, status: string): Promise<Order>;
 
   // Offers
-  async getOffers() {
-    try {
-      return await db.select().from(schema.offers).orderBy(desc(schema.offers.created_at));
-    } catch (error) {
-      console.error("Error fetching offers:", error);
-      throw error;
-    }
-  },
+  getActiveOffers(): Promise<Offer[]>;
+  getOffers(): Promise<Offer[]>;
+  createOffer(offer: InsertOffer): Promise<Offer>;
+  updateOffer(id: string, offer: Partial<InsertOffer>): Promise<Offer>;
+  deleteOffer(id: string): Promise<void>;
 
-  async getActiveOffers() {
-    try {
-      return await db
-        .select()
-        .from(schema.offers)
-        .where(eq(schema.offers.active, true))
-        .orderBy(desc(schema.offers.created_at));
-    } catch (error) {
-      console.error("Error fetching active offers:", error);
-      throw error;
-    }
-  },
-
-  async createOffer(offer: InsertOffer) {
-    try {
-      const [newOffer] = await db.insert(schema.offers).values({
-        ...offer,
-        created_at: new Date(),
-      }).returning();
-      return newOffer;
-    } catch (error) {
-      console.error("Error creating offer:", error);
-      throw error;
-    }
-  },
-
-  async updateOffer(id: string, offer: Partial<InsertOffer>) {
-    try {
-      const [updatedOffer] = await db
-        .update(schema.offers)
-        .set(offer)
-        .where(eq(schema.offers.id, id))
-        .returning();
-      return updatedOffer;
-    } catch (error) {
-      console.error("Error updating offer:", error);
-      throw error;
-    }
-  },
-
-  async deleteOffer(id: string) {
-    try {
-      await db.delete(schema.offers).where(eq(schema.offers.id, id));
-    } catch (error) {
-      console.error("Error deleting offer:", error);
-      throw error;
-    }
-  },
+  // Categories
+  getCategories(): Promise<Category[]>;
+  createCategory(category: InsertCategory): Promise<Category>;
+  updateCategory(id: string, category: Partial<InsertCategory>): Promise<Category>;
+  deleteCategory(id: string): Promise<void>;
 
   // Promo Codes
-  async getPromoCodes() {
-    try {
-      return await db.select().from(schema.promoCodes).orderBy(desc(schema.promoCodes.created_at));
-    } catch (error) {
-      console.error("Error fetching promo codes:", error);
-      throw error;
-    }
-  },
-
-  async createPromoCode(promoCode: InsertPromoCode) {
-    try {
-      const [newPromoCode] = await db.insert(schema.promoCodes).values({
-        ...promoCode,
-        created_at: new Date(),
-      }).returning();
-      return newPromoCode;
-    } catch (error) {
-      console.error("Error creating promo code:", error);
-      throw error;
-    }
-  },
-
-  async updatePromoCode(id: string, promoCode: Partial<InsertPromoCode>) {
-    try {
-      const [updatedPromoCode] = await db
-        .update(schema.promoCodes)
-        .set(promoCode)
-        .where(eq(schema.promoCodes.id, id))
-        .returning();
-      return updatedPromoCode;
-    } catch (error) {
-      console.error("Error updating promo code:", error);
-      throw error;
-    }
-  },
-
-  async deletePromoCode(id: string) {
-    try {
-      await db.delete(schema.promoCodes).where(eq(schema.promoCodes.id, id));
-    } catch (error) {
-      console.error("Error deleting promo code:", error);
-      throw error;
-    }
-  },
-
-  async validatePromoCode(code: string, orderAmount: number) {
-    try {
-      const [promoCode] = await db
-        .select()
-        .from(schema.promoCodes)
-        .where(and(
-          eq(schema.promoCodes.code, code),
-          eq(schema.promoCodes.is_active, true)
-        ))
-        .limit(1);
-
-      if (!promoCode) {
-        return { valid: false, message: "Invalid promo code" };
-      }
-
-      if (promoCode.expires_at && new Date(promoCode.expires_at) < new Date()) {
-        return { valid: false, message: "Promo code has expired" };
-      }
-
-      if (promoCode.min_order_amount && orderAmount < promoCode.min_order_amount) {
-        return { 
-          valid: false, 
-          message: `Minimum order amount is ${promoCode.min_order_amount}` 
-        };
-      }
-
-      if (promoCode.usage_limit && promoCode.used_count >= promoCode.usage_limit) {
-        return { valid: false, message: "Promo code usage limit reached" };
-      }
-
-      const discount = promoCode.discount_type === "percentage" 
-        ? (orderAmount * promoCode.discount_value) / 100
-        : promoCode.discount_value;
-
-      const finalDiscount = promoCode.max_discount_amount 
-        ? Math.min(discount, promoCode.max_discount_amount)
-        : discount;
-
-      return {
-        valid: true,
-        discount: finalDiscount,
-        promoCode: promoCode
-      };
-    } catch (error) {
-      console.error("Error validating promo code:", error);
-      throw error;
-    }
-  },
+  getPromoCodes(): Promise<PromoCode[]>;
+  createPromoCode(promoCode: InsertPromoCode): Promise<PromoCode>;
+  updatePromoCode(id: string, promoCode: Partial<InsertPromoCode>): Promise<PromoCode>;
+  deletePromoCode(id: string): Promise<void>;
+  validatePromoCode(code: string, orderAmount: number): Promise<{ valid: boolean; discount: number; message: string }>;
 
   // Analytics
-  async getAnalytics(eventType?: string, startDate?: string, endDate?: string) {
-    try {
-      let query = db.select().from(schema.analytics);
-      
-      if (eventType || startDate || endDate) {
-        const conditions = [];
-        if (eventType) conditions.push(eq(schema.analytics.event_type, eventType));
-        if (startDate) conditions.push(gte(schema.analytics.created_at, new Date(startDate)));
-        if (endDate) conditions.push(lte(schema.analytics.created_at, new Date(endDate)));
-        
-        query = query.where(and(...conditions));
+  getAnalytics(eventType?: string, startDate?: string, endDate?: string): Promise<Analytics[]>;
+  createAnalytics(analytics: InsertAnalytics): Promise<Analytics>;
+
+  // Settings
+  getSettings(): Promise<SiteSettings[]>;
+  createSetting(setting: InsertSiteSettings): Promise<SiteSettings>;
+  updateSetting(key: string, value: string): Promise<SiteSettings>;
+
+  // Admins
+  getAdminByEmail(email: string): Promise<Admin | undefined>;
+  createAdmin(admin: InsertAdmin): Promise<Admin>;
+
+  // Users (Required for Replit Auth)
+  getUser(id: string): Promise<User | undefined>;
+  upsertUser(user: UpsertUser): Promise<User>;
+  getUsers(): Promise<User[]>; // For admin panel
+  
+  // User Carts
+  getUserCart(userId: string): Promise<UserCart | undefined>;
+  updateUserCart(userId: string, items: any[]): Promise<UserCart>;
+  
+  // User Orders
+  getUserOrders(userId: string): Promise<Order[]>;
+  linkOrderToUser(orderId: string, userId: string): Promise<void>;
+}
+
+export class DatabaseStorage implements IStorage {
+  async getProducts(): Promise<Product[]> {
+    const result = await db.select().from(products).orderBy(desc(products.created_at));
+    return result;
+  }
+
+  async getProductsByCategory(category: string): Promise<Product[]> {
+    const result = await db.select().from(products).where(eq(products.category, category)).orderBy(desc(products.created_at));
+    return result;
+  }
+
+  async getProduct(id: string): Promise<Product | undefined> {
+    const result = await db.select().from(products).where(eq(products.id, id)).limit(1);
+    return result[0];
+  }
+
+  async createProduct(product: InsertProduct): Promise<Product> {
+    const result = await db.insert(products).values(product).returning();
+    return result[0];
+  }
+
+  async updateProduct(id: string, product: Partial<InsertProduct>): Promise<Product> {
+    const result = await db.update(products).set(product).where(eq(products.id, id)).returning();
+    return result[0];
+  }
+
+  async deleteProduct(id: string): Promise<void> {
+    await db.delete(products).where(eq(products.id, id));
+  }
+
+  async getOrders(): Promise<Order[]> {
+    const result = await db.select().from(orders).orderBy(desc(orders.created_at));
+    return result;
+  }
+
+  async getOrder(trackingId: string): Promise<Order | undefined> {
+    const result = await db.select().from(orders).where(eq(orders.tracking_id, trackingId)).limit(1);
+    const order = result[0];
+    if (order) {
+      // Ensure items is properly parsed
+      if (typeof order.items === 'string') {
+        try {
+          order.items = JSON.parse(order.items);
+        } catch (e) {
+          order.items = [];
+        }
       }
-      
-      return await query.orderBy(desc(schema.analytics.created_at));
-    } catch (error) {
-      console.error("Error fetching analytics:", error);
-      throw error;
+      // Ensure payment_info is properly parsed
+      if (typeof order.payment_info === 'string') {
+        try {
+          order.payment_info = JSON.parse(order.payment_info);
+        } catch (e) {
+          order.payment_info = null;
+        }
+      }
     }
-  },
+    return order || null;
+  }
 
-  async createAnalytics(analytics: InsertAnalytics) {
-    try {
-      const [newAnalytics] = await db.insert(schema.analytics).values({
-        ...analytics,
-        created_at: new Date(),
-      }).returning();
-      return newAnalytics;
-    } catch (error) {
-      console.error("Error creating analytics:", error);
-      throw error;
+  async createOrder(order: InsertOrder): Promise<Order> {
+    const trackingId = `TRX${Date.now()}${Math.floor(Math.random() * 1000)}`;
+    const result = await db.insert(orders).values({
+      ...order,
+      tracking_id: trackingId,
+    }).returning();
+    return result[0];
+  }
+
+  async updateOrderStatus(id: string, status: string): Promise<Order> {
+    const result = await db.update(orders).set({ 
+      status
+    }).where(eq(orders.id, id)).returning();
+    
+    if (result.length === 0) {
+      throw new Error("Order not found");
     }
-  },
+    
+    return result[0];
+  }
 
-  // Site Settings
-  async getSettings() {
-    try {
-      return await db.select().from(schema.siteSettings);
-    } catch (error) {
-      console.error("Error fetching settings:", error);
-      throw error;
+  async getActiveOffers(): Promise<Offer[]> {
+    const now = new Date();
+    const result = await db.select().from(offers)
+      .where(and(eq(offers.active, true), gte(offers.expiry, now)))
+      .orderBy(desc(offers.created_at));
+    return result;
+  }
+
+  async getOffers(): Promise<Offer[]> {
+    const result = await db.select().from(offers).orderBy(desc(offers.created_at));
+    return result;
+  }
+
+  async createOffer(offer: InsertOffer): Promise<Offer> {
+    const result = await db.insert(offers).values(offer).returning();
+    return result[0];
+  }
+
+  async updateOffer(id: string, offer: Partial<InsertOffer>): Promise<Offer> {
+    const result = await db.update(offers).set(offer).where(eq(offers.id, id)).returning();
+    return result[0];
+  }
+
+  async deleteOffer(id: string): Promise<void> {
+    await db.delete(offers).where(eq(offers.id, id));
+  }
+
+  async getAdminByEmail(email: string): Promise<Admin | undefined> {
+    const result = await db.select().from(admins).where(eq(admins.email, email)).limit(1);
+    return result[0];
+  }
+
+  async createAdmin(admin: InsertAdmin): Promise<Admin> {
+    const result = await db.insert(admins).values(admin).returning();
+    return result[0];
+  }
+
+  // Categories
+  async getCategories(): Promise<Category[]> {
+    const result = await db.select().from(categories).orderBy(desc(categories.sort_order));
+    return result;
+  }
+
+  async createCategory(category: InsertCategory): Promise<Category> {
+    const result = await db.insert(categories).values(category).returning();
+    return result[0];
+  }
+
+  async updateCategory(id: string, category: Partial<InsertCategory>): Promise<Category> {
+    const result = await db.update(categories).set(category).where(eq(categories.id, id)).returning();
+    return result[0];
+  }
+
+  async deleteCategory(id: string): Promise<void> {
+    await db.delete(categories).where(eq(categories.id, id));
+  }
+
+  // Promo Codes
+  async getPromoCodes(): Promise<PromoCode[]> {
+    const result = await db.select().from(promoCodes).orderBy(desc(promoCodes.created_at));
+    return result;
+  }
+
+  async createPromoCode(promoCode: InsertPromoCode): Promise<PromoCode> {
+    const result = await db.insert(promoCodes).values(promoCode).returning();
+    return result[0];
+  }
+
+  async updatePromoCode(id: string, promoCode: Partial<InsertPromoCode>): Promise<PromoCode> {
+    const result = await db.update(promoCodes).set(promoCode).where(eq(promoCodes.id, id)).returning();
+    return result[0];
+  }
+
+  async deletePromoCode(id: string): Promise<void> {
+    await db.delete(promoCodes).where(eq(promoCodes.id, id));
+  }
+
+  async validatePromoCode(code: string, orderAmount: number): Promise<{ valid: boolean; discount: number; message: string }> {
+    const result = await db.select().from(promoCodes).where(eq(promoCodes.code, code.toUpperCase())).limit(1);
+    const promoCode = result[0];
+
+    if (!promoCode) {
+      return { valid: false, discount: 0, message: "প্রমো কোড খুঁজে পাওয়া যায়নি" };
     }
-  },
 
-  async createSetting(setting: InsertSiteSettings) {
-    try {
-      const [newSetting] = await db.insert(schema.siteSettings).values({
-        ...setting,
-        created_at: new Date(),
-        updated_at: new Date(),
-      }).returning();
-      return newSetting;
-    } catch (error) {
-      console.error("Error creating setting:", error);
-      throw error;
+    if (!promoCode.is_active) {
+      return { valid: false, discount: 0, message: "প্রমো কোড নিষ্ক্রিয়" };
     }
-  },
 
-  async updateSetting(key: string, value: string) {
-    try {
-      const [updatedSetting] = await db
-        .update(schema.siteSettings)
-        .set({ 
-          value, 
-          updated_at: new Date() 
-        })
-        .where(eq(schema.siteSettings.key, key))
+    if (promoCode.expires_at && new Date() > new Date(promoCode.expires_at)) {
+      return { valid: false, discount: 0, message: "প্রমো কোডের মেয়াদ শেষ" };
+    }
+
+    if (promoCode.usage_limit && (promoCode.used_count || 0) >= promoCode.usage_limit) {
+      return { valid: false, discount: 0, message: "প্রমো কোডের ব্যবহারের সীমা শেষ" };
+    }
+
+    if (orderAmount < Number(promoCode.min_order_amount)) {
+      return { 
+        valid: false, 
+        discount: 0, 
+        message: `সর্বনিম্ন অর্ডার পরিমাণ ৳${promoCode.min_order_amount} হতে হবে` 
+      };
+    }
+
+    let discount = 0;
+    if (promoCode.discount_type === "percentage") {
+      discount = (orderAmount * Number(promoCode.discount_value)) / 100;
+      if (promoCode.max_discount && discount > Number(promoCode.max_discount)) {
+        discount = Number(promoCode.max_discount);
+      }
+    } else {
+      discount = Number(promoCode.discount_value);
+    }
+
+    return { 
+      valid: true, 
+      discount, 
+      message: `${promoCode.discount_type === "percentage" ? promoCode.discount_value + "%" : "৳" + promoCode.discount_value} ছাড় প্রয়োগ হয়েছে` 
+    };
+  }
+
+  // Analytics
+  async getAnalytics(eventType?: string, startDate?: string, endDate?: string): Promise<Analytics[]> {
+    let query = db.select().from(analytics);
+
+    const conditions = [];
+    if (eventType) {
+      conditions.push(eq(analytics.event_type, eventType));
+    }
+    if (startDate) {
+      conditions.push(gte(analytics.created_at, new Date(startDate)));
+    }
+    if (endDate) {
+      conditions.push(lte(analytics.created_at, new Date(endDate)));
+    }
+
+    if (conditions.length > 0) {
+      const result = await query.where(and(...conditions)).orderBy(desc(analytics.created_at));
+      return result;
+    }
+
+    const result = await query.orderBy(desc(analytics.created_at));
+    return result;
+  }
+
+  async createAnalytics(analyticsData: InsertAnalytics): Promise<Analytics> {
+    const result = await db.insert(analytics).values(analyticsData).returning();
+    return result[0];
+  }
+
+  // Settings
+  async getSettings(): Promise<SiteSettings[]> {
+    const result = await db.select().from(siteSettings).orderBy(desc(siteSettings.updated_at));
+    return result;
+  }
+
+  async createSetting(setting: InsertSiteSettings): Promise<SiteSettings> {
+    const result = await db.insert(siteSettings).values(setting).returning();
+    return result[0];
+  }
+
+  async updateSetting(key: string, value: string): Promise<SiteSettings> {
+    const result = await db.update(siteSettings)
+      .set({ value, updated_at: new Date() })
+      .where(eq(siteSettings.key, key))
+      .returning();
+
+    if (result.length === 0) {
+      // Create if doesn't exist
+      return this.createSetting({ key, value });
+    }
+
+    return result[0];
+  }
+
+  // User operations (Required for Replit Auth)
+  async getUser(id: string): Promise<User | undefined> {
+    const result = await db.select().from(users).where(eq(users.id, id)).limit(1);
+    return result[0];
+  }
+
+  async upsertUser(userData: UpsertUser): Promise<User> {
+    const result = await db
+      .insert(users)
+      .values(userData)
+      .onConflictDoUpdate({
+        target: users.id,
+        set: {
+          ...userData,
+          updatedAt: new Date(),
+        },
+      })
+      .returning();
+    return result[0];
+  }
+
+  async getUsers(): Promise<User[]> {
+    const result = await db.select().from(users).orderBy(desc(users.createdAt));
+    return result;
+  }
+
+  // User Cart operations
+  async getUserCart(userId: string): Promise<UserCart | undefined> {
+    const result = await db.select().from(userCarts).where(eq(userCarts.user_id, userId)).limit(1);
+    return result[0];
+  }
+
+  async updateUserCart(userId: string, items: any[]): Promise<UserCart> {
+    const existing = await this.getUserCart(userId);
+    
+    if (existing) {
+      const result = await db.update(userCarts)
+        .set({ items: JSON.stringify(items), updated_at: new Date() })
+        .where(eq(userCarts.user_id, userId))
         .returning();
-      return updatedSetting;
-    } catch (error) {
-      console.error("Error updating setting:", error);
-      throw error;
+      return result[0];
+    } else {
+      const result = await db.insert(userCarts)
+        .values({ user_id: userId, items: JSON.stringify(items) })
+        .returning();
+      return result[0];
     }
-  },
+  }
 
-  // Admin
-  async getAdminByEmail(email: string) {
-    try {
-      if (email === "admin@trynex.com") {
-        return {
-          id: "admin-1",
-          email: "admin@trynex.com",
-          password: "admin123"
-        };
-      }
-      return null;
-    } catch (error) {
-      console.error("Error fetching admin:", error);
-      throw error;
-    }
-  },
-};
+  // User Order operations
+  async getUserOrders(userId: string): Promise<Order[]> {
+    const result = await db.select()
+      .from(orders)
+      .where(eq(orders.user_id, userId))
+      .orderBy(desc(orders.created_at));
+    return result;
+  }
+
+  async linkOrderToUser(orderId: string, userId: string): Promise<void> {
+    await db.update(orders)
+      .set({ user_id: userId })
+      .where(eq(orders.id, orderId));
+  }
+}
+
+export const storage = new DatabaseStorage();

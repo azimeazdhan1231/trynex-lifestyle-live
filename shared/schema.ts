@@ -1,4 +1,4 @@
-import { sql, InferSelectModel, InferInsertModel } from "drizzle-orm";
+import { sql } from "drizzle-orm";
 import { pgTable, text, varchar, numeric, integer, timestamp, jsonb, uuid, boolean } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
@@ -110,16 +110,14 @@ export const sessions = pgTable("sessions", {
 
 // User storage table  
 export const users = pgTable("users", {
-  id: varchar("id").primaryKey(),
-  name: text("name").notNull(),
-  email: text("email").notNull().unique(),
-  avatar_url: text("avatar_url"),
-  created_at: timestamp("created_at", { withTimezone: true }).defaultNow(),
-  updated_at: timestamp("updated_at", { withTimezone: true }).defaultNow(),
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  email: varchar("email").unique(),
+  firstName: varchar("first_name"),
+  lastName: varchar("last_name"),
+  profileImageUrl: varchar("profile_image_url"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
 });
-
-export type User = InferSelectModel<typeof users>;
-export type InsertUser = InferInsertModel<typeof users>;
 
 // User carts for persistent storage
 export const userCarts = pgTable("user_carts", {
@@ -203,6 +201,7 @@ export type Analytics = typeof analytics.$inferSelect;
 export type InsertAnalytics = z.infer<typeof insertAnalyticsSchema>;
 export type SiteSettings = typeof siteSettings.$inferSelect;
 export type InsertSiteSettings = z.infer<typeof insertSiteSettingsSchema>;
+export type User = typeof users.$inferSelect;
 export type UpsertUser = typeof users.$inferInsert;
 export type UserCart = typeof userCarts.$inferSelect;
 export type InsertUserCart = z.infer<typeof insertUserCartSchema>;

@@ -19,130 +19,239 @@ export async function onRequest(context) {
   }
 
   try {
-    // Supabase configuration
-    const SUPABASE_URL = "https://lxhhgdqfxmeohayceshb.supabase.co";
-    const SUPABASE_SERVICE_KEY = env.SUPABASE_SERVICE_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4aGhnZHFmeG1lb2hheWNlc2hiIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1Mzg5OTU5MCwiZXhwIjoyMDY5NDc1NTkwfQ.zsYuh0P2S97pLrvY6t1j-qw-j-R_-_5QQX7e423dDeU";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4aGhnZHFmeG1lb2hheWNlc2hiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM4OTk1OTAsImV4cCI6MjA2OTQ3NTU5MH0.gW9X6igqtpAQKutqb4aEEx0VovEZdMp4Gk_R8Glm9Bw";
+    // Use your Supabase connection string
+    const connectionString = env.DATABASE_URL || "postgresql://postgres.lxhhgdqfxmeohayceshb:Amiomito1Amiomito1@aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres";
 
-    // Helper function to make Supabase requests
-    const supabaseRequest = async (endpoint, options = {}) => {
-      const response = await fetch(`${SUPABASE_URL}/rest/v1/${endpoint}`, {
-        ...options,
+    if (!connectionString) {
+      return new Response(JSON.stringify({ error: "Database connection not configured" }), {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" }
+      });
+    }
+
+    // Simple database query function
+    async function query(sql, params = []) {
+      const response = await fetch(`https://lxhhgdqfxmeohayceshb.supabase.co/rest/v1/rpc/execute_sql`, {
+        method: 'POST',
         headers: {
-          'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`,
-          'apikey': SUPABASE_ANON_KEY,
           'Content-Type': 'application/json',
-          ...options.headers
-        }
+          'Authorization': `Bearer ${env.SUPABASE_SERVICE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4aGhnZHFmeG1lb2hheWNlc2hiIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1Mzg5OTU5MCwiZXhwIjoyMDY5NDc1NTkwfQ.zsYuh0P2S97pLrvY6t1j-qw-j-R_-_5QQX7e423dDeU'}`,
+          'apikey': env.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4aGhnZHFmeG1lb2hheWNlc2hiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM4OTk1OTAsImV4cCI6MjA2OTQ3NTU5MH0.gW9X6igqtpAQKutqb4aEEx0VovEZdMp4Gk_R8Glm9Bw'
+        },
+        body: JSON.stringify({ query: sql, params })
       });
-
-      if (!response.ok) {
-        throw new Error(`Supabase request failed: ${response.status}`);
-      }
-
-      return response;
-    };
-
-    // Initialize categories if needed
-    if (path === "/api/init-categories" && method === "GET") {
-      const categoriesResponse = await supabaseRequest('categories');
-      const categories = await categoriesResponse.json();
-
-      if (categories.length === 0) {
-        const defaultCategories = [
-          { name: "gifts", name_bengali: "গিফট", description: "Special gift items", is_active: true, sort_order: 1 },
-          { name: "lifestyle", name_bengali: "লাইফস্টাইল", description: "Lifestyle products", is_active: true, sort_order: 2 },
-          { name: "accessories", name_bengali: "অ্যাক্সেসরিজ", description: "Fashion accessories", is_active: true, sort_order: 3 },
-          { name: "custom", name_bengali: "কাস্টম", description: "Custom products", is_active: true, sort_order: 4 },
-          { name: "electronics", name_bengali: "ইলেক্ট্রনিক্স", description: "Electronic gadgets", is_active: true, sort_order: 5 }
-        ];
-
-        for (const category of defaultCategories) {
-          await supabaseRequest('categories', {
-            method: 'POST',
-            body: JSON.stringify(category)
-          });
-        }
-      }
-
-      return new Response(JSON.stringify({ message: "Categories initialized" }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" }
-      });
+      return await response.json();
     }
 
-    // Products API
+    // Route handling
     if (path === "/api/products" && method === "GET") {
-      const { category } = Object.fromEntries(url.searchParams);
-      let endpoint = 'products';
-
-      if (category && category !== 'all') {
-        endpoint += `?category=eq.${category}`;
-      }
-
-      const response = await supabaseRequest(endpoint);
-      const products = await response.json();
-
-      return new Response(JSON.stringify(products), {
+      const response = await fetch(`https://lxhhgdqfxmeohayceshb.supabase.co/rest/v1/products?select=*&order=created_at.desc`, {
+        headers: {
+          'Authorization': `Bearer ${env.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4aGhnZHFmeG1lb2hheWNlc2hiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM4OTk1OTAsImV4cCI6MjA2OTQ3NTU5MH0.gW9X6igqtpAQKutqb4aEEx0VovEZdMp4Gk_R8Glm9Bw'}`,
+          'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4aGhnZHFmeG1lb2hheWNlc2hiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM4OTk1OTAsImV4cCI6MjA2OTQ3NTU5MH0.gW9X6igqtpAQKutqb4aEEx0VovEZdMp4Gk_R8Glm9Bw'
+        }
+      });
+      const data = await response.json();
+      return new Response(JSON.stringify(data), {
         headers: { ...corsHeaders, "Content-Type": "application/json" }
       });
     }
 
-    // Single product
-    if (path.startsWith("/api/products/") && method === "GET") {
-      const id = path.split("/")[3];
-      const response = await supabaseRequest(`products?id=eq.${id}`);
-      const products = await response.json();
-      const product = products[0];
+    if (path === "/api/products" && method === "POST") {
+      const body = await request.json();
+      const { name, price, image_url, category, stock } = body;
 
-      if (!product) {
-        return new Response(JSON.stringify({ message: "Product not found" }), {
-          status: 404,
+      if (!name || !price || !category) {
+        return new Response(JSON.stringify({ error: "Missing required fields" }), {
+          status: 400,
           headers: { ...corsHeaders, "Content-Type": "application/json" }
         });
       }
 
-      return new Response(JSON.stringify(product), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" }
-      });
-    }
-
-    // Create product
-    if (path === "/api/products" && method === "POST") {
-      const body = await request.json();
-      const response = await supabaseRequest('products', {
+      const response = await fetch(`https://lxhhgdqfxmeohayceshb.supabase.co/rest/v1/products`, {
         method: 'POST',
-        body: JSON.stringify(body),
-        headers: { 'Prefer': 'return=representation' }
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${env.SUPABASE_SERVICE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4aGhnZHFmeG1lb2hheWNlc2hiIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1Mzg5OTU5MCwiZXhwIjoyMDY5NDc1NTkwfQ.zsYuh0P2S97pLrvY6t1j-qw-j-R_-_5QQX7e423dDeU'}`,
+          'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4aGhnZHFmeG1lb2hheWNlc2hiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM4OTk1OTAsImV4cCI6MjA2OTQ3NTU5MH0.gW9X6igqtpAQKutqb4aEEx0VovEZdMp4Gk_R8Glm9Bw',
+          'Prefer': 'return=representation'
+        },
+        body: JSON.stringify({
+          name,
+          price,
+          image_url: image_url || "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600",
+          category,
+          stock: Number(stock) || 0
+        })
       });
 
-      const product = await response.json();
-      return new Response(JSON.stringify(product[0]), {
+      const data = await response.json();
+      return new Response(JSON.stringify(data[0] || data), {
         status: 201,
         headers: { ...corsHeaders, "Content-Type": "application/json" }
       });
     }
 
-    // Update product
-    if (path.startsWith("/api/products/") && method === "PATCH") {
-      const id = path.split("/")[3];
-      const body = await request.json();
-
-      const response = await supabaseRequest(`products?id=eq.${id}`, {
-        method: 'PATCH',
-        body: JSON.stringify(body),
-        headers: { 'Prefer': 'return=representation' }
+    if (path === "/api/orders" && method === "GET") {
+      const response = await fetch(`https://lxhhgdqfxmeohayceshb.supabase.co/rest/v1/orders?select=*&order=created_at.desc`, {
+        headers: {
+          'Authorization': `Bearer ${env.SUPABASE_SERVICE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4aGhnZHFmeG1lb2hheWNlc2hiIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1Mzg5OTU5MCwiZXhwIjoyMDY5NDc1NTkwfQ.zsYuh0P2S97pLrvY6t1j-qw-j-R_-_5QQX7e423dDeU'}`,
+          'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4aGhnZHFmeG1lb2hheWNlc2hiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM4OTk1OTAsImV4cCI6MjA2OTQ3NTU5MH0.gW9X6igqtpAQKutqb4aEEx0VovEZdMp4Gk_R8Glm9Bw'
+        }
       });
-
-      const product = await response.json();
-      return new Response(JSON.stringify(product[0]), {
+      const data = await response.json();
+      return new Response(JSON.stringify(data), {
         headers: { ...corsHeaders, "Content-Type": "application/json" }
       });
     }
 
-    // Delete product
-    if (path.startsWith("/api/products/") && method === "DELETE") {
+    if (path === "/api/orders" && method === "POST") {
+      const body = await request.json();
+      const { customer_name, phone, district, thana, address, items, total } = body;
+
+      const tracking_id = `TRX${Date.now()}${Math.floor(Math.random() * 1000)}`;
+
+      const response = await fetch(`https://lxhhgdqfxmeohayceshb.supabase.co/rest/v1/orders`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${env.SUPABASE_SERVICE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4aGhnZHFmeG1lb2hheWNlc2hiIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1Mzg5OTU5MCwiZXhwIjoyMDY5NDc1NTkwfQ.zsYuh0P2S97pLrvY6t1j-qw-j-R_-_5QQX7e423dDeU'}`,
+          'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4aGhnZHFmeG1lb2hheWNlc2hiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM4OTk1OTAsImV4cCI6MjA2OTQ3NTU5MH0.gW9X6igqtpAQKutqb4aEEx0VovEZdMp4Gk_R8Glm9Bw',
+          'Prefer': 'return=representation'
+        },
+        body: JSON.stringify({
+          tracking_id,
+          customer_name,
+          phone,
+          district,
+          thana,
+          address,
+          items,
+          total,
+          status: 'pending'
+        })
+      });
+
+      const data = await response.json();
+      return new Response(JSON.stringify(data[0] || data), {
+        status: 201,
+        headers: { ...corsHeaders, "Content-Type": "application/json" }
+      });
+    }
+
+    if (path.startsWith("/api/orders/") && !path.includes("/status") && method === "GET") {
+      const trackingId = path.split("/")[3];
+      const response = await fetch(`https://lxhhgdqfxmeohayceshb.supabase.co/rest/v1/orders?tracking_id=eq.${trackingId}&select=*`, {
+        headers: {
+          'Authorization': `Bearer ${env.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4aGhnZHFmeG1lb2hheWNlc2hiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM4OTk1OTAsImV4cCI6MjA2OTQ3NTU5MH0.gW9X6igqtpAQKutqb4aEEx0VovEZdMp4Gk_R8Glm9Bw'}`,
+          'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4aGhnZHFmeG1lb2hheWNlc2hiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM4OTk1OTAsImV4cCI6MjA2OTQ3NTU5MH0.gW9X6igqtpAQKutqb4aEEx0VovEZdMp4Gk_R8Glm9Bw'
+        }
+      });
+
+      const data = await response.json();
+      if (!data || data.length === 0) {
+        return new Response(JSON.stringify({ error: "Order not found" }), {
+          status: 404,
+          headers: { ...corsHeaders, "Content-Type": "application/json" }
+        });
+      }
+
+      return new Response(JSON.stringify(data[0]), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" }
+      });
+    }
+
+    // Handle both /api/orders/:id and /api/orders/:id/status endpoints
+    if ((path.match(/^\/api\/orders\/[^\/]+$/) || path.includes("/status")) && method === "PATCH") {
+      const pathParts = path.split("/");
+      const id = pathParts[3];
+      const body = await request.json();
+      const { status } = body;
+
+      if (!status) {
+        return new Response(JSON.stringify({ error: "Status is required" }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" }
+        });
+      }
+
+      const response = await fetch(`https://lxhhgdqfxmeohayceshb.supabase.co/rest/v1/orders?id=eq.${id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${env.SUPABASE_SERVICE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4aGhnZHFmeG1lb2hheWNlc2hiIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1Mzg5OTU5MCwiZXhwIjoyMDY5NDc1NTkwfQ.zsYuh0P2S97pLrvY6t1j-qw-j-R_-_5QQX7e423dDeU'}`,
+          'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4aGhnZHFmeG1lb2hheWNlc2hiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM4OTk1OTAsImV4cCI6MjA2OTQ3NTU5MH0.gW9X6igqtpAQKutqb4aEEx0VovEZdMp4Gk_R8Glm9Bw',
+          'Prefer': 'return=representation'
+        },
+        body: JSON.stringify({ status })
+      });
+
+      const data = await response.json();
+      return new Response(JSON.stringify(data[0] || data), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" }
+      });
+    }
+
+    if (path === "/api/offers" && method === "GET") {
+      const active = url.searchParams.get("active");
+      let apiUrl = `https://lxhhgdqfxmeohayceshb.supabase.co/rest/v1/offers?select=*&order=created_at.desc`;
+
+      if (active === "true") {
+        apiUrl += `&is_active=eq.true&expires_at=gte.${new Date().toISOString()}`;
+      }
+
+      const response = await fetch(apiUrl, {
+        headers: {
+          'Authorization': `Bearer ${env.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4aGhnZHFmeG1lb2hheWNlc2hiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM4OTk1OTAsImV4cCI6MjA2OTQ3NTU5MH0.gW9X6igqtpAQKutqb4aEEx0VovEZdMp4Gk_R8Glm9Bw'}`,
+          'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4aGhnZHFmeG1lb2hheWNlc2hiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM4OTk1OTAsImV4cCI6MjA2OTQ3NTU5MH0.gW9X6igqtpAQKutqb4aEEx0VovEZdMp4Gk_R8Glm9Bw'
+        }
+      });
+      const data = await response.json();
+      return new Response(JSON.stringify(data), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" }
+      });
+    }
+
+    // Product Update
+    if (path.startsWith("/api/products/") && !path.includes("/status") && method === "PATCH") {
       const id = path.split("/")[3];
-      await supabaseRequest(`products?id=eq.${id}`, { method: 'DELETE' });
+      const body = await request.json();
+      const { name, price, image_url, category, stock } = body;
+
+      const response = await fetch(`https://lxhhgdqfxmeohayceshb.supabase.co/rest/v1/products?id=eq.${id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${env.SUPABASE_SERVICE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4aGhnZHFmeG1lb2hheWNlc2hiIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1Mzg5OTU5MCwiZXhwIjoyMDY5NDc1NTkwfQ.zsYuh0P2S97pLrvY6t1j-qw-j-R_-_5QQX7e423dDeU'}`,
+          'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4aGhnZHFmeG1lb2hheWNlc2hiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM4OTk1OTAsImV4cCI6MjA2OTQ3NTU5MH0.gW9X6igqtpAQKutqb4aEEx0VovEZdMp4Gk_R8Glm9Bw',
+          'Prefer': 'return=representation'
+        },
+        body: JSON.stringify({
+          ...(name && { name }),
+          ...(price && { price }),
+          ...(image_url && { image_url }),
+          ...(category && { category }),
+          ...(stock !== undefined && { stock: Number(stock) })
+        })
+      });
+
+      const data = await response.json();
+      return new Response(JSON.stringify(data[0] || data), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" }
+      });
+    }
+
+    // Product Delete
+    if (path.startsWith("/api/products/") && !path.includes("/status") && method === "DELETE") {
+      const id = path.split("/")[3];
+
+      const response = await fetch(`https://lxhhgdqfxmeohayceshb.supabase.co/rest/v1/products?id=eq.${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${env.SUPABASE_SERVICE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4aGhnZHFmeG1lb2hheWNlc2hiIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1Mzg5OTU5MCwiZXhwIjoyMDY5NDc1NTkwfQ.zsYuh0P2S97pLrvY6t1j-qw-j-R_-_5QQX7e423dDeU'}`,
+          'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4aGhnZHFmeG1lb2hheWNlc2hiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM4OTk1OTAsImV4cCI6MjA2OTQ3NTU5MH0.gW9X6igqtpAQKutqb4aEEx0VovEZdMp4Gk_R8Glm9Bw'
+        }
+      });
 
       return new Response(null, {
         status: 204,
@@ -150,141 +259,117 @@ export async function onRequest(context) {
       });
     }
 
-    // Categories API
-    if (path === "/api/categories" && method === "GET") {
-      const response = await supabaseRequest('categories');
-      const categories = await response.json();
-
-      return new Response(JSON.stringify(categories), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" }
-      });
-    }
-
-    // Orders API
-    if (path === "/api/orders" && method === "GET") {
-      const response = await supabaseRequest('orders?order=created_at.desc');
-      const orders = await response.json();
-
-      return new Response(JSON.stringify(orders), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" }
-      });
-    }
-
-    // Get single order by tracking ID
-    if (path.startsWith("/api/orders/") && method === "GET") {
-      const trackingId = path.split("/")[3];
-      const response = await supabaseRequest(`orders?tracking_id=eq.${trackingId}`);
-      const orders = await response.json();
-      const order = orders[0];
-
-      if (!order) {
-        return new Response(JSON.stringify({ message: "Order not found" }), {
-          status: 404,
-          headers: { ...corsHeaders, "Content-Type": "application/json" }
-        });
-      }
-
-      return new Response(JSON.stringify(order), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" }
-      });
-    }
-
-    // Create order
-    if (path === "/api/orders" && method === "POST") {
+    // Offers CRUD operations
+    if (path === "/api/offers" && method === "POST") {
       const body = await request.json();
+      const { title, description, discount_percentage, min_order_amount, max_discount_amount, expires_at, is_active } = body;
 
-      // Generate tracking ID
-      const trackingId = 'TRX' + Date.now().toString().slice(-8);
-      const orderData = { ...body, tracking_id: trackingId };
-
-      const response = await supabaseRequest('orders', {
+      const response = await fetch(`https://lxhhgdqfxmeohayceshb.supabase.co/rest/v1/offers`, {
         method: 'POST',
-        body: JSON.stringify(orderData),
-        headers: { 'Prefer': 'return=representation' }
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${env.SUPABASE_SERVICE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4aGhnZHFmeG1lb2hheWNlc2hiIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1Mzg5OTU5MCwiZXhwIjoyMDY5NDc1NTkwfQ.zsYuh0P2S97pLrvY6t1j-qw-j-R_-_5QQX7e423dDeU'}`,
+          'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4aGhnZHFmeG1lb2hheWNlc2hiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM4OTk1OTAsImV4cCI6MjA2OTQ3NTU5MH0.gW9X6igqtpAQKutqb4aEEx0VovEZdMp4Gk_R8Glm9Bw',
+          'Prefer': 'return=representation'
+        },
+        body: JSON.stringify({
+          title,
+          description,
+          discount_percentage: Number(discount_percentage),
+          min_order_amount: min_order_amount ? Number(min_order_amount) : null,
+          max_discount_amount: max_discount_amount ? Number(max_discount_amount) : null,
+          expires_at: expires_at || null,
+          is_active: Boolean(is_active)
+        })
       });
 
-      const order = await response.json();
-      return new Response(JSON.stringify(order[0]), {
+      const data = await response.json();
+      return new Response(JSON.stringify(data[0] || data), {
         status: 201,
         headers: { ...corsHeaders, "Content-Type": "application/json" }
       });
     }
 
-    // Update order status
-    if (path.startsWith("/api/orders/") && (method === "PATCH" || path.includes("/status"))) {
+    if (path.startsWith("/api/offers/") && method === "PATCH") {
       const id = path.split("/")[3];
       const body = await request.json();
 
-      const response = await supabaseRequest(`orders?id=eq.${id}`, {
+      const response = await fetch(`https://lxhhgdqfxmeohayceshb.supabase.co/rest/v1/offers?id=eq.${id}`, {
         method: 'PATCH',
-        body: JSON.stringify({ status: body.status }),
-        headers: { 'Prefer': 'return=representation' }
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${env.SUPABASE_SERVICE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4aGhnZHFmeG1lb2hheWNlc2hiIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1Mzg5OTU5MCwiZXhwIjoyMDY5NDc1NTkwfQ.zsYuh0P2S97pLrvY6t1j-qw-j-R_-_5QQX7e423dDeU'}`,
+          'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4aGhnZHFmeG1lb2hheWNlc2hiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM4OTk1OTAsImV4cCI6MjA2OTQ3NTU5MH0.gW9X6igqtpAQKutqb4aEEx0VovEZdMp4Gk_R8Glm9Bw',
+          'Prefer': 'return=representation'
+        },
+        body: JSON.stringify(body)
       });
 
-      const order = await response.json();
-      return new Response(JSON.stringify(order[0]), {
+      const data = await response.json();
+      return new Response(JSON.stringify(data[0] || data), {
         headers: { ...corsHeaders, "Content-Type": "application/json" }
       });
     }
 
-    // Offers API
-    if (path === "/api/offers" && method === "GET") {
-      const { active } = Object.fromEntries(url.searchParams);
-      let endpoint = 'offers';
+    if (path.startsWith("/api/offers/") && method === "DELETE") {
+      const id = path.split("/")[3];
 
-      if (active === "true") {
-        endpoint += '?is_active=eq.true';
-      }
+      const response = await fetch(`https://lxhhgdqfxmeohayceshb.supabase.co/rest/v1/offers?id=eq.${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${env.SUPABASE_SERVICE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4aGhnZHFmeG1lb2hheWNlc2hiIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1Mzg5OTU5MCwiZXhwIjoyMDY5NDc1NTkwfQ.zsYuh0P2S97pLrvY6t1j-qw-j-R_-_5QQX7e423dDeU'}`,
+          'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4aGhnZHFmeG1lb2hheWNlc2hiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM4OTk1OTAsImV4cCI6MjA2OTQ3NTU5MH0.gW9X6igqtpAQKutqb4aEEx0VovEZdMp4Gk_R8Glm9Bw'
+        }
+      });
 
-      const response = await supabaseRequest(endpoint);
-      const offers = await response.json();
-
-      return new Response(JSON.stringify(offers), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" }
+      return new Response(null, {
+        status: 204,
+        headers: corsHeaders
       });
     }
 
-    // Admin login
     if (path === "/api/admin/login" && method === "POST") {
-      const { email, password } = await request.json();
+      const body = await request.json();
+      const { email, password } = body;
 
-      if (!email || !password) {
-        return new Response(JSON.stringify({ message: "Email and password are required" }), {
-          status: 400,
-          headers: { ...corsHeaders, "Content-Type": "application/json" }
-        });
-      }
+      const response = await fetch(`https://lxhhgdqfxmeohayceshb.supabase.co/rest/v1/admins?email=eq.${email}&password=eq.${password}&select=*`, {
+        headers: {
+          'Authorization': `Bearer ${env.SUPABASE_SERVICE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4aGhnZHFmeG1lb2hheWNlc2hiIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1Mzg5OTU5MCwiZXhwIjoyMDY5NDc1NTkwfQ.zsYuh0P2S97pLrvY6t1j-qw-j-R_-_5QQX7e423dDeU'}`,
+          'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4aGhnZHFmeG1lb2hheWNlc2hiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM4OTk1OTAsImV4cCI6MjA2OTQ3NTU5MH0.gW9X6igqtpAQKutqb4aEEx0VovEZdMp4Gk_R8Glm9Bw'
+        }
+      });
 
-      const response = await supabaseRequest(`admins?email=eq.${email}`);
-      const admins = await response.json();
-      const admin = admins[0];
-
-      if (!admin || admin.password !== password) {
-        return new Response(JSON.stringify({ message: "Invalid credentials" }), {
+      const data = await response.json();
+      if (!data || data.length === 0) {
+        return new Response(JSON.stringify({ error: "Invalid credentials" }), {
           status: 401,
           headers: { ...corsHeaders, "Content-Type": "application/json" }
         });
       }
 
-      return new Response(JSON.stringify({ 
-        success: true, 
-        admin: { id: admin.id, email: admin.email } 
-      }), {
+      return new Response(JSON.stringify({ success: true, admin: data[0] }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" }
       });
     }
 
-    // Default response for unmatched routes
-    return new Response(JSON.stringify({ message: "Route not found" }), {
+    // Default 404 response
+    return new Response(JSON.stringify({ error: "Route not found" }), {
       status: 404,
       headers: { ...corsHeaders, "Content-Type": "application/json" }
     });
 
   } catch (error) {
     console.error("API Error:", error);
+    console.error("Request details:", {
+      url: url.pathname,
+      method: request.method,
+      headers: Object.fromEntries(request.headers.entries())
+    });
     return new Response(JSON.stringify({ 
       error: "Internal server error", 
-      message: error.message 
+      details: error.message,
+      path: url.pathname,
+      method: request.method
     }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" }

@@ -1,16 +1,27 @@
-import { useState } from "react";
-import { Link } from "wouter";
-import { ShoppingCart, User, Menu, X, LogOut, Package, UserCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { 
-  DropdownMenu, 
-  DropdownMenuContent, 
-  DropdownMenuItem, 
-  DropdownMenuSeparator, 
-  DropdownMenuTrigger 
-} from "@/components/ui/dropdown-menu";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Heart, Search, ShoppingCart, User, Menu, X, Phone, Mail, MapPin, Clock, LogOut } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { useState } from "react";
+import { Link, useLocation } from "wouter";
+import { COMPANY_NAME } from "@/lib/constants";
+import CartModal from "@/components/cart-modal";
+import SearchBar from "@/components/search-bar";
+import ProductModal from "@/components/product-modal";
 import { useAuth } from "@/hooks/useAuth";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import type { Product } from "@shared/schema";
 
 interface HeaderProps {
   cartCount: number;
@@ -18,150 +29,210 @@ interface HeaderProps {
 }
 
 export default function Header({ cartCount, onCartOpen }: HeaderProps) {
+  const [isCartOpen, setIsCartOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const { user, isAuthenticated } = useAuth();
-
-  const handleAuthAction = () => {
-    if (isAuthenticated) {
-      // Logout by redirecting to a logout endpoint or clearing session
-      window.location.href = '/api/auth/logout';
-    } else {
-      // Show Replit Auth modal
-      const script = document.createElement('script');
-      script.src = 'https://auth.util.repl.co/script.js';
-      script.setAttribute('authed', 'location.reload()');
-      document.body.appendChild(script);
-    }
-  };
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [isProductModalOpen, setIsProductModalOpen] = useState(false);
+  const [location] = useLocation();
+  const { user, isLoading, isAuthenticated } = useAuth();
 
   const navItems = [
     { name: "হোম", href: "/" },
     { name: "পণ্য", href: "/products" },
     { name: "অফার", href: "/offers" },
-    { name: "ট্র্যাকিং", href: "/tracking" },
     { name: "যোগাযোগ", href: "/contact" },
   ];
 
-  return (
-    <header className="bg-white shadow-sm border-b sticky top-0 z-50">
-      <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between h-16">
-          {/* Logo */}
-          <Link href="/" className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
-              <span className="text-white font-bold text-sm">T</span>
-            </div>
-            <span className="text-xl font-bold text-gray-800">Trynex</span>
-          </Link>
+  const isActive = (href: string) => {
+    return location === href;
+  };
 
-          {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-8">
-            {navItems.map((item) => (
-              <Link
+  const handleProductSelect = (product: Product) => {
+    setSelectedProduct(product);
+    setIsProductModalOpen(true);
+  };
+
+  return (
+    <>
+      <header className="bg-white shadow-lg fixed top-0 left-0 right-0 z-50">        
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            {/* Logo */}
+            <div className="flex items-center">
+          <Link href="/">
+            <h1 className="text-2xl font-bold text-primary cursor-pointer hover:text-primary/80 transition-colors">
+              {COMPANY_NAME}
+            </h1>
+          </Link>
+        </div>
+
+            {/* Desktop Navigation */}
+            <nav className="hidden md:flex space-x-8">
+              {navItems.map((item) => (
+                <Link
                 key={item.name}
                 href={item.href}
-                className="text-gray-700 hover:text-primary transition-colors font-medium"
+                className={`font-medium transition-colors ${
+                  isActive(item.href) 
+                    ? "text-primary font-semibold" 
+                    : "text-gray-600 hover:text-primary"
+                }`}
               >
                 {item.name}
               </Link>
-            ))}
-          </nav>
+              ))}
+            </nav>
 
-          {/* Right Side Actions */}
-          <div className="flex items-center space-x-4">
-            {/* Cart Button */}
-            <Button
-              variant="outline"
-              onClick={onCartOpen}
-              className="relative"
-            >
-              <ShoppingCart className="w-5 h-5" />
-              {cartCount > 0 && (
-                <Badge 
-                  variant="destructive" 
-                  className="absolute -top-2 -right-2 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs"
-                >
-                  {cartCount}
-                </Badge>
+            {/* Search, Cart and Mobile Menu */}
+            <div className="flex items-center space-x-4">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsSearchOpen(true)}
+                className="p-2 text-gray-700 hover:text-primary transition-colors"
+              >
+                <Search className="h-6 w-6" />
+              </Button>
+
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsCartOpen(true)}
+                className="relative p-2 text-gray-700 hover:text-primary transition-colors"
+              >
+                <ShoppingCart className="h-6 w-6" />
+                {cartCount > 0 && (
+                  <span className="absolute -top-2 -right-2 bg-secondary text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                    {cartCount}
+                  </span>
+                )}
+              </Button>
+
+              {/* User Authentication */}
+              {!isLoading && (
+                <>
+                  {isAuthenticated ? (
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                          <Avatar className="h-8 w-8">
+                            <AvatarImage src={user?.profileImageUrl || ''} alt={user?.firstName || 'User'} />
+                            <AvatarFallback>
+                              {user?.firstName?.[0] || user?.email?.[0] || 'U'}
+                            </AvatarFallback>
+                          </Avatar>
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent className="w-56" align="end" forceMount>
+                        <DropdownMenuLabel className="font-normal">
+                          <div className="flex flex-col space-y-1">
+                            <p className="text-sm font-medium leading-none">
+                              {user?.firstName && user?.lastName 
+                                ? `${user.firstName} ${user.lastName}`
+                                : user?.email}
+                            </p>
+                            <p className="text-xs leading-none text-muted-foreground">
+                              {user?.email}
+                            </p>
+                          </div>
+                        </DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuGroup>
+                          <DropdownMenuItem asChild>
+                            <Link href="/profile" className="cursor-pointer">
+                              <User className="mr-2 h-4 w-4" />
+                              <span>প্রোফাইল</span>
+                            </Link>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem asChild>
+                            <Link href="/orders" className="cursor-pointer">
+                              <ShoppingCart className="mr-2 h-4 w-4" />
+                              <span>আমার অর্ডার</span>
+                            </Link>
+                          </DropdownMenuItem>
+                        </DropdownMenuGroup>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem asChild>
+                          <a href="/api/logout" className="cursor-pointer">
+                            <LogOut className="mr-2 h-4 w-4" />
+                            <span>লগআউট</span>
+                          </a>
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  ) : (
+                    <Button asChild variant="outline" size="sm">
+                      <a href="/api/login">
+                        <User className="mr-2 h-4 w-4" />
+                        লগইন
+                      </a>
+                    </Button>
+                  )}
+                </>
               )}
-            </Button>
 
-            {/* User Menu */}
-            {isAuthenticated ? (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" className="flex items-center space-x-2">
-                    <UserCircle className="w-5 h-5" />
-                    <span className="hidden sm:inline">{user?.name}</span>
+              {/* Mobile Menu */}
+              <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
+                <SheetTrigger asChild>
+                  <Button variant="ghost" size="sm" className="md:hidden">
+                    <Menu className="h-6 w-6" />
                   </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-48">
-                  <DropdownMenuItem asChild>
-                    <Link href="/profile" className="flex items-center">
-                      <User className="w-4 h-4 mr-2" />
-                      প্রোফাইল
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link href="/orders" className="flex items-center">
-                      <Package className="w-4 h-4 mr-2" />
-                      আমার অর্ডার
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={handleAuthAction} className="flex items-center text-red-600">
-                    <LogOut className="w-4 h-4 mr-2" />
-                    লগআউট
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            ) : (
-              <div className="flex items-center space-x-2">
-                <Button onClick={handleAuthAction} variant="outline">
-                  লগইন
-                </Button>
-                <div id="replit-auth-container" style={{ display: 'none' }}>
-                  <script
-                    src="https://auth.util.repl.co/script.js"
-                    data-authed="location.reload()"
-                  />
-                </div>
-              </div>
-            )}
-
-            {/* Mobile Menu Button */}
-            <Button
-              variant="outline"
-              className="md:hidden"
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            >
-              {isMobileMenuOpen ? (
-                <X className="w-5 h-5" />
-              ) : (
-                <Menu className="w-5 h-5" />
-              )}
-            </Button>
-          </div>
-        </div>
-
-        {/* Mobile Navigation */}
-        {isMobileMenuOpen && (
-          <div className="md:hidden border-t py-4">
-            <nav className="flex flex-col space-y-3">
-              {navItems.map((item) => (
-                <Link
+                </SheetTrigger>
+                <SheetContent side="left" className="w-[300px] sm:w-[400px]">
+                  <div className="flex flex-col space-y-4 mt-8">
+                    {navItems.map((item) => (
+                      <Link
                   key={item.name}
                   href={item.href}
-                  className="text-gray-700 hover:text-primary transition-colors font-medium px-2 py-1"
+                  className={`block py-2 font-medium ${
+                    isActive(item.href) 
+                      ? "text-primary font-semibold" 
+                      : "text-gray-600 hover:text-primary"
+                  }`}
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   {item.name}
                 </Link>
-              ))}
-            </nav>
+                    ))}
+                  </div>
+                </SheetContent>
+              </Sheet>
+            </div>
           </div>
-        )}
-      </div>
-    </header>
+        </div>
+      </header>
+
+      <CartModal isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
+
+      {/* Search Modal */}
+      <SearchBar
+        isOpen={isSearchOpen}
+        onClose={() => setIsSearchOpen(false)}
+        onProductSelect={(product) => {
+          setSelectedProduct(product);
+          setIsProductModalOpen(true);
+        }}
+      />
+
+      {/* Product Modal from Search */}
+      {selectedProduct && (
+        <ProductModal
+          product={selectedProduct}
+          isOpen={isProductModalOpen}
+          onClose={() => {
+            setIsProductModalOpen(false);
+            setSelectedProduct(null);
+          }}
+          onAddToCart={(product) => {
+            // Handle add to cart functionality
+            console.log('Adding to cart:', product.name);
+            // Close modal after adding to cart
+            setIsProductModalOpen(false);
+            setSelectedProduct(null);
+          }}
+        />
+      )}
+    </>
   );
 }
