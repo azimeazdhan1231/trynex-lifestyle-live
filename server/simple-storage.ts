@@ -166,8 +166,8 @@ export class SimpleStorage {
   }
 
   // Analytics
-  async createAnalytics(analytics: InsertAnalytics): Promise<Analytics> {
-    const result = await db.insert(analytics).values(analytics).returning();
+  async createAnalytics(analyticsData: InsertAnalytics): Promise<Analytics> {
+    const result = await db.insert(analytics).values(analyticsData).returning();
     return result[0];
   }
 

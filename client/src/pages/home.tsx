@@ -17,6 +17,9 @@ import { useCart } from "@/hooks/use-cart";
 import { Link, useLocation } from "wouter";
 import { COMPANY_NAME, COMPANY_TAGLINE, WHATSAPP_NUMBER, createWhatsAppUrl, formatPrice } from "@/lib/constants";
 import { trackProductView, trackAddToCart } from "@/lib/analytics";
+import OptimizedProductCard from "@/components/OptimizedProductCard";
+import { setupPerformanceMonitoring } from "@/utils/performanceMonitoring";
+import { preloadImages } from "@/utils/imageOptimization";
 import type { Product, Offer } from "@shared/schema";
 
 interface ProductCardProps {
@@ -306,6 +309,11 @@ export default function Home() {
   const { toast } = useToast();
   const { addToCart, totalItems } = useCart();
 
+  // Initialize performance monitoring
+  useEffect(() => {
+    setupPerformanceMonitoring();
+  }, []);
+
   // Load active offers with delay to prevent blocking product loading
   const { data: offers = [] } = useQuery<Offer[]>({
     queryKey: ["/api/offers", "active=true"],
@@ -313,14 +321,27 @@ export default function Home() {
     enabled: false, // Disable auto-loading to prevent popup blocking
   });
 
-  // Load products for homepage sections with progressive loading
+  // Load products for homepage sections with ultra-fast caching
   const { data: products = [], isLoading: productsLoading } = useQuery<Product[]>({
     queryKey: ["/api/products"],
     staleTime: 1000 * 60 * 5, // Cache for 5 minutes
+    gcTime: 1000 * 60 * 15, // Keep in cache for 15 minutes
     retry: 1, // Only retry once
     refetchOnWindowFocus: false, // Don't refetch on window focus
-    placeholderData: [], // Show empty array immediately while loading
+    placeholderData: [], // Show empty array immediately
   });
+
+  // Preload critical product images
+  useEffect(() => {
+    if (products.length > 0) {
+      const imageUrls = products
+        .slice(0, 8) // Preload first 8 product images
+        .map(p => p.image_url)
+        .filter(Boolean);
+      
+      preloadImages(imageUrls, { priority: 'high', timeout: 3000 });
+    }
+  }, [products]);
 
   // Filter products for different sections with fallbacks
   const featuredProducts = products.filter(p => p.is_featured);

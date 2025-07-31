@@ -1,0 +1,35 @@
+# Cache static assets for optimal performance
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+*.css
+  Cache-Control: public, max-age=31536000, immutable
+
+*.js
+  Cache-Control: public, max-age=31536000, immutable
+
+*.woff2
+  Cache-Control: public, max-age=31536000, immutable
+
+*.webp
+  Cache-Control: public, max-age=31536000, immutable
+
+*.avif
+  Cache-Control: public, max-age=31536000, immutable
+
+*.jpg
+  Cache-Control: public, max-age=31536000, immutable
+
+*.png
+  Cache-Control: public, max-age=31536000, immutable
+
+# API responses caching
+/api/products
+  Cache-Control: public, max-age=300, s-maxage=300
+
+/api/categories
+  Cache-Control: public, max-age=3600, s-maxage=3600
+
+# HTML pages
+/*.html
+  Cache-Control: public, max-age=300

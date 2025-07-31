@@ -13,11 +13,12 @@ import Header from "@/components/header";
 import ProductModal from "@/components/product-modal";
 import CustomizeModal from "@/components/customize-modal";
 import LazyImage from "@/components/LazyImage";
+import ProductGridOptimized from "@/components/ProductGridOptimized";
 import { useCart } from "@/hooks/use-cart";
 import { useAnalytics } from "@/hooks/use-analytics";
 import { useToast } from "@/hooks/use-toast";
 import type { Product, Category } from "@shared/schema";
-import { useProgressiveProducts } from "@/hooks/use-progressive-products";
+import { useInfiniteProducts } from "@/hooks/useInfiniteProducts";
 
 export default function Products() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -32,14 +33,21 @@ export default function Products() {
   useAnalytics(); // Initialize analytics tracking
   const { toast } = useToast();
 
-  // Use progressive loading for ultra-fast product display
+  // Use infinite scrolling for ultra-fast product loading
   const { 
     products, 
     isLoading: productsLoading, 
-    isProgressive, 
-    displayedCount, 
+    isLoadingMore,
+    hasNextPage,
+    loadMore,
     totalCount 
-  } = useProgressiveProducts();
+  } = useInfiniteProducts({
+    category: selectedCategory,
+    searchTerm,
+    sortBy,
+    priceRange,
+    pageSize: 12 // Load 12 products at a time
+  });
 
   const { data: categories = [], isLoading: categoriesLoading } = useQuery<Category[]>({
     queryKey: ["/api/categories"],
@@ -47,9 +55,9 @@ export default function Products() {
     gcTime: 1000 * 60 * 30, // Keep in cache for 30 minutes
   });
 
-  // Filter and sort products
+  // Filter and sort products (types fixed)
   const filteredAndSortedProducts = products
-    .filter((product) => {
+    .filter((product: Product) => {
       const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                            (product.description || "").toLowerCase().includes(searchTerm.toLowerCase());
       const matchesCategory = selectedCategory === "all" || product.category === selectedCategory;
@@ -75,7 +83,7 @@ export default function Products() {
       
       return matchesSearch && matchesCategory && matchesPrice;
     })
-    .sort((a, b) => {
+    .sort((a: Product, b: Product) => {
       switch (sortBy) {
         case "price-low":
           return Number(a.price) - Number(b.price);

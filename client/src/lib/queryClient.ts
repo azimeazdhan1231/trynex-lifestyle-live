@@ -14,26 +14,50 @@ export const queryClient = new QueryClient({
           url += `?${params}`;
         }
 
-        const response = await fetch(url, { 
-          signal, 
-          credentials: 'include' // Include credentials for auth endpoints
-        });
+        // Add timeout for ultra-fast performance
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 8000); // 8s timeout
 
-        if (!response.ok) {
-          // For auth endpoints, don't throw for 401s as they're expected when not logged in
-          if (url.includes('/api/auth/user') && response.status === 401) {
-            throw new Error('Not authenticated');
+        try {
+          const response = await fetch(url, { 
+            signal: signal || controller.signal,
+            credentials: 'include', // Include credentials for auth endpoints
+            headers: {
+              'Cache-Control': 'public, max-age=300', // 5 minute client cache
+              'Accept': 'application/json',
+            }
+          });
+
+          clearTimeout(timeoutId);
+
+          if (!response.ok) {
+            // For auth endpoints, don't throw for 401s as they're expected when not logged in
+            if (url.includes('/api/auth/user') && response.status === 401) {
+              throw new Error('Not authenticated');
+            }
+            throw new Error(`HTTP error! status: ${response.status}`);
           }
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
 
-        return response.json();
+          return response.json();
+        } catch (error) {
+          clearTimeout(timeoutId);
+          throw error;
+        }
       },
       retry: 1, // Only retry once for faster failures
-      staleTime: 1000 * 60 * 5, // 5 minutes - much longer cache
-      gcTime: 1000 * 60 * 10, // 10 minutes
+      retryDelay: 1000, // Quick retry
+      staleTime: 1000 * 60 * 5, // 5 minutes - data considered fresh
+      gcTime: 1000 * 60 * 15, // 15 minutes - keep in cache longer
       refetchOnWindowFocus: false,
       refetchOnReconnect: false,
+      networkMode: 'online', // Only run when online
+      // Show cached data immediately while fetching fresh data
+      placeholderData: (previousData: any) => previousData,
+    },
+    mutations: {
+      retry: 2,
+      retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 3000),
+      networkMode: 'online',
     },
   },
 });

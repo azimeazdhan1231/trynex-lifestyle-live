@@ -1,120 +1,147 @@
-import { memo } from "react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { ShoppingCart, Eye, Palette, Heart } from "lucide-react";
-import LazyImage from "./LazyImage";
-import { formatPrice } from "@/lib/constants";
-import type { Product } from "@shared/schema";
+import React from 'react';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { ShoppingCart, Eye, Settings } from 'lucide-react';
+import LazyImage from './LazyImage';
+import { cn } from '@/lib/utils';
+import type { Product } from '@shared/schema';
 
 interface OptimizedProductCardProps {
   product: Product;
   onAddToCart: (product: Product) => void;
   onViewProduct: (product: Product) => void;
   onCustomize?: (product: Product) => void;
+  className?: string;
+  loading?: boolean;
 }
 
-export default memo(function OptimizedProductCard({
+export const OptimizedProductCard: React.FC<OptimizedProductCardProps> = ({
   product,
   onAddToCart,
   onViewProduct,
-  onCustomize
-}: OptimizedProductCardProps) {
-  
+  onCustomize,
+  className,
+  loading = false
+}) => {
+  if (loading) {
+    return (
+      <Card className={cn("overflow-hidden group", className)}>
+        <div className="aspect-square bg-gray-200 dark:bg-gray-700 animate-pulse" />
+        <div className="p-4 space-y-3">
+          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+          <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-2/3 animate-pulse" />
+          <div className="flex justify-between items-center">
+            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-16 animate-pulse" />
+            <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-12 animate-pulse" />
+          </div>
+          <div className="flex space-x-2">
+            <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded flex-1 animate-pulse" />
+            <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded flex-1 animate-pulse" />
+          </div>
+        </div>
+      </Card>
+    );
+  }
+
   return (
-    <Card className="group hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 border-0 shadow-md overflow-hidden bg-white">
-      <div className="relative overflow-hidden">
+    <Card className={cn(
+      "overflow-hidden group hover:shadow-lg transition-all duration-300 border-0 shadow-md hover:shadow-xl",
+      className
+    )}>
+      {/* Optimized Image with Lazy Loading */}
+      <div className="relative aspect-square overflow-hidden">
         <LazyImage
-          src={product.image_url || 'https://via.placeholder.com/300x300/f3f4f6/9ca3af?text=No+Image'}
+          src={product.image_url || '/placeholder-product.jpg'}
           alt={product.name}
-          className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+          className="w-full h-full"
+          loading="lazy"
         />
         
-        {/* Badges */}
-        <div className="absolute top-2 left-2 space-y-1">
-          {product.is_featured && (
-            <Badge className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white text-xs">
+        {/* Quick Action Overlay */}
+        <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center space-x-2">
+          <Button
+            size="sm"
+            variant="secondary"
+            onClick={() => onViewProduct(product)}
+            className="bg-white/90 hover:bg-white text-black"
+          >
+            <Eye className="w-4 h-4" />
+          </Button>
+          {onCustomize && (
+            <Button
+              size="sm"
+              variant="secondary"
+              onClick={() => onCustomize(product)}
+              className="bg-white/90 hover:bg-white text-black"
+            >
+              <Settings className="w-4 h-4" />
+            </Button>
+          )}
+        </div>
+
+        {/* Stock Badge */}
+        <div className="absolute top-2 left-2">
+          <Badge variant={product.stock > 0 ? "default" : "destructive"}>
+            {product.stock > 0 ? `স্টক: ${product.stock}` : "স্টক নেই"}
+          </Badge>
+        </div>
+
+        {/* Featured Badge */}
+        {product.is_featured && (
+          <div className="absolute top-2 right-2">
+            <Badge variant="secondary" className="bg-orange-500 text-white">
               ফিচার্ড
             </Badge>
-          )}
-          {product.is_latest && (
-            <Badge className="bg-gradient-to-r from-blue-500 to-purple-600 text-white text-xs">
-              নতুন
-            </Badge>
-          )}
-        </div>
-
-        {/* Stock status */}
-        <div className="absolute top-2 right-2">
-          {product.stock <= 5 && product.stock > 0 && (
-            <Badge className="bg-orange-500 text-white text-xs animate-pulse">
-              মাত্র {product.stock}টি
-            </Badge>
-          )}
-          {product.stock === 0 && (
-            <Badge className="bg-red-500 text-white text-xs">
-              স্টক নেই
-            </Badge>
-          )}
-        </div>
-
-        {/* Quick actions overlay */}
-        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300">
-          <div className="absolute bottom-2 left-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-            <div className="flex gap-1">
-              <Button 
-                size="sm" 
-                variant="outline" 
-                className="flex-1 bg-white/90 backdrop-blur-sm text-xs"
-                onClick={() => onViewProduct(product)}
-              >
-                <Eye className="w-3 h-3 mr-1" />
-                দেখুন
-              </Button>
-            </div>
           </div>
-        </div>
+        )}
       </div>
 
-      <CardContent className="p-4">
-        <div className="space-y-3">
-          <h3 
-            className="font-semibold text-gray-800 line-clamp-2 cursor-pointer hover:text-primary transition-colors text-sm leading-tight"
-            onClick={() => onViewProduct(product)}
-          >
+      {/* Product Details */}
+      <div className="p-4 space-y-3">
+        <div>
+          <h3 className="font-semibold text-gray-900 dark:text-gray-100 line-clamp-2 leading-tight">
             {product.name}
           </h3>
-          
-          <div className="flex items-center justify-between">
-            <span className="text-lg font-bold text-primary">{formatPrice(product.price)}</span>
-            <Badge variant={product.stock > 0 ? "secondary" : "destructive"} className="text-xs">
-              স্টক: {product.stock}
-            </Badge>
-          </div>
-
-          <div className="space-y-2">
-            <Button 
-              onClick={() => onAddToCart(product)}
-              disabled={product.stock === 0}
-              className="w-full bg-gradient-to-r from-primary to-primary/80 hover:from-primary/80 hover:to-primary text-white text-sm py-2 transition-all duration-300"
-            >
-              <ShoppingCart className="w-3 h-3 mr-1" />
-              {product.stock === 0 ? "স্টক নেই" : "কার্টে যোগ করুন"}
-            </Button>
-
-            {onCustomize && (
-              <Button
-                onClick={() => onCustomize(product)}
-                variant="outline"
-                className="w-full bg-purple-500 text-white hover:bg-purple-600 border-purple-500 text-sm py-2"
-              >
-                <Palette className="w-3 h-3 mr-1" />
-                কাস্টমাইজ
-              </Button>
-            )}
-          </div>
+          <p className="text-sm text-gray-600 dark:text-gray-400 mt-1 line-clamp-2">
+            {product.description || "কাস্টমাইজেশন উপলব্ধ"}
+          </p>
         </div>
-      </CardContent>
+
+        <div className="flex justify-between items-center">
+          <span className="text-lg font-bold text-orange-600 dark:text-orange-400">
+            ৳{Number(product.price).toLocaleString()}
+          </span>
+          <span className="text-xs text-gray-500 dark:text-gray-400">
+            {product.category}
+          </span>
+        </div>
+
+        {/* Action Buttons */}
+        <div className="flex space-x-2">
+          {onCustomize && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onCustomize(product)}
+              className="flex-1 border-purple-500 text-purple-600 hover:bg-purple-50 dark:hover:bg-purple-950"
+            >
+              কাস্টমাইজ
+            </Button>
+          )}
+          <Button
+            size="sm"
+            onClick={() => onAddToCart(product)}
+            disabled={product.stock === 0}
+            className="flex-1 bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600"
+          >
+            <ShoppingCart className="w-4 h-4 mr-2" />
+            কার্টে যোগ
+          </Button>
+        </div>
+      </div>
     </Card>
   );
-});
+};
+
+export default OptimizedProductCard;
