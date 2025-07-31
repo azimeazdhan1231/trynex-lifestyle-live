@@ -135,9 +135,11 @@ export default function Header({ cartCount, onCartOpen }: HeaderProps) {
         <SheetContent side="top" className="h-auto max-h-[80vh] overflow-y-auto">
           <div className="space-y-4 mt-6">
             <h2 className="text-xl font-semibold text-center">পণ্য খুঁজুন</h2>
+            <p className="text-sm text-gray-600 text-center">যে কোনো পণ্য খুঁজে নিন সহজেই</p>
             <SearchBar
               onProductSelect={(product) => {
-                handleProductSelect(product);
+                setSelectedProduct(product);
+                setIsProductModalOpen(true);
                 setIsSearchOpen(false);
               }}
               placeholder="পণ্য খুঁজুন... (নাম, ক্যাটেগরি, বিবরণ)"
@@ -156,7 +158,13 @@ export default function Header({ cartCount, onCartOpen }: HeaderProps) {
             setIsProductModalOpen(false);
             setSelectedProduct(null);
           }}
-          onAddToCart={() => {}} // Handle add to cart if needed
+          onAddToCart={(product, quantity) => {
+            // Handle add to cart functionality
+            console.log('Adding to cart:', product.name, 'Quantity:', quantity);
+            // Close modal after adding to cart
+            setIsProductModalOpen(false);
+            setSelectedProduct(null);
+          }}
         />
       )}
     </>

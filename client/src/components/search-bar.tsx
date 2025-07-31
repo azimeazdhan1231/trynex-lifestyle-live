@@ -151,8 +151,12 @@ export default function SearchBar({ onProductSelect, placeholder = "পণ্য
     setIsOpen(false);
     trackEvent('search_result_click', 'product_search', product.name);
     
+    // Prevent any default behavior that might cause navigation
     if (onProductSelect) {
-      onProductSelect(product);
+      // Small delay to ensure UI updates properly
+      setTimeout(() => {
+        onProductSelect(product);
+      }, 100);
     }
   };
 
@@ -288,7 +292,11 @@ export default function SearchBar({ onProductSelect, placeholder = "পণ্য
               return (
                 <div
                   key={product.id}
-                  onClick={() => handleProductClick(product)}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleProductClick(product);
+                  }}
                   className="flex items-center p-3 hover:bg-gray-50 cursor-pointer border-b last:border-b-0 transition-colors"
                 >
                   <div className="flex-shrink-0 w-12 h-12 mr-3 relative">
