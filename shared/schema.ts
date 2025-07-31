@@ -210,3 +210,47 @@ export type UserCart = typeof userCarts.$inferSelect;
 export type InsertUserCart = z.infer<typeof insertUserCartSchema>;
 export type UserOrder = typeof userOrders.$inferSelect;
 export type InsertUserOrder = z.infer<typeof insertUserOrderSchema>;
+
+// Blog table
+export const blogs = pgTable("blogs", {
+  id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+  title: text("title").notNull(),
+  content: text("content").notNull(),
+  excerpt: text("excerpt"),
+  featured_image: text("featured_image"),
+  category: text("category").notNull().default("general"),
+  author: text("author").notNull().default("Admin"),
+  status: text("status").notNull().default("published"),
+  is_featured: boolean("is_featured").default(false),
+  views: integer("views").default(0),
+  created_at: timestamp("created_at").defaultNow(),
+  updated_at: timestamp("updated_at").defaultNow(),
+});
+
+// Pages table for dynamic content
+export const pages = pgTable("pages", {
+  id: text("id").primaryKey().default(sql`gen_random_uuid()`),
+  slug: text("slug").notNull().unique(),
+  title: text("title").notNull(),
+  content: text("content").notNull(),
+  is_active: boolean("is_active").default(true),
+  created_at: timestamp("created_at").defaultNow(),
+  updated_at: timestamp("updated_at").defaultNow(),
+});
+
+export const insertBlogSchema = createInsertSchema(blogs).omit({
+  id: true,
+  created_at: true,
+  updated_at: true,
+});
+
+export const insertPageSchema = createInsertSchema(pages).omit({
+  id: true,
+  created_at: true,
+  updated_at: true,
+});
+
+export type Blog = typeof blogs.$inferSelect;
+export type InsertBlog = z.infer<typeof insertBlogSchema>;
+export type Page = typeof pages.$inferSelect;
+export type InsertPage = z.infer<typeof insertPageSchema>;

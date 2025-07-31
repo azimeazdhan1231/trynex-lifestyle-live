@@ -10,7 +10,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Edit2, Trash2, Eye, Package, Users, TrendingUp, Settings, Gift, Tag, BarChart3, DollarSign, ShoppingCart, Star } from "lucide-react";
+import { Plus, Edit2, Trash2, Eye, Package, Users, TrendingUp, Settings, Gift, Tag, BarChart3, DollarSign, ShoppingCart, Star, FileText, Globe } from "lucide-react";
+import BlogManagement from "@/components/admin/blog-management";
+import PagesManagement from "@/components/admin/pages-management";
 import { formatPrice, PRODUCT_CATEGORIES } from "@/lib/constants";
 
 // Order status matching tracking page
@@ -422,6 +424,14 @@ export default function AdminPanelNew() {
               <TabsTrigger value="users" className="whitespace-nowrap px-3 py-2 text-xs sm:text-sm">
                 <Users className="w-4 h-4 mr-1" />
                 ব্যবহারকারী
+              </TabsTrigger>
+              <TabsTrigger value="blogs" className="whitespace-nowrap px-3 py-2 text-xs sm:text-sm">
+                <FileText className="w-4 h-4 mr-1" />
+                ব্লগ
+              </TabsTrigger>
+              <TabsTrigger value="pages" className="whitespace-nowrap px-3 py-2 text-xs sm:text-sm">
+                <Globe className="w-4 h-4 mr-1" />
+                পেজ
               </TabsTrigger>
               <TabsTrigger value="settings" className="whitespace-nowrap px-3 py-2 text-xs sm:text-sm">
                 <Settings className="w-4 h-4 mr-1" />
@@ -1123,6 +1133,16 @@ export default function AdminPanelNew() {
               <div className="text-center py-8 text-gray-500">শীঘ্রই আসছে...</div>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        {/* Blog Management Tab */}
+        <TabsContent value="blogs" className="space-y-4">
+          <BlogManagement />
+        </TabsContent>
+
+        {/* Pages Management Tab */}
+        <TabsContent value="pages" className="space-y-4">
+          <PagesManagement />
         </TabsContent>
 
         {/* Settings Tab */}

@@ -12,13 +12,17 @@ import Profile from "./pages/profile";
 import Orders from "./pages/orders";
 import Auth from "./pages/auth";
 import SimpleAuth from "./components/simple-auth";
+import About from "./pages/about";
+import BlogPage from "./pages/blog";
 import NotFound from "./pages/not-found";
 import RefundPolicy from "./pages/refund-policy";
+import RefundPolicyDynamic from "./pages/refund-policy-dynamic";
 import ReturnPolicy from "./pages/return-policy";
 import TermsConditions from "./pages/terms-conditions";
+import TermsConditionsDynamic from "./pages/terms-conditions-dynamic";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useEffect } from "react";
-import { initGA, initFacebookPixel } from "./lib/analytics";
+import { initGA, loadFacebookPixelFromSettings } from "./lib/analytics";
 import { useAnalytics } from "./hooks/use-analytics";
 import DebugInfo from "@/components/debug-info";
 
@@ -32,6 +36,8 @@ function Router() {
       <Route path="/products" component={Products} />
       <Route path="/offers" component={Offers} />
       <Route path="/contact" component={Contact} />
+      <Route path="/about" component={About} />
+      <Route path="/blog" component={BlogPage} />
       <Route path="/admin" component={Admin} />
       <Route path="/tracking" component={Tracking} />
       <Route path="/profile" component={Profile} />
@@ -40,9 +46,9 @@ function Router() {
       <Route path="/login" component={SimpleAuth} />
       <Route path="/signup" component={SimpleAuth} />
       <Route path="/auth-old" component={Auth} />
-      <Route path="/refund-policy" component={RefundPolicy} />
+      <Route path="/refund-policy" component={RefundPolicyDynamic} />
       <Route path="/return-policy" component={ReturnPolicy} />
-      <Route path="/terms-conditions" component={TermsConditions} />
+      <Route path="/terms-conditions" component={TermsConditionsDynamic} />
       <Route component={NotFound} />
     </Switch>
   );
@@ -56,10 +62,8 @@ function App() {
       initGA();
     }
 
-    // Initialize Facebook Pixel
-    if (import.meta.env.VITE_FB_PIXEL_ID) {
-      initFacebookPixel(import.meta.env.VITE_FB_PIXEL_ID);
-    }
+    // Initialize Facebook Pixel from site settings
+    loadFacebookPixelFromSettings();
   }, []);
 
   return (

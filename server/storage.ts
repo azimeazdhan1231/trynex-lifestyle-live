@@ -3,13 +3,14 @@ import postgres from "postgres";
 import { eq, desc, and, gte, lte } from "drizzle-orm";
 import { 
   products, orders, offers, admins, categories, promoCodes, analytics, siteSettings,
-  users, userCarts, userOrders,
+  users, userCarts, userOrders, blogs, pages,
   type Product, type InsertProduct, type Order, type InsertOrder, 
   type Offer, type InsertOffer, type Admin, type InsertAdmin,
   type Category, type InsertCategory, type PromoCode, type InsertPromoCode,
   type Analytics, type InsertAnalytics, type SiteSettings, type InsertSiteSettings,
   type User, type UpsertUser, type UserCart, type InsertUserCart,
-  type UserOrder, type InsertUserOrder
+  type UserOrder, type InsertUserOrder, type Blog, type InsertBlog,
+  type Page, type InsertPage
 } from "@shared/schema";
 
 const connectionString = process.env.DATABASE_URL || "postgresql://postgres.lxhhgdqfxmeohayceshb:Amiomito1Amiomito1@aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres";
@@ -400,6 +401,68 @@ export class DatabaseStorage implements IStorage {
     return result;
   }
 
+  // Blog operations
+  async getBlogs(): Promise<Blog[]> {
+    const result = await db.select().from(blogs).orderBy(desc(blogs.created_at));
+    return result;
+  }
+
+  async getBlog(id: string): Promise<Blog | undefined> {
+    const result = await db.select().from(blogs).where(eq(blogs.id, id)).limit(1);
+    return result[0];
+  }
+
+  async createBlog(blog: InsertBlog): Promise<Blog> {
+    const result = await db.insert(blogs).values(blog).returning();
+    return result[0];
+  }
+
+  async updateBlog(id: string, updates: Partial<InsertBlog>): Promise<Blog> {
+    const result = await db.update(blogs)
+      .set({ ...updates, updated_at: new Date() })
+      .where(eq(blogs.id, id))
+      .returning();
+    return result[0];
+  }
+
+  async deleteBlog(id: string): Promise<void> {
+    await db.delete(blogs).where(eq(blogs.id, id));
+  }
+
+  async incrementBlogViews(id: string): Promise<void> {
+    await db.update(blogs)
+      .set({ views: sql`${blogs.views} + 1` })
+      .where(eq(blogs.id, id));
+  }
+
+  // Pages operations
+  async getPages(): Promise<Page[]> {
+    const result = await db.select().from(pages).orderBy(desc(pages.updated_at));
+    return result;
+  }
+
+  async getPage(slug: string): Promise<Page | undefined> {
+    const result = await db.select().from(pages).where(eq(pages.slug, slug)).limit(1);
+    return result[0];
+  }
+
+  async createPage(page: InsertPage): Promise<Page> {
+    const result = await db.insert(pages).values(page).returning();
+    return result[0];
+  }
+
+  async updatePage(slug: string, updates: Partial<InsertPage>): Promise<Page> {
+    const result = await db.update(pages)
+      .set({ ...updates, updated_at: new Date() })
+      .where(eq(pages.slug, slug))
+      .returning();
+    return result[0];
+  }
+
+  async deletePage(slug: string): Promise<void> {
+    await db.delete(pages).where(eq(pages.slug, slug));
+  }
+
   // User Cart operations
   async getUserCart(userId: string): Promise<UserCart | undefined> {
     const result = await db.select().from(userCarts).where(eq(userCarts.user_id, userId)).limit(1);
@@ -447,6 +510,68 @@ export class DatabaseStorage implements IStorage {
   async createAdmin(admin: InsertAdmin): Promise<Admin> {
     const result = await db.insert(admins).values(admin).returning();
     return result[0];
+  }
+
+  // Blog operations
+  async getBlogs(): Promise<Blog[]> {
+    const result = await db.select().from(blogs).orderBy(desc(blogs.created_at));
+    return result;
+  }
+
+  async getBlog(id: string): Promise<Blog | undefined> {
+    const result = await db.select().from(blogs).where(eq(blogs.id, id)).limit(1);
+    return result[0];
+  }
+
+  async createBlog(blog: InsertBlog): Promise<Blog> {
+    const result = await db.insert(blogs).values(blog).returning();
+    return result[0];
+  }
+
+  async updateBlog(id: string, updates: Partial<InsertBlog>): Promise<Blog> {
+    const result = await db.update(blogs)
+      .set({ ...updates, updated_at: new Date() })
+      .where(eq(blogs.id, id))
+      .returning();
+    return result[0];
+  }
+
+  async deleteBlog(id: string): Promise<void> {
+    await db.delete(blogs).where(eq(blogs.id, id));
+  }
+
+  async incrementBlogViews(id: string): Promise<void> {
+    await db.update(blogs)
+      .set({ views: sql`${blogs.views} + 1` })
+      .where(eq(blogs.id, id));
+  }
+
+  // Pages operations
+  async getPages(): Promise<Page[]> {
+    const result = await db.select().from(pages).orderBy(desc(pages.updated_at));
+    return result;
+  }
+
+  async getPage(slug: string): Promise<Page | undefined> {
+    const result = await db.select().from(pages).where(eq(pages.slug, slug)).limit(1);
+    return result[0];
+  }
+
+  async createPage(page: InsertPage): Promise<Page> {
+    const result = await db.insert(pages).values(page).returning();
+    return result[0];
+  }
+
+  async updatePage(slug: string, updates: Partial<InsertPage>): Promise<Page> {
+    const result = await db.update(pages)
+      .set({ ...updates, updated_at: new Date() })
+      .where(eq(pages.slug, slug))
+      .returning();
+    return result[0];
+  }
+
+  async deletePage(slug: string): Promise<void> {
+    await db.delete(pages).where(eq(pages.slug, slug));
   }
 }
 

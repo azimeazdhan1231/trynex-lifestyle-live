@@ -86,6 +86,21 @@ export const initFacebookPixel = (pixelId: string) => {
   const noscript = document.createElement('noscript');
   noscript.innerHTML = `<img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=${pixelId}&ev=PageView&noscript=1">`;
   document.head.appendChild(noscript);
+}
+
+// Load Facebook Pixel from site settings
+export async function loadFacebookPixelFromSettings() {
+  try {
+    const response = await fetch('/api/settings');
+    const settings = await response.json();
+    const fbPixelSetting = settings.find((s: any) => s.key === 'facebook_pixel_id');
+    
+    if (fbPixelSetting && fbPixelSetting.value) {
+      initFacebookPixel(fbPixelSetting.value);
+    }
+  } catch (error) {
+    console.debug('Failed to load Facebook Pixel from settings:', error);
+  }
 };
 
 // Track Facebook Pixel events

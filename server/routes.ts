@@ -146,6 +146,116 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Blog API routes
+  app.get('/api/blogs', async (req, res) => {
+    try {
+      const blogs = await storage.getBlogs();
+      res.json(blogs);
+    } catch (error) {
+      console.error('Error fetching blogs:', error);
+      res.status(500).json({ message: 'Failed to fetch blogs' });
+    }
+  });
+
+  app.get('/api/blogs/:id', async (req, res) => {
+    try {
+      const blog = await storage.getBlog(req.params.id);
+      if (!blog) {
+        return res.status(404).json({ message: 'Blog not found' });
+      }
+      // Increment view count
+      await storage.incrementBlogViews(req.params.id);
+      res.json(blog);
+    } catch (error) {
+      console.error('Error fetching blog:', error);
+      res.status(500).json({ message: 'Failed to fetch blog' });
+    }
+  });
+
+  app.post('/api/blogs', async (req, res) => {
+    try {
+      const blog = await storage.createBlog(req.body);
+      res.status(201).json(blog);
+    } catch (error) {
+      console.error('Error creating blog:', error);
+      res.status(500).json({ message: 'Failed to create blog' });
+    }
+  });
+
+  app.put('/api/blogs/:id', async (req, res) => {
+    try {
+      const blog = await storage.updateBlog(req.params.id, req.body);
+      res.json(blog);
+    } catch (error) {
+      console.error('Error updating blog:', error);
+      res.status(500).json({ message: 'Failed to update blog' });
+    }
+  });
+
+  app.delete('/api/blogs/:id', async (req, res) => {
+    try {
+      await storage.deleteBlog(req.params.id);
+      res.json({ message: 'Blog deleted successfully' });
+    } catch (error) {
+      console.error('Error deleting blog:', error);
+      res.status(500).json({ message: 'Failed to delete blog' });
+    }
+  });
+
+  // Pages API routes  
+  app.get('/api/pages', async (req, res) => {
+    try {
+      const pages = await storage.getPages();
+      res.json(pages);
+    } catch (error) {
+      console.error('Error fetching pages:', error);
+      res.status(500).json({ message: 'Failed to fetch pages' });
+    }
+  });
+
+  app.get('/api/pages/:slug', async (req, res) => {
+    try {
+      const page = await storage.getPage(req.params.slug);
+      if (!page) {
+        return res.status(404).json({ message: 'Page not found' });
+      }
+      res.json(page);
+    } catch (error) {
+      console.error('Error fetching page:', error);
+      res.status(500).json({ message: 'Failed to fetch page' });
+    }
+  });
+
+  app.post('/api/pages', async (req, res) => {
+    try {
+      const page = await storage.createPage(req.body);
+      res.status(201).json(page);
+    } catch (error) {
+      console.error('Error creating page:', error);
+      res.status(500).json({ message: 'Failed to create page' });
+    }
+  });
+
+  app.put('/api/pages/:slug', async (req, res) => {
+    try {
+      const page = await storage.updatePage(req.params.slug, req.body);
+      res.json(page);
+    } catch (error) {
+      console.error('Error updating page:', error);
+      res.status(500).json({ message: 'Failed to update page' });
+    }
+  });
+
+  app.delete('/api/pages/:slug', async (req, res) => {
+    try {
+      await storage.deletePage(req.params.slug);
+      res.json({ message: 'Page deleted successfully' });
+    } catch (error) {
+      console.error('Error deleting page:', error);
+      res.status(500).json({ message: 'Failed to delete page' });
+    }
+  });
+
   // Handle auth page fallback
   app.get('/auth', (req, res, next) => {
     if (req.isAuthenticated()) {
