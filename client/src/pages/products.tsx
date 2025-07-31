@@ -1,219 +1,223 @@
 
-import React, { useState, useEffect, useMemo } from 'react';
-import { Search, Filter, Grid, List, ChevronDown, Star, Heart, ShoppingCart, Eye, ArrowUp } from 'lucide-react';
-import { Button } from '../components/ui/button';
-import { Input } from '../components/ui/input';
-import { Badge } from '../components/ui/badge';
-import { Card, CardContent } from '../components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
-import { Checkbox } from '../components/ui/checkbox';
-import { Label } from '../components/ui/label';
-import { Slider } from '../components/ui/slider';
-import { useCart } from '../hooks/use-cart';
-import { formatPrice } from '../lib/utils';
-import { toast } from '../hooks/use-toast';
+import { useState, useEffect, useCallback } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { 
+  Search, 
+  Filter, 
+  Grid3X3, 
+  List, 
+  Star, 
+  Heart, 
+  ShoppingCart, 
+  Eye,
+  Settings,
+  ArrowUpDown,
+  TrendingUp,
+  Package,
+  Sparkles,
+  ChevronDown,
+  Loader2
+} from "lucide-react";
+import { formatPrice } from "@/lib/constants";
+import Header from "@/components/header";
+import ProductModal from "@/components/product-modal";
+import CustomizeModal from "@/components/customize-modal";
+import LazyImage from "@/components/LazyImage";
+import { useCart } from "@/hooks/use-cart";
+import { useAnalytics } from "@/hooks/use-analytics";
+import { useToast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
+import type { Product, Category } from "@shared/schema";
 
-interface Product {
-  id: string;
-  name: string;
-  price: number;
-  image_url?: string;
-  description?: string;
-  category?: string;
-  stock?: number;
-  rating?: number;
-  discount?: number;
-  tags?: string[];
-  is_featured?: boolean;
-  created_at?: string;
-}
+const PRODUCTS_PER_PAGE = 12;
 
-const ITEMS_PER_PAGE = 12;
-
-export default function ProductsPage() {
-  // State management
-  const [products, setProducts] = useState<Product[]>([]);
-  const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
-  const [displayedProducts, setDisplayedProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
+export default function Products() {
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("all");
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [showProductModal, setShowProductModal] = useState(false);
+  const [showCustomizeModal, setShowCustomizeModal] = useState(false);
+  const [sortBy, setSortBy] = useState("newest");
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [priceRange, setPriceRange] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalProducts, setTotalProducts] = useState(0);
-  
-  // Filter states
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('');
-  const [priceRange, setPriceRange] = useState([0, 10000]);
-  const [sortBy, setSortBy] = useState('name');
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [favorites, setFavorites] = useState<string[]>([]);
   const [showFilters, setShowFilters] = useState(false);
-  const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  const [showFeaturedOnly, setShowFeaturedOnly] = useState(false);
-  const [inStockOnly, setInStockOnly] = useState(false);
+  const [displayedProducts, setDisplayedProducts] = useState<Product[]>([]);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
   
-  // Wishlist and favorites
-  const [wishlist, setWishlist] = useState<string[]>([]);
-  const [showScrollTop, setShowScrollTop] = useState(false);
-  
-  const { addItem } = useCart();
+  const { addToCart } = useCart();
+  useAnalytics();
+  const { toast } = useToast();
 
-  // Categories and tags for filters
-  const categories = useMemo(() => {
-    const cats = products.map(p => p.category).filter(Boolean);
-    return [...new Set(cats)] as string[];
-  }, [products]);
+  // Fetch products with advanced caching
+  const { data: products = [], isLoading: productsLoading } = useQuery<Product[]>({
+    queryKey: ["/api/products"],
+    staleTime: 1000 * 60 * 10, // 10 minutes cache
+    gcTime: 1000 * 60 * 30, // 30 minutes in memory
+    refetchOnWindowFocus: false,
+    retry: 2,
+  });
 
-  const allTags = useMemo(() => {
-    const tags = products.flatMap(p => p.tags || []);
-    return [...new Set(tags)];
-  }, [products]);
+  // Fetch categories
+  const { data: categories = [] } = useQuery<Category[]>({
+    queryKey: ["/api/categories"],
+    staleTime: 1000 * 60 * 15,
+    gcTime: 1000 * 60 * 30,
+  });
 
-  // Fetch products
-  useEffect(() => {
-    fetchProducts();
-  }, []);
-
-  const fetchProducts = async () => {
-    try {
-      setLoading(true);
-      const response = await fetch('/api/products');
-      if (response.ok) {
-        const data = await response.json();
-        setProducts(data);
-        setTotalProducts(data.length);
+  // Advanced filtering and sorting
+  const processedProducts = products
+    .filter((product: Product) => {
+      const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           (product.description || "").toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesCategory = selectedCategory === "all" || product.category === selectedCategory;
+      
+      let matchesPrice = true;
+      if (priceRange !== "all") {
+        const price = Number(product.price);
+        switch (priceRange) {
+          case "0-500":
+            matchesPrice = price <= 500;
+            break;
+          case "500-1000":
+            matchesPrice = price > 500 && price <= 1000;
+            break;
+          case "1000-2000":
+            matchesPrice = price > 1000 && price <= 2000;
+            break;
+          case "2000+":
+            matchesPrice = price > 2000;
+            break;
+        }
       }
-    } catch (error) {
-      console.error('Error fetching products:', error);
-      toast({
-        title: "ত্রুটি",
-        description: "প্রোডাক্ট লোড করতে সমস্যা হয়েছে",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Filter and sort products
-  useEffect(() => {
-    let filtered = [...products];
-
-    // Search filter
-    if (searchQuery) {
-      filtered = filtered.filter(product =>
-        product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        product.description?.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-    }
-
-    // Category filter
-    if (selectedCategory) {
-      filtered = filtered.filter(product => product.category === selectedCategory);
-    }
-
-    // Price range filter
-    filtered = filtered.filter(product => 
-      product.price >= priceRange[0] && product.price <= priceRange[1]
-    );
-
-    // Tags filter
-    if (selectedTags.length > 0) {
-      filtered = filtered.filter(product =>
-        product.tags?.some(tag => selectedTags.includes(tag))
-      );
-    }
-
-    // Featured filter
-    if (showFeaturedOnly) {
-      filtered = filtered.filter(product => product.is_featured);
-    }
-
-    // Stock filter
-    if (inStockOnly) {
-      filtered = filtered.filter(product => (product.stock || 0) > 0);
-    }
-
-    // Sorting
-    filtered.sort((a, b) => {
+      
+      return matchesSearch && matchesCategory && matchesPrice;
+    })
+    .sort((a: Product, b: Product) => {
       switch (sortBy) {
-        case 'price-low':
-          return a.price - b.price;
-        case 'price-high':
-          return b.price - a.price;
-        case 'rating':
-          return (b.rating || 0) - (a.rating || 0);
-        case 'newest':
-          return new Date(b.created_at || '').getTime() - new Date(a.created_at || '').getTime();
-        case 'featured':
-          return (b.is_featured ? 1 : 0) - (a.is_featured ? 1 : 0);
-        default:
+        case "price-low":
+          return Number(a.price) - Number(b.price);
+        case "price-high":
+          return Number(b.price) - Number(a.price);
+        case "name":
           return a.name.localeCompare(b.name);
+        case "popular":
+          return (b.is_featured ? 1 : 0) - (a.is_featured ? 1 : 0);
+        case "newest":
+        default:
+          return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime();
       }
     });
 
-    setFilteredProducts(filtered);
+  // Handle pagination and "View More" functionality
+  useEffect(() => {
+    setDisplayedProducts(processedProducts.slice(0, PRODUCTS_PER_PAGE));
     setCurrentPage(1);
-  }, [products, searchQuery, selectedCategory, priceRange, sortBy, selectedTags, showFeaturedOnly, inStockOnly]);
+  }, [processedProducts]);
 
-  // Update displayed products
-  useEffect(() => {
-    const startIndex = 0;
-    const endIndex = currentPage * ITEMS_PER_PAGE;
-    setDisplayedProducts(filteredProducts.slice(startIndex, endIndex));
-  }, [filteredProducts, currentPage]);
+  const handleViewMore = useCallback(() => {
+    if (isLoadingMore) return;
+    
+    setIsLoadingMore(true);
+    
+    // Simulate loading for better UX
+    setTimeout(() => {
+      const nextPage = currentPage + 1;
+      const startIndex = (nextPage - 1) * PRODUCTS_PER_PAGE;
+      const endIndex = startIndex + PRODUCTS_PER_PAGE;
+      const newProducts = processedProducts.slice(startIndex, endIndex);
+      
+      setDisplayedProducts(prev => [...prev, ...newProducts]);
+      setCurrentPage(nextPage);
+      setIsLoadingMore(false);
+    }, 800);
+  }, [currentPage, processedProducts, isLoadingMore]);
 
-  // Scroll to top handler
-  useEffect(() => {
-    const handleScroll = () => {
-      setShowScrollTop(window.scrollY > 400);
-    };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  const hasMoreProducts = displayedProducts.length < processedProducts.length;
 
-  const handleLoadMore = async () => {
-    setLoadingMore(true);
-    await new Promise(resolve => setTimeout(resolve, 500)); // Simulate loading
-    setCurrentPage(prev => prev + 1);
-    setLoadingMore(false);
+  // Handle product actions
+  const handleAddToCart = async (product: Product, customization?: any) => {
+    try {
+      if (customization) {
+        await addToCart({
+          id: product.id,
+          name: product.name,
+          price: Number(product.price),
+          image: product.image_url,
+          customization
+        });
+      } else {
+        await addToCart({
+          id: product.id,
+          name: product.name,
+          price: Number(product.price),
+          image: product.image_url
+        });
+      }
+      
+      toast({
+        title: "পণ্য যোগ করা হয়েছে",
+        description: `${product.name} কার্টে যোগ করা হয়েছে`,
+      });
+
+      // Track analytics
+      const { trackAddToCart } = await import("@/lib/analytics");
+      trackAddToCart(product.id, product.name, Number(product.price));
+    } catch (error) {
+      toast({
+        title: "ত্রুটি",
+        description: "পণ্য যোগ করতে সমস্যা হয়েছে। আবার চেষ্টা করুন।",
+        variant: "destructive"
+      });
+    }
   };
 
-  const toggleWishlist = (productId: string) => {
-    setWishlist(prev => 
+  const handleViewProduct = (product: Product) => {
+    setSelectedProduct(product);
+    setShowProductModal(true);
+    import("@/lib/analytics").then(({ trackProductView }) => {
+      trackProductView(product.id, product.name, product.category || "uncategorized");
+    });
+  };
+
+  const handleCustomizeProduct = (product: Product) => {
+    setSelectedProduct(product);
+    setShowCustomizeModal(true);
+  };
+
+  const toggleFavorite = (productId: string) => {
+    setFavorites(prev => 
       prev.includes(productId) 
         ? prev.filter(id => id !== productId)
         : [...prev, productId]
     );
   };
 
-  const handleAddToCart = (product: Product) => {
-    addItem({
-      id: product.id,
-      name: product.name,
-      price: product.price,
-      image: product.image_url || '',
-      quantity: 1
-    });
-    toast({
-      title: "কার্টে যোগ করা হয়েছে",
-      description: `${product.name} কার্টে যোগ করা হয়েছে`,
-    });
-  };
-
-  const scrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  const hasMoreProducts = displayedProducts.length < filteredProducts.length;
-
-  if (loading) {
+  // Loading state
+  if (productsLoading && displayedProducts.length === 0) {
     return (
-      <div className="min-h-screen pt-20 bg-gray-50">
-        <div className="container mx-auto px-4 py-8">
-          <div className="flex items-center justify-center h-64">
-            <div className="text-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-              <p className="text-gray-600">প্রোডাক্ট লোড হচ্ছে...</p>
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+        <Header cartCount={0} onCartOpen={() => {}} />
+        <div className="container mx-auto px-4 py-8 mt-20">
+          <div className="animate-pulse space-y-8">
+            <div className="h-12 bg-gray-200 rounded-lg w-1/3 mx-auto"></div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {[...Array(12)].map((_, i) => (
+                <div key={i} className="bg-white rounded-xl shadow-md p-4">
+                  <div className="h-80 bg-gray-200 rounded-lg mb-4"></div>
+                  <div className="space-y-3">
+                    <div className="h-4 bg-gray-200 rounded"></div>
+                    <div className="h-4 bg-gray-200 rounded w-2/3"></div>
+                    <div className="h-6 bg-gray-200 rounded w-1/2"></div>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         </div>
@@ -222,476 +226,453 @@ export default function ProductsPage() {
   }
 
   return (
-    <div className="min-h-screen pt-20 bg-gray-50">
-      <div className="container mx-auto px-4 py-8">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">আমাদের প্রোডাক্ট</h1>
-          <p className="text-gray-600">
-            {filteredProducts.length} টি প্রোডাক্ট পাওয়া গেছে {totalProducts} টির মধ্যে
-          </p>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+      <Header cartCount={0} onCartOpen={() => {}} />
+      
+      {/* Premium Hero Section */}
+      <div className="relative bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 text-white py-20 mt-16 overflow-hidden">
+        <div className="absolute inset-0 bg-black/20"></div>
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-600/80 to-purple-600/80"></div>
+        
+        {/* Animated Background Elements */}
+        <div className="absolute top-10 left-10 w-20 h-20 bg-white/10 rounded-full animate-pulse"></div>
+        <div className="absolute bottom-10 right-10 w-32 h-32 bg-white/5 rounded-full animate-bounce"></div>
+        <div className="absolute top-1/2 left-1/3 w-16 h-16 bg-white/10 rounded-full animate-ping"></div>
+        
+        <div className="container mx-auto px-4 text-center relative z-10">
+          <div className="flex items-center justify-center mb-6">
+            <Sparkles className="w-8 h-8 mr-3 text-yellow-300 animate-pulse" />
+            <h1 className="text-4xl md:text-6xl font-bold">প্রিমিয়াম পণ্যসমূহ</h1>
+            <Sparkles className="w-8 h-8 ml-3 text-yellow-300 animate-pulse" />
+          </div>
+          <p className="text-xl md:text-2xl opacity-90 mb-8">বিশেষ কাস্টম গিফট এবং লাইফস্টাইল পণ্য</p>
+          
+          <div className="flex flex-wrap justify-center gap-6 text-sm md:text-base">
+            <div className="bg-white/20 backdrop-blur-sm rounded-full px-6 py-3 flex items-center">
+              <Package className="w-5 h-5 mr-2" />
+              <span className="font-semibold">{processedProducts.length}+ পণ্য</span>
+            </div>
+            <div className="bg-white/20 backdrop-blur-sm rounded-full px-6 py-3 flex items-center">
+              <TrendingUp className="w-5 h-5 mr-2" />
+              <span className="font-semibold">দ্রুত ডেলিভারি</span>
+            </div>
+            <div className="bg-white/20 backdrop-blur-sm rounded-full px-6 py-3 flex items-center">
+              <Star className="w-5 h-5 mr-2" />
+              <span className="font-semibold">প্রিমিয়াম কোয়ালিটি</span>
+            </div>
+          </div>
         </div>
+      </div>
 
-        {/* Search and Filters Bar */}
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-          <div className="flex flex-col lg:flex-row gap-4 items-center">
+      <div className="container mx-auto px-4 py-8">
+        {/* Advanced Search and Filters */}
+        <div className="bg-white rounded-2xl shadow-xl p-6 mb-8 border border-gray-100 backdrop-blur-sm">
+          <div className="flex flex-col lg:flex-row gap-4">
             {/* Search */}
-            <div className="relative flex-1 max-w-md">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+            <div className="relative flex-1">
+              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
               <Input
-                placeholder="প্রোডাক্ট খুঁজুন..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10"
+                type="search"
+                placeholder="পণ্য খুঁজুন... (নাম, বিবরণ)"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-12 h-12 border-2 border-gray-200 focus:border-blue-500 rounded-xl text-base bg-gray-50 focus:bg-white transition-all"
               />
             </div>
 
+            {/* Category Filter */}
+            <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+              <SelectTrigger className="w-full lg:w-64 h-12 border-2 border-gray-200 rounded-xl text-base">
+                <SelectValue placeholder="ক্যাটেগরি নির্বাচন করুন" />
+              </SelectTrigger>
+              <SelectContent className="max-h-80 overflow-y-auto">
+                <SelectItem value="all">সব ক্যাটেগরি</SelectItem>
+                {categories.filter(cat => cat.is_active).map((category) => (
+                  <SelectItem key={category.name} value={category.name}>
+                    {category.name_bengali || category.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
             {/* Sort */}
             <Select value={sortBy} onValueChange={setSortBy}>
-              <SelectTrigger className="w-48">
-                <SelectValue />
+              <SelectTrigger className="w-full lg:w-48 h-12 border-2 border-gray-200 rounded-xl text-base">
+                <ArrowUpDown className="w-4 h-4 mr-2" />
+                <SelectValue placeholder="সাজান" />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value="newest">নতুন প্রথম</SelectItem>
+                <SelectItem value="popular">জনপ্রিয় প্রথম</SelectItem>
+                <SelectItem value="price-low">দাম কম থেকে বেশি</SelectItem>
+                <SelectItem value="price-high">দাম বেশি থেকে কম</SelectItem>
                 <SelectItem value="name">নাম অনুসারে</SelectItem>
-                <SelectItem value="price-low">দাম (কম থেকে বেশি)</SelectItem>
-                <SelectItem value="price-high">দাম (বেশি থেকে কম)</SelectItem>
-                <SelectItem value="rating">রেটিং অনুসারে</SelectItem>
-                <SelectItem value="newest">নতুন প্রোডাক্ট</SelectItem>
-                <SelectItem value="featured">ফিচার্ড প্রোডাক্ট</SelectItem>
+              </SelectContent>
+            </Select>
+
+            {/* Price Range */}
+            <Select value={priceRange} onValueChange={setPriceRange}>
+              <SelectTrigger className="w-full lg:w-48 h-12 border-2 border-gray-200 rounded-xl text-base">
+                <Filter className="w-4 h-4 mr-2" />
+                <SelectValue placeholder="দামের রেঞ্জ" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">সব দাম</SelectItem>
+                <SelectItem value="0-500">৳০ - ৳৫০০</SelectItem>
+                <SelectItem value="500-1000">৳৫০০ - ৳১০০০</SelectItem>
+                <SelectItem value="1000-2000">৳১০০০ - ৳২০০০</SelectItem>
+                <SelectItem value="2000+">৳২০০০+</SelectItem>
               </SelectContent>
             </Select>
 
             {/* View Mode */}
-            <div className="flex border rounded-md">
+            <div className="flex border-2 border-gray-200 rounded-xl overflow-hidden bg-gray-50">
               <Button
-                variant={viewMode === 'grid' ? 'default' : 'ghost'}
+                variant={viewMode === "grid" ? "default" : "ghost"}
                 size="sm"
-                onClick={() => setViewMode('grid')}
-                className="rounded-r-none"
+                onClick={() => setViewMode("grid")}
+                className="rounded-none h-12 px-4 border-r"
               >
-                <Grid className="w-4 h-4" />
+                <Grid3X3 className="h-4 w-4" />
               </Button>
               <Button
-                variant={viewMode === 'list' ? 'default' : 'ghost'}
+                variant={viewMode === "list" ? "default" : "ghost"}
                 size="sm"
-                onClick={() => setViewMode('list')}
-                className="rounded-l-none"
+                onClick={() => setViewMode("list")}
+                className="rounded-none h-12 px-4"
               >
-                <List className="w-4 h-4" />
+                <List className="h-4 w-4" />
               </Button>
             </div>
-
-            {/* Filter Toggle */}
-            <Button
-              variant="outline"
-              onClick={() => setShowFilters(!showFilters)}
-              className="flex items-center gap-2"
-            >
-              <Filter className="w-4 h-4" />
-              ফিল্টার
-              <ChevronDown className={`w-4 h-4 transition-transform ${showFilters ? 'rotate-180' : ''}`} />
-            </Button>
           </div>
-
-          {/* Advanced Filters */}
-          {showFilters && (
-            <div className="mt-6 pt-6 border-t grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {/* Category Filter */}
-              <div className="space-y-2">
-                <Label className="font-medium">ক্যাটেগরি</Label>
-                <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="সব ক্যাটেগরি" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="">সব ক্যাটেগরি</SelectItem>
-                    {categories.map(category => (
-                      <SelectItem key={category} value={category}>
-                        {category}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Price Range */}
-              <div className="space-y-2">
-                <Label className="font-medium">দামের রেঞ্জ</Label>
-                <div className="px-2">
-                  <Slider
-                    value={priceRange}
-                    onValueChange={setPriceRange}
-                    max={10000}
-                    min={0}
-                    step={100}
-                    className="w-full"
-                  />
-                  <div className="flex justify-between text-sm text-gray-500 mt-1">
-                    <span>{formatPrice(priceRange[0])}</span>
-                    <span>{formatPrice(priceRange[1])}</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Quick Filters */}
-              <div className="space-y-3">
-                <Label className="font-medium">কুইক ফিল্টার</Label>
-                <div className="space-y-2">
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="featured"
-                      checked={showFeaturedOnly}
-                      onCheckedChange={setShowFeaturedOnly}
-                    />
-                    <Label htmlFor="featured" className="text-sm">শুধু ফিচার্ড</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="instock"
-                      checked={inStockOnly}
-                      onCheckedChange={setInStockOnly}
-                    />
-                    <Label htmlFor="instock" className="text-sm">স্টকে আছে</Label>
-                  </div>
-                </div>
-              </div>
-
-              {/* Tags */}
-              {allTags.length > 0 && (
-                <div className="space-y-2">
-                  <Label className="font-medium">ট্যাগ</Label>
-                  <div className="flex flex-wrap gap-2">
-                    {allTags.slice(0, 6).map(tag => (
-                      <Badge
-                        key={tag}
-                        variant={selectedTags.includes(tag) ? "default" : "outline"}
-                        className="cursor-pointer"
-                        onClick={() => {
-                          setSelectedTags(prev =>
-                            prev.includes(tag)
-                              ? prev.filter(t => t !== tag)
-                              : [...prev, tag]
-                          );
-                        }}
-                      >
-                        {tag}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
         </div>
 
-        {/* Products Grid/List */}
-        {displayedProducts.length === 0 ? (
-          <div className="text-center py-16">
-            <div className="text-gray-400 mb-4">
-              <Search className="w-16 h-16 mx-auto" />
+        {/* Results Summary */}
+        <div className="flex flex-col md:flex-row justify-between items-center mb-6 bg-white rounded-xl p-4 shadow-md">
+          <div className="flex items-center space-x-4">
+            <div className="text-gray-700">
+              <span className="font-bold text-xl text-blue-600">{displayedProducts.length}</span>
+              <span className="text-gray-600 ml-1">টি পণ্য দেখাচ্ছে</span>
+              <span className="text-gray-500 ml-2">({processedProducts.length} টি পাওয়া গেছে)</span>
             </div>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">কোনো প্রোডাক্ট পাওয়া যায়নি</h3>
-            <p className="text-gray-500">অন্য কিছু খুঁজে দেখুন বা ফিল্টার পরিবর্তন করুন</p>
-          </div>
-        ) : (
-          <>
-            <div className={`grid gap-6 ${
-              viewMode === 'grid' 
-                ? 'grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4' 
-                : 'grid-cols-1'
-            }`}>
-              {displayedProducts.map((product) => (
-                <ProductCard
-                  key={product.id}
-                  product={product}
-                  viewMode={viewMode}
-                  isWishlisted={wishlist.includes(product.id)}
-                  onToggleWishlist={() => toggleWishlist(product.id)}
-                  onAddToCart={() => handleAddToCart(product)}
-                />
-              ))}
-            </div>
-
-            {/* Load More Button */}
-            {hasMoreProducts && (
-              <div className="text-center mt-12">
-                <Button
-                  onClick={handleLoadMore}
-                  disabled={loadingMore}
-                  size="lg"
-                  className="px-8"
-                >
-                  {loadingMore ? (
-                    <>
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                      লোড হচ্ছে...
-                    </>
-                  ) : (
-                    'আরো দেখুন'
-                  )}
-                </Button>
-                <p className="text-sm text-gray-500 mt-2">
-                  {displayedProducts.length} / {filteredProducts.length} টি প্রোডাক্ট দেখানো হচ্ছে
-                </p>
-              </div>
+            {searchTerm && (
+              <Badge variant="outline" className="text-sm">
+                "{searchTerm}" এর জন্য ফলাফল
+              </Badge>
             )}
-          </>
+          </div>
+          <div className="text-sm text-gray-500 mt-2 md:mt-0">
+            পৃষ্ঠা {currentPage} / {Math.ceil(processedProducts.length / PRODUCTS_PER_PAGE)}
+          </div>
+        </div>
+
+        {/* Products Grid */}
+        <PremiumProductGrid 
+          products={displayedProducts}
+          viewMode={viewMode}
+          favorites={favorites}
+          onAddToCart={handleAddToCart}
+          onViewProduct={handleViewProduct}
+          onCustomizeProduct={handleCustomizeProduct}
+          onToggleFavorite={toggleFavorite}
+        />
+
+        {/* View More Button */}
+        {hasMoreProducts && (
+          <div className="text-center mt-12">
+            <Button
+              onClick={handleViewMore}
+              disabled={isLoadingMore}
+              size="lg"
+              className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white px-12 py-4 rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl transition-all transform hover:scale-105"
+            >
+              {isLoadingMore ? (
+                <>
+                  <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                  লোড হচ্ছে...
+                </>
+              ) : (
+                <>
+                  আরও দেখুন ({processedProducts.length - displayedProducts.length} টি বাকি)
+                  <ChevronDown className="w-5 h-5 ml-2" />
+                </>
+              )}
+            </Button>
+          </div>
         )}
 
-        {/* Scroll to Top Button */}
-        {showScrollTop && (
-          <Button
-            onClick={scrollToTop}
-            className="fixed bottom-6 right-6 rounded-full w-12 h-12 shadow-lg z-50"
-            size="icon"
-          >
-            <ArrowUp className="w-5 h-5" />
-          </Button>
+        {/* No Products State */}
+        {displayedProducts.length === 0 && !productsLoading && (
+          <div className="text-center py-20">
+            <div className="bg-white rounded-2xl shadow-lg p-12 max-w-md mx-auto">
+              <Package className="w-20 h-20 text-gray-300 mx-auto mb-6" />
+              <h3 className="text-2xl font-bold text-gray-600 mb-4">কোন পণ্য পাওয়া যায়নি</h3>
+              <p className="text-gray-500 mb-6">অন্য ক্যাটেগরি বা সার্চ টার্ম চেষ্টা করুন</p>
+              <Button 
+                onClick={() => {
+                  setSearchTerm("");
+                  setSelectedCategory("all");
+                  setPriceRange("all");
+                }}
+                className="bg-blue-500 hover:bg-blue-600"
+              >
+                সব ফিল্টার রিসেট করুন
+              </Button>
+            </div>
+          </div>
         )}
       </div>
+
+      {/* Modals */}
+      <ProductModal
+        product={selectedProduct}
+        isOpen={showProductModal}
+        onClose={() => {
+          setShowProductModal(false);
+          setSelectedProduct(null);
+        }}
+        onAddToCart={handleAddToCart}
+        onCustomize={handleCustomizeProduct}
+      />
+
+      <CustomizeModal
+        product={selectedProduct}
+        isOpen={showCustomizeModal}
+        onClose={() => {
+          setShowCustomizeModal(false);
+          setSelectedProduct(null);
+        }}
+        onAddToCart={handleAddToCart}
+      />
     </div>
   );
 }
 
-// Product Card Component
-interface ProductCardProps {
-  product: Product;
-  viewMode: 'grid' | 'list';
-  isWishlisted: boolean;
-  onToggleWishlist: () => void;
-  onAddToCart: () => void;
+// Premium Product Grid Component
+interface PremiumProductGridProps {
+  products: Product[];
+  viewMode: "grid" | "list";
+  favorites: string[];
+  onAddToCart: (product: Product) => void;
+  onViewProduct: (product: Product) => void;
+  onCustomizeProduct: (product: Product) => void;
+  onToggleFavorite: (productId: string) => void;
 }
 
-function ProductCard({ product, viewMode, isWishlisted, onToggleWishlist, onAddToCart }: ProductCardProps) {
-  const [imageLoaded, setImageLoaded] = useState(false);
-  const [imageError, setImageError] = useState(false);
-
-  const defaultImage = "https://images.unsplash.com/photo-1544787219-7f47ccb76574?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600";
+function PremiumProductGrid({ 
+  products, 
+  viewMode, 
+  favorites,
+  onAddToCart, 
+  onViewProduct, 
+  onCustomizeProduct,
+  onToggleFavorite 
+}: PremiumProductGridProps) {
   
-  const discountedPrice = product.discount 
-    ? product.price - (product.price * product.discount / 100)
-    : product.price;
-
-  if (viewMode === 'list') {
+  if (viewMode === "list") {
     return (
-      <Card className="group hover:shadow-lg transition-all duration-300 bg-white border-gray-200">
-        <CardContent className="p-6">
-          <div className="flex gap-6">
-            {/* Large Image for List View */}
-            <div className="relative w-48 h-36 flex-shrink-0 rounded-lg overflow-hidden bg-gray-100">
-              {!imageLoaded && !imageError && (
-                <div className="absolute inset-0 bg-gray-200 animate-pulse flex items-center justify-center">
-                  <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+      <div className="space-y-6">
+        {products.map((product) => (
+          <Card key={product.id} className="overflow-hidden hover:shadow-2xl transition-all duration-500 border-0 shadow-lg bg-white group">
+            <div className="flex flex-col lg:flex-row">
+              <div className="lg:w-2/5 relative group cursor-pointer">
+                <div className="aspect-[4/3] overflow-hidden">
+                  <LazyImage
+                    src={product.image_url || "https://via.placeholder.com/400x300/f3f4f6/9ca3af?text=No+Image"}
+                    alt={product.name}
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                  />
                 </div>
-              )}
-              <img
-                src={imageError ? defaultImage : (product.image_url || defaultImage)}
-                alt={product.name}
-                className={`w-full h-full object-cover transition-all duration-300 group-hover:scale-105 ${
-                  imageLoaded ? 'opacity-100' : 'opacity-0'
-                }`}
-                onLoad={() => setImageLoaded(true)}
-                onError={() => {
-                  setImageError(true);
-                  setImageLoaded(true);
-                }}
-              />
-              
-              {/* Badges */}
-              <div className="absolute top-2 left-2 flex flex-col gap-1">
-                {product.is_featured && (
-                  <Badge className="bg-yellow-500 text-white text-xs">ফিচার্ড</Badge>
-                )}
-                {product.discount && (
-                  <Badge className="bg-red-500 text-white text-xs">
-                    {product.discount}% ছাড়
+                
+                {/* Overlay */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-end justify-center pb-6">
+                  <Button 
+                    size="sm" 
+                    onClick={() => onViewProduct(product)}
+                    className="bg-white/90 text-gray-800 hover:bg-white backdrop-blur-sm"
+                  >
+                    <Eye className="w-4 h-4 mr-2" />
+                    বিস্তারিত দেখুন
+                  </Button>
+                </div>
+
+                {/* Badges */}
+                <div className="absolute top-4 left-4 space-y-2">
+                  <Badge className={`${product.stock > 0 ? 'bg-green-500' : 'bg-red-500'} text-white`}>
+                    {product.stock > 0 ? 'স্টকে আছে' : 'স্টক নেই'}
                   </Badge>
-                )}
-              </div>
-
-              {/* Wishlist Button */}
-              <Button
-                variant="ghost"
-                size="icon"
-                className="absolute top-2 right-2 w-8 h-8 bg-white/80 hover:bg-white"
-                onClick={onToggleWishlist}
-              >
-                <Heart className={`w-4 h-4 ${isWishlisted ? 'fill-red-500 text-red-500' : 'text-gray-600'}`} />
-              </Button>
-            </div>
-
-            {/* Product Info */}
-            <div className="flex-1 space-y-4">
-              <div>
-                <h3 className="font-semibold text-lg text-gray-900 group-hover:text-blue-600 transition-colors">
-                  {product.name}
-                </h3>
-                {product.description && (
-                  <p className="text-gray-600 text-sm mt-1 line-clamp-2">
-                    {product.description}
-                  </p>
-                )}
-              </div>
-
-              <div className="flex items-center gap-2">
-                {product.category && (
-                  <Badge variant="outline" className="text-xs">
-                    {product.category}
-                  </Badge>
-                )}
-                {product.rating && (
-                  <div className="flex items-center gap-1">
-                    <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                    <span className="text-sm text-gray-600">{product.rating}</span>
-                  </div>
-                )}
-              </div>
-
-              <div className="flex items-center justify-between">
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xl font-bold text-blue-600">
-                      {formatPrice(discountedPrice)}
-                    </span>
-                    {product.discount && (
-                      <span className="text-sm text-gray-500 line-through">
-                        {formatPrice(product.price)}
-                      </span>
-                    )}
-                  </div>
-                  {product.stock !== undefined && (
-                    <p className="text-xs text-gray-500">
-                      স্টক: {product.stock > 0 ? `${product.stock} টি` : 'শেষ'}
-                    </p>
+                  {product.is_featured && (
+                    <Badge className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white">
+                      <Star className="w-3 h-3 mr-1" />
+                      ফিচার্ড
+                    </Badge>
                   )}
                 </div>
 
-                <div className="flex gap-2">
-                  <Button variant="outline" size="sm">
-                    <Eye className="w-4 h-4 mr-1" />
-                    দেখুন
-                  </Button>
-                  <Button
-                    onClick={onAddToCart}
-                    disabled={product.stock === 0}
-                    size="sm"
-                  >
-                    <ShoppingCart className="w-4 h-4 mr-1" />
-                    কার্ট
-                  </Button>
+                {/* Favorite Button */}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => onToggleFavorite(product.id)}
+                  className="absolute top-4 right-4 bg-white/80 hover:bg-white text-gray-600 backdrop-blur-sm"
+                >
+                  <Heart className={`w-5 h-5 ${favorites.includes(product.id) ? 'fill-red-500 text-red-500' : ''}`} />
+                </Button>
+              </div>
+
+              <div className="lg:w-3/5 p-8">
+                <div className="flex justify-between items-start mb-4">
+                  <div className="flex-1">
+                    <h3 
+                      className="text-2xl font-bold text-gray-800 mb-3 cursor-pointer hover:text-blue-600 transition-colors line-clamp-2"
+                      onClick={() => onViewProduct(product)}
+                    >
+                      {product.name}
+                    </h3>
+                    <p className="text-gray-600 text-base line-clamp-3 mb-4">{product.description}</p>
+                    {product.category && (
+                      <Badge variant="outline" className="mb-4">
+                        {product.category}
+                      </Badge>
+                    )}
+                  </div>
+                </div>
+                
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-4">
+                    <span className="text-3xl font-bold text-blue-600">{formatPrice(product.price)}</span>
+                  </div>
+                  
+                  <div className="flex space-x-3">
+                    <Button
+                      variant="outline"
+                      size="lg"
+                      onClick={() => onCustomizeProduct(product)}
+                      className="border-purple-500 text-purple-600 hover:bg-purple-50 px-6"
+                    >
+                      <Settings className="w-5 h-5 mr-2" />
+                      কাস্টমাইজ
+                    </Button>
+                    <Button
+                      size="lg"
+                      onClick={() => onAddToCart(product)}
+                      disabled={product.stock === 0}
+                      className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 px-6"
+                    >
+                      <ShoppingCart className="w-5 h-5 mr-2" />
+                      কার্টে যোগ
+                    </Button>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        </CardContent>
-      </Card>
+          </Card>
+        ))}
+      </div>
     );
   }
 
-  // Grid View
   return (
-    <Card className="group hover:shadow-xl transition-all duration-300 bg-white border-gray-200 hover:border-blue-200">
-      <CardContent className="p-0">
-        {/* Larger Image for Grid View */}
-        <div className="relative aspect-[4/3] rounded-t-lg overflow-hidden bg-gray-100">
-          {!imageLoaded && !imageError && (
-            <div className="absolute inset-0 bg-gray-200 animate-pulse flex items-center justify-center">
-              <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-            </div>
-          )}
-          <img
-            src={imageError ? defaultImage : (product.image_url || defaultImage)}
-            alt={product.name}
-            className={`w-full h-full object-cover transition-all duration-300 group-hover:scale-105 ${
-              imageLoaded ? 'opacity-100' : 'opacity-0'
-            }`}
-            onLoad={() => setImageLoaded(true)}
-            onError={() => {
-              setImageError(true);
-              setImageLoaded(true);
-            }}
-          />
-          
-          {/* Badges */}
-          <div className="absolute top-3 left-3 flex flex-col gap-1">
-            {product.is_featured && (
-              <Badge className="bg-yellow-500 text-white text-xs">ফিচার্ড</Badge>
-            )}
-            {product.discount && (
-              <Badge className="bg-red-500 text-white text-xs">
-                {product.discount}% ছাড়
-              </Badge>
-            )}
-          </div>
-
-          {/* Wishlist Button */}
-          <Button
-            variant="ghost"
-            size="icon"
-            className="absolute top-3 right-3 w-8 h-8 bg-white/80 hover:bg-white opacity-0 group-hover:opacity-100 transition-opacity"
-            onClick={onToggleWishlist}
-          >
-            <Heart className={`w-4 h-4 ${isWishlisted ? 'fill-red-500 text-red-500' : 'text-gray-600'}`} />
-          </Button>
-
-          {/* Quick Actions Overlay */}
-          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-            <Button variant="secondary" size="sm">
-              <Eye className="w-4 h-4 mr-1" />
-              দেখুন
-            </Button>
-            <Button
-              onClick={onAddToCart}
-              disabled={product.stock === 0}
-              size="sm"
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+      {products.map((product) => (
+        <Card key={product.id} className="group overflow-hidden hover:shadow-2xl transition-all duration-500 border-0 shadow-lg bg-white transform hover:-translate-y-2">
+          <div className="relative">
+            {/* Bigger Product Image */}
+            <div 
+              className="aspect-[4/5] overflow-hidden bg-gray-50 cursor-pointer relative"
+              onClick={() => onViewProduct(product)}
             >
-              <ShoppingCart className="w-4 h-4 mr-1" />
-              কার্ট
-            </Button>
-          </div>
-        </div>
-
-        {/* Product Info */}
-        <div className="p-4 space-y-3">
-          <div>
-            <h3 className="font-semibold text-gray-900 group-hover:text-blue-600 transition-colors line-clamp-2 leading-tight">
-              {product.name}
-            </h3>
-            {product.category && (
-              <p className="text-xs text-gray-500 mt-1">{product.category}</p>
-            )}
-          </div>
-
-          <div className="flex items-center justify-between">
-            <div className="space-y-1">
-              <div className="flex items-center gap-2">
-                <span className="text-lg font-bold text-blue-600">
-                  {formatPrice(discountedPrice)}
-                </span>
-                {product.discount && (
-                  <span className="text-xs text-gray-500 line-through">
-                    {formatPrice(product.price)}
-                  </span>
-                )}
-              </div>
-              {product.rating && (
-                <div className="flex items-center gap-1">
-                  <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
-                  <span className="text-xs text-gray-600">{product.rating}</span>
+              <LazyImage
+                src={product.image_url || "https://via.placeholder.com/400x500/f3f4f6/9ca3af?text=No+Image"}
+                alt={product.name}
+                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+              />
+              
+              {/* Premium Overlay */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center justify-center">
+                <div className="text-center space-y-3">
+                  <Button 
+                    size="sm" 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onViewProduct(product);
+                    }}
+                    className="bg-white/90 text-gray-800 hover:bg-white backdrop-blur-sm"
+                  >
+                    <Eye className="w-4 h-4 mr-2" />
+                    দেখুন
+                  </Button>
                 </div>
+              </div>
+            </div>
+            
+            {/* Badges */}
+            <div className="absolute top-3 left-3 space-y-2">
+              <Badge className={`${product.stock > 0 ? 'bg-green-500' : 'bg-red-500'} text-white shadow-lg`}>
+                {product.stock > 0 ? 'স্টকে আছে' : 'স্টক নেই'}
+              </Badge>
+              {product.is_featured && (
+                <Badge className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white shadow-lg">
+                  <Star className="w-3 h-3 mr-1" />
+                  ফিচার্ড
+                </Badge>
               )}
             </div>
+
+            {/* Favorite Button */}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => onToggleFavorite(product.id)}
+              className="absolute top-3 right-3 bg-white/80 hover:bg-white text-gray-600 backdrop-blur-sm shadow-lg"
+            >
+              <Heart className={`w-5 h-5 ${favorites.includes(product.id) ? 'fill-red-500 text-red-500' : ''}`} />
+            </Button>
           </div>
 
-          {product.stock !== undefined && (
-            <div className="flex items-center justify-between text-xs">
-              <span className={`${product.stock > 0 ? 'text-green-600' : 'text-red-600'}`}>
-                {product.stock > 0 ? `স্টক: ${product.stock} টি` : 'স্টক শেষ'}
-              </span>
+          <CardContent className="p-6">
+            <h3 
+              className="font-bold text-xl text-gray-800 mb-3 line-clamp-2 group-hover:text-blue-600 transition-colors cursor-pointer leading-tight"
+              onClick={() => onViewProduct(product)}
+            >
+              {product.name}
+            </h3>
+            
+            <p className="text-gray-600 text-sm mb-4 line-clamp-2 leading-relaxed">
+              {product.description || "বিশেষ কাস্টম পণ্য - আপনার পছন্দ অনুযায়ী কাস্টমাইজ করুন"}
+            </p>
+
+            <div className="flex items-center justify-between mb-4">
+              <span className="text-2xl font-bold text-blue-600">{formatPrice(product.price)}</span>
+              {product.category && (
+                <Badge variant="outline" className="text-xs">
+                  {product.category}
+                </Badge>
+              )}
             </div>
-          )}
-        </div>
-      </CardContent>
-    </Card>
+
+            <div className="space-y-3">
+              <Button
+                onClick={() => onAddToCart(product)}
+                disabled={product.stock === 0}
+                className="w-full bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 transform hover:scale-105 transition-all duration-200 shadow-lg hover:shadow-xl"
+              >
+                <ShoppingCart className="w-4 h-4 mr-2" />
+                কার্টে যোগ করুন
+              </Button>
+              
+              <Button
+                variant="outline"
+                onClick={() => onCustomizeProduct(product)}
+                className="w-full border-purple-500 text-purple-600 hover:bg-purple-50 hover:border-purple-600 transition-all"
+              >
+                <Settings className="w-4 h-4 mr-2" />
+                কাস্টমাইজ করুন
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      ))}
+    </div>
   );
 }
