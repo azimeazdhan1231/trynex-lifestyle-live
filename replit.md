@@ -4,6 +4,13 @@
 A comprehensive Bengali-friendly eCommerce store with advanced admin panel, analytics integration, and responsive design. Live at https://trynex-lifestyle.pages.dev/
 
 ## Recent Changes
+✅ **Custom Order Website Integration** (2025-01-31)
+- Updated customize modal to prioritize website checkout over WhatsApp ordering
+- Modified custom order flow to use website's checkout system with 100tk advance payment
+- Enhanced checkout modal to handle custom orders with special pricing display
+- Added clear visual distinction between regular orders and custom orders in checkout
+- Improved UI messaging to encourage website ordering as primary option
+
 ✅ **Product Modal Functionality Fix** (2025-01-31)
 - Fixed products page modal functionality - now all product clicks open in modals instead of blank pages
 - Added click handlers to product images, titles, and view buttons to open ProductModal with dynamic details

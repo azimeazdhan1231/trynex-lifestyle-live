@@ -204,7 +204,7 @@ export default function CustomizeModal({ product, isOpen, onClose, onAddToCart, 
     onClose();
   };
 
-  const handleDirectBuyNow = () => {
+  const handleDirectBuyNow = async () => {
     if (!customization.size || !customization.color) {
       toast({
         title: "তথ্য অসম্পূর্ণ",
@@ -214,33 +214,16 @@ export default function CustomizeModal({ product, isOpen, onClose, onAddToCart, 
       return;
     }
 
-    const advancePayment = Math.max(80, Math.round(totalPrice * 0.3));
-    const customDetails = `
-🎯 *নতুন কাস্টম অর্ডার*
-
-📝 *কাস্টমাইজেশন বিবরণ:*
-• পণ্য: ${product.name}
-• সাইজ: ${customization.size}
-• রং: ${customization.color}
-• প্রিন্ট এরিয়া: ${customization.printArea || "নির্দিষ্ট নয়"}
-• কাস্টম টেক্সট: ${customization.customText || "নেই"}
-• বিশেষ নির্দেশনা: ${customization.specialInstructions || "নেই"}
-• অতিরিক্ত অনুরোধ: ${customization.additionalRequests || "নেই"}
-• পরিমাণ: ${customization.quantity}
-• জরুরীতা: ${customization.urgency}
-• ডেলিভারি পছন্দ: ${customization.deliveryPreference}
-
-💰 *মূল্য তথ্য:*
-• পণ্যের মূল্য: ${formatPrice(totalPrice)}
-• অগ্রিম পেমেন্ট: ${formatPrice(advancePayment)}
-• পেমেন্ট নম্বর: 01747292277 (bKash/Nagad)
-
-${customization.customImage ? "📎 কাস্টম ছবি আপলোড করা হয়েছে" : ""}
-
-অনুগ্রহ করে ${formatPrice(advancePayment)} অগ্রিম পেমেন্ট করে অর্ডার কনফার্ম করুন।
-    `;
-
-    window.open(createWhatsAppUrl(customDetails.trim()), '_blank');
+    // Add to cart with customization first
+    await handleAddToCart();
+    
+    // Set URL parameters for custom order and trigger checkout modal
+    window.history.replaceState({}, '', '?customOrder=true&advancePayment=100');
+    
+    toast({
+      title: "কাস্টম অর্ডার প্রস্তুত",
+      description: "অর্ডার সম্পূর্ণ করতে ১০০ টাকা অগ্রিম পেমেন্ট করুন",
+    });
   };
 
   const handleWhatsAppOrder = () => {
@@ -547,15 +530,21 @@ ${customization.customImage ? "📎 কাস্টম ছবি আপলোড
             </div>
 
             {/* Payment Information */}
-            <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-              <h4 className="font-semibold text-blue-800 mb-2">💰 পেমেন্ট তথ্য</h4>
-              <div className="space-y-2 text-sm text-blue-700">
-                <p><strong>মোট মূল্য:</strong> {formatPrice(totalPrice)}</p>
-                <p><strong>ডেলিভারি চার্জ:</strong> 80-120৳ (এলাকা অনুযায়ী)</p>
-                <p><strong>অগ্রিম পেমেন্ট:</strong> সর্বনিম্ন 80৳ (ডেলিভারি চার্জ)</p>
-                <div className="mt-3 p-2 bg-white rounded border">
-                  <p className="font-medium text-gray-800">পেমেন্ট নম্বর:</p>
-                  <p>📱 bKash/Nagad: <span className="font-bold">01747292277</span></p>
+            <div className="bg-green-50 p-4 rounded-lg border border-green-200">
+              <h4 className="font-semibold text-green-800 mb-3">💰 অর্ডার ও পেমেন্ট প্রক্রিয়া</h4>
+              <div className="space-y-3 text-sm text-green-700">
+                <div className="bg-white p-3 rounded border border-green-300">
+                  <p className="font-bold text-green-800 mb-2">🌐 ওয়েবসাইট অর্ডার (প্রাথমিক)</p>
+                  <ul className="list-disc list-inside space-y-1 text-xs">
+                    <li>ওয়েবসাইটে ঠিকানা ও ডেলিভারি তথ্য দিন</li>
+                    <li>১০০ টাকা অগ্রিম পেমেন্ট করে অর্ডার কনফার্ম করুন</li>
+                    <li>বাকি টাকা পণ্য পাওয়ার সময় দিন</li>
+                  </ul>
+                </div>
+                <div className="text-gray-600">
+                  <p><strong>মোট মূল্য:</strong> {formatPrice(totalPrice)}</p>
+                  <p><strong>অগ্রিম পেমেন্ট:</strong> ১০০ টাকা (অর্ডার কনফার্ম করতে)</p>
+                  <p><strong>ডেলিভারি চার্জ:</strong> 80-120৳ (এলাকা অনুযায়ী)</p>
                 </div>
               </div>
             </div>
@@ -564,12 +553,12 @@ ${customization.customImage ? "📎 কাস্টম ছবি আপলোড
             <div className="space-y-3 pt-4 border-t">
               <Button
                 onClick={handleDirectBuyNow}
-                className="w-full bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white"
+                className="w-full bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700 text-white font-semibold"
                 size="lg"
                 disabled={!customization.size || !customization.color}
               >
-                <MessageCircle className="w-5 h-5 mr-2" />
-                এখনই কিনুন - অগ্রিম পেমেন্ট ({formatPrice(Math.max(80, Math.round(totalPrice * 0.3)))})
+                <ShoppingCart className="w-5 h-5 mr-2" />
+                ওয়েবসাইটে অর্ডার করুন - ১০০ টাকা অগ্রিম
               </Button>
               
               <div className="grid grid-cols-2 gap-2">
@@ -578,6 +567,7 @@ ${customization.customImage ? "📎 কাস্টম ছবি আপলোড
                   variant="outline"
                   size="sm"
                   disabled={!customization.size || !customization.color}
+                  className="border-blue-300 text-blue-600 hover:bg-blue-50"
                 >
                   <ShoppingCart className="w-4 h-4 mr-1" />
                   কার্টে যোগ করুন
@@ -585,13 +575,17 @@ ${customization.customImage ? "📎 কাস্টম ছবি আপলোড
                 <Button
                   onClick={handleWhatsAppOrder}
                   variant="outline"
-                  className="bg-green-50 text-green-700 hover:bg-green-100 border-green-300"
+                  className="bg-gray-50 text-gray-600 hover:bg-gray-100 border-gray-300 text-xs"
                   size="sm"
                 >
                   <MessageCircle className="w-4 h-4 mr-1" />
-                  হোয়াটসঅ্যাপে অর্ডার
+                  হোয়াটসঅ্যাপে যোগাযোগ
                 </Button>
               </div>
+              
+              <p className="text-xs text-gray-500 text-center">
+                💡 সর্বোত্তম সেবার জন্য ওয়েবসাইটে অর্ডার করুন
+              </p>
             </div>
           </div>
         </div>

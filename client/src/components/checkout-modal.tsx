@@ -40,6 +40,11 @@ export default function CheckoutModal({ isOpen, onClose, cart, onOrderComplete }
   const [availableThanas, setAvailableThanas] = useState<string[]>([]);
   const [completedOrder, setCompletedOrder] = useState<Order | null>(null);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  
+  // Check if this is a custom order from URL parameters
+  const urlParams = new URLSearchParams(window.location.search);
+  const isCustomOrder = urlParams.get('customOrder') === 'true';
+  const customAdvancePayment = urlParams.get('advancePayment') ? parseInt(urlParams.get('advancePayment')!) : 100;
 
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -71,7 +76,7 @@ export default function CheckoutModal({ isOpen, onClose, cart, onOrderComplete }
     },
     onSuccess: (order: Order) => {
       // Track successful purchase
-      trackPurchase(order.tracking_id, Number(order.total), 'BDT');
+      trackPurchase(Number(order.total), order.tracking_id);
 
       queryClient.invalidateQueries({ queryKey: ["/api/orders"] });
       setCompletedOrder(order);
@@ -296,12 +301,25 @@ export default function CheckoutModal({ isOpen, onClose, cart, onOrderComplete }
                 <p className="text-orange-800 font-semibold text-sm mb-1">
                   পেমেন্ট অপশন:
                 </p>
-                <p className="text-orange-700 text-xs mb-1">
-                  • সর্বনিম্ন: {formatPrice(deliveryFee)} (শুধু ডেলিভারি চার্জ)
-                </p>
-                <p className="text-orange-700 text-xs">
-                  • সুপারিশকৃত: {formatPrice(totalPrice)} (সম্পূর্ণ অর্ডার পরিমাণ)
-                </p>
+                {isCustomOrder ? (
+                  <div className="space-y-1">
+                    <p className="text-orange-700 text-xs font-bold">
+                      🎯 কাস্টম অর্ডার অগ্রিম: {formatPrice(customAdvancePayment)}
+                    </p>
+                    <p className="text-orange-600 text-xs">
+                      বাকি টাকা পণ্য পাওয়ার সময় পরিশোধ করুন
+                    </p>
+                  </div>
+                ) : (
+                  <>
+                    <p className="text-orange-700 text-xs mb-1">
+                      • সর্বনিম্ন: {formatPrice(deliveryFee)} (শুধু ডেলিভারি চার্জ)
+                    </p>
+                    <p className="text-orange-700 text-xs">
+                      • সুপারিশকৃত: {formatPrice(totalPrice)} (সম্পূর্ণ অর্ডার পরিমাণ)
+                    </p>
+                  </>
+                )}
               </div>
               <div className="space-y-2">
                 <div>
