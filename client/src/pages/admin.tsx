@@ -1,6 +1,6 @@
 import { useState } from "react";
 import AdminLogin from "@/components/admin-login";
-import EnhancedAdminTabs from "@/components/enhanced-admin-tabs";
+import AdminPanelNew from "@/components/admin-panel-new";
 
 export default function Admin() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -31,9 +31,9 @@ export default function Admin() {
           </div>
         </div>
 
-        {/* Main Content - Enhanced Mobile Responsiveness */}
+        {/* Main Content - New Admin Panel */}
         <div className="w-full">
-          <EnhancedAdminTabs />
+          <AdminPanelNew />
         </div>
       </div>
     </div>
