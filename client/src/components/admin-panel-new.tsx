@@ -783,7 +783,8 @@ export default function AdminPanelNew() {
                           </TableCell>
                           <TableCell>{product.category}</TableCell>
                           <TableCell>
-                            <div className="flex gap-1                              {product.is_featured && <Badge variant="default" className="text-xs">ফিচার্ড</Badge>}
+                            <div className="flex gap-1">
+                              {product.is_featured && <Badge variant="default" className="text-xs">ফিচার্ড</Badge>}
                               {product.is_latest && <Badge variant="secondary" className="text-xs">নতুন</Badge>}
                               {product.is_best_selling && <Badge variant="outline" className="text-xs">বেস্ট</Badge>}
                             </div>

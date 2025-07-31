@@ -1,6 +1,6 @@
 
 import { sql } from "drizzle-orm";
-import { pgTable, text, varchar, numeric, integer, timestamp, jsonb, uuid, boolean, serial, decimal } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, numeric, integer, timestamp, jsonb, uuid, boolean, decimal } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -140,7 +140,7 @@ export const userOrders = pgTable("user_orders", {
 });
 
 export const customOrders = pgTable('custom_orders', {
-  id: serial('id').primaryKey(),
+  id: integer('id').primaryKey().generatedByDefaultAsIdentity(),
   name: varchar('name', { length: 255 }).notNull(),
   whatsapp: varchar('whatsapp', { length: 20 }).notNull(),
   address: text('address').notNull(),
@@ -157,7 +157,7 @@ export const customOrders = pgTable('custom_orders', {
 });
 
 export const blogs = pgTable('blogs', {
-  id: serial('id').primaryKey(),
+  id: integer('id').primaryKey().generatedByDefaultAsIdentity(),
   title: varchar('title', { length: 255 }).notNull(),
   content: text('content').notNull(),
   excerpt: text('excerpt').notNull(),
@@ -172,7 +172,7 @@ export const blogs = pgTable('blogs', {
 });
 
 export const pages = pgTable('pages', {
-  id: serial('id').primaryKey(),
+  id: integer('id').primaryKey().generatedByDefaultAsIdentity(),
   title: varchar('title', { length: 255 }).notNull(),
   slug: varchar('slug', { length: 255 }).notNull().unique(),
   content: text('content').notNull(),
