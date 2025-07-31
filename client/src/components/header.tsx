@@ -158,7 +158,7 @@ export default function Header({ cartCount, onCartOpen }: HeaderProps) {
           }}
         />
       )}
-      
+
       <footer className="mt-16 py-8 border-t border-gray-200">
           <div className="container mx-auto px-4">
             <div className="grid md:grid-cols-3 gap-6 mb-6">

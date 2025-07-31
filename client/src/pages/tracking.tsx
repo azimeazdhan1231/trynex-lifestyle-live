@@ -427,19 +427,30 @@ export default function TrackingPage() {
                                     </div>
                                   </div>
                                 </div>
-                              </div>span className="font-medium text-blue-800">কাস্টম ছবি:</span>
+                              </div>
+                            )}
+
+                            {/* Single Custom Image (legacy support) */}
+                            {item.customization.customImage && !item.customization.customImages && (
+                              <div className="mt-3">
+                                <div className="flex items-start gap-2">
+                                  <Package className="w-4 h-4 text-blue-600 mt-1" />
+                                  <div className="flex-1">
+                                    <span className="font-medium text-blue-800">কাস্টম ছবি:</span>
                                     <div className="mt-2">
                                       {typeof item.customization.customImage === 'string' ? (
                                         <img 
                                           src={item.customization.customImage} 
                                           alt="Custom uploaded image" 
-                                          className="max-w-xs max-h-48 rounded-lg border shadow-sm"
+                                          className="w-32 h-32 object-cover rounded-lg border cursor-pointer hover:opacity-80 transition-opacity"
+                                          onClick={() => window.open(item.customization.customImage, '_blank')}
                                         />
                                       ) : item.customization.customImage.url ? (
                                         <img 
                                           src={item.customization.customImage.url} 
                                           alt="Custom uploaded image" 
-                                          className="max-w-xs max-h-48 rounded-lg border shadow-sm"
+                                          className="w-32 h-32 object-cover rounded-lg border cursor-pointer hover:opacity-80 transition-opacity"
+                                          onClick={() => window.open(item.customization.customImage.url, '_blank')}
                                         />
                                       ) : (
                                         <div className="bg-white p-3 rounded-lg border text-sm">
@@ -448,6 +459,15 @@ export default function TrackingPage() {
                                           </p>
                                         </div>
                                       )}
+                                      <p className="text-sm text-blue-600 mt-1 cursor-pointer hover:underline"
+                                         onClick={() => {
+                                           const imageUrl = typeof item.customization.customImage === 'string' 
+                                             ? item.customization.customImage 
+                                             : item.customization.customImage.url;
+                                           if (imageUrl) window.open(imageUrl, '_blank');
+                                         }}>
+                                        ক্লিক করে বড় করে দেখুন
+                                      </p>
                                     </div>
                                   </div>
                                 </div>
