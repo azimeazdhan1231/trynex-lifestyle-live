@@ -140,7 +140,7 @@ export const userOrders = pgTable("user_orders", {
 });
 
 export const customOrders = pgTable('custom_orders', {
-  id: integer('id').primaryKey().generatedByDefaultAsIdentity(),
+  id: uuid('id').primaryKey().default(sql`gen_random_uuid()`),
   name: varchar('name', { length: 255 }).notNull(),
   whatsapp: varchar('whatsapp', { length: 20 }).notNull(),
   address: text('address').notNull(),
@@ -157,7 +157,7 @@ export const customOrders = pgTable('custom_orders', {
 });
 
 export const blogs = pgTable('blogs', {
-  id: integer('id').primaryKey().generatedByDefaultAsIdentity(),
+  id: uuid('id').primaryKey().default(sql`gen_random_uuid()`),
   title: varchar('title', { length: 255 }).notNull(),
   content: text('content').notNull(),
   excerpt: text('excerpt').notNull(),
@@ -172,7 +172,7 @@ export const blogs = pgTable('blogs', {
 });
 
 export const pages = pgTable('pages', {
-  id: integer('id').primaryKey().generatedByDefaultAsIdentity(),
+  id: uuid('id').primaryKey().default(sql`gen_random_uuid()`),
   title: varchar('title', { length: 255 }).notNull(),
   slug: varchar('slug', { length: 255 }).notNull().unique(),
   content: text('content').notNull(),

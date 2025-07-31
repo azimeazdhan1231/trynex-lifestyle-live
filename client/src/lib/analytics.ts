@@ -1,4 +1,3 @@
-
 // Analytics utilities for the e-commerce store
 import { insertAnalyticsSchema, type SiteSettings } from "@shared/schema";
 
@@ -36,7 +35,7 @@ export async function loadFacebookPixelFromSettings(): Promise<void> {
   try {
     const settings = await loadSettings();
     const pixelId = settings['facebook_pixel_id'];
-    
+
     if (pixelId && pixelId.trim()) {
       // Load Facebook Pixel script
       const script = document.createElement('script');
@@ -53,7 +52,7 @@ export async function loadFacebookPixelFromSettings(): Promise<void> {
         fbq('track', 'PageView');
       `;
       document.head.appendChild(script);
-      
+
       // Also add noscript fallback
       const noscript = document.createElement('noscript');
       noscript.innerHTML = `<img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=${pixelId}&ev=PageView&noscript=1" />`;
@@ -76,18 +75,18 @@ export async function loadGoogleAnalyticsFromSettings(): Promise<void> {
   try {
     const settings = await loadSettings();
     const gaId = settings['google_analytics_id'];
-    
+
     if (gaId && gaId.trim()) {
       // Initialize dataLayer
       window.dataLayer = window.dataLayer || [];
       window.gtag = function() {
         window.dataLayer.push(arguments);
       };
-      
+
       // Configure GA
       window.gtag('js', new Date());
       window.gtag('config', gaId);
-      
+
       // Load GA script
       const script = document.createElement('script');
       script.async = true;
