@@ -15,6 +15,7 @@ import { ORDER_STATUSES, formatPrice, PRODUCT_CATEGORIES } from "@/lib/constants
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { apiRequest } from "@/lib/queryClient";
+import OrderDetailsModal from "@/components/order-details-modal";
 import type { Product, Order, Offer, Category, PromoCode } from "@shared/schema";
 
 export default function AdminPanelNew() {
@@ -44,11 +45,42 @@ export default function AdminPanelNew() {
     sort_order: 0
   });
 
+  const [offerForm, setOfferForm] = useState({
+    title: "", 
+    description: "", 
+    image_url: "", 
+    discount_percentage: 0, 
+    min_order_amount: "", 
+    button_text: "অর্ডার করুন", 
+    button_link: "/products",
+    is_popup: false, 
+    popup_delay: 3000, 
+    active: true, 
+    expiry: ""
+  });
+
+  const [promoForm, setPromoForm] = useState({
+    code: "", 
+    description: "", 
+    discount_type: "percentage", 
+    discount_value: 0, 
+    min_order_amount: 0, 
+    usage_limit: 0, 
+    expiry_date: "", 
+    is_active: true
+  });
+
   // Dialog states
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
+  const [editingOffer, setEditingOffer] = useState<any>(null);
+  const [editingPromo, setEditingPromo] = useState<any>(null);
   const [isProductDialogOpen, setIsProductDialogOpen] = useState(false);
   const [isCategoryDialogOpen, setIsCategoryDialogOpen] = useState(false);
+  const [isOfferDialogOpen, setIsOfferDialogOpen] = useState(false);
+  const [isPromoDialogOpen, setIsPromoDialogOpen] = useState(false);
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [orderDetailsOpen, setOrderDetailsOpen] = useState(false);
 
   // Fetch data with error handling
   const { data: orders = [], isLoading: ordersLoading, error: ordersError } = useQuery<Order[]>({ 
@@ -63,10 +95,20 @@ export default function AdminPanelNew() {
     queryKey: ["/api/categories"]
   });
 
+  const { data: offers = [], isLoading: offersLoading, error: offersError } = useQuery<any[]>({ 
+    queryKey: ["/api/offers"]
+  });
+
+  const { data: promoCodes = [], isLoading: promoLoading, error: promoError } = useQuery<PromoCode[]>({ 
+    queryKey: ["/api/promo-codes"]
+  });
+
   // Handle errors silently
   if (ordersError) console.log("Orders loading failed");
   if (productsError) console.log("Products loading failed");
   if (categoriesError) console.log("Categories loading failed");
+  if (offersError) console.log("Offers loading failed");
+  if (promoError) console.log("Promo codes loading failed");
 
   // Dashboard statistics with safe calculations
   const totalRevenue = Array.isArray(orders) ? orders.reduce((sum: number, order: Order) => {
@@ -78,6 +120,7 @@ export default function AdminPanelNew() {
   const pendingOrders = Array.isArray(orders) ? orders.filter((order: Order) => order.status === "pending").length : 0;
   const totalProducts = Array.isArray(products) ? products.length : 0;
   const lowStockProducts = Array.isArray(products) ? products.filter((product: Product) => (product.stock || 0) < 5).length : 0;
+  const activePromoCodes = Array.isArray(promoCodes) ? promoCodes.filter((promo: PromoCode) => promo.is_active).length : 0;
 
   // Product mutations
   const createProductMutation = useMutation({
@@ -141,11 +184,70 @@ export default function AdminPanelNew() {
     }
   });
 
+  // Category mutations
+  const createCategoryMutation = useMutation({
+    mutationFn: async (data: any) => {
+      const response = await apiRequest("POST", "/api/categories", data);
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/categories"] });
+      setIsCategoryDialogOpen(false);
+      resetCategoryForm();
+      toast({ title: "ক্যাটাগরি যোগ হয়েছে", description: "নতুন ক্যাটাগরি সফলভাবে যোগ করা হয়েছে" });
+    }
+  });
+
+  const updateCategoryMutation = useMutation({
+    mutationFn: async (data: any) => {
+      const response = await apiRequest("PATCH", `/api/categories/${editingCategory?.id}`, data);
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/categories"] });
+      setIsCategoryDialogOpen(false);
+      setEditingCategory(null);
+      resetCategoryForm();
+      toast({ title: "ক্যাটাগরি আপডেট হয়েছে", description: "ক্যাটাগরি সফলভাবে আপডেট করা হয়েছে" });
+    }
+  });
+
+  const deleteCategoryMutation = useMutation({
+    mutationFn: async (id: string) => {
+      await apiRequest("DELETE", `/api/categories/${id}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/categories"] });
+      toast({ title: "ক্যাটাগরি মুছে ফেলা হয়েছে", description: "ক্যাটাগরি সফলভাবে মুছে ফেলা হয়েছে" });
+    }
+  });
+
   // Helper functions
   const resetProductForm = () => {
     setProductForm({
       name: "", price: "", image_url: "", category: "", stock: 0, description: "",
       is_featured: false, is_latest: false, is_best_selling: false
+    });
+  };
+
+  const resetCategoryForm = () => {
+    setCategoryForm({
+      name: "", name_bengali: "", description: "", image_url: "", is_active: true, sort_order: 0
+    });
+  };
+
+  const resetOfferForm = () => {
+    setOfferForm({
+      title: "", description: "", image_url: "", discount_percentage: 0, 
+      min_order_amount: "", button_text: "অর্ডার করুন", button_link: "/products",
+      is_popup: false, popup_delay: 3000, active: true, expiry: ""
+    });
+  };
+
+  const resetPromoForm = () => {
+    setPromoForm({
+      code: "", description: "", discount_type: "percentage", discount_value: 0, 
+      min_order_amount: 0, usage_limit: 0, expiry_date: "", is_active: true
     });
   };
 
@@ -189,6 +291,38 @@ export default function AdminPanelNew() {
     updateOrderMutation.mutate({ id: orderId, status: newStatus });
   };
 
+  const handleViewOrderDetails = (order: Order) => {
+    setSelectedOrder(order);
+    setOrderDetailsOpen(true);
+  };
+
+  const handleEditCategory = (category: Category) => {
+    setEditingCategory(category);
+    setCategoryForm({
+      name: category.name,
+      name_bengali: category.name_bengali || "",
+      description: category.description || "",
+      image_url: category.image_url || "",
+      is_active: category.is_active ?? true,
+      sort_order: category.sort_order || 0
+    });
+    setIsCategoryDialogOpen(true);
+  };
+
+  const handleSubmitCategory = () => {
+    if (editingCategory) {
+      updateCategoryMutation.mutate(categoryForm);
+    } else {
+      createCategoryMutation.mutate(categoryForm);
+    }
+  };
+
+  const handleDeleteCategory = (id: string) => {
+    if (confirm("আপনি কি নিশ্চিত যে এই ক্যাটাগরিটি মুছে ফেলতে চান?")) {
+      deleteCategoryMutation.mutate(id);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 p-2 sm:p-4">
       {/* Header */}
@@ -201,7 +335,7 @@ export default function AdminPanelNew() {
         {/* Mobile-responsive tabs */}
         <div className="bg-white rounded-lg shadow-sm p-2">
           <div className="overflow-x-auto pb-2">
-            <TabsList className="inline-flex w-max min-w-full sm:grid sm:w-full sm:grid-cols-6 h-auto p-1 bg-gray-100 rounded-md">
+            <TabsList className="inline-flex w-max min-w-full sm:grid sm:w-full sm:grid-cols-8 h-auto p-1 bg-gray-100 rounded-md">
               <TabsTrigger value="dashboard" className="whitespace-nowrap px-3 py-2 text-xs sm:text-sm">
                 <BarChart3 className="w-4 h-4 mr-1" />
                 ড্যাশবোর্ড
@@ -217,6 +351,14 @@ export default function AdminPanelNew() {
               <TabsTrigger value="categories" className="whitespace-nowrap px-3 py-2 text-xs sm:text-sm">
                 <Tag className="w-4 h-4 mr-1" />
                 ক্যাটাগরি
+              </TabsTrigger>
+              <TabsTrigger value="offers" className="whitespace-nowrap px-3 py-2 text-xs sm:text-sm">
+                <Gift className="w-4 h-4 mr-1" />
+                অফার
+              </TabsTrigger>
+              <TabsTrigger value="promo-codes" className="whitespace-nowrap px-3 py-2 text-xs sm:text-sm">
+                <Tag className="w-4 h-4 mr-1" />
+                প্রমো কোড
               </TabsTrigger>
               <TabsTrigger value="users" className="whitespace-nowrap px-3 py-2 text-xs sm:text-sm">
                 <Users className="w-4 h-4 mr-1" />
@@ -268,12 +410,12 @@ export default function AdminPanelNew() {
 
             <Card className="bg-white shadow-sm">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">গ্রাহক</CardTitle>
-                <Users className="h-4 w-4 text-purple-600" />
+                <CardTitle className="text-sm font-medium">প্রমো কোড</CardTitle>
+                <Tag className="h-4 w-4 text-purple-600" />
               </CardHeader>
               <CardContent>
-                <div className="text-xl sm:text-2xl font-bold text-purple-600">০</div>
-                <p className="text-xs text-gray-600">নিবন্ধিত গ্রাহক</p>
+                <div className="text-xl sm:text-2xl font-bold text-purple-600">{activePromoCodes}</div>
+                <p className="text-xs text-gray-600">সক্রিয় প্রমো কোড</p>
               </CardContent>
             </Card>
           </div>
@@ -370,7 +512,11 @@ export default function AdminPanelNew() {
                             </Select>
                           </TableCell>
                           <TableCell>
-                            <Button variant="ghost" size="sm">
+                            <Button 
+                              variant="ghost" 
+                              size="sm"
+                              onClick={() => handleViewOrderDetails(order)}
+                            >
                               <Eye className="w-4 h-4" />
                             </Button>
                           </TableCell>
@@ -391,7 +537,7 @@ export default function AdminPanelNew() {
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <CardTitle className="text-lg flex items-center gap-2">
                   <Package className="w-5 h-5" />
-                  পণ্য ম্যানেজমেন্ট
+                  পণ্য ম্যানেজমেন্ট ({totalProducts} টি পণ্য)
                 </CardTitle>
                 <Dialog open={isProductDialogOpen} onOpenChange={setIsProductDialogOpen}>
                   <DialogTrigger asChild>
@@ -585,16 +731,299 @@ export default function AdminPanelNew() {
         <TabsContent value="categories" className="space-y-4">
           <Card className="bg-white shadow-sm">
             <CardHeader>
-              <CardTitle className="text-lg flex items-center gap-2">
-                <Tag className="w-5 h-5" />
-                ক্যাটাগরি ম্যানেজমেন্ট
-              </CardTitle>
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Tag className="w-5 h-5" />
+                  ক্যাটাগরি ম্যানেজমেন্ট ({Array.isArray(categories) ? categories.length : 0} টি)
+                </CardTitle>
+                <Dialog open={isCategoryDialogOpen} onOpenChange={setIsCategoryDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button onClick={() => { setEditingCategory(null); resetCategoryForm(); }}>
+                      <Plus className="w-4 h-4 mr-2" />
+                      নতুন ক্যাটাগরি
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-md mx-auto">
+                    <DialogHeader>
+                      <DialogTitle>{editingCategory ? 'ক্যাটাগরি সম্পাদনা' : 'নতুন ক্যাটাগরি যোগ'}</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                      <div>
+                        <Label htmlFor="cat-name">ক্যাটাগরি নাম (ইংরেজি)</Label>
+                        <Input
+                          id="cat-name"
+                          value={categoryForm.name}
+                          onChange={(e) => setCategoryForm(prev => ({ ...prev, name: e.target.value }))}
+                          placeholder="Category name"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="cat-name-bn">ক্যাটাগরি নাম (বাংলা)</Label>
+                        <Input
+                          id="cat-name-bn"
+                          value={categoryForm.name_bengali}
+                          onChange={(e) => setCategoryForm(prev => ({ ...prev, name_bengali: e.target.value }))}
+                          placeholder="ক্যাটাগরির নাম"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="cat-desc">বিবরণ</Label>
+                        <Textarea
+                          id="cat-desc"
+                          value={categoryForm.description}
+                          onChange={(e) => setCategoryForm(prev => ({ ...prev, description: e.target.value }))}
+                          placeholder="ক্যাটাগরির বিবরণ"
+                          rows={3}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="cat-image">ছবির লিংক</Label>
+                        <Input
+                          id="cat-image"
+                          value={categoryForm.image_url}
+                          onChange={(e) => setCategoryForm(prev => ({ ...prev, image_url: e.target.value }))}
+                          placeholder="ছবির URL"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="cat-order">সর্ট অর্ডার</Label>
+                        <Input
+                          id="cat-order"
+                          type="number"
+                          value={categoryForm.sort_order}
+                          onChange={(e) => setCategoryForm(prev => ({ ...prev, sort_order: parseInt(e.target.value) || 0 }))}
+                          placeholder="0"
+                        />
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Switch
+                          id="cat-active"
+                          checked={categoryForm.is_active}
+                          onCheckedChange={(checked) => setCategoryForm(prev => ({ ...prev, is_active: checked }))}
+                        />
+                        <Label htmlFor="cat-active">সক্রিয়</Label>
+                      </div>
+                      <div className="flex gap-2 pt-4">
+                        <Button
+                          onClick={handleSubmitCategory}
+                          disabled={createCategoryMutation.isPending || updateCategoryMutation.isPending}
+                          className="flex-1"
+                        >
+                          {(createCategoryMutation.isPending || updateCategoryMutation.isPending) ? 'সেভ হচ্ছে...' : 'সেভ করুন'}
+                        </Button>
+                        <Button
+                          variant="outline"
+                          onClick={() => setIsCategoryDialogOpen(false)}
+                          className="flex-1"
+                        >
+                          বাতিল
+                        </Button>
+                      </div>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              </div>
             </CardHeader>
             <CardContent>
               {categoriesLoading ? (
                 <div className="text-center py-8">লোড হচ্ছে...</div>
+              ) : !Array.isArray(categories) || categories.length === 0 ? (
+                <div className="text-center py-8 text-gray-500">কোনো ক্যাটাগরি নেই</div>
               ) : (
-                <div className="text-center py-8 text-gray-500">শীঘ্রই আসছে...</div>
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>ছবি</TableHead>
+                        <TableHead>বাংলা নাম</TableHead>
+                        <TableHead>ইংরেজি নাম</TableHead>
+                        <TableHead>স্ট্যাটাস</TableHead>
+                        <TableHead>সর্ট অর্ডার</TableHead>
+                        <TableHead>অ্যাকশন</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {categories.map((category) => (
+                        <TableRow key={category.id}>
+                          <TableCell>
+                            <img
+                              src={category.image_url || "https://images.unsplash.com/photo-1441986300917-64674bd600d8"}
+                              alt={category.name}
+                              className="w-12 h-12 object-cover rounded"
+                            />
+                          </TableCell>
+                          <TableCell className="font-medium">{category.name_bengali}</TableCell>
+                          <TableCell>{category.name}</TableCell>
+                          <TableCell>
+                            <Badge variant={category.is_active ? "secondary" : "destructive"}>
+                              {category.is_active ? "সক্রিয়" : "নিষ্ক্রিয়"}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>{category.sort_order}</TableCell>
+                          <TableCell>
+                            <div className="flex gap-1">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleEditCategory(category)}
+                              >
+                                <Edit2 className="w-4 h-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleDeleteCategory(category.id!)}
+                                disabled={deleteCategoryMutation.isPending}
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Offers Tab */}
+        <TabsContent value="offers" className="space-y-4">
+          <Card className="bg-white shadow-sm">
+            <CardHeader>
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Gift className="w-5 h-5" />
+                  অফার ম্যানেজমেন্ট ({Array.isArray(offers) ? offers.length : 0} টি)
+                </CardTitle>
+                <Button onClick={() => { setEditingOffer(null); resetOfferForm(); setIsOfferDialogOpen(true); }}>
+                  <Plus className="w-4 h-4 mr-2" />
+                  নতুন অফার
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {offersLoading ? (
+                <div className="text-center py-8">লোড হচ্ছে...</div>
+              ) : !Array.isArray(offers) || offers.length === 0 ? (
+                <div className="text-center py-8 text-gray-500">কোনো অফার নেই</div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>শিরোনাম</TableHead>
+                        <TableHead>ছাড় (%)</TableHead>
+                        <TableHead>সর্বনিম্ন অর্ডার</TableHead>
+                        <TableHead>স্ট্যাটাস</TableHead>
+                        <TableHead>পপআপ</TableHead>
+                        <TableHead>অ্যাকশন</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {offers.map((offer) => (
+                        <TableRow key={offer.id}>
+                          <TableCell className="font-medium">{offer.title}</TableCell>
+                          <TableCell>{offer.discount_percentage}%</TableCell>
+                          <TableCell>{formatPrice(Number(offer.min_order_amount || 0))}</TableCell>
+                          <TableCell>
+                            <Badge variant={offer.active ? "secondary" : "destructive"}>
+                              {offer.active ? "সক্রিয়" : "নিষ্ক্রিয়"}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant={offer.is_popup ? "default" : "outline"}>
+                              {offer.is_popup ? "পপআপ" : "স্ট্যাটিক"}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex gap-1">
+                              <Button variant="ghost" size="sm">
+                                <Edit2 className="w-4 h-4" />
+                              </Button>
+                              <Button variant="ghost" size="sm">
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Promo Codes Tab */}
+        <TabsContent value="promo-codes" className="space-y-4">
+          <Card className="bg-white shadow-sm">
+            <CardHeader>
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Tag className="w-5 h-5" />
+                  প্রমো কোড ম্যানেজমেন্ট ({Array.isArray(promoCodes) ? promoCodes.length : 0} টি)
+                </CardTitle>
+                <Button onClick={() => { setEditingPromo(null); resetPromoForm(); setIsPromoDialogOpen(true); }}>
+                  <Plus className="w-4 h-4 mr-2" />
+                  নতুন প্রমো কোড
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {promoLoading ? (
+                <div className="text-center py-8">লোড হচ্ছে...</div>
+              ) : !Array.isArray(promoCodes) || promoCodes.length === 0 ? (
+                <div className="text-center py-8 text-gray-500">কোনো প্রমো কোড নেই</div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>কোড</TableHead>
+                        <TableHead>ছাড়</TableHead>
+                        <TableHead>সর্বনিম্ন অর্ডার</TableHead>
+                        <TableHead>ব্যবহার সীমা</TableHead>
+                        <TableHead>মেয়াদ</TableHead>
+                        <TableHead>স্ট্যাটাস</TableHead>
+                        <TableHead>অ্যাকশন</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {promoCodes.map((promo) => (
+                        <TableRow key={promo.id}>
+                          <TableCell className="font-mono font-bold">{promo.code}</TableCell>
+                          <TableCell>
+                            {promo.discount_type === 'percentage' ? `${promo.discount_value}%` : formatPrice(promo.discount_value)}
+                          </TableCell>
+                          <TableCell>{formatPrice(promo.min_order_amount || 0)}</TableCell>
+                          <TableCell>{promo.usage_limit || "সীমাহীন"}</TableCell>
+                          <TableCell>
+                            {promo.expires_at ? new Date(promo.expires_at).toLocaleDateString('bn-BD') : "সীমাহীন"}
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant={promo.is_active ? "secondary" : "destructive"}>
+                              {promo.is_active ? "সক্রিয়" : "নিষ্ক্রিয়"}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex gap-1">
+                              <Button variant="ghost" size="sm">
+                                <Edit2 className="w-4 h-4" />
+                              </Button>
+                              <Button variant="ghost" size="sm">
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
               )}
             </CardContent>
           </Card>
@@ -621,6 +1050,63 @@ export default function AdminPanelNew() {
             <CardHeader>
               <CardTitle className="text-lg flex items-center gap-2">
                 <Settings className="w-5 h-5" />
+                সিস্টেম সেটিংস
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-6">
+                <div>
+                  <h3 className="text-lg font-semibold mb-4">সাইট সেটিংস</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="site-name">সাইটের নাম</Label>
+                      <Input id="site-name" defaultValue="Trynex Lifestyle" />
+                    </div>
+                    <div>
+                      <Label htmlFor="contact-phone">যোগাযোগ নম্বর</Label>
+                      <Input id="contact-phone" defaultValue="+8801XXXXXXXXX" />
+                    </div>
+                    <div>
+                      <Label htmlFor="delivery-fee-dhaka">ঢাকার ডেলিভারি চার্জ</Label>
+                      <Input id="delivery-fee-dhaka" type="number" defaultValue="80" />
+                    </div>
+                    <div>
+                      <Label htmlFor="delivery-fee-outside">ঢাকার বাইরে ডেলিভারি চার্জ</Label>
+                      <Input id="delivery-fee-outside" type="number" defaultValue="120" />
+                    </div>
+                  </div>
+                </div>
+                
+                <div>
+                  <h3 className="text-lg font-semibold mb-4">অ্যানালিটিক্স</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="ga-id">Google Analytics ID</Label>
+                      <Input id="ga-id" placeholder="G-XXXXXXXXXX" />
+                    </div>
+                    <div>
+                      <Label htmlFor="fb-pixel">Facebook Pixel ID</Label>
+                      <Input id="fb-pixel" placeholder="XXXXXXXXXXXXXXX" />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="pt-4">
+                  <Button className="w-full sm:w-auto">
+                    সেটিংস সেভ করুন
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Settings Tab */}
+        <TabsContent value="settings" className="space-y-4">
+          <Card className="bg-white shadow-sm">
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center gap-2">
+                <Settings className="w-5 h-5" />
                 সেটিংস
               </CardTitle>
             </CardHeader>
@@ -630,6 +1116,13 @@ export default function AdminPanelNew() {
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* Order Details Modal */}
+      <OrderDetailsModal
+        isOpen={orderDetailsOpen}
+        onClose={() => setOrderDetailsOpen(false)}
+        order={selectedOrder}
+      />
     </div>
   );
 }
