@@ -21,12 +21,15 @@ export default function ProductModal({ product, isOpen, onClose, onAddToCart, on
   const { toast } = useToast();
 
   // Debug logging
+  console.log("🔍 ProductModal: Received props:", { product: product?.name, isOpen, onClose, onAddToCart, onCustomize });
+  
   if (!product) {
-    console.log("❌ ProductModal: No product provided");
+    console.log("❌ ProductModal: No product provided, returning null");
     return null;
   }
 
   console.log("✅ ProductModal: Rendering with product:", product.name, "isOpen:", isOpen);
+  console.log("✅ ProductModal: Product details:", product);
 
   // Track product view when modal opens
   useEffect(() => {
@@ -74,7 +77,16 @@ export default function ProductModal({ product, isOpen, onClose, onAddToCart, on
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[95vh] overflow-y-auto sm:max-w-lg md:max-w-2xl p-4 sm:p-6 mx-2 sm:mx-0">
+      <DialogContent className="max-w-2xl max-h-[95vh] overflow-y-auto sm:max-w-lg md:max-w-2xl p-4 sm:p-6 mx-2 sm:mx-0 bg-white rounded-lg shadow-xl" style={{ 
+        position: 'fixed',
+        top: '50%',
+        left: '50%',
+        transform: 'translate(-50%, -50%)',
+        zIndex: 9999,
+        maxHeight: '90vh',
+        width: '90vw',
+        maxWidth: '600px'
+      }}>
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold text-gray-800">
             {product.name}

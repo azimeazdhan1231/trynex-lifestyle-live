@@ -181,7 +181,15 @@ export default function CheckoutModal({ isOpen, onClose, cart, onOrderComplete }
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-md max-h-[95vh] overflow-y-auto mx-2 sm:mx-0 p-4 sm:p-6">
+      <DialogContent className="max-w-md max-h-[95vh] overflow-y-auto mx-2 sm:mx-0 p-4 sm:p-6" style={{ 
+        position: 'fixed',
+        top: '50%',
+        left: '50%',
+        transform: 'translate(-50%, -50%)',
+        zIndex: 9999,
+        width: '90vw',
+        maxWidth: '400px'
+      }}>
         <DialogHeader>
           <DialogTitle>অর্ডার সম্পূর্ণ করুন</DialogTitle>
           <DialogDescription>

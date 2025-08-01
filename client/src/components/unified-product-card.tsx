@@ -25,6 +25,8 @@ export default function UnifiedProductCard({
 
   const handleCardClick = () => {
     console.log("🔍 UnifiedProductCard: Card clicked, calling onViewProduct with:", product.name);
+    console.log("🔍 UnifiedProductCard: Product data:", product);
+    console.log("🔍 UnifiedProductCard: onViewProduct function:", onViewProduct);
     onViewProduct(product);
   };
 
@@ -41,6 +43,8 @@ export default function UnifiedProductCard({
   const handleViewDetails = (e: React.MouseEvent) => {
     e.stopPropagation();
     console.log("👁️ UnifiedProductCard: View details clicked for:", product.name);
+    console.log("👁️ UnifiedProductCard: Product data:", product);
+    console.log("👁️ UnifiedProductCard: onViewProduct function:", onViewProduct);
     onViewProduct(product);
   };
 
