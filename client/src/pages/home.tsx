@@ -7,6 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import ProgressiveProductGrid from "@/components/ProgressiveProductGrid";
+import PremiumLoadingSkeleton from "@/components/PremiumLoadingSkeleton";
 import Header from "@/components/header";
 import TrackingSection from "@/components/tracking-section";
 import PopupOffer from "../components/popup-offer";
@@ -244,19 +245,19 @@ function ProductSection({
     return (
       <section className={`py-20 ${bgColor}`}>
         <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <Skeleton className="h-8 w-48 mx-auto mb-4" />
-            <Skeleton className="h-4 w-64 mx-auto" />
+          <div className="text-center mb-16">
+            <div className="flex items-center justify-center space-x-3 mb-4">
+              <div className="w-10 h-10 bg-gray-200 rounded-full animate-pulse" />
+              <Skeleton className="h-10 w-48" />
+            </div>
+            <Skeleton className="h-6 w-96 mx-auto" />
+            <div className="w-24 h-1 bg-gray-200 mx-auto mt-6 rounded-full animate-pulse"></div>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-            {[...Array(4)].map((_, i) => (
-              <div key={i} className="space-y-4">
-                <Skeleton className="aspect-square rounded-lg" />
-                <Skeleton className="h-4 w-3/4" />
-                <Skeleton className="h-4 w-1/2" />
-                <Skeleton className="h-10 w-full" />
-              </div>
-            ))}
+          
+          <PremiumLoadingSkeleton count={6} />
+          
+          <div className="text-center mt-12">
+            <Skeleton className="h-12 w-40 mx-auto rounded-full" />
           </div>
         </div>
       </section>
@@ -324,9 +325,9 @@ export default function Home() {
   // Load products for homepage sections with ultra-fast caching
   const { data: products = [], isLoading: productsLoading } = useQuery<Product[]>({
     queryKey: ["/api/products"],
-    staleTime: 1000 * 60 * 5, // Cache for 5 minutes
+    staleTime: 1000 * 60 * 3, // 3 minutes cache for optimal performance
     gcTime: 1000 * 60 * 15, // Keep in cache for 15 minutes
-    retry: 1, // Only retry once
+    retry: 1, // Only retry once for faster failure detection
     refetchOnWindowFocus: false, // Don't refetch on window focus
     placeholderData: [], // Show empty array immediately
   });

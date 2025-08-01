@@ -2,6 +2,29 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Premium loading animations */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.animate-shimmer {
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
+/* Ultra-fast loading optimizations */
+.bg-muted {
+  background-color: hsl(210 40% 96%);
+}
+
+.dark .bg-muted {
+  background-color: hsl(217.2 32.6% 17.5%);
+}
+
 @keyframes fadeIn {
   from {
     opacity: 0;
