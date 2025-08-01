@@ -19,12 +19,54 @@ export function useOptimizedProducts({
 }: UseOptimizedProductsProps = {}) {
   const [currentPage, setCurrentPage] = useState(1);
 
-  // Fetch products with optimized caching
+  // Ultra-fast products with browser caching
   const { data: allProducts = [], isLoading, error } = useQuery({
-    queryKey: ['/api/products', category],
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    gcTime: 10 * 60 * 1000, // 10 minutes
+    queryKey: ['products-ultra-fast', category],
+    queryFn: async () => {
+      const CACHE_KEY = `products-cache-${category || 'all'}`;
+      const CACHE_DURATION = 365 * 24 * 60 * 60 * 1000; // 1 year
+      
+      // Try browser cache first
+      try {
+        const cached = localStorage.getItem(CACHE_KEY);
+        if (cached) {
+          const { data, timestamp } = JSON.parse(cached);
+          if (Date.now() - timestamp < CACHE_DURATION) {
+            console.log('⚡ Products loaded from browser cache');
+            return data;
+          }
+        }
+      } catch (e) {}
+      
+      // Fetch with aggressive optimization
+      const url = category ? `/api/products?category=${category}` : '/api/products';
+      const response = await fetch(url, {
+        headers: {
+          'Cache-Control': 'max-age=31536000', // 1 year
+          'Accept': 'application/json'
+        }
+      });
+      
+      if (!response.ok) throw new Error('Network error');
+      
+      const data = await response.json();
+      
+      // Cache immediately
+      try {
+        localStorage.setItem(CACHE_KEY, JSON.stringify({
+          data,
+          timestamp: Date.now()
+        }));
+      } catch (e) {}
+      
+      console.log('🚀 Products fetched and cached');
+      return data;
+    },
+    staleTime: Infinity, // Never consider stale
+    gcTime: Infinity, // Keep forever
     refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+    retry: 1
   });
 
   // Memoized filtered and sorted products

@@ -66,7 +66,7 @@ export default function ProductsOptimized() {
     return [field as 'name' | 'price' | 'created_at', order as 'asc' | 'desc'];
   }, [sortOption]);
 
-  // Use optimized products hook
+  // Use ultra-fast cached products hook
   const {
     products,
     isLoading,
@@ -77,11 +77,10 @@ export default function ProductsOptimized() {
     hasNextPage,
     hasPreviousPage
   } = useOptimizedProducts({
-    category: selectedCategory === "all" ? undefined : selectedCategory,
     searchTerm,
     sortBy,
     sortOrder,
-    pageSize: 16
+    pageSize: 32 // Show all products at once
   });
 
   // Optimized handlers
