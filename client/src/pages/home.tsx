@@ -1,6 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, memo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { memo } from "react";
 import { ArrowRight, Gift, MessageCircle, ArrowUp, Star, Clock, TrendingUp, ShoppingCart, Eye, Heart, Share2, Phone, ChevronRight, Sparkles, Palette } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -22,6 +21,7 @@ import OptimizedProductCard from "@/components/OptimizedProductCard";
 import { setupPerformanceMonitoring } from "@/utils/performanceMonitoring";
 import { preloadImages } from "@/utils/imageOptimization";
 import { PersistentCache } from "@/utils/persistentCache";
+import { PerformanceOptimizer } from "@/utils/performanceOptimizer";
 import type { Product, Offer } from "@shared/schema";
 
 interface ProductCardProps {
@@ -311,9 +311,12 @@ export default function Home() {
   const { toast } = useToast();
   const { addToCart, totalItems } = useCart();
 
-  // Initialize performance monitoring
+  // Initialize performance monitoring and optimizations
   useEffect(() => {
     setupPerformanceMonitoring();
+    PerformanceOptimizer.preloadCriticalResources();
+    PerformanceOptimizer.optimizeImageLoading();
+    PerformanceOptimizer.setupMemoryCleanup();
   }, []);
 
   // Load active offers with delay to prevent blocking product loading
@@ -363,10 +366,30 @@ export default function Home() {
   // Use current products or cached products for instant display
   const currentProducts = products?.length > 0 ? products : cachedProducts;
   
-  // Filter products for different sections with fallbacks
-  const featuredProducts = currentProducts.filter(p => p.is_featured);
-  const latestProducts = currentProducts.filter(p => p.is_latest);
-  const bestSellingProducts = currentProducts.filter(p => p.is_best_selling);
+  // Memoized product filtering for better performance
+  const featuredProducts = useMemo(() => 
+    PerformanceOptimizer.memoizeProductFilter(
+      currentProducts, 
+      'featured', 
+      (products) => products.filter(p => p.is_featured)
+    ), [currentProducts]
+  );
+
+  const latestProducts = useMemo(() =>
+    PerformanceOptimizer.memoizeProductFilter(
+      currentProducts,
+      'latest',
+      (products) => products.filter(p => p.is_latest)
+    ), [currentProducts]
+  );
+
+  const bestSellingProducts = useMemo(() =>
+    PerformanceOptimizer.memoizeProductFilter(
+      currentProducts,
+      'bestselling',
+      (products) => products.filter(p => p.is_best_selling)
+    ), [currentProducts]
+  );
 
   // If no products are marked, use defaults
   const defaultFeatured = featuredProducts.length > 0 ? featuredProducts.slice(0, 4) : currentProducts.slice(0, 4);
@@ -374,10 +397,11 @@ export default function Home() {
   const defaultBestSelling = bestSellingProducts.length > 0 ? bestSellingProducts.slice(0, 4) : currentProducts.slice(8, 12);
 
   useEffect(() => {
-    const handleScroll = () => {
+    const handleScroll = PerformanceOptimizer.throttle(() => {
       setShowScrollTop(window.scrollY > 300);
-    };
-    window.addEventListener('scroll', handleScroll);
+    }, 100); // Throttle scroll events for better performance
+    
+    window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 

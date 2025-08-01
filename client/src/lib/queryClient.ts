@@ -16,14 +16,14 @@ export const queryClient = new QueryClient({
 
         // Add timeout for ultra-fast performance
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 8000); // 8s timeout
+        const timeoutId = setTimeout(() => controller.abort(), 5000); // 5s timeout (reduced for faster failure detection)
 
         try {
           const response = await fetch(url, { 
             signal: signal || controller.signal,
             credentials: 'include', // Include credentials for auth endpoints
             headers: {
-              'Cache-Control': 'public, max-age=300', // 5 minute client cache
+              'Cache-Control': 'public, max-age=480', // 8 minute client cache (aligned with staleTime)
               'Accept': 'application/json',
             }
           });
@@ -46,8 +46,8 @@ export const queryClient = new QueryClient({
       },
       retry: 1, // Only retry once for faster failures
       retryDelay: 1000, // Quick retry
-      staleTime: 1000 * 60 * 5, // 5 minutes - data considered fresh
-      gcTime: 1000 * 60 * 15, // 15 minutes - keep in cache longer
+      staleTime: 1000 * 60 * 8, // 8 minutes - data considered fresh (increased for better caching)
+      gcTime: 1000 * 60 * 25, // 25 minutes - keep in cache longer
       refetchOnWindowFocus: false,
       refetchOnReconnect: false,
       networkMode: 'online', // Only run when online

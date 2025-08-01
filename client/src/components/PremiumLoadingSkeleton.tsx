@@ -3,9 +3,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export default function PremiumLoadingSkeleton({ count = 6 }: { count?: number }) {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" style={{ contain: 'layout style paint' }}>
       {Array.from({ length: count }).map((_, index) => (
-        <Card key={index} className="group relative overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 animate-pulse">
+        <Card key={index} className="group relative overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 animate-pulse loading-skeleton">
           <div className="relative">
             {/* Image skeleton with shimmer effect */}
             <div className="aspect-square bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 bg-[length:200%_100%] animate-shimmer" />
