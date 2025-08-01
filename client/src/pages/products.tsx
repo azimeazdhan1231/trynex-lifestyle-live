@@ -116,6 +116,8 @@ export default function ProductsPage() {
 
   // Handle view product details
   const handleViewProduct = (product: Product) => {
+    console.log("📱 Products page: handleViewProduct called with:", product.name);
+    console.log("📱 Products page: Setting selectedProduct and opening modal");
     setSelectedProduct(product);
     setIsProductModalOpen(true);
   };

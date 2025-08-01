@@ -24,6 +24,7 @@ export default function UnifiedProductCard({
   const [isFavorite, setIsFavorite] = useState(false);
 
   const handleCardClick = () => {
+    console.log("🔍 UnifiedProductCard: Card clicked, calling onViewProduct with:", product.name);
     onViewProduct(product);
   };
 
@@ -39,6 +40,7 @@ export default function UnifiedProductCard({
 
   const handleViewDetails = (e: React.MouseEvent) => {
     e.stopPropagation();
+    console.log("👁️ UnifiedProductCard: View details clicked for:", product.name);
     onViewProduct(product);
   };
 
