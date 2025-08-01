@@ -32,7 +32,7 @@ import { useToast } from "@/hooks/use-toast";
 import { trackProductView, trackAddToCart } from "@/lib/analytics";
 import type { Product, Category } from "@shared/schema";
 
-const PRODUCTS_PER_PAGE = 8;
+const PRODUCTS_PER_PAGE = 32; // Show all products
 
 export default function Products() {
   const [searchTerm, setSearchTerm] = useState("");

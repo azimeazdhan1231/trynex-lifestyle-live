@@ -7,9 +7,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { Upload, X, ShoppingCart, MessageCircle, Palette, Type, Image as ImageIcon } from "lucide-react";
+import { Upload, X, ShoppingCart, MessageCircle, Palette, Type, Image as ImageIcon, Package } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { formatPrice, createWhatsAppUrl } from "@/lib/constants";
+import DirectOrderModal from "@/components/direct-order-modal";
 import type { Product } from "@shared/schema";
 
 interface CustomizeModalProps {
@@ -204,6 +205,8 @@ export default function CustomizeModal({ product, isOpen, onClose, onAddToCart, 
     onClose();
   };
 
+  const [showDirectOrder, setShowDirectOrder] = useState(false);
+
   const handleDirectBuyNow = async () => {
     if (!customization.size || !customization.color) {
       toast({
@@ -214,16 +217,8 @@ export default function CustomizeModal({ product, isOpen, onClose, onAddToCart, 
       return;
     }
 
-    // Add to cart with customization first
-    await handleAddToCart();
-    
-    // Set URL parameters for custom order and trigger checkout modal
-    window.history.replaceState({}, '', '?customOrder=true&advancePayment=100');
-    
-    toast({
-      title: "কাস্টম অর্ডার প্রস্তুত",
-      description: "অর্ডার সম্পূর্ণ করতে ১০০ টাকা অগ্রিম পেমেন্ট করুন",
-    });
+    // Open direct order modal
+    setShowDirectOrder(true);
   };
 
   const handleWhatsAppOrder = () => {
@@ -557,8 +552,8 @@ export default function CustomizeModal({ product, isOpen, onClose, onAddToCart, 
                 size="lg"
                 disabled={!customization.size || !customization.color}
               >
-                <ShoppingCart className="w-5 h-5 mr-2" />
-                ওয়েবসাইটে অর্ডার করুন - ১০০ টাকা অগ্রিম
+                <Package className="w-5 h-5 mr-2" />
+                সরাসরি অর্ডার করুন
               </Button>
               
               <div className="grid grid-cols-2 gap-2">
@@ -589,6 +584,22 @@ export default function CustomizeModal({ product, isOpen, onClose, onAddToCart, 
             </div>
           </div>
         </div>
+
+        {/* Direct Order Modal */}
+        <DirectOrderModal
+          product={product}
+          customization={customization}
+          isOpen={showDirectOrder}
+          onClose={() => setShowDirectOrder(false)}
+          onOrderSuccess={(orderId) => {
+            setShowDirectOrder(false);
+            onClose();
+            toast({
+              title: "অর্ডার সফল!",
+              description: `অর্ডার ID: ${orderId}`,
+            });
+          }}
+        />
       </DialogContent>
     </Dialog>
   );

@@ -39,12 +39,12 @@ export default function Auth() {
   }, [isAuthenticated, navigate]);
 
   const [formData, setFormData] = useState({
-    email: "",
+    phone: "",
     password: "",
     confirmPassword: "",
     firstName: "",
     lastName: "",
-    phone: ""
+    address: ""
   });
 
   const handleInputChange = (field: keyof typeof formData, value: string) => {
@@ -52,17 +52,28 @@ export default function Auth() {
   };
 
   const validateForm = () => {
-    if (!formData.email || !formData.password) {
+    if (!formData.phone || !formData.password) {
       toast({
         title: "তথ্য অসম্পূর্ণ",
-        description: "ইমেইল এবং পাসওয়ার্ড প্রয়োজন",
+        description: "ফোন নম্বর এবং পাসওয়ার্ড প্রয়োজন",
+        variant: "destructive",
+      });
+      return false;
+    }
+
+    // Validate phone number format
+    const phoneRegex = /^(\+88)?0?1[3-9]\d{8}$/;
+    if (!phoneRegex.test(formData.phone)) {
+      toast({
+        title: "ভুল ফোন নম্বর",
+        description: "সঠিক বাংলাদেশী ফোন নম্বর দিন (যেমন: 01712345678)",
         variant: "destructive",
       });
       return false;
     }
 
     if (activeTab === "signup") {
-      if (!formData.firstName || !formData.confirmPassword) {
+      if (!formData.firstName || !formData.address || !formData.confirmPassword) {
         toast({
           title: "তথ্য অসম্পূর্ণ",
           description: "সকল প্রয়োজনীয় তথ্য পূরণ করুন",
@@ -101,39 +112,56 @@ export default function Auth() {
     setIsLoading(true);
     
     try {
-      if (activeTab === "signup") {
-        // Store signup data for processing after auth
-        localStorage.setItem('pendingSignupData', JSON.stringify({
-          firstName: formData.firstName,
-          lastName: formData.lastName,
-          phone: formData.phone,
-          email: formData.email
-        }));
-        
+      const endpoint = activeTab === "signup" ? "/api/auth/register" : "/api/auth/login";
+      const payload = activeTab === "signup" ? {
+        phone: formData.phone,
+        password: formData.password,
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        address: formData.address
+      } : {
+        phone: formData.phone,
+        password: formData.password
+      };
+
+      const response = await fetch(endpoint, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
         toast({
-          title: "সাইনআপ প্রক্রিয়া শুরু",
-          description: "অনুগ্রহ করে Replit এর মাধ্যমে সাইনআপ সম্পন্ন করুন",
+          title: activeTab === "signup" ? "সাইনআপ সফল!" : "লগইন সফল!",
+          description: activeTab === "signup" ? "আপনার অ্যাকাউন্ট তৈরি হয়েছে" : "স্বাগতম!",
         });
+        
+        // Store auth token
+        localStorage.setItem('authToken', result.token);
+        localStorage.setItem('user', JSON.stringify(result.user));
+        
+        // Redirect to home or intended page
+        navigate("/");
       } else {
         toast({
-          title: "লগইন প্রক্রিয়া শুরু",
-          description: "অনুগ্রহ করে Replit এর মাধ্যমে লগইন করুন",
+          title: "সমস্যা হয়েছে",
+          description: result.message || "আবার চেষ্টা করুন",
+          variant: "destructive",
         });
       }
-      
-      // Small delay to show toast before redirect
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Redirect to Replit Auth for both login and signup
-      window.location.href = "/api/login";
       
     } catch (error) {
       console.error("Auth error:", error);
       toast({
-        title: "লগইন/সাইনআপ সমস্যা",
-        description: "আবার চেষ্টা করুন অথবা সাপোর্টে যোগাযোগ করুন",
+        title: "নেটওয়ার্ক সমস্যা",
+        description: "ইন্টারনেট সংযোগ চেক করুন এবং আবার চেষ্টা করুন",
         variant: "destructive",
       });
+    } finally {
       setIsLoading(false);
     }
   };
@@ -206,15 +234,15 @@ export default function Auth() {
               <TabsContent value="login" className="space-y-4">
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <div>
-                    <Label htmlFor="login-email">ইমেইল</Label>
+                    <Label htmlFor="login-phone">ফোন নম্বর</Label>
                     <div className="relative">
-                      <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                      <Phone className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                       <Input
-                        id="login-email"
-                        type="email"
-                        placeholder="your@email.com"
-                        value={formData.email}
-                        onChange={(e) => handleInputChange("email", e.target.value)}
+                        id="login-phone"
+                        type="tel"
+                        placeholder="01712345678"
+                        value={formData.phone}
+                        onChange={(e) => handleInputChange("phone", e.target.value)}
                         className="pl-10"
                         required
                       />
@@ -277,15 +305,15 @@ export default function Auth() {
                   </div>
 
                   <div>
-                    <Label htmlFor="signup-email">ইমেইল</Label>
+                    <Label htmlFor="signup-phone">ফোন নম্বর</Label>
                     <div className="relative">
-                      <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                      <Phone className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                       <Input
-                        id="signup-email"
-                        type="email"
-                        placeholder="your@email.com"
-                        value={formData.email}
-                        onChange={(e) => handleInputChange("email", e.target.value)}
+                        id="signup-phone"
+                        type="tel"
+                        placeholder="01712345678"
+                        value={formData.phone}
+                        onChange={(e) => handleInputChange("phone", e.target.value)}
                         className="pl-10"
                         required
                       />
@@ -293,16 +321,17 @@ export default function Auth() {
                   </div>
 
                   <div>
-                    <Label htmlFor="phone">ফোন নম্বর (ঐচ্ছিক)</Label>
+                    <Label htmlFor="address">ঠিকানা</Label>
                     <div className="relative">
-                      <Phone className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                      <MapPin className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                       <Input
-                        id="phone"
-                        type="tel"
-                        placeholder="01XXXXXXXXX"
-                        value={formData.phone}
-                        onChange={(e) => handleInputChange("phone", e.target.value)}
+                        id="address"
+                        type="text"
+                        placeholder="আপনার সম্পূর্ণ ঠিকানা"
+                        value={formData.address}
+                        onChange={(e) => handleInputChange("address", e.target.value)}
                         className="pl-10"
+                        required
                       />
                     </div>
                   </div>
