@@ -375,24 +375,13 @@ export default function Home() {
   // Load products for homepage sections with instant display
   const { data: products = [], isLoading: productsLoading, isSuccess } = useQuery<Product[]>({
     queryKey: ["/api/products"],
-    staleTime: Infinity, // Never consider stale for instant loading
-    gcTime: Infinity, // Keep forever
-    retry: 0, // No retries for instant loading
+    staleTime: 1000 * 60 * 10, // 10 minutes stale time
+    gcTime: 1000 * 60 * 30, // Keep in memory for 30 minutes
+    retry: 2,
     refetchOnWindowFocus: false,
-    initialData: () => {
-      // Use preloaded data if available
-      const preloader = (window as any).productPreloader;
-      if (preloader) {
-        const preloadedData = preloader.getPreloadedData();
-        if (preloadedData) {
-          console.log('⚡ Using preloaded products');
-          return preloadedData;
-        }
-      }
-      return cachedProducts.length > 0 ? cachedProducts : undefined;
-    },
-    placeholderData: cachedProducts,
-    networkMode: 'always',
+    initialData: cachedProducts.length > 0 ? cachedProducts : undefined,
+    placeholderData: cachedProducts, // Use cached data as placeholder
+    networkMode: 'always', // Always try to fetch fresh data
   });
 
   // Show products immediately when loaded - no artificial delays

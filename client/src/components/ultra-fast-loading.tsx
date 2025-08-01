@@ -15,13 +15,7 @@ export function UltraFastLoading({
   children, 
   minimumDuration = 0 
 }: UltraFastLoadingProps) {
-  // Show content immediately when available
-  if (!isLoading && hasData) {
-    return <>{children}</>;
-  }
-
-  // Only show skeleton if actually loading and no data
-  if (isLoading && !hasData) {
+  if (isLoading) {
     return <ProductGridSkeleton />;
   }
 

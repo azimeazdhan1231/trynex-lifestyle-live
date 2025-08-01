@@ -19,98 +19,54 @@ export function useOptimizedProducts({
 }: UseOptimizedProductsProps = {}) {
   const [currentPage, setCurrentPage] = useState(1);
 
-  // Ultra-fast products with instant cache loading
+  // Ultra-fast products with browser caching
   const { data: allProducts = [], isLoading, error } = useQuery({
     queryKey: ['products-ultra-fast', category],
     queryFn: async () => {
       const CACHE_KEY = `products-cache-${category || 'all'}`;
       const CACHE_DURATION = 365 * 24 * 60 * 60 * 1000; // 1 year
       
-      // Try multiple cache strategies for instant loading
-      let cachedData = null;
-      
-      // 1. Try sessionStorage first (fastest)
-      try {
-        const sessionCached = sessionStorage.getItem(CACHE_KEY);
-        if (sessionCached) {
-          cachedData = JSON.parse(sessionCached);
-          console.log('⚡ Products loaded from session cache (instant)');
-          return cachedData;
-        }
-      } catch (e) {}
-      
-      // 2. Try localStorage cache
+      // Try browser cache first
       try {
         const cached = localStorage.getItem(CACHE_KEY);
         if (cached) {
           const { data, timestamp } = JSON.parse(cached);
           if (Date.now() - timestamp < CACHE_DURATION) {
-            // Store in session for next instant access
-            sessionStorage.setItem(CACHE_KEY, JSON.stringify(data));
-            console.log('⚡ Products loaded from localStorage cache');
+            console.log('⚡ Products loaded from browser cache');
             return data;
           }
         }
       } catch (e) {}
       
-      // 3. Fetch with aggressive optimization
+      // Fetch with aggressive optimization
       const url = category ? `/api/products?category=${category}` : '/api/products';
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 3000); // 3s timeout
+      const response = await fetch(url, {
+        headers: {
+          'Cache-Control': 'max-age=31536000', // 1 year
+          'Accept': 'application/json'
+        }
+      });
       
+      if (!response.ok) throw new Error('Network error');
+      
+      const data = await response.json();
+      
+      // Cache immediately
       try {
-        const response = await fetch(url, {
-          headers: {
-            'Cache-Control': 'max-age=31536000, immutable',
-            'Accept': 'application/json',
-            'Connection': 'keep-alive'
-          },
-          signal: controller.signal
-        });
-        
-        clearTimeout(timeoutId);
-        
-        if (!response.ok) throw new Error('Network error');
-        
-        const data = await response.json();
-        
-        // Cache in both storages immediately
-        try {
-          localStorage.setItem(CACHE_KEY, JSON.stringify({
-            data,
-            timestamp: Date.now()
-          }));
-          sessionStorage.setItem(CACHE_KEY, JSON.stringify(data));
-        } catch (e) {}
-        
-        console.log('🚀 Products fetched and cached');
-        return data;
-      } catch (error) {
-        clearTimeout(timeoutId);
-        throw error;
-      }
+        localStorage.setItem(CACHE_KEY, JSON.stringify({
+          data,
+          timestamp: Date.now()
+        }));
+      } catch (e) {}
+      
+      console.log('🚀 Products fetched and cached');
+      return data;
     },
-    staleTime: Infinity,
-    gcTime: Infinity,
+    staleTime: Infinity, // Never consider stale
+    gcTime: Infinity, // Keep forever
     refetchOnWindowFocus: false,
     refetchOnReconnect: false,
-    retry: 0, // No retries for instant loading
-    initialData: () => {
-      // Try to get cached data as initial data for instant display
-      try {
-        const CACHE_KEY = `products-cache-${category || 'all'}`;
-        const sessionCached = sessionStorage.getItem(CACHE_KEY);
-        if (sessionCached) {
-          return JSON.parse(sessionCached);
-        }
-        const cached = localStorage.getItem(CACHE_KEY);
-        if (cached) {
-          const { data } = JSON.parse(cached);
-          return data;
-        }
-      } catch (e) {}
-      return undefined;
-    }
+    retry: 1
   });
 
   // Memoized filtered and sorted products
