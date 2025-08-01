@@ -22,7 +22,7 @@ export default function ProductModal({ product, isOpen, onClose, onAddToCart, on
 
   // Debug logging
   console.log("🔍 ProductModal: Received props:", { product: product?.name, isOpen, onClose, onAddToCart, onCustomize });
-  
+
   if (!product) {
     console.log("❌ ProductModal: No product provided, returning null");
     return null;
@@ -52,11 +52,11 @@ export default function ProductModal({ product, isOpen, onClose, onAddToCart, on
     for (let i = 0; i < quantity; i++) {
       onAddToCart(product);
     }
-    
+
     // Track add to cart event
     const price = typeof product.price === 'string' ? parseFloat(product.price) : product.price;
     trackAddToCart(product.id, product.name, price * quantity);
-    
+
     toast({
       title: "কার্টে যোগ করা হয়েছে",
       description: `${product.name} (${quantity}টি) কার্টে যোগ করা হয়েছে`,
@@ -112,7 +112,7 @@ export default function ProductModal({ product, isOpen, onClose, onAddToCart, on
                   স্টক: {product.stock}
                 </Badge>
               </div>
-              
+
               <p className="text-gray-600 mb-4">
                 বিভাগ: <span className="font-medium">{product.category}</span>
               </p>
