@@ -19,14 +19,14 @@ import { Link, useLocation } from "wouter";
 import { COMPANY_NAME, COMPANY_TAGLINE, WHATSAPP_NUMBER, createWhatsAppUrl, formatPrice } from "@/lib/constants";
 import { trackProductView, trackAddToCart } from "@/lib/analytics";
 import OptimizedProductCard from "@/components/OptimizedProductCard";
-import AIChatbot from "@/components/AIChatbot";
-import SmartSearch from "@/components/SmartSearch";
+// Dynamic imports for better code splitting - components will be loaded via fileOptimization
 import { setupPerformanceMonitoring } from "@/utils/performanceMonitoring";
 import { preloadImages } from "@/utils/imageOptimization";
 import { PersistentCache } from "@/utils/persistentCache";
 import { initializeOptimizations } from "@/utils/fileOptimization";
 import { initializeDatabaseOptimizations } from "@/utils/databaseOptimizer";
 import { initializeRouteOptimizations } from "@/utils/routeOptimization";
+import { ComponentRenderer } from "@/utils/componentRenderer";
 import { PerformanceOptimizer } from "@/utils/performanceOptimizer";
 import type { Product, Offer } from "@shared/schema";
 
@@ -321,6 +321,8 @@ export default function Home() {
   const [isCustomizeModalOpen, setIsCustomizeModalOpen] = useState(false);
   const [showLoadingSkeleton, setShowLoadingSkeleton] = useState(true);
   const [productsReady, setProductsReady] = useState(false);
+  const [aiChatbotLoaded, setAiChatbotLoaded] = useState(false);
+  const [smartSearchLoaded, setSmartSearchLoaded] = useState(false);
   const [location] = useLocation();
   const { toast } = useToast();
   const { addToCart, totalItems } = useCart();
@@ -334,6 +336,43 @@ export default function Home() {
     PerformanceOptimizer.preloadCriticalResources();
     PerformanceOptimizer.optimizeImageLoading();
     PerformanceOptimizer.setupMemoryCleanup();
+    
+    // Load AI Chatbot and Smart Search dynamically after main content loads
+    setTimeout(async () => {
+      try {
+        // Load and render SmartSearch
+        await ComponentRenderer.renderComponent(
+          'smart-search-component',
+          () => import('@/components/SmartSearch'),
+          {
+            onProductSelect: (product: Product) => {
+              setSelectedProduct(product);
+              setIsModalOpen(true);
+              trackProductView(product.id, product.name);
+            },
+            className: "max-w-2xl mx-auto"
+          }
+        );
+        setSmartSearchLoaded(true);
+        
+        // Load and render AIChatbot
+        await ComponentRenderer.renderComponent(
+          'ai-chatbot-component',
+          () => import('@/components/AIChatbot'),
+          {
+            onProductSelect: (product: Product) => {
+              setSelectedProduct(product);
+              setIsModalOpen(true);
+              trackProductView(product.id, product.name);
+            }
+          }
+        );
+        setAiChatbotLoaded(true);
+        
+      } catch (error) {
+        console.warn('Failed to load dynamic components:', error);
+      }
+    }, 2000); // Load after 2 seconds to not block initial render
   }, []);
 
   // Load active offers with delay to prevent blocking product loading
@@ -511,19 +550,16 @@ export default function Home() {
       <Header cartCount={totalItems} onCartOpen={() => {}} />
       <PopupOffer />
 
-      {/* Smart Search Bar */}
-      <div className="sticky top-14 z-40 bg-white/95 backdrop-blur-sm border-b border-gray-200 shadow-sm">
-        <div className="container mx-auto px-4 py-3">
-          <SmartSearch 
-            onProductSelect={(product) => {
-              setSelectedProduct(product);
-              setIsModalOpen(true);
-              trackProductView(product.id, product.name);
-            }}
-            className="max-w-2xl mx-auto"
-          />
+      {/* Smart Search Bar - Dynamically Loaded */}
+      {smartSearchLoaded && (
+        <div className="sticky top-14 z-40 bg-white/95 backdrop-blur-sm border-b border-gray-200 shadow-sm">
+          <div className="container mx-auto px-4 py-3">
+            <div id="smart-search-component" className="max-w-2xl mx-auto">
+              {/* SmartSearch component will be dynamically rendered here */}
+            </div>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Hero Section */}
       <section 
@@ -809,14 +845,12 @@ export default function Home() {
           onAddToCart={handleCustomizeAddToCart}
         />
       )}
-      {/* AI Chatbot */}
-      <AIChatbot 
-        onProductSelect={(product) => {
-          setSelectedProduct(product);
-          setIsModalOpen(true);
-          trackProductView(product.id, product.name);
-        }}
-      />
+      {/* AI Chatbot - Dynamically Loaded */}
+      {aiChatbotLoaded && (
+        <div id="ai-chatbot-component">
+          {/* AIChatbot component will be dynamically rendered here */}
+        </div>
+      )}
     </div>
   );
 }
