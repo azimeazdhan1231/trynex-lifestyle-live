@@ -144,14 +144,36 @@ export default function Auth() {
         localStorage.setItem('authToken', result.token);
         localStorage.setItem('user', JSON.stringify(result.user));
         
+        // Clear form data
+        setFormData({
+          phone: "",
+          password: "",
+          confirmPassword: "",
+          firstName: "",
+          lastName: "",
+          address: ""
+        });
+        
         // Redirect to home or intended page
         navigate("/");
       } else {
-        toast({
-          title: "সমস্যা হয়েছে",
-          description: result.message || "আবার চেষ্টা করুন",
-          variant: "destructive",
-        });
+        // Handle specific error messages
+        if (result.error === 'PHONE_ALREADY_REGISTERED') {
+          toast({
+            title: "নম্বর ইতিমধ্যে রেজিস্টার্ড",
+            description: "এই ফোন নম্বর দিয়ে আগেই অ্যাকাউন্ট আছে। লগইন করুন।",
+            variant: "destructive",
+          });
+          // Auto-switch to login tab
+          setActiveTab("login");
+          setFormData(prev => ({ ...prev, password: "", confirmPassword: "", firstName: "", lastName: "", address: "" }));
+        } else {
+          toast({
+            title: "সমস্যা হয়েছে",
+            description: result.message || "আবার চেষ্টা করুন",
+            variant: "destructive",
+          });
+        }
       }
       
     } catch (error) {

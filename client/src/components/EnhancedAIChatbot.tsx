@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { MessageCircle, Send, X, Bot, User, Minimize2, Maximize2, Mic, MicOff, Volume2, VolumeX } from "lucide-react";
+import { MessageCircle, Send, X, Bot, User, Minimize2, Maximize2, Mic, MicOff, Volume2, VolumeX, Loader2 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { formatPrice, COMPANY_NAME, WHATSAPP_NUMBER } from "@/lib/constants";
 import type { Product } from "@shared/schema";
@@ -157,10 +157,13 @@ export default function EnhancedAIChatbot({ onProductSelect }: AIChatbotProps) {
         })
       });
 
-      if (!response.ok) throw new Error('AI response failed');
+      if (!response.ok) {
+        console.warn('AI API failed, using fallback');
+        return generateFallbackResponse(userMessage);
+      }
       
       const data = await response.json();
-      return data.reply || "দুঃখিত, আমি এখন উত্তর দিতে পারছি না। অনুগ্রহ করে আবার চেষ্টা করুন।";
+      return data.reply || data.fallback || generateFallbackResponse(userMessage);
     } catch (error) {
       console.error('AI Chat Error:', error);
       return generateFallbackResponse(userMessage);
@@ -223,10 +226,11 @@ export default function EnhancedAIChatbot({ onProductSelect }: AIChatbotProps) {
       
     } catch (error) {
       console.error('Chat error:', error);
+      // Add error message to chat
       const errorMessage: ChatMessage = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
-        content: 'দুঃখিত, কিছু সমস্যা হয়েছে। অনুগ্রহ করে আবার চেষ্টা করুন।',
+        content: generateFallbackResponse(inputMessage),
         timestamp: new Date().toLocaleTimeString('bn-BD')
       };
       setMessages(prev => [...prev, errorMessage]);

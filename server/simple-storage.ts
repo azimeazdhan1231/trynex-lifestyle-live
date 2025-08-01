@@ -95,13 +95,7 @@ export class SimpleStorage {
   }
 
   async createOrder(order: InsertOrder): Promise<Order> {
-    // Generate tracking ID if not provided
-    const orderWithTracking = {
-      ...order,
-      tracking_id: order.tracking_id || `BD${Date.now()}${Math.floor(Math.random() * 1000).toString().padStart(3, '0')}`
-    };
-    
-    const result = await db.insert(orders).values(orderWithTracking).returning();
+    const result = await db.insert(orders).values(order).returning();
     return result[0];
   }
 

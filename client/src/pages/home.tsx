@@ -30,8 +30,6 @@ import { initializeRouteOptimizations } from "@/utils/routeOptimization";
 import { ComponentRenderer } from "@/utils/componentRenderer";
 import { PerformanceOptimizer } from "@/utils/performanceOptimizer";
 import EnhancedAIChatbot from "@/components/EnhancedAIChatbot";
-import AdvancedProductFilter from "@/components/AdvancedProductFilter";
-import AIProductRecommendations from "@/components/AIProductRecommendations";
 import type { Product, Offer } from "@shared/schema";
 
 interface ProductCardProps {
@@ -400,8 +398,8 @@ export default function Home() {
     }
   }, [isSuccess, products.length]);
 
-  // Show loading only while actually loading products
-  const shouldShowLoading = productsLoading || (!products?.length && !cachedProducts?.length);
+  // Show loading only for initial load without cached data (INSTANT LOADING)
+  const shouldShowLoading = productsLoading && cachedProducts.length === 0;
 
   // Cache products when they're successfully loaded
   useEffect(() => {
@@ -820,31 +818,9 @@ export default function Home() {
       {/* Enhanced AI Features */}
       <EnhancedAIChatbot />
       
-      {/* AI Product Recommendations */}
-      <AIProductRecommendations 
-        products={currentProducts}
-        userBehavior={{
-          viewedProducts: selectedProduct ? [selectedProduct.id] : [],
-          cartItems: [],
-          searchQueries: [],
-          categoryPreferences: []
-        }}
-      />
+
       
-      {/* Advanced Product Filter (Hidden on mobile, shows in modal) */}
-      <div className="hidden lg:block fixed top-1/2 left-4 transform -translate-y-1/2 z-40">
-        <AdvancedProductFilter
-          products={currentProducts}
-          onFilteredProducts={(filtered: Product[]) => {
-            // Update products display with filtered results
-            console.log('Filtered products:', filtered.length);
-          }}
-          onViewModeChange={(mode: string) => {
-            // Handle view mode changes
-            console.log('View mode changed:', mode);
-          }}
-        />
-      </div>
+
     </div>
   );
 }
