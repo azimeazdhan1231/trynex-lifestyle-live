@@ -18,38 +18,10 @@ export default function EnhancedLoadingSkeleton({
   const [showContent, setShowContent] = useState(false);
 
   useEffect(() => {
-    if (minimumDuration <= 0) {
-      // For ultra-fast loading, still show brief animation
-      const timer = setTimeout(() => {
-        setShowContent(true);
-        onLoadingComplete?.();
-      }, 800); // Brief 800ms animation
-      return () => clearTimeout(timer);
-    }
-
-    // Phase 1: Initial connection (0-0.5s)
-    const phase1Timer = setTimeout(() => setLoadingPhase(1), 200);
-    
-    // Phase 2: Loading products (0.5-1s)
-    const phase2Timer = setTimeout(() => setLoadingPhase(2), 500);
-    
-    // Phase 3: Optimizing display (1-1.5s)
-    const phase3Timer = setTimeout(() => setLoadingPhase(3), 800);
-    
-    // Complete after minimum duration or 1.2s (whichever is shorter)
-    const actualDuration = Math.min(minimumDuration, 1200);
-    const completeTimer = setTimeout(() => {
-      setShowContent(true);
-      onLoadingComplete?.();
-    }, actualDuration);
-
-    return () => {
-      clearTimeout(phase1Timer);
-      clearTimeout(phase2Timer);
-      clearTimeout(phase3Timer);
-      clearTimeout(completeTimer);
-    };
-  }, [minimumDuration, onLoadingComplete]);
+    // Immediately show content without phases
+    setShowContent(true);
+    onLoadingComplete?.();
+  }, [onLoadingComplete]);
 
   const getLoadingText = () => {
     switch (loadingPhase) {

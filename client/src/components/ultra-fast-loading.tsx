@@ -13,27 +13,15 @@ export function UltraFastLoading({
   isLoading, 
   hasData, 
   children, 
-  minimumDuration = 500 
+  minimumDuration = 0 
 }: UltraFastLoadingProps) {
-  const [showLoading, setShowLoading] = useState(true);
-  const [loadingStartTime] = useState(Date.now());
+  // Show content immediately when available
+  if (!isLoading && hasData) {
+    return <>{children}</>;
+  }
 
-  useEffect(() => {
-    if (!isLoading && hasData) {
-      const elapsed = Date.now() - loadingStartTime;
-      
-      if (elapsed < minimumDuration) {
-        // Ensure loading shows for minimum duration for better UX
-        const remainingTime = minimumDuration - elapsed;
-        setTimeout(() => setShowLoading(false), remainingTime);
-      } else {
-        setShowLoading(false);
-      }
-    }
-  }, [isLoading, hasData, loadingStartTime, minimumDuration]);
-
-  // Show loading skeleton
-  if (isLoading || (showLoading && !hasData)) {
+  // Only show skeleton if actually loading and no data
+  if (isLoading && !hasData) {
     return <ProductGridSkeleton />;
   }
 
