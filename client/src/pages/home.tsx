@@ -250,26 +250,24 @@ function ProductSection({
   bgColor?: string;
   titleColor?: string;
 }) {
-  const [loadingCompleted, setLoadingCompleted] = useState(false);
-
-  if (isLoading || !loadingCompleted) {
+  if (isLoading) {
     return (
       <section className={`py-20 ${bgColor}`}>
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <div className="flex items-center justify-center space-x-3 mb-4">
-              <div className="w-10 h-10 bg-gradient-to-r from-primary/20 to-primary/40 rounded-full animate-pulse" />
-              <div className="h-10 w-48 bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 rounded animate-shimmer"></div>
+              <Package className="w-10 h-10 text-primary" />
+              <h2 className={`text-4xl font-bold ${titleColor}`}>
+                বিশেষ পণ্য
+              </h2>
             </div>
-            <div className="h-6 w-96 mx-auto bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 rounded animate-shimmer"></div>
-            <div className="w-24 h-1 bg-gradient-to-r from-primary/30 to-primary/60 mx-auto mt-6 rounded-full animate-pulse"></div>
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+              আমাদের সেরা ও জনপ্রিয় পণ্যগুলো দেখুন
+            </p>
+            <div className="w-24 h-1 bg-gradient-to-r from-primary to-primary/60 mx-auto mt-6 rounded-full"></div>
           </div>
           
-          <EnhancedLoadingSkeleton 
-            count={6} 
-            minimumDuration={5000}
-            onLoadingComplete={() => setLoadingCompleted(true)}
-          />
+          <PremiumLoadingSkeleton count={6} />
           
           <div className="text-center mt-12">
             <div className="h-12 w-40 mx-auto bg-gradient-to-r from-primary/20 to-primary/40 rounded-full animate-pulse"></div>
