@@ -300,7 +300,7 @@ export default function ProductsUltraFast() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header />
+      <Header cartCount={0} onCartOpen={() => {}} />
       
       <div className="container mx-auto px-4 py-8">
         {/* Header Section */}
@@ -411,7 +411,10 @@ export default function ProductsUltraFast() {
                     <UltraFastProductCard
                       key={`similar-${product.id}`}
                       product={product}
-                      onCustomize={handleCustomize}
+                      onCustomize={(product) => {
+                        handleCustomize(product);
+                        return Promise.resolve();
+                      }}
                       onAddToCart={handleAddToCart}
                       onToggleWishlist={handleToggleWishlist}
                       isInWishlist={wishlist.includes(product.id)}

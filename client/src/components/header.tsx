@@ -10,7 +10,6 @@ import { COMPANY_NAME } from "@/lib/constants";
 import CartModal from "@/components/cart-modal";
 import SearchBar from "@/components/search-bar";
 import ProductModal from "@/components/product-modal";
-import { useAuth } from "@/hooks/useAuth";
 import { useSimpleAuth } from "@/hooks/use-simple-auth";
 import {
   DropdownMenu,
@@ -36,13 +35,7 @@ export default function Header({ cartCount, onCartOpen }: HeaderProps) {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
   const [location] = useLocation();
-  const { user: oldUser, isLoading: oldIsLoading, isAuthenticated: oldIsAuthenticated } = useAuth();
   const { user, isLoading, isAuthenticated, logout } = useSimpleAuth();
-  
-  // Use simple auth if available, otherwise fall back to old auth
-  const currentUser = user || oldUser;
-  const currentIsAuthenticated = isAuthenticated || oldIsAuthenticated;
-  const currentIsLoading = isLoading && oldIsLoading;
 
   const navItems = [
     { name: "হোম", href: "/" },
@@ -118,16 +111,16 @@ export default function Header({ cartCount, onCartOpen }: HeaderProps) {
               </Button>
 
               {/* User Authentication */}
-              {!currentIsLoading && (
+              {!isLoading && (
                 <>
-                  {currentIsAuthenticated ? (
+                  {isAuthenticated ? (
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                           <Avatar className="h-8 w-8">
-                            <AvatarImage src={currentUser?.profileImageUrl || ''} alt={currentUser?.firstName || 'User'} />
+                            <AvatarImage src={user?.profileImageUrl || ''} alt={user?.firstName || 'User'} />
                             <AvatarFallback>
-                              {currentUser?.firstName?.[0] || currentUser?.phone?.[0] || 'U'}
+                              {user?.firstName?.[0] || user?.phone?.[0] || 'U'}
                             </AvatarFallback>
                           </Avatar>
                         </Button>
@@ -136,12 +129,12 @@ export default function Header({ cartCount, onCartOpen }: HeaderProps) {
                         <DropdownMenuLabel className="font-normal">
                           <div className="flex flex-col space-y-1">
                             <p className="text-sm font-medium leading-none">
-                              {currentUser?.firstName && currentUser?.lastName 
-                                ? `${currentUser.firstName} ${currentUser.lastName}`
-                                : currentUser?.phone || currentUser?.email}
+                              {user?.firstName && user?.lastName 
+                                ? `${user.firstName} ${user.lastName}`
+                                : user?.phone || user?.email}
                             </p>
                             <p className="text-xs leading-none text-muted-foreground">
-                              {currentUser?.phone || currentUser?.email}
+                              {user?.phone || user?.email}
                             </p>
                           </div>
                         </DropdownMenuLabel>
@@ -229,10 +222,10 @@ export default function Header({ cartCount, onCartOpen }: HeaderProps) {
                             </Link>
                           </Button>
                           <Button asChild variant="default" className="w-full">
-                            <a href="/api/login" onClick={() => setIsMobileMenuOpen(false)}>
+                            <Link href="/auth" onClick={() => setIsMobileMenuOpen(false)}>
                               <User className="mr-2 h-4 w-4" />
-                              দ্রুত লগইন
-                            </a>
+                              রেজিস্টার
+                            </Link>
                           </Button>
                         </div>
                       </div>

@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
@@ -7,11 +7,13 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Package, Calendar, MapPin, Phone, CreditCard, Eye, Settings, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import OrderDetailsModal from "@/components/order-details-modal";
 import type { Order } from "@shared/schema";
 
 export default function OrdersPage() {
   const { toast } = useToast();
   const { isAuthenticated, isLoading: authLoading, user } = useAuth();
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
 
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -203,11 +205,13 @@ export default function OrdersPage() {
                             : 'ক্যাশ অন ডেলিভারি'}
                         </span>
                       </div>
-                      <Button variant="outline" size="sm" asChild>
-                        <a href={`/track/${order.tracking_id}`}>
-                          <Eye className="h-4 w-4 mr-2" />
-                          বিস্তারিত দেখুন
-                        </a>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={() => setSelectedOrder(order)}
+                      >
+                        <Eye className="h-4 w-4 mr-2" />
+                        বিস্তারিত দেখুন
                       </Button>
                     </div>
                   </CardContent>
@@ -217,6 +221,13 @@ export default function OrdersPage() {
           )}
         </div>
       </div>
+
+      {/* Order Details Modal */}
+      <OrderDetailsModal
+        isOpen={!!selectedOrder}
+        onClose={() => setSelectedOrder(null)}
+        order={selectedOrder}
+      />
     </div>
   );
 }

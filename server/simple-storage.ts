@@ -51,7 +51,7 @@ export class SimpleStorage {
         created_at: products.created_at
       }).from(products)
         .orderBy(desc(products.is_featured), desc(products.is_latest), desc(products.created_at))
-        .limit(30); // Reduced to 30 for even faster response
+        .limit(32); // Show all 32 products as requested
       
       return result;
     } catch (error) {
@@ -95,7 +95,13 @@ export class SimpleStorage {
   }
 
   async createOrder(order: InsertOrder): Promise<Order> {
-    const result = await db.insert(orders).values(order).returning();
+    // Generate tracking ID if not provided
+    const orderWithTracking = {
+      ...order,
+      tracking_id: order.tracking_id || `BD${Date.now()}${Math.floor(Math.random() * 1000).toString().padStart(3, '0')}`
+    };
+    
+    const result = await db.insert(orders).values(orderWithTracking).returning();
     return result[0];
   }
 
