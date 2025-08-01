@@ -150,7 +150,7 @@ export default function Products() {
     setShowCustomizeModal(true);
   };
 
-  const handleCustomizeAddToCart = (product: Product, customization: any) => {
+  const handleCustomizeAddToCart = async (product: Product, customization: any) => {
     addToCart({
       id: product.id,
       name: product.name,

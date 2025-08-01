@@ -46,7 +46,7 @@ function Router() {
       <Route path="/auth" component={PhoneAuth} />
       <Route path="/login" component={PhoneAuth} />
       <Route path="/signup" component={PhoneAuth} />
-      <Route path="/custom-order" component={CustomOrderForm} />
+      <Route path="/custom-order" component={() => import("./pages/custom-order")} />
       <Route path="/auth-old" component={Auth} />
       <Route path="/refund-policy" component={RefundPolicyDynamic} />
       <Route path="/return-policy" component={ReturnPolicy} />
