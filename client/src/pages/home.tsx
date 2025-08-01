@@ -29,6 +29,9 @@ import { initializeDatabaseOptimizations } from "@/utils/databaseOptimizer";
 import { initializeRouteOptimizations } from "@/utils/routeOptimization";
 import { ComponentRenderer } from "@/utils/componentRenderer";
 import { PerformanceOptimizer } from "@/utils/performanceOptimizer";
+import EnhancedAIChatbot from "@/components/EnhancedAIChatbot";
+import AdvancedProductFilter from "@/components/AdvancedProductFilter";
+import AIProductRecommendations from "@/components/AIProductRecommendations";
 import type { Product, Offer } from "@shared/schema";
 
 interface ProductCardProps {
@@ -415,7 +418,7 @@ export default function Home() {
       const imageUrls = currentProducts
         .slice(0, 8) // Preload first 8 product images
         .map(p => p.image_url)
-        .filter(Boolean);
+        .filter((url): url is string => Boolean(url));
       
       preloadImages(imageUrls, { priority: 'high', timeout: 3000 });
     }
@@ -498,7 +501,7 @@ export default function Home() {
     setIsCustomizeModalOpen(true);
   };
 
-  const handleCustomizeAddToCart = (product: Product, customization: any) => {
+  const handleCustomizeAddToCart = async (product: Product, customization: any): Promise<void> => {
     addToCart({
       id: product.id,
       name: product.name,
@@ -814,12 +817,34 @@ export default function Home() {
           onAddToCart={handleCustomizeAddToCart}
         />
       )}
-      {/* AI Chatbot - Dynamically Loaded */}
-      {aiChatbotLoaded && (
-        <div id="ai-chatbot-component">
-          {/* AIChatbot component will be dynamically rendered here */}
-        </div>
-      )}
+      {/* Enhanced AI Features */}
+      <EnhancedAIChatbot />
+      
+      {/* AI Product Recommendations */}
+      <AIProductRecommendations 
+        products={currentProducts}
+        userBehavior={{
+          viewedProducts: selectedProduct ? [selectedProduct.id] : [],
+          cartItems: [],
+          searchQueries: [],
+          categoryPreferences: []
+        }}
+      />
+      
+      {/* Advanced Product Filter (Hidden on mobile, shows in modal) */}
+      <div className="hidden lg:block fixed top-1/2 left-4 transform -translate-y-1/2 z-40">
+        <AdvancedProductFilter
+          products={currentProducts}
+          onFilteredProducts={(filtered: Product[]) => {
+            // Update products display with filtered results
+            console.log('Filtered products:', filtered.length);
+          }}
+          onViewModeChange={(mode: string) => {
+            // Handle view mode changes
+            console.log('View mode changed:', mode);
+          }}
+        />
+      </div>
     </div>
   );
 }

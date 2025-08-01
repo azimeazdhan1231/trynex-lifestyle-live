@@ -197,6 +197,56 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // AI Chat endpoint
+  app.post('/api/ai-chat', async (req, res) => {
+    try {
+      const { getAIChatResponse } = await import("./ai-chat");
+      const { message, businessData, products, chatHistory } = req.body;
+      
+      if (!message) {
+        return res.status(400).json({ error: 'Message is required' });
+      }
+      
+      const reply = await getAIChatResponse({
+        message,
+        businessData,
+        products: products || productsCache.slice(0, 20),
+        chatHistory: chatHistory || []
+      });
+      
+      res.json({ reply });
+    } catch (error) {
+      console.error('AI Chat Error:', error);
+      res.status(500).json({ 
+        error: 'AI service temporarily unavailable',
+        fallback: 'দুঃখিত, AI সেবা এখন উপলব্ধ নেই। অনুগ্রহ করে হোয়াটসঅ্যাপে যোগাযোগ করুন।'
+      });
+    }
+  });
+
+  // AI Product Recommendations endpoint  
+  app.post('/api/ai/recommendations', async (req, res) => {
+    try {
+      const { getAIProductRecommendations } = await import("./ai-chat");
+      const { userQuery, userBehavior, currentProduct } = req.body;
+      
+      const recommendations = await getAIProductRecommendations(
+        productsCache,
+        userQuery || '',
+        userBehavior
+      );
+      
+      res.json({ data: recommendations });
+    } catch (error) {
+      console.error('AI Recommendations Error:', error);
+      // Fallback to basic filtering
+      const fallbackProducts = productsCache
+        .filter(p => p.is_featured || p.is_latest)
+        .slice(0, 6);
+      res.json({ data: fallbackProducts });
+    }
+  });
+
   // Health check
   app.get('/api/health', (req, res) => {
     res.json({

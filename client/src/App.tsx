@@ -28,6 +28,10 @@ const ReturnPolicy = lazy(() => import("./pages/return-policy"));
 const TermsConditionsDynamic = lazy(() => import("./pages/terms-conditions-dynamic"));
 const Dashboard = lazy(() => import("./pages/dashboard"));
 
+// Performance and Mobile Optimization Components
+const MobileResponsiveFixes = lazy(() => import("./components/MobileResponsiveFixes"));
+const PerformanceOptimizer = lazy(() => import("./components/PerformanceOptimizer"));
+
 // Loading fallback component
 const LoadingFallback = () => (
   <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -86,6 +90,10 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <div className="font-bengali">
+          <Suspense fallback={null}>
+            <MobileResponsiveFixes />
+            <PerformanceOptimizer />
+          </Suspense>
           <Toaster />
           <Router />
           <DebugInfo />

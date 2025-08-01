@@ -26,7 +26,7 @@ const ORDER_STATUSES = {
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { apiRequest } from "@/lib/queryClient";
-import OrderDetailsModal from "@/components/order-details-modal";
+import EnhancedOrderDetailsModal from "@/components/EnhancedOrderDetailsModal";
 import type { Product, Order, Offer, Category, PromoCode } from "@shared/schema";
 
 export default function AdminPanelNew() {
@@ -1263,8 +1263,8 @@ export default function AdminPanelNew() {
         </TabsContent>
       </Tabs>
 
-      {/* Order Details Modal */}
-      <OrderDetailsModal
+      {/* Enhanced Order Details Modal */}
+      <EnhancedOrderDetailsModal
         isOpen={orderDetailsOpen}
         onClose={() => setOrderDetailsOpen(false)}
         order={selectedOrder}

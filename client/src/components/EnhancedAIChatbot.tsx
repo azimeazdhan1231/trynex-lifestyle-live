@@ -54,10 +54,12 @@ export default function EnhancedAIChatbot({ onProductSelect }: AIChatbotProps) {
       content: `আসসালামু আলাইকুম! 🌟 আমি ${BUSINESS_DATA.name} এর AI সহায়ক। 
 
 আমি আপনাকে সাহায্য করতে পারি:
-• পণ্য খুঁজে দিতে
+• পণ্য খুঁজে দিতে এবং সুপারিশ করতে
 • অর্ডার প্রক্রিয়ায় গাইড করতে
 • ডেলিভারি ও পেমেন্ট সম্পর্কে তথ্য দিতে
 • কাস্টমাইজেশন সহায়তা করতে
+• গিফট আইটেম নির্বাচনে সাহায্য করতে
+• বাংলাদেশের যেকোনো বিষয়ে আলোচনা করতে
 
 কী খুঁজছেন? 🛍️`,
       timestamp: new Date().toLocaleTimeString('bn-BD')
@@ -67,6 +69,7 @@ export default function EnhancedAIChatbot({ onProductSelect }: AIChatbotProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [conversationHistory, setConversationHistory] = useState<string[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const recognitionRef = useRef<any>(null);
 
