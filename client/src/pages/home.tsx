@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import ProgressiveProductGrid from "@/components/ProgressiveProductGrid";
 import PremiumLoadingSkeleton from "@/components/PremiumLoadingSkeleton";
+import EnhancedLoadingSkeleton from "@/components/EnhancedLoadingSkeleton";
 import Header from "@/components/header";
 import TrackingSection from "@/components/tracking-section";
 import PopupOffer from "../components/popup-offer";
@@ -242,23 +243,29 @@ function ProductSection({
   bgColor?: string;
   titleColor?: string;
 }) {
-  if (isLoading) {
+  const [loadingCompleted, setLoadingCompleted] = useState(false);
+
+  if (isLoading || !loadingCompleted) {
     return (
       <section className={`py-20 ${bgColor}`}>
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <div className="flex items-center justify-center space-x-3 mb-4">
-              <div className="w-10 h-10 bg-gray-200 rounded-full animate-pulse" />
-              <Skeleton className="h-10 w-48" />
+              <div className="w-10 h-10 bg-gradient-to-r from-primary/20 to-primary/40 rounded-full animate-pulse" />
+              <div className="h-10 w-48 bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 rounded animate-shimmer"></div>
             </div>
-            <Skeleton className="h-6 w-96 mx-auto" />
-            <div className="w-24 h-1 bg-gray-200 mx-auto mt-6 rounded-full animate-pulse"></div>
+            <div className="h-6 w-96 mx-auto bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 rounded animate-shimmer"></div>
+            <div className="w-24 h-1 bg-gradient-to-r from-primary/30 to-primary/60 mx-auto mt-6 rounded-full animate-pulse"></div>
           </div>
           
-          <PremiumLoadingSkeleton count={6} />
+          <EnhancedLoadingSkeleton 
+            count={6} 
+            minimumDuration={3000}
+            onLoadingComplete={() => setLoadingCompleted(true)}
+          />
           
           <div className="text-center mt-12">
-            <Skeleton className="h-12 w-40 mx-auto rounded-full" />
+            <div className="h-12 w-40 mx-auto bg-gradient-to-r from-primary/20 to-primary/40 rounded-full animate-pulse"></div>
           </div>
         </div>
       </section>
@@ -307,6 +314,8 @@ export default function Home() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [customizeProduct, setCustomizeProduct] = useState<Product | null>(null);
   const [isCustomizeModalOpen, setIsCustomizeModalOpen] = useState(false);
+  const [showLoadingSkeleton, setShowLoadingSkeleton] = useState(true);
+  const [productsReady, setProductsReady] = useState(false);
   const [location] = useLocation();
   const { toast } = useToast();
   const { addToCart, totalItems } = useCart();
@@ -332,7 +341,7 @@ export default function Home() {
   });
 
   // Load products for homepage sections with persistent caching
-  const { data: products = [], isLoading: productsLoading } = useQuery<Product[]>({
+  const { data: products = [], isLoading: productsLoading, isSuccess } = useQuery<Product[]>({
     queryKey: ["/api/products"],
     staleTime: 1000 * 60 * 10, // 10 minutes stale time
     gcTime: 1000 * 60 * 30, // Keep in memory for 30 minutes
@@ -341,6 +350,30 @@ export default function Home() {
     initialData: cachedProducts.length > 0 ? cachedProducts : undefined,
     placeholderData: cachedProducts, // Use cached data as placeholder
   });
+
+  // Enhanced loading state management with minimum display time
+  useEffect(() => {
+    if (isSuccess && products.length > 0) {
+      // Products are loaded, but keep showing skeleton for minimum duration
+      const timer = setTimeout(() => {
+        setProductsReady(true);
+      }, 300); // Small delay to let the skeleton finish its animation
+
+      return () => clearTimeout(timer);
+    }
+  }, [isSuccess, products.length]);
+
+  useEffect(() => {
+    // Always show loading skeleton for minimum 3 seconds on first load
+    const minimumLoadingTimer = setTimeout(() => {
+      setShowLoadingSkeleton(false);
+    }, 3000);
+
+    return () => clearTimeout(minimumLoadingTimer);
+  }, []);
+
+  // Determine if we should show loading state
+  const shouldShowLoading = productsLoading || showLoadingSkeleton || !productsReady;
 
   // Cache products when they're successfully loaded
   useEffect(() => {
@@ -552,7 +585,7 @@ export default function Home() {
           subtitle="আমাদের বিশেষভাবে নির্বাচিত এবং জনপ্রিয় পণ্যসমূহ"
           icon={Star}
           products={defaultFeatured}
-          isLoading={productsLoading && cachedProducts.length === 0}
+          isLoading={shouldShowLoading}
           onAddToCart={handleAddToCart}
           onViewProduct={handleProductView}
           onCustomize={handleCustomizeProduct}
@@ -567,7 +600,7 @@ export default function Home() {
         subtitle="সদ্য এসেছে আমাদের লেটেস্ট কালেকশন"
         icon={Clock}
         products={defaultLatest}
-        isLoading={productsLoading && cachedProducts.length === 0}
+        isLoading={shouldShowLoading}
         onAddToCart={handleAddToCart}
         onViewProduct={handleProductView}
         onCustomize={handleCustomizeProduct}
@@ -581,7 +614,7 @@ export default function Home() {
         subtitle="গ্রাহকদের পছন্দের টপ রেটেড পণ্যসমূহ"
         icon={TrendingUp}
         products={defaultBestSelling}
-        isLoading={productsLoading && cachedProducts.length === 0}
+        isLoading={shouldShowLoading}
         onAddToCart={handleAddToCart}
         onViewProduct={handleProductView}
         onCustomize={handleCustomizeProduct}
