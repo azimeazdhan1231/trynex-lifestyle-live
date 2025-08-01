@@ -21,6 +21,7 @@ import { trackProductView, trackAddToCart } from "@/lib/analytics";
 import OptimizedProductCard from "@/components/OptimizedProductCard";
 import { setupPerformanceMonitoring } from "@/utils/performanceMonitoring";
 import { preloadImages } from "@/utils/imageOptimization";
+import { PersistentCache } from "@/utils/persistentCache";
 import type { Product, Offer } from "@shared/schema";
 
 interface ProductCardProps {
@@ -322,37 +323,55 @@ export default function Home() {
     enabled: false, // Disable auto-loading to prevent popup blocking
   });
 
-  // Load products for homepage sections with ultra-fast caching
+  // Initialize products with cached data for instant loading
+  const [cachedProducts, setCachedProducts] = useState<Product[]>(() => {
+    return PersistentCache.preloadProducts() || [];
+  });
+
+  // Load products for homepage sections with persistent caching
   const { data: products = [], isLoading: productsLoading } = useQuery<Product[]>({
     queryKey: ["/api/products"],
-    staleTime: 1000 * 60 * 3, // 3 minutes cache for optimal performance
-    gcTime: 1000 * 60 * 15, // Keep in cache for 15 minutes
-    retry: 1, // Only retry once for faster failure detection
-    refetchOnWindowFocus: false, // Don't refetch on window focus
-    placeholderData: [], // Show empty array immediately
+    staleTime: 1000 * 60 * 10, // 10 minutes stale time
+    gcTime: 1000 * 60 * 30, // Keep in memory for 30 minutes
+    retry: 1,
+    refetchOnWindowFocus: false,
+    initialData: cachedProducts.length > 0 ? cachedProducts : undefined,
+    placeholderData: cachedProducts, // Use cached data as placeholder
   });
+
+  // Cache products when they're successfully loaded
+  useEffect(() => {
+    if (products && products.length > 0 && !productsLoading) {
+      PersistentCache.setProducts(products);
+      setCachedProducts(products);
+    }
+  }, [products, productsLoading]);
 
   // Preload critical product images
   useEffect(() => {
-    if (products.length > 0) {
-      const imageUrls = products
+    const currentProducts = products?.length > 0 ? products : cachedProducts;
+    if (currentProducts.length > 0) {
+      const imageUrls = currentProducts
         .slice(0, 8) // Preload first 8 product images
         .map(p => p.image_url)
         .filter(Boolean);
       
       preloadImages(imageUrls, { priority: 'high', timeout: 3000 });
     }
-  }, [products]);
+  }, [products, cachedProducts]);
 
+  // Use current products or cached products for instant display
+  const currentProducts = products?.length > 0 ? products : cachedProducts;
+  
   // Filter products for different sections with fallbacks
-  const featuredProducts = products.filter(p => p.is_featured);
-  const latestProducts = products.filter(p => p.is_latest);
-  const bestSellingProducts = products.filter(p => p.is_best_selling);
+  const featuredProducts = currentProducts.filter(p => p.is_featured);
+  const latestProducts = currentProducts.filter(p => p.is_latest);
+  const bestSellingProducts = currentProducts.filter(p => p.is_best_selling);
 
   // If no products are marked, use defaults
-  const defaultFeatured = featuredProducts.length > 0 ? featuredProducts.slice(0, 4) : products.slice(0, 4);
-  const defaultLatest = latestProducts.length > 0 ? latestProducts.slice(0, 4) : products.slice(4, 8);
-  const defaultBestSelling = bestSellingProducts.length > 0 ? bestSellingProducts.slice(0, 4) : products.slice(8, 12);
+  const defaultFeatured = featuredProducts.length > 0 ? featuredProducts.slice(0, 4) : currentProducts.slice(0, 4);
+  const defaultLatest = latestProducts.length > 0 ? latestProducts.slice(0, 4) : currentProducts.slice(4, 8);
+  const defaultBestSelling = bestSellingProducts.length > 0 ? bestSellingProducts.slice(0, 4) : currentProducts.slice(8, 12);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -509,7 +528,7 @@ export default function Home() {
           subtitle="আমাদের বিশেষভাবে নির্বাচিত এবং জনপ্রিয় পণ্যসমূহ"
           icon={Star}
           products={defaultFeatured}
-          isLoading={productsLoading}
+          isLoading={productsLoading && cachedProducts.length === 0}
           onAddToCart={handleAddToCart}
           onViewProduct={handleProductView}
           onCustomize={handleCustomizeProduct}
@@ -524,7 +543,7 @@ export default function Home() {
         subtitle="সদ্য এসেছে আমাদের লেটেস্ট কালেকশন"
         icon={Clock}
         products={defaultLatest}
-        isLoading={productsLoading}
+        isLoading={productsLoading && cachedProducts.length === 0}
         onAddToCart={handleAddToCart}
         onViewProduct={handleProductView}
         onCustomize={handleCustomizeProduct}
@@ -538,7 +557,7 @@ export default function Home() {
         subtitle="গ্রাহকদের পছন্দের টপ রেটেড পণ্যসমূহ"
         icon={TrendingUp}
         products={defaultBestSelling}
-        isLoading={productsLoading}
+        isLoading={productsLoading && cachedProducts.length === 0}
         onAddToCart={handleAddToCart}
         onViewProduct={handleProductView}
         onCustomize={handleCustomizeProduct}
