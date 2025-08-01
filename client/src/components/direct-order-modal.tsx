@@ -225,22 +225,12 @@ ${pricing.urgencyFee > 0 ? `• জরুরি ডেলিভারি: ${form
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto mx-auto p-4 sm:p-6" style={{ 
-          position: 'fixed',
-          top: '50%',
-          left: '50%',
-          transform: 'translate(-50%, -50%)',
-          zIndex: 9999,
-          width: '95vw',
-          maxWidth: '700px',
-          margin: '0 auto'
-        }}>
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-xl">
-            <Package className="w-5 h-5 text-primary" />
-            সরাসরি অর্ডার করুন
-          </DialogTitle>
-        </DialogHeader>
+      <DialogContent className="w-[95vw] max-w-2xl max-h-[90vh] overflow-y-auto product-modal-content">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold text-center">
+              সরাসরি অর্ডার করুন
+            </DialogTitle>
+          </DialogHeader>
 
         {/* Progress Indicator */}
         <div className="flex items-center justify-between mb-6">

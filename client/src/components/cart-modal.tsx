@@ -16,7 +16,7 @@ interface CartModalProps {
 export default function CartModal({ isOpen, onClose }: CartModalProps) {
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const { cart, updateQuantity, removeFromCart, totalItems, totalPrice, clearCart } = useCart();
-  
+
   // Force re-render when modal opens to ensure cart state is fresh
   const [refreshKey, setRefreshKey] = useState(0);
 
@@ -38,24 +38,11 @@ export default function CartModal({ isOpen, onClose }: CartModalProps) {
   return (
     <>
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto mx-auto p-4 sm:p-6" style={{ 
-          position: 'fixed',
-          top: '50%',
-          left: '50%',
-          transform: 'translate(-50%, -50%)',
-          zIndex: 9999,
-          width: '95vw',
-          maxWidth: '450px',
-          margin: '0 auto'
-        }}>
+        <DialogContent className="w-[95vw] max-w-2xl max-h-[90vh] overflow-y-auto product-modal-content">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <ShoppingCart className="w-5 h-5" />
-              আপনার কার্ট
+            <DialogTitle className="text-2xl font-bold">
+              🛒 আপনার কার্ট ({cart.length}টি পণ্য)
             </DialogTitle>
-            <DialogDescription>
-              আপনার নির্বাচিত পণ্যসমূহ দেখুন এবং চেকআউট করুন
-            </DialogDescription>
           </DialogHeader>
 
           {!cart || cart.length === 0 ? (
@@ -76,7 +63,7 @@ export default function CartModal({ isOpen, onClose }: CartModalProps) {
                       <div className="flex-1">
                         <h5 className="font-medium text-sm">{item.name}</h5>
                         <p className="text-gray-600 text-sm">{formatPrice(item.price)} প্রতিটি</p>
-                        
+
                         {/* Customization Display */}
                         {item.customization && (
                           <div className="mt-2 p-2 bg-blue-50 rounded-md text-xs">

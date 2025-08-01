@@ -99,7 +99,7 @@ export default function CustomizeModal({ product, isOpen, onClose, onAddToCart, 
   const detectProductVariants = (product: Product): ProductVariant[] => {
     const variants: ProductVariant[] = [];
     const description = product.description || "";
-    
+
     // If product description mentions multiple items
     if (description.includes("2") && (description.includes("product") || description.includes("item") || description.includes("পণ্য"))) {
       // Create variants based on the product type
@@ -120,7 +120,7 @@ export default function CustomizeModal({ product, isOpen, onClose, onAddToCart, 
         );
       }
     }
-    
+
     return variants;
   };
 
@@ -155,7 +155,7 @@ export default function CustomizeModal({ product, isOpen, onClose, onAddToCart, 
     // Convert File to base64 string for storage
     let customImageBase64 = null;
     let customImageName = null;
-    
+
     if (customization.customImage && customization.customImage instanceof File) {
       try {
         customImageBase64 = await convertFileToBase64(customization.customImage);
@@ -257,22 +257,13 @@ export default function CustomizeModal({ product, isOpen, onClose, onAddToCart, 
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto mx-auto p-4 sm:p-6" style={{ 
-        position: 'fixed',
-        top: '50%',
-        left: '50%',
-        transform: 'translate(-50%, -50%)',
-        zIndex: 9999,
-        width: '95vw',
-        maxWidth: '850px',
-        margin: '0 auto'
-      }}>
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-2xl">
-            <Palette className="w-6 h-6 text-primary" />
-            {product.name} কাস্টমাইজ করুন
-          </DialogTitle>
-        </DialogHeader>
+      
+      <DialogContent className="w-[95vw] max-w-4xl max-h-[90vh] overflow-y-auto product-modal-content">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold text-center">
+              পণ্য কাস্টমাইজ করুন
+            </DialogTitle>
+          </DialogHeader>
 
         <div className="grid md:grid-cols-2 gap-6">
           {/* Product Preview */}
@@ -564,7 +555,7 @@ export default function CustomizeModal({ product, isOpen, onClose, onAddToCart, 
                 <Package className="w-5 h-5 mr-2" />
                 সরাসরি অর্ডার করুন
               </Button>
-              
+
               <div className="grid grid-cols-2 gap-2">
                 <Button
                   onClick={handleAddToCart}
@@ -586,7 +577,7 @@ export default function CustomizeModal({ product, isOpen, onClose, onAddToCart, 
                   হোয়াটসঅ্যাপে যোগাযোগ
                 </Button>
               </div>
-              
+
               <p className="text-xs text-gray-500 text-center">
                 💡 সর্বোত্তম সেবার জন্য ওয়েবসাইটে অর্ডার করুন
               </p>
