@@ -251,6 +251,13 @@ export class SimpleStorage {
     }).where(eq(customOrders.id, id)).returning();
     return result[0];
   }
+
+  // User Orders - Get orders for specific user
+  async getUserOrders(userId: string): Promise<Order[]> {
+    return await db.select().from(orders)
+      .where(eq(orders.user_id, userId))
+      .orderBy(desc(orders.created_at));
+  }
 }
 
 export const storage = new SimpleStorage();

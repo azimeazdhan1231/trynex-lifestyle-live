@@ -19,13 +19,21 @@ export const queryClient = new QueryClient({
         const timeoutId = setTimeout(() => controller.abort(), 5000); // 5s timeout (reduced for faster failure detection)
 
         try {
+          const headers: Record<string, string> = {
+            'Cache-Control': 'public, max-age=480', // 8 minute client cache (aligned with staleTime)
+            'Accept': 'application/json',
+          };
+
+          // Add authorization header if user is authenticated
+          const token = localStorage.getItem("auth_token");
+          if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+          }
+
           const response = await fetch(url, { 
             signal: signal || controller.signal,
             credentials: 'include', // Include credentials for auth endpoints
-            headers: {
-              'Cache-Control': 'public, max-age=480', // 8 minute client cache (aligned with staleTime)
-              'Accept': 'application/json',
-            }
+            headers
           });
 
           clearTimeout(timeoutId);
@@ -73,6 +81,15 @@ export async function apiRequest(method: string, path: string, body?: any): Prom
       "Content-Type": "application/json",
     },
   };
+
+  // Add authorization header if user is authenticated
+  const token = localStorage.getItem("auth_token");
+  if (token) {
+    config.headers = {
+      ...config.headers,
+      'Authorization': `Bearer ${token}`,
+    };
+  }
 
   if (body) {
     config.body = JSON.stringify(body);

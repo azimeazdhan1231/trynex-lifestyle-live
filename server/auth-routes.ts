@@ -23,7 +23,10 @@ export function setupAuthRoutes(app: Express) {
       // Check if user already exists
       const existingUser = await storage.getUserByPhone(phone);
       if (existingUser) {
-        return res.status(400).json({ message: 'এই ফোন নম্বর দিয়ে আগেই অ্যাকাউন্ট আছে' });
+        return res.status(409).json({ 
+          message: 'এই ফোন নম্বর দিয়ে আগেই অ্যাকাউন্ট তৈরি করা হয়েছে।',
+          error: 'PHONE_ALREADY_REGISTERED'
+        });
       }
 
       // Hash password

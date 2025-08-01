@@ -152,6 +152,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // User orders endpoint - protected
+  app.get('/api/orders/user', async (req, res) => {
+    try {
+      const authHeader = req.headers['authorization'];
+      const token = authHeader && authHeader.split(' ')[1];
+
+      if (!token) {
+        return res.status(401).json({ message: 'No token provided' });
+      }
+
+      // Verify JWT token
+      const jwt = require('jsonwebtoken');
+      const JWT_SECRET = process.env.JWT_SECRET || "trynex_secret_key_2025";
+      
+      try {
+        const decoded: any = jwt.verify(token, JWT_SECRET);
+        const userOrders = await storage.getUserOrders(decoded.id);
+        res.json(userOrders);
+      } catch (err) {
+        return res.status(403).json({ message: 'Invalid token' });
+      }
+    } catch (error) {
+      console.error('Error fetching user orders:', error);
+      res.status(500).json({ message: 'ইউজার অর্ডার লোড করতে পারিনি' });
+    }
+  });
+
   // Settings endpoint with cache
   app.get('/api/settings', async (req, res) => {
     try {

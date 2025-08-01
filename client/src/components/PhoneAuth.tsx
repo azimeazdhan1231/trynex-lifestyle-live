@@ -115,11 +115,24 @@ export default function PhoneAuth() {
       window.location.reload(); // Force refresh to update auth state
     },
     onError: (error: any) => {
-      toast({
-        title: "রেজিস্ট্রেশন ব্যর্থ",
-        description: error.message || "এই ফোন নম্বর দিয়ে আগেই অ্যাকাউন্ট আছে",
-        variant: "destructive",
-      });
+      console.error("Registration error:", error);
+      
+      // Check for specific error messages
+      if (error.message.includes('আগেই অ্যাকাউন্ট') || error.message.includes('PHONE_ALREADY_REGISTERED')) {
+        toast({
+          title: "ফোন নম্বর ইতিমধ্যে নিবন্ধিত",
+          description: "এই ফোন নম্বর দিয়ে আগেই অ্যাকাউন্ট তৈরি করা হয়েছে। অনুগ্রহ করে লগইন করুন।",
+          variant: "destructive",
+        });
+        setActiveTab("login"); // Switch to login tab
+        setLoginData(prev => ({ ...prev, phone: registerData.phone })); // Pre-fill phone
+      } else {
+        toast({
+          title: "রেজিস্ট্রেশন ব্যর্থ",
+          description: error.message || "রেজিস্ট্রেশন ব্যর্থ হয়েছে",
+          variant: "destructive",
+        });
+      }
     }
   });
 

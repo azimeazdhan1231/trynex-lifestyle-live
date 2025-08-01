@@ -141,6 +141,12 @@ export default function Header({ cartCount, onCartOpen }: HeaderProps) {
                         <DropdownMenuSeparator />
                         <DropdownMenuGroup>
                           <DropdownMenuItem asChild>
+                            <Link href="/dashboard" className="cursor-pointer">
+                              <User className="mr-2 h-4 w-4" />
+                              <span>ড্যাশবোর্ড</span>
+                            </Link>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem asChild>
                             <Link href="/profile" className="cursor-pointer">
                               <User className="mr-2 h-4 w-4" />
                               <span>প্রোফাইল</span>

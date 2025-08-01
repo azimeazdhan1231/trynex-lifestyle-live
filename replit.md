@@ -4,6 +4,15 @@
 A comprehensive Bengali-friendly eCommerce store with advanced admin panel, analytics integration, and responsive design. Live at https://trynex-lifestyle.pages.dev/
 
 ## Recent Changes
+✅ **Personalized User Dashboard with Purchase History** (2025-08-01)
+- **Complete User Dashboard**: New personalized dashboard page with purchase history, profile info, and statistics
+- **Enhanced Registration Validation**: Fixed duplicate phone number registration - now shows proper "number already registered" error
+- **Purchase History Display**: Users can view all their orders with status tracking, order details, and delivery information
+- **Dashboard Statistics**: Shows total orders, delivered count, and total spending with visual cards
+- **Improved User Authentication**: Enhanced error handling for duplicate registration attempts with automatic redirect to login
+- **Header Integration**: Added dashboard link to user dropdown menu for easy access
+- **Order Status Visualization**: Color-coded order status badges with Bengali text and appropriate icons
+
 ✅ **REVOLUTIONARY Performance Optimization - Sub-1 Second Loading** (2025-08-01)
 - **ELIMINATED 15+ second loading times** - Now products load in under 1 second!
 - **1-Year Browser Caching**: Products cached in browser storage for instant subsequent loads

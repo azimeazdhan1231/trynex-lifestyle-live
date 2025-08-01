@@ -26,6 +26,7 @@ const NotFound = lazy(() => import("./pages/not-found"));
 const RefundPolicyDynamic = lazy(() => import("./pages/refund-policy-dynamic"));
 const ReturnPolicy = lazy(() => import("./pages/return-policy"));
 const TermsConditionsDynamic = lazy(() => import("./pages/terms-conditions-dynamic"));
+const Dashboard = lazy(() => import("./pages/dashboard"));
 
 // Loading fallback component
 const LoadingFallback = () => (
@@ -59,6 +60,7 @@ function Router() {
         <Route path="/signup" component={PhoneAuth} />
         <Route path="/custom-order" component={CustomOrderForm} />
         <Route path="/auth-old" component={Auth} />
+        <Route path="/dashboard" component={Dashboard} />
         <Route path="/refund-policy" component={RefundPolicyDynamic} />
         <Route path="/return-policy" component={ReturnPolicy} />
         <Route path="/terms-conditions" component={TermsConditionsDynamic} />
