@@ -32,7 +32,7 @@ import { useToast } from "@/hooks/use-toast";
 import { trackProductView, trackAddToCart } from "@/lib/analytics";
 import type { Product, Category } from "@shared/schema";
 
-const PRODUCTS_PER_PAGE = 12;
+const PRODUCTS_PER_PAGE = 8;
 
 export default function Products() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -115,12 +115,11 @@ export default function Products() {
     setIsLoadingMore(true);
     setTimeout(() => {
       const nextPage = currentPage + 1;
-      const startIndex = 0;
       const endIndex = nextPage * PRODUCTS_PER_PAGE;
-      setDisplayedProducts(processedProducts.slice(startIndex, endIndex));
+      setDisplayedProducts(processedProducts.slice(0, endIndex));
       setCurrentPage(nextPage);
       setIsLoadingMore(false);
-    }, 500);
+    }, 800);
   };
 
   // Working handlers from homepage
@@ -179,9 +178,9 @@ export default function Products() {
           </p>
         </div>
 
-        {/* Filters */}
-        <div className="bg-white rounded-2xl shadow-lg p-6 mb-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Mobile-Optimized Filters */}
+        <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-6 mb-6 sm:mb-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
             {/* Search */}
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
@@ -189,13 +188,13 @@ export default function Products() {
                 placeholder="পণ্য খুঁজুন..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 h-12 border-2 border-gray-200 rounded-xl text-base"
+                className="pl-10 h-10 sm:h-12 border-2 border-gray-200 rounded-xl text-sm sm:text-base"
               />
             </div>
 
             {/* Category */}
             <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-              <SelectTrigger className="w-full h-12 border-2 border-gray-200 rounded-xl text-base">
+              <SelectTrigger className="w-full h-10 sm:h-12 border-2 border-gray-200 rounded-xl text-sm sm:text-base">
                 <Filter className="w-4 h-4 mr-2" />
                 <SelectValue placeholder="ক্যাটেগরি" />
               </SelectTrigger>
@@ -211,7 +210,7 @@ export default function Products() {
 
             {/* Price Range */}
             <Select value={priceRange} onValueChange={setPriceRange}>
-              <SelectTrigger className="w-full h-12 border-2 border-gray-200 rounded-xl text-base">
+              <SelectTrigger className="w-full h-10 sm:h-12 border-2 border-gray-200 rounded-xl text-sm sm:text-base">
                 <Filter className="w-4 h-4 mr-2" />
                 <SelectValue placeholder="দামের রেঞ্জ" />
               </SelectTrigger>
@@ -226,7 +225,7 @@ export default function Products() {
 
             {/* Sort */}
             <Select value={sortBy} onValueChange={setSortBy}>
-              <SelectTrigger className="w-full h-12 border-2 border-gray-200 rounded-xl text-base">
+              <SelectTrigger className="w-full h-10 sm:h-12 border-2 border-gray-200 rounded-xl text-sm sm:text-base">
                 <ArrowUpDown className="w-4 h-4 mr-2" />
                 <SelectValue placeholder="সাজান" />
               </SelectTrigger>
@@ -249,17 +248,17 @@ export default function Products() {
           </div>
         </div>
 
-        {/* Working Product Grid from Homepage */}
+        {/* Responsive Product Grid */}
         {productsLoading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
             {[...Array(8)].map((_, i) => (
               <Card key={i} className="overflow-hidden">
                 <div className="animate-pulse">
                   <div className="aspect-square bg-gray-200"></div>
-                  <CardContent className="p-4">
-                    <div className="h-4 bg-gray-200 rounded mb-2"></div>
-                    <div className="h-4 bg-gray-200 rounded w-2/3 mb-4"></div>
-                    <div className="h-8 bg-gray-200 rounded"></div>
+                  <CardContent className="p-3 sm:p-4">
+                    <div className="h-3 sm:h-4 bg-gray-200 rounded mb-2"></div>
+                    <div className="h-3 sm:h-4 bg-gray-200 rounded w-2/3 mb-3 sm:mb-4"></div>
+                    <div className="h-7 sm:h-8 bg-gray-200 rounded"></div>
                   </CardContent>
                 </div>
               </Card>
@@ -267,7 +266,7 @@ export default function Products() {
           </div>
         ) : displayedProducts.length > 0 ? (
           <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-12">
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-3 sm:gap-4 lg:gap-6 mb-8 sm:mb-12">
               {displayedProducts.map((product) => (
                 <Card key={product.id} className="group overflow-hidden hover:shadow-2xl transition-all duration-500 border-0 shadow-lg bg-white transform hover:-translate-y-2">
                   <div className="relative">
@@ -310,18 +309,18 @@ export default function Products() {
                     </div>
                   </div>
 
-                  <CardContent className="p-4">
+                  <CardContent className="p-3 sm:p-4">
                     <h3 
-                      className="font-bold text-lg text-gray-800 mb-2 line-clamp-2 group-hover:text-blue-600 transition-colors cursor-pointer"
+                      className="font-bold text-sm sm:text-base lg:text-lg text-gray-800 mb-2 line-clamp-2 group-hover:text-blue-600 transition-colors cursor-pointer"
                       onClick={() => handleProductView(product)}
                     >
                       {product.name}
                     </h3>
                     
-                    <div className="flex items-center justify-between mb-4">
-                      <span className="text-xl font-bold text-blue-600">{formatPrice(product.price)}</span>
+                    <div className="flex items-center justify-between mb-3 sm:mb-4">
+                      <span className="text-lg sm:text-xl font-bold text-blue-600">{formatPrice(product.price)}</span>
                       {product.category && (
-                        <Badge variant="outline" className="text-xs">
+                        <Badge variant="outline" className="text-xs hidden sm:inline-flex">
                           {product.category}
                         </Badge>
                       )}
@@ -331,19 +330,23 @@ export default function Products() {
                       <Button
                         onClick={() => handleAddToCart(product)}
                         disabled={product.stock === 0}
-                        className="w-full bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 transform hover:scale-105 transition-all duration-200"
+                        size="sm"
+                        className="w-full bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 transform hover:scale-105 transition-all duration-200 text-xs sm:text-sm py-2 h-8 sm:h-9"
                       >
-                        <ShoppingCart className="w-4 h-4 mr-2" />
-                        কার্টে যোগ করুন
+                        <ShoppingCart className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                        <span className="hidden sm:inline">কার্টে যোগ করুন</span>
+                        <span className="sm:hidden">কার্ট</span>
                       </Button>
                       
                       <Button
                         variant="outline"
                         onClick={() => handleCustomizeProduct(product)}
-                        className="w-full border-purple-500 text-purple-600 hover:bg-purple-50"
+                        size="sm"
+                        className="w-full border-purple-500 text-purple-600 hover:bg-purple-50 text-xs sm:text-sm py-2 h-8 sm:h-9"
                       >
-                        <Settings className="w-4 h-4 mr-2" />
-                        কাস্টমাইজ করুন
+                        <Settings className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                        <span className="hidden sm:inline">কাস্টমাইজ করুন</span>
+                        <span className="sm:hidden">কাস্টম</span>
                       </Button>
                     </div>
                   </CardContent>
@@ -351,9 +354,9 @@ export default function Products() {
               ))}
             </div>
 
-            {/* View More Button */}
+            {/* Load More Button - Fixed */}
             {hasMoreProducts && (
-              <div className="text-center">
+              <div className="text-center mt-8">
                 <Button
                   onClick={handleViewMore}
                   disabled={isLoadingMore}

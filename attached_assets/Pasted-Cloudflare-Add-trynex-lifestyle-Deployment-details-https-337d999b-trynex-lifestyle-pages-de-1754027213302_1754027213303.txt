@@ -1,0 +1,183 @@
+Cloudflare
+
+Add
+ trynex-lifestyle
+Deployment details
+https://337d999b.trynex-lifestyle.pages.dev
+Repository:
+
+azimeazdhan1231/trynex-lifestyle
+Branch:
+main
+64d6256
+optimizedtrynexlifestyle-store-3
+Status:
+Success
+11:46AM August 1, 2025
+Duration:
+54s
+Build settings
+Build log
+Functions
+Redirects
+Headers
+Build log
+Initializing build environment
+3s
+Cloning git repository
+4s
+Building application
+24s
+Deploying to Cloudflare's global network
+24s
+11:45:47.772	Cloning repository...
+11:45:48.902	From https://github.com/azimeazdhan1231/trynex-lifestyle
+11:45:48.902	 * branch            64d62563a6befe027bac1e95b0d77136e3f4232a -> FETCH_HEAD
+11:45:48.902	
+11:45:49.016	HEAD is now at 64d6256 optimizedtrynexlifestyle-store-3
+11:45:49.016	
+11:45:49.103	
+11:45:49.104	Using v2 root directory strategy
+11:45:49.127	Success: Finished cloning repository files
+11:45:51.877	Restoring from dependencies cache
+11:45:51.895	Restoring from build output cache
+11:45:53.061	Success: Dependencies restored from build cache.
+11:45:54.173	Checking for configuration in a Wrangler configuration file (BETA)
+11:45:54.174	
+11:45:54.175	Found wrangler.toml file. Reading build configuration...
+11:45:54.182	pages_build_output_dir: dist/public
+11:45:54.182	Build environment variables: (none found)
+11:45:55.295	Successfully read wrangler.toml file.
+11:45:55.365	Detected the following tools from environment: npm@10.9.2, nodejs@22.16.0
+11:45:55.365	Installing project dependencies: npm clean-install --progress=false
+11:45:59.242	npm warn deprecated @esbuild-kit/esm-loader@2.6.5: Merged into tsx: https://tsx.is
+11:45:59.350	npm warn deprecated @esbuild-kit/core-utils@3.3.2: Merged into tsx: https://tsx.is
+11:46:02.808	
+11:46:02.809	added 520 packages, and audited 521 packages in 7s
+11:46:02.809	
+11:46:02.809	68 packages are looking for funding
+11:46:02.809	  run `npm fund` for details
+11:46:02.836	
+11:46:02.836	9 vulnerabilities (1 low, 8 moderate)
+11:46:02.836	
+11:46:02.837	To address issues that do not require attention, run:
+11:46:02.837	  npm audit fix
+11:46:02.837	
+11:46:02.837	To address all issues (including breaking changes), run:
+11:46:02.837	  npm audit fix --force
+11:46:02.837	
+11:46:02.838	Run `npm audit` for details.
+11:46:02.868	Executing user command: npm run build
+11:46:03.273	
+11:46:03.273	> rest-express@1.0.0 build
+11:46:03.274	> vite build && esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist
+11:46:03.274	
+11:46:03.566	vite v5.4.19 building for production...
+11:46:03.620	transforming...
+11:46:03.936	Browserslist: browsers data (caniuse-lite) is 10 months old. Please run:
+11:46:03.937	  npx update-browserslist-db@latest
+11:46:03.937	  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+11:46:08.284	✓ 2088 modules transformed.
+11:46:08.485	rendering chunks...
+11:46:08.696	computing gzip size...
+11:46:08.720	../dist/public/index.html                                     1.09 kB │ gzip:  0.71 kB
+11:46:08.720	../dist/public/assets/index-CdIA8QU4.css                    113.94 kB │ gzip: 17.91 kB
+11:46:08.720	../dist/public/assets/utils-km2FGkQ4.js                       0.09 kB │ gzip:  0.10 kB
+11:46:08.721	../dist/public/assets/skeleton-RbQWn5ae.js                    0.17 kB │ gzip:  0.16 kB
+11:46:08.721	../dist/public/assets/useAuth-DMQgNv8B.js                     0.32 kB │ gzip:  0.26 kB
+11:46:08.721	../dist/public/assets/arrow-right-DG04DEUn.js                 0.33 kB │ gzip:  0.27 kB
+11:46:08.721	../dist/public/assets/facebook-8vyOxg4I.js                    0.35 kB │ gzip:  0.28 kB
+11:46:08.721	../dist/public/assets/clock-D9v12Jwt.js                       0.35 kB │ gzip:  0.27 kB
+11:46:08.721	../dist/public/assets/circle-check-big-1DBZpT5l.js            0.36 kB │ gzip:  0.28 kB
+11:46:08.722	../dist/public/assets/user-GLmbNQhI.js                        0.37 kB │ gzip:  0.29 kB
+11:46:08.722	../dist/public/assets/rotate-ccw-DECePipc.js                  0.37 kB │ gzip:  0.29 kB
+11:46:08.722	../dist/public/assets/circle-x-BEASVHJ9.js                    0.37 kB │ gzip:  0.28 kB
+11:46:08.722	../dist/public/assets/lock-oUmFcKfL.js                        0.38 kB │ gzip:  0.30 kB
+11:46:08.722	../dist/public/assets/credit-card-D7Al8y78.js                 0.38 kB │ gzip:  0.29 kB
+11:46:08.722	../dist/public/assets/star-CsYynKIF.js                        0.38 kB │ gzip:  0.29 kB
+11:46:08.722	../dist/public/assets/mail-CCQc6Of8.js                        0.38 kB │ gzip:  0.30 kB
+11:46:08.722	../dist/public/assets/heart-BJpfhjRn.js                       0.41 kB │ gzip:  0.31 kB
+11:46:08.722	../dist/public/assets/circle-alert-CbK0zV2m.js                0.42 kB │ gzip:  0.29 kB
+11:46:08.723	../dist/public/assets/eye-C1C2QZAg.js                         0.42 kB │ gzip:  0.30 kB
+11:46:08.723	../dist/public/assets/map-pin-93IcZKuZ.js                     0.42 kB │ gzip:  0.32 kB
+11:46:08.723	../dist/public/assets/calendar-DgnsY5ym.js                    0.43 kB │ gzip:  0.31 kB
+11:46:08.723	../dist/public/assets/shield-DrNWtcX-.js                      0.44 kB │ gzip:  0.33 kB
+11:46:08.723	../dist/public/assets/users-CXsJIkdE.js                       0.47 kB │ gzip:  0.33 kB
+11:46:08.723	../dist/public/assets/file-text-BTE_9qZr.js                   0.50 kB │ gzip:  0.32 kB
+11:46:08.723	../dist/public/assets/gift-Bfey2oOG.js                        0.53 kB │ gzip:  0.36 kB
+11:46:08.723	../dist/public/assets/package-C5Cs9ugo.js                     0.56 kB │ gzip:  0.36 kB
+11:46:08.724	../dist/public/assets/phone-CJJysQNk.js                       0.56 kB │ gzip:  0.36 kB
+11:46:08.724	../dist/public/assets/truck-Bcb_Qgr5.js                       0.57 kB │ gzip:  0.37 kB
+11:46:08.724	../dist/public/assets/input-DUfpK9hZ.js                       0.58 kB │ gzip:  0.35 kB
+11:46:08.724	../dist/public/assets/eye-off-CaQrC9PL.js                     0.60 kB │ gzip:  0.38 kB
+11:46:08.724	../dist/public/assets/not-found-D7fCRLAK.js                   0.67 kB │ gzip:  0.38 kB
+11:46:08.724	../dist/public/assets/separator-f2tWREnk.js                   0.67 kB │ gzip:  0.40 kB
+11:46:08.724	../dist/public/assets/badge-DaH92_0A.js                       0.71 kB │ gzip:  0.37 kB
+11:46:08.724	../dist/public/assets/index-42PPUyDd.js                       0.82 kB │ gzip:  0.53 kB
+11:46:08.724	../dist/public/assets/hash-CL7M1OQ0.js                        0.83 kB │ gzip:  0.40 kB
+11:46:08.725	../dist/public/assets/user-plus-A30FpfoI.js                   0.86 kB │ gzip:  0.43 kB
+11:46:08.725	../dist/public/assets/settings-BE0hFigl.js                    0.89 kB │ gzip:  0.45 kB
+11:46:08.725	../dist/public/assets/card-aFCzygE-.js                        0.99 kB │ gzip:  0.37 kB
+11:46:08.725	../dist/public/assets/button-xsKYsc8l.js                      1.23 kB │ gzip:  0.61 kB
+11:46:08.725	../dist/public/assets/send-Bf-CGsOC.js                        1.75 kB │ gzip:  0.62 kB
+11:46:08.725	../dist/public/assets/avatar-CybOhdX7.js                      2.16 kB │ gzip:  0.99 kB
+11:46:08.725	../dist/public/assets/useMutation-CtbgpTKU.js                 2.91 kB │ gzip:  1.23 kB
+11:46:08.725	../dist/public/assets/constants-BfpmKdTo.js                   2.95 kB │ gzip:  1.76 kB
+11:46:08.725	../dist/public/assets/tabs-qpy3tcHr.js                        3.24 kB │ gzip:  1.36 kB
+11:46:08.725	../dist/public/assets/use-cart-ClpVeVZO.js                    3.25 kB │ gzip:  1.50 kB
+11:46:08.726	../dist/public/assets/index-DJYp18kc.js                       3.37 kB │ gzip:  1.53 kB
+11:46:08.726	../dist/public/assets/terms-conditions-dynamic-B9UXP021.js    4.07 kB │ gzip:  1.71 kB
+11:46:08.726	../dist/public/assets/offers-BHrLAVHU.js                      4.14 kB │ gzip:  1.59 kB
+11:46:08.726	../dist/public/assets/admin-D4MkvwJI.js                       4.65 kB │ gzip:  2.12 kB
+11:46:08.726	../dist/public/assets/SmartSearch-BfGW2tJc.js                 4.89 kB │ gzip:  2.27 kB
+11:46:08.726	../dist/public/assets/profile-B552xqXb.js                     5.52 kB │ gzip:  2.02 kB
+11:46:08.726	../dist/public/assets/refund-policy-dynamic-Co-o9-B7.js       5.89 kB │ gzip:  2.02 kB
+11:46:08.726	../dist/public/assets/orders-BqWxe1rO.js                      5.91 kB │ gzip:  2.29 kB
+11:46:08.726	../dist/public/assets/AIChatbot-CYziIW3D.js                   6.07 kB │ gzip:  2.52 kB
+11:46:08.726	../dist/public/assets/contact-BEnbli0O.js                     6.07 kB │ gzip:  2.12 kB
+11:46:08.726	../dist/public/assets/return-policy-DFm8gGP3.js               7.09 kB │ gzip:  1.76 kB
+11:46:08.727	../dist/public/assets/blog-C8PPdUPI.js                        7.55 kB │ gzip:  2.90 kB
+11:46:08.727	../dist/public/assets/dialog-D0FPkM-D.js                      7.85 kB │ gzip:  2.96 kB
+11:46:08.727	../dist/public/assets/PhoneAuth-DI45GI5C.js                   7.95 kB │ gzip:  2.42 kB
+11:46:08.727	../dist/public/assets/about-4HP_ErJI.js                       8.87 kB │ gzip:  3.36 kB
+11:46:08.727	../dist/public/assets/EnhancedAIChatbot-bB8YxONz.js           9.41 kB │ gzip:  4.17 kB
+11:46:08.727	../dist/public/assets/auth-UqtXCOGQ.js                        9.97 kB │ gzip:  3.24 kB
+11:46:08.727	../dist/public/assets/products-BR8DVMiB.js                   10.16 kB │ gzip:  3.85 kB
+11:46:08.727	../dist/public/assets/CustomOrderForm-caIXoS4Z.js            10.30 kB │ gzip:  3.80 kB
+11:46:08.727	../dist/public/assets/useQuery-DALTNNMu.js                   10.33 kB │ gzip:  3.65 kB
+11:46:08.727	../dist/public/assets/tracking-C5PcP3EC.js                   11.47 kB │ gzip:  3.51 kB
+11:46:08.728	../dist/public/assets/customize-modal-B5HsGklf.js            15.03 kB │ gzip:  5.19 kB
+11:46:08.728	../dist/public/assets/format-cwXK75ha.js                     20.22 kB │ gzip:  5.71 kB
+11:46:08.728	../dist/public/assets/select-DlXvttNm.js                     38.83 kB │ gzip: 13.38 kB
+11:46:08.728	../dist/public/assets/home-DhS3lgd6.js                       54.03 kB │ gzip: 15.96 kB
+11:46:08.728	../dist/public/assets/header-CN6S3JZx.js                     59.32 kB │ gzip: 17.16 kB
+11:46:08.728	../dist/public/assets/admin-panel-new-BV6P4iiE.js           157.53 kB │ gzip: 42.72 kB
+11:46:08.728	../dist/public/assets/index-BIgYDzZH.js                     267.58 kB │ gzip: 88.29 kB
+11:46:08.728	✓ built in 5.13s
+11:46:08.780	
+11:46:08.780	  dist/index.js  30.2kb
+11:46:08.780	
+11:46:08.781	⚡ Done in 9ms
+11:46:08.803	Finished
+11:46:09.757	Checking for configuration in a Wrangler configuration file (BETA)
+11:46:09.758	
+11:46:09.759	Found wrangler.toml file. Reading build configuration...
+11:46:09.765	pages_build_output_dir: dist/public
+11:46:09.765	Build environment variables: (none found)
+11:46:10.868	Successfully read wrangler.toml file.
+11:46:10.869	Found Functions directory at /functions. Uploading.
+11:46:10.875	 ⛅️ wrangler 3.101.0
+11:46:10.875	-------------------
+11:46:11.857	✨ Compiled Worker successfully
+11:46:12.954	Validating asset output directory
+11:46:15.709	Deploying your site to Cloudflare's global network...
+11:46:19.211	Uploading... (0/73)
+11:46:20.272	Uploading... (25/73)
+11:46:21.987	Uploading... (49/73)
+11:46:26.235	Uploading... (73/73)
+11:46:26.236	✨ Success! Uploaded 73 files (7.29 sec)
+11:46:26.236	
+11:46:26.671	✨ Upload complete!
+11:46:36.359	Skipping build output cache as it's not supported for your project
+11:46:37.506	Success: Assets published!
+11:46:39.764	Success: Your site was deployed!
