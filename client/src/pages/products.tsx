@@ -10,6 +10,8 @@ import Header from "@/components/header";
 import UnifiedProductCard from "@/components/unified-product-card";
 import ProductModal from "@/components/product-modal";
 import CustomizeModal from "@/components/customize-modal";
+import MobileSearchDrawer from "@/components/mobile-search-drawer";
+import ProductLoadingOptimizer from "@/components/product-loading-optimizer";
 import type { Product } from "@shared/schema";
 
 // Product categories
@@ -196,54 +198,59 @@ export default function ProductsPage() {
       <Header cartCount={cart.length} onCartOpen={() => {}} />
       
       <div className="container mx-auto px-4 py-8">
-        {/* Header Section */}
-        <div className="text-center mb-8">
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-            আমাদের পণ্যসমূহ
-          </h1>
-          <p className="text-gray-600 text-lg max-w-2xl mx-auto">
-            সেরা মানের কাস্টম গিফট এবং লাইফস্টাইল পণ্য। আপনার পছন্দমতো ডিজাইন করুন।
-          </p>
+        {/* Hero Section - Mobile Optimized */}
+        <div className="relative bg-gradient-to-br from-blue-600 via-purple-600 to-blue-800 rounded-2xl p-6 sm:p-8 md:p-12 mb-8 text-white overflow-hidden">
+          <div className="absolute inset-0 bg-black/20 rounded-2xl"></div>
+          <div className="relative z-10 text-center">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-4 leading-tight">
+              আমাদের পণ্যসমূহ
+            </h1>
+            <p className="text-blue-100 text-base sm:text-lg md:text-xl max-w-3xl mx-auto leading-relaxed">
+              সেরা মানের কাস্টম গিফট এবং লাইফস্টাইল পণ্য। আপনার পছন্দমতো ডিজাইন করুন।
+            </p>
+          </div>
+          <div className="absolute -top-10 -right-10 w-32 h-32 bg-white/10 rounded-full blur-xl"></div>
+          <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-white/5 rounded-full blur-2xl"></div>
         </div>
 
-        {/* Filters and Search */}
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {/* Search */}
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+        {/* Filters and Search - Mobile First */}
+        <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6 mb-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+            {/* Search - Mobile Optimized */}
+            <div className="relative sm:col-span-2 lg:col-span-1">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
               <Input
                 placeholder="পণ্য খুঁজুন..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
+                className="pl-11 h-12 text-base border-2 focus:border-blue-500 rounded-xl"
               />
             </div>
 
-            {/* Category Filter */}
+            {/* Category Filter - Mobile Optimized */}
             <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-              <SelectTrigger>
-                <Filter className="w-4 h-4 mr-2" />
-                <SelectValue />
+              <SelectTrigger className="h-12 border-2 rounded-xl text-base">
+                <Filter className="w-5 h-5 mr-2" />
+                <SelectValue placeholder="বিভাগ নির্বাচন করুন" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="max-h-60">
                 {PRODUCT_CATEGORIES.map((category) => (
-                  <SelectItem key={category.id} value={category.id}>
+                  <SelectItem key={category.id} value={category.id} className="text-base py-3">
                     {category.name}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
 
-            {/* Sort */}
+            {/* Sort - Mobile Optimized */}
             <Select value={sortOption} onValueChange={setSortOption}>
-              <SelectTrigger>
-                <Grid3X3 className="w-4 h-4 mr-2" />
-                <SelectValue />
+              <SelectTrigger className="h-12 border-2 rounded-xl text-base">
+                <Grid3X3 className="w-5 h-5 mr-2" />
+                <SelectValue placeholder="সাজান" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="max-h-60">
                 {SORT_OPTIONS.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
+                  <SelectItem key={option.value} value={option.value} className="text-base py-3">
                     {option.label}
                   </SelectItem>
                 ))}
@@ -265,13 +272,13 @@ export default function ProductsPage() {
           </p>
         </div>
 
-        {/* Products Grid */}
+        {/* Products Grid - Mobile Optimized with Enhanced Loading */}
         {isLoading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {Array.from({ length: 8 }).map((_, index) => (
-              <ProductSkeleton key={index} />
-            ))}
-          </div>
+          <ProductLoadingOptimizer 
+            isLoading={isLoading} 
+            itemCount={12}
+            showProductsOnLoad={false}
+          />
         ) : filteredProducts.length === 0 ? (
           <div className="text-center py-16">
             <div className="bg-white rounded-lg p-8 shadow-sm max-w-md mx-auto">
@@ -294,7 +301,7 @@ export default function ProductsPage() {
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-4 sm:gap-6">
               {displayedProducts.map((product) => (
                 <UnifiedProductCard
                   key={product.id}
@@ -330,6 +337,20 @@ export default function ProductsPage() {
             )}
           </>
         )}
+
+        {/* Mobile Search Drawer */}
+        <MobileSearchDrawer
+          searchTerm={searchTerm}
+          setSearchTerm={setSearchTerm}
+          selectedCategory={selectedCategory}
+          setSelectedCategory={setSelectedCategory}
+          sortOption={sortOption}
+          setSortOption={setSortOption}
+          categories={PRODUCT_CATEGORIES}
+          sortOptions={SORT_OPTIONS}
+          resultsCount={displayedProducts.length}
+          totalCount={filteredProducts.length}
+        />
       </div>
 
       {/* Product Details Modal */}

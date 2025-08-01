@@ -94,7 +94,7 @@ export class SimpleStorage {
   }
 
   async createOrder(order: InsertOrder): Promise<Order> {
-    const result = await db.insert(orders).values(order).returning();
+    const result = await db.insert(orders).values([order]).returning();
     return result[0];
   }
 

@@ -257,7 +257,7 @@ export default function CustomizeModal({ product, isOpen, onClose, onAddToCart, 
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-3xl max-h-[95vh] overflow-y-auto mx-2 sm:mx-0 p-4 sm:p-6">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-2xl">
             <Palette className="w-6 h-6 text-primary" />

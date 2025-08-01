@@ -50,15 +50,19 @@ export default function UnifiedProductCard({
   };
 
   return (
-    <Card className="group hover:shadow-xl transition-all duration-300 border border-gray-100 overflow-hidden bg-white hover:border-primary/30 transform hover:-translate-y-1 sm:hover:-translate-y-2 cursor-pointer">
+    <Card className="group hover:shadow-xl transition-all duration-300 border border-gray-100 overflow-hidden bg-white hover:border-primary/30 transform hover:-translate-y-1 cursor-pointer">
       <div className="relative" onClick={handleCardClick}>
-        {/* Product Image */}
+        {/* Product Image - Mobile Optimized */}
         <div className="aspect-[4/5] overflow-hidden bg-gray-50">
           <img
-            src={product.image_url || "/api/placeholder/400/400"}
+            src={product.image_url || "https://images.unsplash.com/photo-1544787219-7f47ccb76574?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=500"}
             alt={product.name}
-            className="w-full h-full object-cover group-hover:scale-105 sm:group-hover:scale-110 transition-transform duration-300 sm:duration-500"
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
             loading="lazy"
+            onError={(e) => {
+              const img = e.target as HTMLImageElement;
+              img.src = "https://images.unsplash.com/photo-1544787219-7f47ccb76574?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=500";
+            }}
           />
         </div>
 

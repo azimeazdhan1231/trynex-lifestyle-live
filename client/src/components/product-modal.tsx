@@ -74,16 +74,16 @@ export default function ProductModal({ product, isOpen, onClose, onAddToCart, on
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-2xl max-h-[95vh] overflow-y-auto sm:max-w-lg md:max-w-2xl p-4 sm:p-6 mx-2 sm:mx-0">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold text-gray-800">
             {product.name}
           </DialogTitle>
         </DialogHeader>
 
-        <div className="grid md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
           {/* Product Image */}
-          <div className="aspect-square overflow-hidden rounded-lg border">
+          <div className="aspect-square overflow-hidden rounded-lg border order-1 md:order-1">
             <img
               src={product.image_url || "https://images.unsplash.com/photo-1544787219-7f47ccb76574?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"}
               alt={product.name}
@@ -92,10 +92,10 @@ export default function ProductModal({ product, isOpen, onClose, onAddToCart, on
           </div>
 
           {/* Product Details */}
-          <div className="space-y-6">
+          <div className="space-y-4 md:space-y-6 order-2 md:order-2">
             <div>
               <div className="flex items-center justify-between mb-4">
-                <span className="text-3xl font-bold text-primary">{formatPrice(product.price)}</span>
+                <span className="text-2xl md:text-3xl font-bold text-primary">{formatPrice(product.price)}</span>
                 <Badge variant={product.stock > 0 ? "secondary" : "destructive"}>
                   স্টক: {product.stock}
                 </Badge>
@@ -152,24 +152,24 @@ export default function ProductModal({ product, isOpen, onClose, onAddToCart, on
             )}
 
             {/* Action Buttons */}
-            <div className="space-y-3">
+            <div className="space-y-3 sticky bottom-0 bg-white pt-4 -mx-4 px-4 sm:mx-0 sm:px-0 sm:static sm:bg-transparent sm:pt-0">
               <Button
                 onClick={handleAddToCart}
                 disabled={product.stock === 0}
                 className="w-full"
                 size="lg"
               >
-                <ShoppingCart className="w-5 h-5 mr-2" />
+                <ShoppingCart className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
                 {product.stock === 0 ? "স্টক নেই" : "কার্টে যোগ করুন"}
               </Button>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <Button
                   onClick={handleWhatsAppOrder}
                   variant="outline"
                   className="bg-green-500 text-white hover:bg-green-600 border-green-500"
                   size="lg"
                 >
-                  <MessageCircle className="w-5 h-5 mr-2" />
+                  <MessageCircle className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
                   হোয়াটসঅ্যাপে অর্ডার
                 </Button>
                 <Button
