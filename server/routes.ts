@@ -1,6 +1,9 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
+import { AIChatbot, type ChatMessage } from "./ai-chatbot";
+
+const aiChatbot = new AIChatbot();
 import { setupAuth, isAuthenticated, optionalAuth } from "./replitAuth";
 import { 
   insertOrderSchema, insertProductSchema, insertOfferSchema,
@@ -945,6 +948,88 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Error deleting page:', error);
       res.status(500).json({ error: 'Failed to delete page' });
+    }
+  });
+
+  // AI Chatbot API Route
+  app.post("/api/chat", async (req, res) => {
+    try {
+      const { message, chatHistory = [] } = req.body;
+      
+      if (!message || typeof message !== "string") {
+        return res.status(400).json({ message: "Message is required" });
+      }
+
+      // Get all products for search functionality
+      const products = await storage.getProducts();
+      
+      // Generate AI response
+      const response = await aiChatbot.generateResponse(message, products, chatHistory);
+      
+      res.json(response);
+    } catch (error) {
+      console.error("AI Chatbot Error:", error);
+      res.status(500).json({ 
+        message: "দুঃখিত, একটি সমস্যা হয়েছে। আবার চেষ্টা করুন।" 
+      });
+    }
+  });
+
+  // Smart Search API Route
+  app.get("/api/search", async (req, res) => {
+    try {
+      const { q: query } = req.query;
+      
+      if (!query || typeof query !== "string") {
+        return res.status(400).json({ message: "Search query is required" });
+      }
+
+      // Get all products
+      const allProducts = await storage.getProducts();
+      
+      // Smart search algorithm
+      const searchTerms = query.toLowerCase().split(' ');
+      const searchResults = allProducts.filter(product => {
+        const searchableText = `${product.name} ${product.description} ${product.category}`.toLowerCase();
+        return searchTerms.some(term => searchableText.includes(term));
+      });
+
+      // Sort by relevance (name matches first, then description, then category)
+      const sortedResults = searchResults.sort((a, b) => {
+        const aNameMatch = a.name.toLowerCase().includes(query.toLowerCase()) ? 1 : 0;
+        const bNameMatch = b.name.toLowerCase().includes(query.toLowerCase()) ? 1 : 0;
+        return bNameMatch - aNameMatch;
+      });
+
+      res.json({
+        query,
+        results: sortedResults.slice(0, 20), // Return top 20 results
+        total: sortedResults.length
+      });
+    } catch (error) {
+      console.error("Search Error:", error);
+      res.status(500).json({ message: "Search failed" });
+    }
+  });
+
+  // AI Product Recommendations
+  app.post("/api/recommendations", async (req, res) => {
+    try {
+      const { interests = [], userId } = req.body;
+      
+      // Get all products
+      const products = await storage.getProducts();
+      
+      // Generate AI-powered recommendations
+      const recommendations = await aiChatbot.getSmartRecommendations(interests, products);
+      
+      res.json({
+        recommendations,
+        interests
+      });
+    } catch (error) {
+      console.error("Recommendations Error:", error);
+      res.status(500).json({ message: "Failed to get recommendations" });
     }
   });
 

@@ -19,9 +19,14 @@ import { Link, useLocation } from "wouter";
 import { COMPANY_NAME, COMPANY_TAGLINE, WHATSAPP_NUMBER, createWhatsAppUrl, formatPrice } from "@/lib/constants";
 import { trackProductView, trackAddToCart } from "@/lib/analytics";
 import OptimizedProductCard from "@/components/OptimizedProductCard";
+import AIChatbot from "@/components/AIChatbot";
+import SmartSearch from "@/components/SmartSearch";
 import { setupPerformanceMonitoring } from "@/utils/performanceMonitoring";
 import { preloadImages } from "@/utils/imageOptimization";
 import { PersistentCache } from "@/utils/persistentCache";
+import { initializeOptimizations } from "@/utils/fileOptimization";
+import { initializeDatabaseOptimizations } from "@/utils/databaseOptimizer";
+import { initializeRouteOptimizations } from "@/utils/routeOptimization";
 import { PerformanceOptimizer } from "@/utils/performanceOptimizer";
 import type { Product, Offer } from "@shared/schema";
 
@@ -260,7 +265,7 @@ function ProductSection({
           
           <EnhancedLoadingSkeleton 
             count={6} 
-            minimumDuration={3000}
+            minimumDuration={5000}
             onLoadingComplete={() => setLoadingCompleted(true)}
           />
           
@@ -323,6 +328,9 @@ export default function Home() {
   // Initialize performance monitoring and optimizations
   useEffect(() => {
     setupPerformanceMonitoring();
+    initializeOptimizations();
+    initializeDatabaseOptimizations();
+    initializeRouteOptimizations();
     PerformanceOptimizer.preloadCriticalResources();
     PerformanceOptimizer.optimizeImageLoading();
     PerformanceOptimizer.setupMemoryCleanup();
@@ -364,10 +372,10 @@ export default function Home() {
   }, [isSuccess, products.length]);
 
   useEffect(() => {
-    // Always show loading skeleton for minimum 3 seconds on first load
+    // Always show loading skeleton for minimum 5 seconds on first load for better UX
     const minimumLoadingTimer = setTimeout(() => {
       setShowLoadingSkeleton(false);
-    }, 3000);
+    }, 5000);
 
     return () => clearTimeout(minimumLoadingTimer);
   }, []);
@@ -502,6 +510,20 @@ export default function Home() {
     <div className="min-h-screen bg-gray-50">
       <Header cartCount={totalItems} onCartOpen={() => {}} />
       <PopupOffer />
+
+      {/* Smart Search Bar */}
+      <div className="sticky top-14 z-40 bg-white/95 backdrop-blur-sm border-b border-gray-200 shadow-sm">
+        <div className="container mx-auto px-4 py-3">
+          <SmartSearch 
+            onProductSelect={(product) => {
+              setSelectedProduct(product);
+              setIsModalOpen(true);
+              trackProductView(product.id, product.name);
+            }}
+            className="max-w-2xl mx-auto"
+          />
+        </div>
+      </div>
 
       {/* Hero Section */}
       <section 
@@ -787,6 +809,14 @@ export default function Home() {
           onAddToCart={handleCustomizeAddToCart}
         />
       )}
+      {/* AI Chatbot */}
+      <AIChatbot 
+        onProductSelect={(product) => {
+          setSelectedProduct(product);
+          setIsModalOpen(true);
+          trackProductView(product.id, product.name);
+        }}
+      />
     </div>
   );
 }

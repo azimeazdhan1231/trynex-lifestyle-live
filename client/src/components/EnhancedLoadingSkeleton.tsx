@@ -11,21 +11,24 @@ interface EnhancedLoadingSkeletonProps {
 
 export default function EnhancedLoadingSkeleton({ 
   count = 6, 
-  minimumDuration = 3000,
+  minimumDuration = 5000,
   onLoadingComplete 
 }: EnhancedLoadingSkeletonProps) {
   const [loadingPhase, setLoadingPhase] = useState(0);
   const [showContent, setShowContent] = useState(false);
 
   useEffect(() => {
-    // Phase 1: Initial skeleton (0-1s)
-    const phase1Timer = setTimeout(() => setLoadingPhase(1), 500);
+    // Phase 1: Initial connection (0-1s)
+    const phase1Timer = setTimeout(() => setLoadingPhase(1), 800);
     
-    // Phase 2: Enhanced skeleton with shimmer (1-2s)
-    const phase2Timer = setTimeout(() => setLoadingPhase(2), 1500);
+    // Phase 2: Loading products (1-2.5s)
+    const phase2Timer = setTimeout(() => setLoadingPhase(2), 2000);
     
-    // Phase 3: Final loading phase (2-3s)
-    const phase3Timer = setTimeout(() => setLoadingPhase(3), 2500);
+    // Phase 3: Optimizing display (2.5-4s)
+    const phase3Timer = setTimeout(() => setLoadingPhase(3), 3500);
+    
+    // Phase 4: Finalizing (4-5s)
+    const phase4Timer = setTimeout(() => setLoadingPhase(4), 4500);
     
     // Complete loading after minimum duration
     const completeTimer = setTimeout(() => {
@@ -37,16 +40,18 @@ export default function EnhancedLoadingSkeleton({
       clearTimeout(phase1Timer);
       clearTimeout(phase2Timer);
       clearTimeout(phase3Timer);
+      clearTimeout(phase4Timer);
       clearTimeout(completeTimer);
     };
   }, [minimumDuration, onLoadingComplete]);
 
   const getLoadingText = () => {
     switch (loadingPhase) {
-      case 0: return "পণ্য লোড হচ্ছে...";
+      case 0: return "ডাটাবেস সংযোগ স্থাপন করছি...";
       case 1: return "সেরা পণ্য খুঁজে আনছি...";
-      case 2: return "দাম আপডেট করছি...";
-      case 3: return "প্রায় তৈরি...";
+      case 2: return "দাম ও স্টক আপডেট করছি...";
+      case 3: return "ইমেজ অপ্টিমাইজ করছি...";
+      case 4: return "প্রায় সম্পন্ন...";
       default: return "লোড হচ্ছে...";
     }
   };
@@ -70,19 +75,38 @@ export default function EnhancedLoadingSkeleton({
         </div>
         
         {/* Progress bar */}
-        <div className="w-64 mx-auto bg-gray-200 rounded-full h-2 overflow-hidden">
+        <div className="w-80 mx-auto bg-gray-200 rounded-full h-3 overflow-hidden shadow-inner">
           <div 
-            className="h-full bg-gradient-to-r from-primary via-blue-500 to-purple-500 rounded-full transition-all duration-1000 ease-out"
+            className="h-full bg-gradient-to-r from-primary via-blue-500 to-purple-500 rounded-full transition-all duration-800 ease-out shadow-lg"
             style={{ 
-              width: `${Math.min(100, (loadingPhase + 1) * 25)}%`,
-              animation: 'shimmer 2s infinite'
+              width: `${Math.min(100, (loadingPhase + 1) * 20)}%`,
+              animation: 'shimmer 1.5s infinite'
             }}
           ></div>
         </div>
         
-        <p className="text-sm text-gray-500 mt-2 animate-bounce">
-          {loadingPhase < 2 ? "আমাদের সেরা কালেকশন আনছি..." : "প্রস্তুত হয়ে গেছে!"}
+        <p className="text-sm text-gray-500 mt-3 animate-pulse">
+          {loadingPhase < 3 ? "আমাদের প্রিমিয়াম কালেকশন প্রস্তুত করছি..." : "সবকিছু প্রস্তুত!"}
         </p>
+        
+        <div className="flex items-center justify-center space-x-4 mt-4">
+          <div className="text-xs text-gray-400 flex items-center space-x-1">
+            <div className={`w-2 h-2 rounded-full ${loadingPhase >= 1 ? 'bg-green-400' : 'bg-gray-300'} transition-colors duration-300`}></div>
+            <span>ডাটাবেস</span>
+          </div>
+          <div className="text-xs text-gray-400 flex items-center space-x-1">
+            <div className={`w-2 h-2 rounded-full ${loadingPhase >= 2 ? 'bg-blue-400' : 'bg-gray-300'} transition-colors duration-300`}></div>
+            <span>পণ্য</span>
+          </div>
+          <div className="text-xs text-gray-400 flex items-center space-x-1">
+            <div className={`w-2 h-2 rounded-full ${loadingPhase >= 3 ? 'bg-purple-400' : 'bg-gray-300'} transition-colors duration-300`}></div>
+            <span>ইমেজ</span>
+          </div>
+          <div className="text-xs text-gray-400 flex items-center space-x-1">
+            <div className={`w-2 h-2 rounded-full ${loadingPhase >= 4 ? 'bg-orange-400' : 'bg-gray-300'} transition-colors duration-300`}></div>
+            <span>সম্পন্ন</span>
+          </div>
+        </div>
       </div>
 
       {/* Enhanced product grid skeleton */}
