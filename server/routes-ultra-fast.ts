@@ -15,17 +15,17 @@ async function preloadCache() {
   try {
     console.log('🚀 Preloading products cache...');
     const start = Date.now();
-    
+
     const [products, categories] = await Promise.all([
       storage.getProducts(),
       storage.getCategories()
     ]);
-    
+
     productsCache = products;
     categoriesCache = categories;
     lastProductsCacheTime = Date.now();
     lastCategoriesCacheTime = Date.now();
-    
+
     console.log(`✅ Cache preloaded in ${Date.now() - start}ms - ${products.length} products, ${categories.length} categories`);
   } catch (error) {
     console.error('❌ Failed to preload cache:', error);
@@ -35,14 +35,14 @@ async function preloadCache() {
 export async function registerRoutes(app: Express): Promise<Server> {
   // Preload cache immediately
   await preloadCache();
-  
+
   // Setup authentication routes
   setupAuthRoutes(app);
 
   // Ultra-fast products endpoint with memory cache
   app.get('/api/products', (req, res) => {
     const start = Date.now();
-    
+
     try {
       // Aggressive caching headers for client-side caching
       res.set({
@@ -56,7 +56,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Check if client has fresh cache
       const ifNoneMatch = req.headers['if-none-match'];
       const expectedETag = `products-v2-${lastProductsCacheTime}`;
-      
+
       if (ifNoneMatch === expectedETag) {
         res.status(304).end();
         return;
@@ -64,23 +64,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const category = req.query.category as string;
       let result = productsCache;
-      
+
       // Filter by category if specified
       if (category && category !== 'all') {
         result = productsCache.filter(p => p.category === category);
       }
-      
+
       const duration = Date.now() - start;
       res.set('X-Response-Time', `${duration}ms`);
-      
+
       console.log(`⚡ Products served from memory in ${duration}ms`);
       res.json(result);
-      
+
       // Background refresh if cache is getting old
       if (Date.now() - lastProductsCacheTime > CACHE_TTL) {
         refreshProductsCache();
       }
-      
+
     } catch (error) {
       console.error('❌ Products endpoint error:', error);
       res.status(500).json({ message: 'Server error' });
@@ -90,7 +90,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Ultra-fast categories endpoint
   app.get('/api/categories', (req, res) => {
     const start = Date.now();
-    
+
     try {
       res.set({
         'Cache-Control': 'public, max-age=31536000, immutable',
@@ -100,15 +100,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const duration = Date.now() - start;
       res.set('X-Response-Time', `${duration}ms`);
-      
+
       console.log(`⚡ Categories served from memory in ${duration}ms`);
       res.json(categoriesCache);
-      
+
       // Background refresh if needed
       if (Date.now() - lastCategoriesCacheTime > CACHE_TTL) {
         refreshCategoriesCache();
       }
-      
+
     } catch (error) {
       console.error('❌ Categories endpoint error:', error);
       res.status(500).json({ message: 'Server error' });
@@ -125,21 +125,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
         created_at: new Date(),
         updated_at: new Date()
       };
-      
+
       if (orderData.items) {
         orderData.items = typeof orderData.items === 'string' 
           ? orderData.items 
           : JSON.stringify(orderData.items);
       }
-      
+
       if (orderData.payment_info) {
         orderData.payment_info = typeof orderData.payment_info === 'string'
           ? orderData.payment_info
           : JSON.stringify(orderData.payment_info);
       }
-      
+
       const order = await storage.createOrder(orderData);
-      
+
       res.status(201).json({
         success: true,
         tracking_id: order.tracking_id,
@@ -156,13 +156,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/settings', async (req, res) => {
     try {
       res.set('Cache-Control', 'public, max-age=3600'); // 1 hour cache
-      
+
       const settings = await storage.getSettings();
       const settingsObj: any = {};
       settings.forEach(setting => {
         settingsObj[setting.key] = setting.value;
       });
-      
+
       res.json(settingsObj);
     } catch (error) {
       console.error('❌ Settings error:', error);
