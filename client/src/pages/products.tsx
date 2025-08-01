@@ -119,14 +119,8 @@ export default function ProductsPage() {
   // Handle view product details
   const handleViewProduct = (product: Product) => {
     console.log("📱 Products page: handleViewProduct called with:", product.name);
-    console.log("📱 Products page: Product data:", product);
-    console.log("📱 Products page: Current selectedProduct:", selectedProduct);
-    console.log("📱 Products page: Current isProductModalOpen:", isProductModalOpen);
-    console.log("📱 Products page: Setting selectedProduct and opening modal");
     setSelectedProduct(product);
     setIsProductModalOpen(true);
-    console.log("📱 Products page: After setting - selectedProduct will be:", product.name);
-    console.log("📱 Products page: After setting - isProductModalOpen will be: true");
   };
 
   // Handle customize product
@@ -359,16 +353,19 @@ export default function ProductsPage() {
       </div>
 
       {/* Product Details Modal */}
-      <ProductModal
-        isOpen={isProductModalOpen}
-        onClose={() => {
-          setIsProductModalOpen(false);
-          setSelectedProduct(null);
-        }}
-        product={selectedProduct}
-        onAddToCart={handleAddToCart}
-        onCustomize={handleCustomize}
-      />
+      {selectedProduct && (
+        <ProductModal
+          isOpen={isProductModalOpen}
+          onClose={() => {
+            console.log("📱 Closing product modal");
+            setIsProductModalOpen(false);
+            setSelectedProduct(null);
+          }}
+          product={selectedProduct}
+          onAddToCart={handleAddToCart}
+          onCustomize={handleCustomize}
+        />
+      )}
 
       {/* Customize Modal */}
       <CustomizeModal

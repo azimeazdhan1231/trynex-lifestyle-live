@@ -23,37 +23,30 @@ export default function UnifiedProductCard({
 }: UnifiedProductCardProps) {
   const [isFavorite, setIsFavorite] = useState(false);
 
-  const handleCardClick = () => {
+  const handleCardClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
     console.log("🔍 UnifiedProductCard: Card clicked, calling onViewProduct with:", product.name);
-    console.log("🔍 UnifiedProductCard: Product data:", product);
-    console.log("🔍 UnifiedProductCard: onViewProduct function:", onViewProduct);
-    if (onViewProduct && typeof onViewProduct === 'function') {
-      onViewProduct(product);
-    } else {
-      console.error("❌ onViewProduct function is not available or not a function");
-    }
+    onViewProduct(product);
   };
 
   const handleAddToCart = (e: React.MouseEvent) => {
+    e.preventDefault();
     e.stopPropagation();
     onAddToCart(product);
   };
 
   const handleCustomize = (e: React.MouseEvent) => {
+    e.preventDefault();
     e.stopPropagation();
     onCustomize(product);
   };
 
   const handleViewDetails = (e: React.MouseEvent) => {
+    e.preventDefault();
     e.stopPropagation();
     console.log("👁️ UnifiedProductCard: View details clicked for:", product.name);
-    console.log("👁️ UnifiedProductCard: Product data:", product);
-    console.log("👁️ UnifiedProductCard: onViewProduct function:", onViewProduct);
-    if (onViewProduct && typeof onViewProduct === 'function') {
-      onViewProduct(product);
-    } else {
-      console.error("❌ onViewProduct function is not available or not a function");
-    }
+    onViewProduct(product);
   };
 
   const handleToggleFavorite = (e: React.MouseEvent) => {
@@ -62,8 +55,8 @@ export default function UnifiedProductCard({
   };
 
   return (
-    <Card className="group hover:shadow-xl transition-all duration-300 border border-gray-100 overflow-hidden bg-white hover:border-primary/30 transform hover:-translate-y-1 cursor-pointer">
-      <div className="relative" onClick={handleCardClick}>
+    <Card className="group hover:shadow-xl transition-all duration-300 border border-gray-100 overflow-hidden bg-white hover:border-primary/30 transform hover:-translate-y-1 cursor-pointer" onClick={handleCardClick}>
+      <div className="relative">
         {/* Product Image - Mobile Optimized */}
         <div className="aspect-[4/5] overflow-hidden bg-gray-50">
           <img
