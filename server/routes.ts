@@ -316,6 +316,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Products
   app.get("/api/products", async (req, res) => {
     try {
+      // Set aggressive cache headers for instant loading
+      res.set('Cache-Control', 'public, max-age=300, s-maxage=600');
+      res.set('ETag', `"products-${Date.now()}"`);
+      
       const { category } = req.query;
       const products = category && typeof category === "string" 
         ? await storage.getProductsByCategory(category)

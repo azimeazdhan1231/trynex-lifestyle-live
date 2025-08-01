@@ -374,40 +374,30 @@ export default function Home() {
     return PersistentCache.preloadProducts() || [];
   });
 
-  // Load products for homepage sections with persistent caching
+  // Load products for homepage sections with instant display
   const { data: products = [], isLoading: productsLoading, isSuccess } = useQuery<Product[]>({
     queryKey: ["/api/products"],
     staleTime: 1000 * 60 * 10, // 10 minutes stale time
     gcTime: 1000 * 60 * 30, // Keep in memory for 30 minutes
-    retry: 1,
+    retry: 2,
     refetchOnWindowFocus: false,
     initialData: cachedProducts.length > 0 ? cachedProducts : undefined,
     placeholderData: cachedProducts, // Use cached data as placeholder
+    networkMode: 'always', // Always try to fetch fresh data
   });
 
-  // Enhanced loading state management with minimum display time
+  // Show products immediately when loaded - no artificial delays
+
+  // Remove artificial loading delay - show products as soon as they load
   useEffect(() => {
     if (isSuccess && products.length > 0) {
-      // Products are loaded, but keep showing skeleton for minimum duration
-      const timer = setTimeout(() => {
-        setProductsReady(true);
-      }, 300); // Small delay to let the skeleton finish its animation
-
-      return () => clearTimeout(timer);
+      setShowLoadingSkeleton(false);
+      setProductsReady(true);
     }
   }, [isSuccess, products.length]);
 
-  useEffect(() => {
-    // Optimized loading - 2.5 seconds for better mobile experience
-    const minimumLoadingTimer = setTimeout(() => {
-      setShowLoadingSkeleton(false);
-    }, 2500);
-
-    return () => clearTimeout(minimumLoadingTimer);
-  }, []);
-
-  // Determine if we should show loading state
-  const shouldShowLoading = productsLoading || showLoadingSkeleton || !productsReady;
+  // Show loading only while actually loading products
+  const shouldShowLoading = productsLoading || (!products?.length && !cachedProducts?.length);
 
   // Cache products when they're successfully loaded
   useEffect(() => {
