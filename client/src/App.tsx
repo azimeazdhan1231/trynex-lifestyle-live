@@ -32,8 +32,15 @@ const Dashboard = lazy(() => import("./pages/dashboard"));
 const MobileResponsiveFixes = lazy(() => import("./components/MobileResponsiveFixes"));
 // const PerformanceOptimizer = lazy(() => import("./components/PerformanceOptimizer"));
 
-// Minimal loading fallback component
-const LoadingFallback = () => null;
+// Loading fallback component
+const LoadingFallback = () => (
+  <div className="min-h-screen flex items-center justify-center bg-gray-50">
+    <div className="text-center">
+      <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+      <p className="text-gray-600">লোড হচ্ছে...</p>
+    </div>
+  </div>
+);
 
 function Router() {
   // Track page views when routes change
