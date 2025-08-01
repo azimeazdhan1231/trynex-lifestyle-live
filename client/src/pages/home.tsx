@@ -340,25 +340,12 @@ export default function Home() {
     // Load AI Chatbot and Smart Search dynamically after main content loads
     setTimeout(async () => {
       try {
-        // Load and render SmartSearch
-        await ComponentRenderer.renderComponent(
-          'smart-search-component',
-          () => import('@/components/SmartSearch'),
-          {
-            onProductSelect: (product: Product) => {
-              setSelectedProduct(product);
-              setIsModalOpen(true);
-              trackProductView(product.id, product.name);
-            },
-            className: "max-w-2xl mx-auto"
-          }
-        );
-        setSmartSearchLoaded(true);
+        // Smart search is now integrated into header search icon
         
-        // Load and render AIChatbot
+        // Load and render Enhanced AIChatbot with full business context
         await ComponentRenderer.renderComponent(
           'ai-chatbot-component',
-          () => import('@/components/AIChatbot'),
+          () => import('@/components/EnhancedAIChatbot'),
           {
             onProductSelect: (product: Product) => {
               setSelectedProduct(product);
@@ -411,10 +398,10 @@ export default function Home() {
   }, [isSuccess, products.length]);
 
   useEffect(() => {
-    // Always show loading skeleton for minimum 5 seconds on first load for better UX
+    // Optimized loading - 2.5 seconds for better mobile experience
     const minimumLoadingTimer = setTimeout(() => {
       setShowLoadingSkeleton(false);
-    }, 5000);
+    }, 2500);
 
     return () => clearTimeout(minimumLoadingTimer);
   }, []);
@@ -550,16 +537,7 @@ export default function Home() {
       <Header cartCount={totalItems} onCartOpen={() => {}} />
       <PopupOffer />
 
-      {/* Smart Search Bar - Dynamically Loaded */}
-      {smartSearchLoaded && (
-        <div className="sticky top-14 z-40 bg-white/95 backdrop-blur-sm border-b border-gray-200 shadow-sm">
-          <div className="container mx-auto px-4 py-3">
-            <div id="smart-search-component" className="max-w-2xl mx-auto">
-              {/* SmartSearch component will be dynamically rendered here */}
-            </div>
-          </div>
-        </div>
-      )}
+
 
       {/* Hero Section */}
       <section 

@@ -975,6 +975,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Enhanced AI Chat endpoint with OpenAI
+  app.post('/api/ai-chat', async (req, res) => {
+    try {
+      const { handleAIChat } = await import('./ai-chat');
+      await handleAIChat(req, res);
+    } catch (error) {
+      console.error('AI Chat route error:', error);
+      res.status(500).json({ 
+        error: 'AI service unavailable',
+        reply: "দুঃখিত, AI সেবা এখন উপলব্ধ নেই। অনুগ্রহ করে পরে আবার চেষ্টা করুন।"
+      });
+    }
+  });
+
   // Smart Search API Route
   app.get("/api/search", async (req, res) => {
     try {

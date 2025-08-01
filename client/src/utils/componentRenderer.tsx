@@ -1,9 +1,20 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 // Component renderer utility for dynamically loaded components
 export const ComponentRenderer = {
   roots: new Map<string, any>(),
+  queryClient: new QueryClient({
+    defaultOptions: {
+      queries: {
+        staleTime: 1000 * 60 * 5, // 5 minutes
+        gcTime: 1000 * 60 * 10, // 10 minutes
+        retry: 1,
+        refetchOnWindowFocus: false,
+      },
+    },
+  }),
   
   async renderComponent(
     containerId: string, 
@@ -29,8 +40,15 @@ export const ComponentRenderer = {
         this.roots.set(containerId, root);
       }
       
+      // Wrap component with QueryClientProvider
+      const WrappedComponent = React.createElement(
+        QueryClientProvider,
+        { client: this.queryClient },
+        React.createElement(Component, props)
+      );
+      
       // Render the component
-      root.render(React.createElement(Component, props));
+      root.render(WrappedComponent);
       console.log(`✅ Component rendered in ${containerId}`);
       
     } catch (error) {

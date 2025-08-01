@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Search, X, Loader2, ShoppingCart } from 'lucide-react';
+import { Search, X, Loader2, ShoppingCart, Bot, Sparkles, Mic, MicOff } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -20,6 +20,9 @@ export default function SearchBar({ isOpen, onClose, onProductSelect }: SearchBa
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const [isTyping, setIsTyping] = useState(false);
+  const [isAIMode, setIsAIMode] = useState(false);
+  const [isListening, setIsListening] = useState(false);
+  const [aiSuggestions, setAiSuggestions] = useState<string[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
   const [, setLocation] = useLocation();
 
