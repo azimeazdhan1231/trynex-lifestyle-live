@@ -27,7 +27,11 @@ export default function UnifiedProductCard({
     console.log("🔍 UnifiedProductCard: Card clicked, calling onViewProduct with:", product.name);
     console.log("🔍 UnifiedProductCard: Product data:", product);
     console.log("🔍 UnifiedProductCard: onViewProduct function:", onViewProduct);
-    onViewProduct(product);
+    if (onViewProduct && typeof onViewProduct === 'function') {
+      onViewProduct(product);
+    } else {
+      console.error("❌ onViewProduct function is not available or not a function");
+    }
   };
 
   const handleAddToCart = (e: React.MouseEvent) => {
@@ -45,7 +49,11 @@ export default function UnifiedProductCard({
     console.log("👁️ UnifiedProductCard: View details clicked for:", product.name);
     console.log("👁️ UnifiedProductCard: Product data:", product);
     console.log("👁️ UnifiedProductCard: onViewProduct function:", onViewProduct);
-    onViewProduct(product);
+    if (onViewProduct && typeof onViewProduct === 'function') {
+      onViewProduct(product);
+    } else {
+      console.error("❌ onViewProduct function is not available or not a function");
+    }
   };
 
   const handleToggleFavorite = (e: React.MouseEvent) => {

@@ -40,7 +40,7 @@ export default function CheckoutModal({ isOpen, onClose, cart, onOrderComplete }
   const [availableThanas, setAvailableThanas] = useState<string[]>([]);
   const [completedOrder, setCompletedOrder] = useState<Order | null>(null);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
-  
+
   // Check if this is a custom order from URL parameters
   const urlParams = new URLSearchParams(window.location.search);
   const isCustomOrder = urlParams.get('customOrder') === 'true';
@@ -129,11 +129,11 @@ export default function CheckoutModal({ isOpen, onClose, cart, onOrderComplete }
     // Convert File objects to base64 for order items
     const processedItems = await Promise.all(cart.map(async (item: any) => {
       const processedItem = { ...item, delivery_fee: deliveryFee };
-      
+
       if (item.customization && item.customization.customImage) {
         try {
           let base64Image = null;
-          
+
           if (item.customization.customImage instanceof File) {
             base64Image = await new Promise<string>((resolve, reject) => {
               const reader = new FileReader();
@@ -145,7 +145,7 @@ export default function CheckoutModal({ isOpen, onClose, cart, onOrderComplete }
             // Already base64 encoded
             base64Image = item.customization.customImage;
           }
-          
+
           processedItem.customization = {
             ...item.customization,
             customImage: base64Image,
@@ -160,7 +160,7 @@ export default function CheckoutModal({ isOpen, onClose, cart, onOrderComplete }
           };
         }
       }
-      
+
       return processedItem;
     }));
 
@@ -181,15 +181,17 @@ export default function CheckoutModal({ isOpen, onClose, cart, onOrderComplete }
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-md max-h-[95vh] overflow-y-auto mx-2 sm:mx-0 p-4 sm:p-6" style={{ 
-        position: 'fixed',
-        top: '50%',
-        left: '50%',
-        transform: 'translate(-50%, -50%)',
-        zIndex: 9999,
-        width: '90vw',
-        maxWidth: '400px'
-      }}>
+      
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto mx-auto p-4 sm:p-6" style={{ 
+          position: 'fixed',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          zIndex: 9999,
+          width: '95vw',
+          maxWidth: '700px',
+          margin: '0 auto'
+        }}>
         <DialogHeader>
           <DialogTitle>অর্ডার সম্পূর্ণ করুন</DialogTitle>
           <DialogDescription>

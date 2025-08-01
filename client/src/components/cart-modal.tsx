@@ -38,14 +38,15 @@ export default function CartModal({ isOpen, onClose }: CartModalProps) {
   return (
     <>
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="max-w-md max-h-[95vh] overflow-y-auto mx-2 sm:mx-0 p-4 sm:p-6" style={{ 
+        <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto mx-auto p-4 sm:p-6" style={{ 
           position: 'fixed',
           top: '50%',
           left: '50%',
           transform: 'translate(-50%, -50%)',
           zIndex: 9999,
-          width: '90vw',
-          maxWidth: '400px'
+          width: '95vw',
+          maxWidth: '450px',
+          margin: '0 auto'
         }}>
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">

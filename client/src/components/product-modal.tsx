@@ -77,15 +77,16 @@ export default function ProductModal({ product, isOpen, onClose, onAddToCart, on
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[95vh] overflow-y-auto sm:max-w-lg md:max-w-2xl p-4 sm:p-6 mx-2 sm:mx-0 bg-white rounded-lg shadow-xl" style={{ 
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto sm:max-w-lg md:max-w-2xl p-4 sm:p-6 mx-auto bg-white rounded-lg shadow-xl" style={{ 
         position: 'fixed',
         top: '50%',
         left: '50%',
         transform: 'translate(-50%, -50%)',
         zIndex: 9999,
         maxHeight: '90vh',
-        width: '90vw',
-        maxWidth: '600px'
+        width: '95vw',
+        maxWidth: '650px',
+        margin: '0 auto'
       }}>
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold text-gray-800">

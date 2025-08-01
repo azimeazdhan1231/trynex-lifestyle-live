@@ -25,7 +25,7 @@ export default function PopupOffer() {
     offer.is_popup && 
     offer.title?.includes('ফ্রি ডেলিভারি')
   );
-  
+
   const popupOffer = offers.find(offer => offer.active && offer.is_popup);
 
   useEffect(() => {
@@ -61,14 +61,15 @@ export default function PopupOffer() {
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogContent className="max-w-md mx-2 sm:mx-0 p-0 overflow-hidden bg-gradient-to-br from-green-500 to-emerald-600 text-white border-0 [&>button]:text-white [&>button]:hover:bg-white/20" style={{ 
+      <DialogContent className="sm:max-w-md p-0 border-0 bg-transparent shadow-none" style={{ 
         position: 'fixed',
         top: '50%',
         left: '50%',
         transform: 'translate(-50%, -50%)',
         zIndex: 9999,
-        width: '90vw',
-        maxWidth: '400px'
+        width: '95vw',
+        maxWidth: '400px',
+        margin: '0 auto'
       }}>
 
         <div className="p-6 text-center">
@@ -78,9 +79,9 @@ export default function PopupOffer() {
               <Gift className="w-16 h-16 text-yellow-300 animate-bounce" />
             }
           </div>
-          
+
           <h3 className="text-2xl font-bold mb-2">{currentOffer.title}</h3>
-          
+
           {currentOffer.description && (
             <p className="text-lg mb-4 text-emerald-100">{currentOffer.description}</p>
           )}

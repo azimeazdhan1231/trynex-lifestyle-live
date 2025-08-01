@@ -78,7 +78,7 @@ export default function DirectOrderModal({
       const basePrice = parseFloat(product.price.toString()) * (customization?.quantity || 1);
       const deliveryFee = orderData.district === "ঢাকা" ? 80 : 120;
       const urgencyFee = orderData.urgentDelivery ? 50 : 0;
-      
+
       setPricing({
         productPrice: basePrice,
         deliveryFee,
@@ -225,7 +225,16 @@ ${pricing.urgencyFee > 0 ? `• জরুরি ডেলিভারি: ${form
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto mx-auto p-4 sm:p-6" style={{ 
+          position: 'fixed',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          zIndex: 9999,
+          width: '95vw',
+          maxWidth: '700px',
+          margin: '0 auto'
+        }}>
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-xl">
             <Package className="w-5 h-5 text-primary" />
@@ -264,7 +273,7 @@ ${pricing.urgencyFee > 0 ? `• জরুরি ডেলিভারি: ${form
               <User className="w-5 h-5" />
               ব্যক্তিগত তথ্য
             </h3>
-            
+
             <div>
               <Label htmlFor="customerName">পূর্ণ নাম *</Label>
               <Input
@@ -275,7 +284,7 @@ ${pricing.urgencyFee > 0 ? `• জরুরি ডেলিভারি: ${form
                 required
               />
             </div>
-            
+
             <div>
               <Label htmlFor="phone">ফোন নম্বর *</Label>
               <Input
@@ -297,7 +306,7 @@ ${pricing.urgencyFee > 0 ? `• জরুরি ডেলিভারি: ${form
               <MapPin className="w-5 h-5" />
               ডেলিভারি ঠিকানা
             </h3>
-            
+
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label>জেলা *</Label>
@@ -314,7 +323,7 @@ ${pricing.urgencyFee > 0 ? `• জরুরি ডেলিভারি: ${form
                   </SelectContent>
                 </Select>
               </div>
-              
+
               <div>
                 <Label>থানা *</Label>
                 <Select 
@@ -335,7 +344,7 @@ ${pricing.urgencyFee > 0 ? `• জরুরি ডেলিভারি: ${form
                 </Select>
               </div>
             </div>
-            
+
             <div>
               <Label htmlFor="address">বিস্তারিত ঠিকানা *</Label>
               <Textarea
@@ -346,7 +355,7 @@ ${pricing.urgencyFee > 0 ? `• জরুরি ডেলিভারি: ${form
                 required
               />
             </div>
-            
+
             <div>
               <Label htmlFor="deliveryInstructions">ডেলিভারি নির্দেশনা (ঐচ্ছিক)</Label>
               <Input
@@ -366,7 +375,7 @@ ${pricing.urgencyFee > 0 ? `• জরুরি ডেলিভারি: ${form
               <CreditCard className="w-5 h-5" />
               পেমেন্ট ও ডেলিভারি
             </h3>
-            
+
             <div>
               <Label>পেমেন্ট পদ্ধতি *</Label>
               <Select value={orderData.paymentMethod} onValueChange={(value) => handleInputChange("paymentMethod", value)}>
@@ -419,7 +428,7 @@ ${pricing.urgencyFee > 0 ? `• জরুরি ডেলিভারি: ${form
               <CheckCircle className="w-5 h-5" />
               অর্ডার সারাংশ
             </h3>
-            
+
             <Card>
               <CardHeader>
                 <div className="flex items-center gap-3">
@@ -481,7 +490,7 @@ ${pricing.urgencyFee > 0 ? `• জরুরি ডেলিভারি: ${form
           >
             {step > 1 ? 'পূর্ববর্তী' : 'বাতিল'}
           </Button>
-          
+
           <div className="flex gap-2">
             <Button
               variant="outline"
@@ -490,7 +499,7 @@ ${pricing.urgencyFee > 0 ? `• জরুরি ডেলিভারি: ${form
             >
               WhatsApp এ অর্ডার
             </Button>
-            
+
             {step < 4 ? (
               <Button onClick={handleNext}>
                 পরবর্তী <ArrowRight className="w-4 h-4 ml-1" />

@@ -57,7 +57,15 @@ export default function MobileSearchDrawer({
         </Button>
       </DrawerTrigger>
       
-      <DrawerContent className="max-h-[85vh]">
+      <DrawerContent className="max-h-[85vh]" style={{
+        position: 'fixed',
+        top: '50%',
+        left: '50%',
+        transform: 'translate(-50%, -50%)',
+        width: '95vw',
+        maxWidth: '500px',
+        zIndex: 9999
+      }}>
         <DrawerHeader className="pb-4">
           <div className="flex items-center justify-between">
             <DrawerTitle className="text-lg font-semibold">
