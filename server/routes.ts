@@ -73,7 +73,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const duration = Date.now() - start;
       res.set('X-Response-Time', `${duration}ms`);
       
-      console.log(`⚡ Products served from memory in ${duration}ms`);
+      console.log(`⚡ Products instant response: ${duration}ms - ${result.length} items`);
       res.json(result);
       
       // Background refresh if cache is getting old
