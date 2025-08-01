@@ -13,7 +13,7 @@ import type { Product } from "@shared/schema";
 // Lazy load components for better performance
 const ProductCardOptimized = lazy(() => import("@/components/product-card-optimized"));
 const CustomizeModal = lazy(() => import("@/components/customize-modal"));
-const QuickViewModal = lazy(() => import("@/components/quick-view-modal"));
+// Removed QuickViewModal for now as it's causing import issues
 
 // Loading skeleton component
 const ProductSkeleton = () => (
@@ -103,9 +103,9 @@ export default function ProductsOptimized() {
   }, []);
 
   const handleQuickView = useCallback((product: Product) => {
-    setSelectedProduct(product);
-    setShowQuickView(true);
-  }, []);
+    // Quick view functionality - for now just open customize modal
+    handleCustomize(product);
+  }, [handleCustomize]);
 
   const handleAddToCart = useCallback((product: Product) => {
     // Optimized cart addition
@@ -328,20 +328,11 @@ export default function ProductsOptimized() {
               setShowCustomizeModal(false);
               setSelectedProduct(null);
             }}
+            onAddToCart={handleAddToCart}
           />
         )}
 
-        {showQuickView && selectedProduct && (
-          <QuickViewModal
-            product={selectedProduct}
-            isOpen={showQuickView}
-            onClose={() => {
-              setShowQuickView(false);
-              setSelectedProduct(null);
-            }}
-            onCustomize={handleCustomize}
-          />
-        )}
+        {/* Quick view removed for performance - using customize modal directly */}
       </Suspense>
     </div>
   );

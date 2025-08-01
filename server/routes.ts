@@ -4,7 +4,7 @@ import { storage } from "./storage";
 import { AIChatbot, type ChatMessage } from "./ai-chatbot";
 
 const aiChatbot = new AIChatbot();
-import { setupAuth, isAuthenticated, optionalAuth } from "./replitAuth";
+// Removed Replit auth - using custom phone-based authentication
 import { 
   insertOrderSchema, insertProductSchema, insertOfferSchema,
   insertCategorySchema, insertPromoCodeSchema, insertAnalyticsSchema,
@@ -32,8 +32,7 @@ function authenticateToken(req: any, res: any, next: any) {
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Setup authentication middleware (keeping old system for compatibility)
-  await setupAuth(app);
+  // Custom phone-based authentication system
 
   // Simple Authentication Routes
   app.post('/api/auth/register', async (req, res) => {
