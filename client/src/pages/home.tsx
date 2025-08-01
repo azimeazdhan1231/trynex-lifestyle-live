@@ -397,16 +397,22 @@ export default function Home() {
 
   // Show products immediately when loaded - no artificial delays
 
-  // Remove artificial loading delay - show products as soon as they load
+  // Show products with brief loading animation even with cached data for better UX
   useEffect(() => {
     if (isSuccess && products.length > 0) {
-      setShowLoadingSkeleton(false);
-      setProductsReady(true);
+      // Brief delay even with cached data to show loading animation
+      const delay = cachedProducts.length > 0 ? 600 : 1000;
+      const timer = setTimeout(() => {
+        setShowLoadingSkeleton(false);
+        setProductsReady(true);
+      }, delay);
+      
+      return () => clearTimeout(timer);
     }
-  }, [isSuccess, products.length]);
+  }, [isSuccess, products.length, cachedProducts.length]);
 
-  // Show loading only for initial load without cached data (INSTANT LOADING)
-  const shouldShowLoading = productsLoading && cachedProducts.length === 0;
+  // Show loading animation for better user experience
+  const shouldShowLoading = showLoadingSkeleton || (productsLoading && !productsReady);
 
   // Cache products when they're successfully loaded
   useEffect(() => {

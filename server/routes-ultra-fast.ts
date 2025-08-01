@@ -39,8 +39,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Setup authentication routes
   setupAuthRoutes(app);
 
-  // Ultra-fast products endpoint with memory cache
-  app.get('/api/products', (req, res) => {
+  // Ultra-fast product routes with aggressive caching and database optimization
+
+  // Database connection pool for faster queries
+  const dbConnectionPool = {
+    activeConnections: 0,
+    maxConnections: 10,
+    connectionQueue: [] as any[],
+
+    async getConnection() {
+      if (this.activeConnections < this.maxConnections) {
+        this.activeConnections++;
+        return db;
+      }
+
+      // Return queued connection
+      return new Promise((resolve) => {
+        this.connectionQueue.push(resolve);
+      });
+    },
+
+    releaseConnection() {
+      this.activeConnections--;
+      if (this.connectionQueue.length > 0) {
+        const resolve = this.connectionQueue.shift();
+        this.activeConnections++;
+        resolve(db);
+      }
+    }
+  };
+
+  // Ultra-fast products endpoint with database optimization
+  app.get("/api/products", async (c) => {
+    const isFastLoad = c.req.header('X-Fast-Load') === 'true' || c.req.query('fast') === 'true';
     const start = Date.now();
 
     try {

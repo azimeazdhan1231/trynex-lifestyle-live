@@ -53,19 +53,22 @@ export function useOptimizedProducts({
         }
       } catch (e) {}
       
-      // 3. Fetch with aggressive optimization
-      const url = category ? `/api/products?category=${category}` : '/api/products';
+      // 3. Fetch with ultra-fast database optimization
+      const url = category ? `/api/products?category=${category}&fast=true` : '/api/products?fast=true';
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 3000); // 3s timeout
+      const timeoutId = setTimeout(() => controller.abort(), 2000); // 2s timeout for faster response
       
       try {
         const response = await fetch(url, {
           headers: {
             'Cache-Control': 'max-age=31536000, immutable',
             'Accept': 'application/json',
-            'Connection': 'keep-alive'
+            'Connection': 'keep-alive',
+            'X-Fast-Load': 'true', // Signal for ultra-fast loading
+            'Priority': 'high'
           },
-          signal: controller.signal
+          signal: controller.signal,
+          keepalive: true // Keep connection alive for faster subsequent requests
         });
         
         clearTimeout(timeoutId);
