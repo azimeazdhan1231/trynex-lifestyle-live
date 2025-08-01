@@ -30,7 +30,7 @@ const Dashboard = lazy(() => import("./pages/dashboard"));
 
 // Performance and Mobile Optimization Components
 const MobileResponsiveFixes = lazy(() => import("./components/MobileResponsiveFixes"));
-const PerformanceOptimizer = lazy(() => import("./components/PerformanceOptimizer"));
+// const PerformanceOptimizer = lazy(() => import("./components/PerformanceOptimizer"));
 
 // Loading fallback component
 const LoadingFallback = () => (
@@ -92,7 +92,7 @@ function App() {
         <div className="font-bengali">
           <Suspense fallback={null}>
             <MobileResponsiveFixes />
-            <PerformanceOptimizer />
+            {/* <PerformanceOptimizer /> */}
           </Suspense>
           <Toaster />
           <Router />

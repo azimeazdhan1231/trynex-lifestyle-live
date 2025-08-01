@@ -32,71 +32,26 @@ export default function ProductLoadingOptimizer({
   itemCount = 12,
   showProductsOnLoad = false 
 }: ProductLoadingOptimizerProps) {
-  const [showSkeletons, setShowSkeletons] = useState(true);
-  const [loadingText, setLoadingText] = useState("পণ্য লোড করা হচ্ছে...");
-
-  useEffect(() => {
-    if (!isLoading) {
-      // Small delay to ensure smooth transition
-      const timer = setTimeout(() => setShowSkeletons(false), 200);
-      return () => clearTimeout(timer);
-    } else {
-      setShowSkeletons(true);
-      
-      // Dynamic loading messages
-      const messages = [
-        "পণ্য লোড করা হচ্ছে...",
-        "সেরা পণ্যগুলো খুঁজে আনা হচ্ছে...",
-        "প্রায় শেষ...",
-      ];
-      
-      let messageIndex = 0;
-      const messageTimer = setInterval(() => {
-        messageIndex = (messageIndex + 1) % messages.length;
-        setLoadingText(messages[messageIndex]);
-      }, 1500);
-
-      return () => clearInterval(messageTimer);
-    }
-  }, [isLoading]);
-
-  // Show products immediately without loading screen if specified
-  if (showProductsOnLoad && !isLoading) {
-    return null;
-  }
-
-  if (!isLoading && !showSkeletons) {
+  // Only show loading when explicitly loading products
+  if (!isLoading) {
     return null;
   }
 
   return (
-    <div className="space-y-6">
-      {/* Loading Message */}
-      <div className="text-center py-4">
-        <div className="inline-flex items-center gap-3 px-6 py-3 bg-blue-50 rounded-full">
-          <div className="w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-          <span className="text-blue-700 font-medium">{loadingText}</span>
+    <div className="space-y-4">
+      {/* Simple Loading Message */}
+      <div className="text-center py-2">
+        <div className="inline-flex items-center gap-2 text-gray-600">
+          <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+          <span className="text-sm">পণ্য লোড হচ্ছে...</span>
         </div>
       </div>
 
-      {/* Skeleton Grid */}
+      {/* Simple Skeleton Grid */}
       <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-4 sm:gap-6">
         {Array.from({ length: itemCount }).map((_, index) => (
           <EnhancedProductSkeleton key={index} />
         ))}
-      </div>
-
-      {/* Progress Indicator */}
-      <div className="flex justify-center">
-        <div className="flex space-x-2">
-          {[...Array(3)].map((_, i) => (
-            <div
-              key={i}
-              className="w-2 h-2 bg-blue-500 rounded-full animate-bounce"
-              style={{ animationDelay: `${i * 0.2}s` }}
-            />
-          ))}
-        </div>
       </div>
     </div>
   );

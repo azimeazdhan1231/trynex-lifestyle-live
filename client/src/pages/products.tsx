@@ -272,13 +272,13 @@ export default function ProductsPage() {
           </p>
         </div>
 
-        {/* Products Grid - Mobile Optimized with Enhanced Loading */}
+        {/* Products Grid - Mobile Optimized */}
         {isLoading ? (
-          <ProductLoadingOptimizer 
-            isLoading={isLoading} 
-            itemCount={12}
-            showProductsOnLoad={false}
-          />
+          <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-4 sm:gap-6">
+            {Array.from({ length: 12 }).map((_, index) => (
+              <ProductSkeleton key={index} />
+            ))}
+          </div>
         ) : filteredProducts.length === 0 ? (
           <div className="text-center py-16">
             <div className="bg-white rounded-lg p-8 shadow-sm max-w-md mx-auto">

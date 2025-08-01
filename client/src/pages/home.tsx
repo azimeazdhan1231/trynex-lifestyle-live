@@ -28,7 +28,7 @@ import { initializeOptimizations } from "@/utils/fileOptimization";
 import { initializeDatabaseOptimizations } from "@/utils/databaseOptimizer";
 import { initializeRouteOptimizations } from "@/utils/routeOptimization";
 import { ComponentRenderer } from "@/utils/componentRenderer";
-import { PerformanceOptimizer } from "@/utils/performanceOptimizer";
+// import { PerformanceOptimizer } from "@/utils/performanceOptimizer";
 import EnhancedAIChatbot from "@/components/EnhancedAIChatbot";
 import type { Product, Offer } from "@shared/schema";
 
@@ -335,9 +335,7 @@ export default function Home() {
     initializeOptimizations();
     initializeDatabaseOptimizations();
     initializeRouteOptimizations();
-    PerformanceOptimizer.preloadCriticalResources();
-    PerformanceOptimizer.optimizeImageLoading();
-    PerformanceOptimizer.setupMemoryCleanup();
+    // Performance optimizations removed to fix loading issues
     
     // Load AI Chatbot and Smart Search dynamically after main content loads
     setTimeout(async () => {
@@ -427,27 +425,15 @@ export default function Home() {
   
   // Memoized product filtering for better performance
   const featuredProducts = useMemo(() => 
-    PerformanceOptimizer.memoizeProductFilter(
-      currentProducts, 
-      'featured', 
-      (products) => products.filter(p => p.is_featured)
-    ), [currentProducts]
+    currentProducts.filter(p => p.is_featured), [currentProducts]
   );
 
   const latestProducts = useMemo(() =>
-    PerformanceOptimizer.memoizeProductFilter(
-      currentProducts,
-      'latest',
-      (products) => products.filter(p => p.is_latest)
-    ), [currentProducts]
+    currentProducts.filter(p => p.is_latest), [currentProducts]
   );
 
   const bestSellingProducts = useMemo(() =>
-    PerformanceOptimizer.memoizeProductFilter(
-      currentProducts,
-      'bestselling',
-      (products) => products.filter(p => p.is_best_selling)
-    ), [currentProducts]
+    currentProducts.filter(p => p.is_best_selling), [currentProducts]
   );
 
   // If no products are marked, use defaults
@@ -456,12 +442,19 @@ export default function Home() {
   const defaultBestSelling = bestSellingProducts.length > 0 ? bestSellingProducts.slice(0, 4) : currentProducts.slice(8, 12);
 
   useEffect(() => {
-    const handleScroll = PerformanceOptimizer.throttle(() => {
-      setShowScrollTop(window.scrollY > 300);
-    }, 100); // Throttle scroll events for better performance
+    let timeoutId: NodeJS.Timeout;
+    const handleScroll = () => {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        setShowScrollTop(window.scrollY > 300);
+      }, 100);
+    };
     
     window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      clearTimeout(timeoutId);
+    };
   }, []);
 
   const handleAddToCart = (product: Product) => {
