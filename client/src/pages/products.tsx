@@ -1,15 +1,14 @@
 import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Search, Filter, Grid3X3, Star, Heart, ShoppingCart, Plus, Eye } from "lucide-react";
+import { Search, Filter, Grid3X3 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { formatPrice } from "@/lib/constants";
 import Header from "@/components/header";
+import UnifiedProductCard from "@/components/unified-product-card";
+import ProductModal from "@/components/product-modal";
 import CustomizeModal from "@/components/customize-modal";
 import type { Product } from "@shared/schema";
 
@@ -36,120 +35,20 @@ const SORT_OPTIONS = [
   { value: "name_asc", label: "নাম: A-Z" },
 ];
 
-// Homepage-style Product Card (exact same as homepage)
-function HomepageStyleProductCard({ product, onCustomize, onAddToCart }: {
-  product: Product;
-  onCustomize: (product: Product) => void;
-  onAddToCart: (product: Product) => void;
-}) {
-  const [isWishlisted, setIsWishlisted] = useState(false);
-
-  return (
-    <Card className="group overflow-hidden border-0 shadow-sm hover:shadow-lg transition-all duration-300">
-      <CardContent className="p-0">
-        {/* Image Section */}
-        <div className="relative aspect-square overflow-hidden bg-gray-100">
-          <img
-            src={product.image_url || "/api/placeholder/400/400"}
-            alt={product.name}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-            loading="lazy"
-          />
-          
-          {/* Wishlist Button */}
-          <Button
-            size="sm"
-            variant="ghost"
-            className={`absolute top-2 right-2 w-8 h-8 p-0 rounded-full bg-white/80 hover:bg-white ${
-              isWishlisted ? 'text-red-500' : 'text-gray-600 hover:text-red-500'
-            }`}
-            onClick={(e) => {
-              e.stopPropagation();
-              setIsWishlisted(!isWishlisted);
-            }}
-          >
-            <Heart className={`w-4 h-4 ${isWishlisted ? 'fill-current' : ''}`} />
-          </Button>
-
-          {/* Action Buttons Overlay */}
-          <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-            <div className="flex gap-2">
-              <Button
-                size="sm"
-                variant="secondary"
-                className="flex-1 bg-white text-black hover:bg-gray-100"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onCustomize(product);
-                }}
-              >
-                <Plus className="w-4 h-4 mr-1" />
-                কাস্টমাইজ
-              </Button>
-              <Button
-                size="sm"
-                className="flex-1"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onAddToCart(product);
-                }}
-              >
-                <ShoppingCart className="w-4 h-4 mr-1" />
-                অর্ডার
-              </Button>
-            </div>
-          </div>
-        </div>
-
-        {/* Product Info */}
-        <div className="p-4">
-          <h3 className="font-medium text-gray-900 mb-1 line-clamp-1">
-            {product.name}
-          </h3>
-          
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-lg font-bold text-orange-600">
-              ৳{formatPrice(Number(product.price))}
-            </span>
-            <div className="flex items-center gap-1">
-              <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-              <span className="text-sm text-gray-600">4.8</span>
-            </div>
-          </div>
-
-          <div className="flex items-center justify-between">
-            {product.stock > 0 ? (
-              <Badge variant="outline" className="text-green-600 border-green-200 text-xs">
-                স্টকে আছে
-              </Badge>
-            ) : (
-              <Badge variant="outline" className="text-red-600 border-red-200 text-xs">
-                স্টক শেষ
-              </Badge>
-            )}
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
-
 // Loading Skeleton
 function ProductSkeleton() {
   return (
-    <Card className="overflow-hidden">
-      <CardContent className="p-0">
-        <Skeleton className="aspect-square w-full" />
-        <div className="p-4 space-y-3">
-          <Skeleton className="h-4 w-3/4" />
-          <Skeleton className="h-3 w-1/2" />
-          <div className="flex justify-between items-center">
-            <Skeleton className="h-5 w-16" />
-            <Skeleton className="h-4 w-12" />
-          </div>
+    <div className="animate-pulse">
+      <div className="aspect-[4/5] bg-gray-300 rounded-lg mb-4"></div>
+      <div className="space-y-3">
+        <div className="h-4 bg-gray-300 rounded w-3/4"></div>
+        <div className="h-3 bg-gray-300 rounded w-1/2"></div>
+        <div className="flex justify-between items-center">
+          <div className="h-5 bg-gray-300 rounded w-16"></div>
+          <div className="h-4 bg-gray-300 rounded w-12"></div>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }
 
@@ -161,6 +60,7 @@ export default function ProductsPage() {
   const [sortOption, setSortOption] = useState("newest");
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isCustomizeModalOpen, setIsCustomizeModalOpen] = useState(false);
+  const [isProductModalOpen, setIsProductModalOpen] = useState(false);
   const [displayLimit, setDisplayLimit] = useState(20); // Start with 20 products
   const [cart, setCart] = useState<Array<{ product: Product; quantity: number; customization?: any }>>([]);
 
@@ -213,6 +113,12 @@ export default function ProductsPage() {
   // Products to display (with pagination)
   const displayedProducts = filteredProducts.slice(0, displayLimit);
   const hasMoreProducts = filteredProducts.length > displayLimit;
+
+  // Handle view product details
+  const handleViewProduct = (product: Product) => {
+    setSelectedProduct(product);
+    setIsProductModalOpen(true);
+  };
 
   // Handle customize product
   const handleCustomize = (product: Product) => {
@@ -388,9 +294,10 @@ export default function ProductsPage() {
           <>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {displayedProducts.map((product) => (
-                <HomepageStyleProductCard
+                <UnifiedProductCard
                   key={product.id}
                   product={product}
+                  onViewProduct={handleViewProduct}
                   onCustomize={handleCustomize}
                   onAddToCart={handleAddToCart}
                 />
@@ -422,6 +329,18 @@ export default function ProductsPage() {
           </>
         )}
       </div>
+
+      {/* Product Details Modal */}
+      <ProductModal
+        isOpen={isProductModalOpen}
+        onClose={() => {
+          setIsProductModalOpen(false);
+          setSelectedProduct(null);
+        }}
+        product={selectedProduct}
+        onAddToCart={handleAddToCart}
+        onCustomize={handleCustomize}
+      />
 
       {/* Customize Modal */}
       <CustomizeModal

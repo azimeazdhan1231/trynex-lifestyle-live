@@ -19,6 +19,7 @@ import { Link, useLocation } from "wouter";
 import { COMPANY_NAME, COMPANY_TAGLINE, WHATSAPP_NUMBER, createWhatsAppUrl, formatPrice } from "@/lib/constants";
 import { trackProductView, trackAddToCart } from "@/lib/analytics";
 import OptimizedProductCard from "@/components/OptimizedProductCard";
+import UnifiedProductCard from "@/components/unified-product-card";
 // Dynamic imports for better code splitting - components will be loaded via fileOptimization
 import { setupPerformanceMonitoring } from "@/utils/performanceMonitoring";
 import { preloadImages } from "@/utils/imageOptimization";
