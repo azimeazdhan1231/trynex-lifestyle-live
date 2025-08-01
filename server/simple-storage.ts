@@ -50,8 +50,7 @@ export class SimpleStorage {
         is_best_selling: products.is_best_selling,
         created_at: products.created_at
       }).from(products)
-        .orderBy(desc(products.is_featured), desc(products.is_latest), desc(products.created_at))
-        .limit(32); // Show all 32 products as requested
+        .orderBy(desc(products.is_featured), desc(products.is_latest), desc(products.created_at));
       
       return result;
     } catch (error) {
