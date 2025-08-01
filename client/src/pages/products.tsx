@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, Suspense } from "react";
+import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Search, Filter, Grid3X3, Star, Heart, ShoppingCart, Zap, Plus } from "lucide-react";
+import { Search, Filter, Grid3X3, Star, Heart, ShoppingCart, Plus, Eye } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { formatPrice } from "@/lib/constants";
 import Header from "@/components/header";
@@ -36,8 +36,8 @@ const SORT_OPTIONS = [
   { value: "name_asc", label: "নাম: A-Z" },
 ];
 
-// Product Card Component
-function ProductCard({ product, onCustomize, onAddToCart }: {
+// Homepage-style Product Card (exact same as homepage)
+function HomepageStyleProductCard({ product, onCustomize, onAddToCart }: {
   product: Product;
   onCustomize: (product: Product) => void;
   onAddToCart: (product: Product) => void;
@@ -45,7 +45,7 @@ function ProductCard({ product, onCustomize, onAddToCart }: {
   const [isWishlisted, setIsWishlisted] = useState(false);
 
   return (
-    <Card className="group hover:shadow-lg transition-all duration-300 overflow-hidden border-0 shadow-md">
+    <Card className="group overflow-hidden border-0 shadow-sm hover:shadow-lg transition-all duration-300">
       <CardContent className="p-0">
         {/* Image Section */}
         <div className="relative aspect-square overflow-hidden bg-gray-100">
@@ -56,19 +56,6 @@ function ProductCard({ product, onCustomize, onAddToCart }: {
             loading="lazy"
           />
           
-          {/* Badges */}
-          <div className="absolute top-2 left-2 flex flex-col gap-1">
-            {product.is_featured && (
-              <Badge className="bg-red-500 text-white text-xs px-2 py-1">ফিচার্ড</Badge>
-            )}
-            {product.is_latest && (
-              <Badge className="bg-green-500 text-white text-xs px-2 py-1">নতুন</Badge>
-            )}
-            {product.is_best_selling && (
-              <Badge className="bg-blue-500 text-white text-xs px-2 py-1">বেস্ট সেলার</Badge>
-            )}
-          </div>
-
           {/* Wishlist Button */}
           <Button
             size="sm"
@@ -84,12 +71,13 @@ function ProductCard({ product, onCustomize, onAddToCart }: {
             <Heart className={`w-4 h-4 ${isWishlisted ? 'fill-current' : ''}`} />
           </Button>
 
-          {/* Quick Actions Overlay */}
-          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100">
+          {/* Action Buttons Overlay */}
+          <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
             <div className="flex gap-2">
               <Button
                 size="sm"
-                className="bg-white text-black hover:bg-gray-100"
+                variant="secondary"
+                className="flex-1 bg-white text-black hover:bg-gray-100"
                 onClick={(e) => {
                   e.stopPropagation();
                   onCustomize(product);
@@ -100,7 +88,7 @@ function ProductCard({ product, onCustomize, onAddToCart }: {
               </Button>
               <Button
                 size="sm"
-                variant="default"
+                className="flex-1"
                 onClick={(e) => {
                   e.stopPropagation();
                   onAddToCart(product);
@@ -115,36 +103,30 @@ function ProductCard({ product, onCustomize, onAddToCart }: {
 
         {/* Product Info */}
         <div className="p-4">
-          <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2 min-h-[3rem]">
+          <h3 className="font-medium text-gray-900 mb-1 line-clamp-1">
             {product.name}
           </h3>
           
-          {product.description && (
-            <p className="text-sm text-gray-600 mb-3 line-clamp-2">
-              {product.description}
-            </p>
-          )}
-
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="text-lg font-bold text-primary">
-                ৳{formatPrice(Number(product.price))}
-              </span>
-              {product.stock > 0 ? (
-                <Badge variant="outline" className="text-green-600 border-green-200">
-                  স্টকে আছে
-                </Badge>
-              ) : (
-                <Badge variant="outline" className="text-red-600 border-red-200">
-                  স্টক শেষ
-                </Badge>
-              )}
-            </div>
-
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-lg font-bold text-orange-600">
+              ৳{formatPrice(Number(product.price))}
+            </span>
             <div className="flex items-center gap-1">
               <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
               <span className="text-sm text-gray-600">4.8</span>
             </div>
+          </div>
+
+          <div className="flex items-center justify-between">
+            {product.stock > 0 ? (
+              <Badge variant="outline" className="text-green-600 border-green-200 text-xs">
+                স্টকে আছে
+              </Badge>
+            ) : (
+              <Badge variant="outline" className="text-red-600 border-red-200 text-xs">
+                স্টক শেষ
+              </Badge>
+            )}
           </div>
         </div>
       </CardContent>
@@ -152,7 +134,7 @@ function ProductCard({ product, onCustomize, onAddToCart }: {
   );
 }
 
-// Loading Skeleton Component
+// Loading Skeleton
 function ProductSkeleton() {
   return (
     <Card className="overflow-hidden">
@@ -179,12 +161,14 @@ export default function ProductsPage() {
   const [sortOption, setSortOption] = useState("newest");
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isCustomizeModalOpen, setIsCustomizeModalOpen] = useState(false);
+  const [displayLimit, setDisplayLimit] = useState(20); // Start with 20 products
+  const [cart, setCart] = useState<Array<{ product: Product; quantity: number; customization?: any }>>([]);
 
-  // Fetch products with aggressive caching for instant loading
+  // Fetch products with ultra-fast caching
   const { data: products = [], isLoading, error } = useQuery<Product[]>({
     queryKey: ["/api/products"],
-    staleTime: Infinity, // Never refetch automatically
-    gcTime: Infinity, // Keep in cache forever
+    staleTime: Infinity,
+    gcTime: Infinity,
     refetchOnWindowFocus: false,
     refetchOnMount: false,
     refetchOnReconnect: false,
@@ -226,6 +210,10 @@ export default function ProductsPage() {
     return filtered;
   }, [products, searchTerm, selectedCategory, sortOption]);
 
+  // Products to display (with pagination)
+  const displayedProducts = filteredProducts.slice(0, displayLimit);
+  const hasMoreProducts = filteredProducts.length > displayLimit;
+
   // Handle customize product
   const handleCustomize = (product: Product) => {
     setSelectedProduct(product);
@@ -234,17 +222,54 @@ export default function ProductsPage() {
 
   // Handle add to cart
   const handleAddToCart = (product: Product) => {
+    if (product.stock === 0) {
+      toast({
+        title: "স্টক শেষ",
+        description: "এই পণ্যটি বর্তমানে স্টকে নেই",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setCart(prev => {
+      const existing = prev.find(item => item.product.id === product.id);
+      if (existing) {
+        return prev.map(item =>
+          item.product.id === product.id
+            ? { ...item, quantity: item.quantity + 1 }
+            : item
+        );
+      } else {
+        return [...prev, { product, quantity: 1 }];
+      }
+    });
+
     toast({
       title: "কার্টে যোগ করা হয়েছে",
       description: `${product.name} কার্টে যোগ করা হয়েছে`,
     });
   };
 
+  // Handle add to cart with customization
+  const handleAddToCartWithCustomization = async (product: Product, customization: any) => {
+    setCart(prev => [...prev, { product, quantity: customization.quantity || 1, customization }]);
+    
+    toast({
+      title: "কাস্টম অর্ডার যোগ করা হয়েছে",
+      description: `${product.name} কাস্টমাইজেশন সহ কার্টে যোগ করা হয়েছে`,
+    });
+  };
+
+  // Load more products
+  const handleLoadMore = () => {
+    setDisplayLimit(prev => prev + 20);
+  };
+
   // Show error if products failed to load
   if (error) {
     return (
       <div className="min-h-screen bg-gray-50">
-        <Header cartCount={0} onCartOpen={() => {}} />
+        <Header cartCount={cart.length} onCartOpen={() => {}} />
         <div className="container mx-auto px-4 py-16">
           <div className="text-center">
             <h2 className="text-2xl font-bold text-red-600 mb-4">পণ্য লোড করতে সমস্যা হয়েছে</h2>
@@ -260,7 +285,7 @@ export default function ProductsPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header cartCount={0} onCartOpen={() => {}} />
+      <Header cartCount={cart.length} onCartOpen={() => {}} />
       
       <div className="container mx-auto px-4 py-8">
         {/* Header Section */}
@@ -322,24 +347,24 @@ export default function ProductsPage() {
         {/* Results Summary */}
         <div className="flex items-center justify-between mb-6">
           <p className="text-gray-600">
-            <span className="font-semibold">{filteredProducts.length}</span> টি পণ্য পাওয়া গেছে
+            <span className="font-semibold">{displayedProducts.length}</span> টি পণ্য দেখানো হচ্ছে 
+            (মোট <span className="font-semibold">{filteredProducts.length}</span> টি পণ্য)
             {searchTerm && (
               <span className="ml-2">
                 "<strong>{searchTerm}</strong>" এর জন্য
               </span>
             )}
           </p>
-
-          {isLoading && (
-            <div className="flex items-center gap-2 text-blue-600">
-              <Zap className="w-4 h-4 animate-pulse" />
-              <span className="text-sm">লোড হচ্ছে...</span>
-            </div>
-          )}
         </div>
 
         {/* Products Grid */}
-        {filteredProducts.length === 0 && !isLoading ? (
+        {isLoading ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {Array.from({ length: 8 }).map((_, index) => (
+              <ProductSkeleton key={index} />
+            ))}
+          </div>
+        ) : filteredProducts.length === 0 ? (
           <div className="text-center py-16">
             <div className="bg-white rounded-lg p-8 shadow-sm max-w-md mx-auto">
               <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -360,45 +385,54 @@ export default function ProductsPage() {
             </div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {isLoading ? (
-              Array.from({ length: 8 }).map((_, index) => (
-                <ProductSkeleton key={index} />
-              ))
-            ) : (
-              filteredProducts.map((product) => (
-                <ProductCard
+          <>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {displayedProducts.map((product) => (
+                <HomepageStyleProductCard
                   key={product.id}
                   product={product}
                   onCustomize={handleCustomize}
                   onAddToCart={handleAddToCart}
                 />
-              ))
-            )}
-          </div>
-        )}
+              ))}
+            </div>
 
-        {/* Load More Button (if needed) */}
-        {filteredProducts.length > 0 && !isLoading && (
-          <div className="text-center mt-12">
-            <p className="text-gray-600 mb-4">
-              সব <strong>{filteredProducts.length}</strong> টি পণ্য দেখানো হয়েছে
-            </p>
-          </div>
+            {/* Load More Button */}
+            {hasMoreProducts && (
+              <div className="text-center mt-12">
+                <Button
+                  size="lg"
+                  variant="outline"
+                  onClick={handleLoadMore}
+                  className="px-8 py-3"
+                >
+                  আরও পণ্য দেখুন ({filteredProducts.length - displayLimit} টি বাকি)
+                </Button>
+              </div>
+            )}
+
+            {/* All products loaded message */}
+            {!hasMoreProducts && displayedProducts.length > 0 && (
+              <div className="text-center mt-12">
+                <p className="text-gray-600">
+                  সব <strong>{filteredProducts.length}</strong> টি পণ্য দেখানো হয়েছে
+                </p>
+              </div>
+            )}
+          </>
         )}
       </div>
 
       {/* Customize Modal */}
-      <Suspense fallback={<div>Loading...</div>}>
-        <CustomizeModal
-          isOpen={isCustomizeModalOpen}
-          onClose={() => {
-            setIsCustomizeModalOpen(false);
-            setSelectedProduct(null);
-          }}
-          product={selectedProduct}
-        />
-      </Suspense>
+      <CustomizeModal
+        isOpen={isCustomizeModalOpen}
+        onClose={() => {
+          setIsCustomizeModalOpen(false);
+          setSelectedProduct(null);
+        }}
+        product={selectedProduct}
+        onAddToCart={handleAddToCartWithCustomization}
+      />
     </div>
   );
 }
