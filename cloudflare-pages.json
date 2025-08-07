@@ -2,7 +2,7 @@
 {
   "production_branch": "main",
   "build": {
-    "command": "./build.sh",
+    "command": "npm install && npx vite build",
     "destination": "dist/public",
     "root_dir": ".",
     "environment_variables": {

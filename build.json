@@ -1,7 +1,7 @@
 
 {
   "name": "trynex-lifestyle",
-  "buildCommand": "./build.sh",
+  "buildCommand": "npm install && npx vite build",
   "buildOutputDirectory": "dist/public",
   "functionsDirectory": "functions",
   "nodeVersion": "20",
@@ -13,8 +13,7 @@
     }
   },
   "scripts": {
-    "build": "./build.sh",
-    "build:client": "vite build",
-    "build:functions": "esbuild server/index.ts --bundle --platform=node --format=esm --outfile=functions/api/[[path]].js --packages=external --define:process.env.NODE_ENV='\"production\"'"
+    "build": "npm install && npx vite build",
+    "build:client": "vite build"
   }
 }
