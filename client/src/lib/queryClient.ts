@@ -70,28 +70,31 @@ export const queryClient = new QueryClient({
   },
 });
 
-export async function apiRequest(method: string, path: string, body?: any): Promise<Response> {
-  // Use empty string for development (Vite proxy), current domain for production
-  const baseUrl = import.meta.env.DEV ? "" : window.location.origin;
-  const url = `${baseUrl}${path}`;
+export async function apiRequest(
+  method: "GET" | "POST" | "PUT" | "DELETE" | "PATCH",
+  url: string,
+  body?: any
+): Promise<Response> {
+  const token = localStorage.getItem("auth_token");
+  const adminToken = localStorage.getItem("admin_token");
+
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+  };
+
+  // Use admin token for admin endpoints, regular token for user endpoints
+  if (url.includes('/admin/') && adminToken) {
+    headers["Authorization"] = `Bearer ${adminToken}`;
+  } else if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
 
   const config: RequestInit = {
     method,
-    headers: {
-      "Content-Type": "application/json",
-    },
+    headers,
   };
 
-  // Add authorization header if user is authenticated
-  const token = localStorage.getItem("auth_token");
-  if (token) {
-    config.headers = {
-      ...config.headers,
-      'Authorization': `Bearer ${token}`,
-    };
-  }
-
-  if (body) {
+  if (body && method !== "GET") {
     config.body = JSON.stringify(body);
   }
 

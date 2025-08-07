@@ -23,8 +23,20 @@ export default function AdminLogin({ onLoginSuccess }: AdminLoginProps) {
   const loginMutation = useMutation({
     mutationFn: async (loginData: { email: string; password: string }) => {
       try {
-        const response = await apiRequest("POST", "/api/admin/login", loginData);
-        return await response.json();
+        const response = await fetch("/api/admin/login", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(loginData),
+        });
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        return data;
       } catch (error) {
         console.error("Admin login error:", error);
         throw error;
@@ -32,7 +44,11 @@ export default function AdminLogin({ onLoginSuccess }: AdminLoginProps) {
     },
     onSuccess: (data) => {
       console.log("Login response:", data);
-      if (data.success) {
+      if (data && data.success) {
+        // Store admin token in localStorage
+        if (data.token) {
+          localStorage.setItem('admin_token', data.token);
+        }
         toast({
           title: "লগইন সফল",
           description: "এডমিন প্যানেলে স্বাগতম",
@@ -41,7 +57,7 @@ export default function AdminLogin({ onLoginSuccess }: AdminLoginProps) {
       } else {
         toast({
           title: "লগইন ব্যর্থ",
-          description: data.message || "ভুল ইমেইল বা পাসওয়ার্ড",
+          description: data?.message || "ভুল ইমেইল বা পাসওয়ার্ড",
           variant: "destructive",
         });
       }

@@ -156,6 +156,35 @@ export function setupAuthRoutes(app: Express) {
     }
   });
 
+  // Admin token verification endpoint
+  app.get('/api/admin/verify', (req, res) => {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+
+    if (!token) {
+      return res.status(401).json({ success: false, message: 'No token provided' });
+    }
+
+    jwt.verify(token, JWT_SECRET, (err: any, decoded: any) => {
+      if (err) {
+        return res.status(403).json({ success: false, message: 'Invalid token' });
+      }
+
+      if (decoded.role !== 'admin') {
+        return res.status(403).json({ success: false, message: 'Not an admin' });
+      }
+
+      res.json({
+        success: true,
+        admin: {
+          id: decoded.id,
+          email: decoded.email,
+          role: decoded.role
+        }
+      });
+    });
+  });
+
   // Verify token middleware
   app.get('/api/auth/verify', (req, res) => {
     const authHeader = req.headers['authorization'];
