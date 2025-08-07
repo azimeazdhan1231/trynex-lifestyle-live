@@ -1,7 +1,7 @@
 import { QueryClient } from "@tanstack/react-query";
 
 const isDevelopment = import.meta.env.MODE === 'development';
-const API_BASE_URL = isDevelopment ? 'http://localhost:5173' : '';
+const API_BASE_URL = isDevelopment ? '' : '';
 
 export const queryClient = new QueryClient({
   defaultOptions: {
@@ -71,7 +71,7 @@ export const queryClient = new QueryClient({
 });
 
 export async function apiRequest(method: string, path: string, body?: any): Promise<Response> {
-  // Use current domain for production, empty string for development
+  // Use empty string for development (Vite proxy), current domain for production
   const baseUrl = import.meta.env.DEV ? "" : window.location.origin;
   const url = `${baseUrl}${path}`;
 
