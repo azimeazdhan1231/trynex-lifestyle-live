@@ -27,10 +27,12 @@ Create a `build.json` file in your project root with this content:
 ## 🗂️ Step 2: Verify Required Files (Already Done ✅)
 
 Your repository already has:
-- ✅ `functions/api/[[path]].js` - Cloudflare Functions backend
+- ✅ `functions/api/[[path]].js` - Cloudflare Functions backend (Supabase REST API)
 - ✅ `_redirects` - Routing configuration  
 - ✅ `wrangler.toml` - Cloudflare configuration
-- ✅ All frontend and backend code
+- ✅ `cloudflare-pages.json` - Complete deployment configuration
+- ✅ `build.sh` - Build script (if needed)
+- ✅ All frontend and backend code optimized and working
 
 ## 🔗 Step 3: GitHub Repository Setup
 
@@ -60,7 +62,7 @@ Your repository already has:
 ### 4.2 Configure Build Settings
 ```
 Framework preset: None
-Build command: ./build.sh
+Build command: npm install && npx vite build
 Build output directory: dist/public
 Root directory: (leave empty)
 Environment variables: (see below)
@@ -73,6 +75,9 @@ Add these in **Settings** → **Environment variables**:
 |---------------|-------|-------------|
 | `DATABASE_URL` | `postgresql://postgres.lxhhgdqfxmeohayceshb:Amiomito1Amiomito1@aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres` | Production |
 | `NODE_VERSION` | `20` | Production |
+| `SUPABASE_URL` | `https://lxhhgdqfxmeohayceshb.supabase.co` | Production |
+| `SUPABASE_ANON_KEY` | `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4aGhnZHFmeG1lb2hheWNlc2hiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM4OTk1OTAsImV4cCI6MjA2OTQ3NTU5MH0.gW9X6igqtpAQKutqb4aEEx0VovEZdMp4Gk_R8Glm9Bw` | Production |
+| `SUPABASE_SERVICE_KEY` | `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4aGhnZHFmeG1lb2hheWNlc2hiIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1Mzg5OTU5MCwiZXhwIjoyMDY5NDc1NTkwfQ.zsYuh0P2S97pLrvY6t1j-qw-j-R_-_5QQX7e423dDeU` | Production |
 
 ## ⚡ Step 5: Deploy!
 
@@ -129,20 +134,28 @@ Built-in monitoring:
 
 ## 🚨 Troubleshooting
 
-### Build Fails?
-- Check GitHub repository has all files
+### Common Issues
+
+**Build Fails?**
+- Ensure build command is: `npm install && npx vite build`
 - Verify Node.js version is 20
-- Ensure `functions/api/[[path]].js` exists
+- Check all files are uploaded to GitHub
 
-### Database Connection Issues?
-- Verify `DATABASE_URL` is set correctly
+**Database Connection Issues?**
+- Verify `DATABASE_URL` is set correctly in Cloudflare environment variables
 - Check Supabase project is active
-- Test connection from dashboard
+- Ensure all Supabase keys are set properly
 
-### API Routes Not Working?
-- Confirm `_redirects` file is in root
-- Check environment variables are set
-- Review Functions logs in Cloudflare
+**API Routes Not Working?**
+- Confirm `functions/api/[[path]].js` file exists in repository
+- Check environment variables are set in Cloudflare Pages
+- Review Functions logs in Cloudflare dashboard
+- Verify `_redirects` file is in repository root
+
+**Frontend Loads but No Data?**
+- Check browser console for API errors
+- Verify Supabase API keys are working
+- Test database connection from Supabase dashboard
 
 ## 🎉 What You Get
 

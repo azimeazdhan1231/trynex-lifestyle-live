@@ -118,26 +118,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Other endpoints remain the same but with optimizations
   app.post('/api/orders', async (req, res) => {
     try {
+      // Generate a proper tracking ID 
+      const trackingId = 'TRX' + Date.now() + Math.floor(Math.random() * 1000);
+      
       const orderData = {
         ...req.body,
-        tracking_id: 'TRK' + Date.now() + Math.random().toString(36).substr(2, 4).toUpperCase(),
-        status: 'pending',
-        created_at: new Date(),
-        updated_at: new Date()
+        tracking_id: trackingId,
+        status: 'pending'
       };
       
-      if (orderData.items) {
-        orderData.items = typeof orderData.items === 'string' 
-          ? orderData.items 
-          : JSON.stringify(orderData.items);
+      // Ensure items are properly stringified
+      if (orderData.items && typeof orderData.items !== 'string') {
+        orderData.items = JSON.stringify(orderData.items);
       }
       
-      if (orderData.payment_info) {
-        orderData.payment_info = typeof orderData.payment_info === 'string'
-          ? orderData.payment_info
-          : JSON.stringify(orderData.payment_info);
+      if (orderData.payment_info && typeof orderData.payment_info !== 'string') {
+        orderData.payment_info = JSON.stringify(orderData.payment_info);
       }
       
+      console.log('Creating order with tracking ID:', trackingId);
       const order = await storage.createOrder(orderData);
       
       res.status(201).json({
@@ -148,7 +147,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error) {
       console.error('❌ Order creation error:', error);
-      res.status(500).json({ message: 'অর্ডার তৈরি করতে সমস্যা হয়েছে' });
+      res.status(500).json({ 
+        success: false,
+        message: 'অর্ডার তৈরি করতে সমস্যা হয়েছে' 
+      });
     }
   });
 

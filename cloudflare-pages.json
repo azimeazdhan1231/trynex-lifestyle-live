@@ -1,0 +1,18 @@
+{
+  "name": "trynex-lifestyle",
+  "production_branch": "main",
+  "build": {
+    "command": "npm install && npx vite build",
+    "destination": "dist/public",
+    "environment_variables": {
+      "NODE_VERSION": "20",
+      "DATABASE_URL": "$DATABASE_URL",
+      "SUPABASE_URL": "https://lxhhgdqfxmeohayceshb.supabase.co",
+      "SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4aGhnZHFmeG1lb2hheWNlc2hiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM4OTk1OTAsImV4cCI6MjA2OTQ3NTU5MH0.gW9X6igqtpAQKutqb4aEEx0VovEZdMp4Gk_R8Glm9Bw",
+      "SUPABASE_SERVICE_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4aGhnZHFmeG1lb2hheWNlc2hiIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1Mzg5OTU5MCwiZXhwIjoyMDY5NDc1NTkwfQ.zsYuh0P2S97pLrvY6t1j-qw-j-R_-_5QQX7e423dDeU"
+    }
+  },
+  "functions": {
+    "directory": "functions"
+  }
+}
