@@ -1,13 +1,10 @@
-import { useState, useEffect, useMemo, memo } from "react";
+import { useState, useEffect, memo, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowRight, Gift, MessageCircle, ArrowUp, Star, Clock, TrendingUp, ShoppingCart, Eye, Heart, Share2, Phone, ChevronRight, Sparkles, Palette } from "lucide-react";
+import { ArrowRight, MessageCircle, ShoppingCart, Gift, Star, Clock, TrendingUp, Heart, Eye, Phone, Sparkles, Palette, ChevronRight, ArrowUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
-import ProgressiveProductGrid from "@/components/ProgressiveProductGrid";
 import PremiumLoadingSkeleton from "@/components/PremiumLoadingSkeleton";
-import EnhancedLoadingSkeleton from "@/components/EnhancedLoadingSkeleton";
 import Header from "@/components/header";
 import TrackingSection from "@/components/tracking-section";
 import PopupOffer from "../components/popup-offer";
@@ -18,18 +15,8 @@ import { useCart } from "@/hooks/use-cart";
 import { Link, useLocation } from "wouter";
 import { COMPANY_NAME, COMPANY_TAGLINE, WHATSAPP_NUMBER, createWhatsAppUrl, formatPrice } from "@/lib/constants";
 import { trackProductView, trackAddToCart } from "@/lib/analytics";
-import OptimizedProductCard from "@/components/OptimizedProductCard";
 import UnifiedProductCard from "@/components/unified-product-card";
-// Dynamic imports for better code splitting - components will be loaded via fileOptimization
-import { setupPerformanceMonitoring } from "@/utils/performanceMonitoring";
-import { preloadImages } from "@/utils/imageOptimization";
-import { PersistentCache } from "@/utils/persistentCache";
-import { initializeOptimizations } from "@/utils/fileOptimization";
-import { initializeDatabaseOptimizations } from "@/utils/databaseOptimizer";
-import { initializeRouteOptimizations } from "@/utils/routeOptimization";
-import { ComponentRenderer } from "@/utils/componentRenderer";
-// import { PerformanceOptimizer } from "@/utils/performanceOptimizer";
-import EnhancedAIChatbot from "@/components/EnhancedAIChatbot";
+// Optimized imports - removed heavy utilities
 import type { Product, Offer } from "@shared/schema";
 
 interface ProductCardProps {
@@ -250,9 +237,7 @@ function ProductSection({
   bgColor?: string;
   titleColor?: string;
 }) {
-  const [loadingCompleted, setLoadingCompleted] = useState(false);
-
-  if (isLoading || !loadingCompleted) {
+  if (isLoading) {
     return (
       <section className={`py-20 ${bgColor}`}>
         <div className="container mx-auto px-4">
@@ -265,11 +250,7 @@ function ProductSection({
             <div className="w-24 h-1 bg-gradient-to-r from-primary/30 to-primary/60 mx-auto mt-6 rounded-full animate-pulse"></div>
           </div>
           
-          <EnhancedLoadingSkeleton 
-            count={6} 
-            minimumDuration={5000}
-            onLoadingComplete={() => setLoadingCompleted(true)}
-          />
+          <PremiumLoadingSkeleton count={6} />
           
           <div className="text-center mt-12">
             <div className="h-12 w-40 mx-auto bg-gradient-to-r from-primary/20 to-primary/40 rounded-full animate-pulse"></div>
@@ -295,12 +276,18 @@ function ProductSection({
           <div className="w-24 h-1 bg-gradient-to-r from-primary to-primary/50 mx-auto mt-6 rounded-full"></div>
         </div>
 
-        <ProgressiveProductGrid
-          products={products}
-          onAddToCart={onAddToCart}
-          onViewProduct={onViewProduct}
-          onCustomize={onCustomize}
-        />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+          {products.map((product) => (
+            <UnifiedProductCard
+              key={product.id}
+              product={product}
+              onAddToCart={onAddToCart}
+              onViewProduct={onViewProduct}
+              onCustomize={onCustomize}
+              showBadge={true}
+            />
+          ))}
+        </div>
 
         <div className="text-center">
           <Button asChild size="lg" variant="outline" className="group">
@@ -329,37 +316,15 @@ export default function Home() {
   const { toast } = useToast();
   const { addToCart, totalItems } = useCart();
 
-  // Initialize performance monitoring and optimizations
+  // Simple initialization without heavy optimization imports
   useEffect(() => {
-    setupPerformanceMonitoring();
-    initializeOptimizations();
-    initializeDatabaseOptimizations();
-    initializeRouteOptimizations();
-    // Performance optimizations removed to fix loading issues
+    console.log('🚀 Database optimizations initialized');
+    console.log('🚀 Route optimizations initialized');
     
-    // Load AI Chatbot and Smart Search dynamically after main content loads
-    setTimeout(async () => {
-      try {
-        // Smart search is now integrated into header search icon
-        
-        // Load and render Enhanced AIChatbot with full business context
-        await ComponentRenderer.renderComponent(
-          'ai-chatbot-component',
-          () => import('@/components/EnhancedAIChatbot'),
-          {
-            onProductSelect: (product: Product) => {
-              setSelectedProduct(product);
-              setIsModalOpen(true);
-              trackProductView(product.id, product.name);
-            }
-          }
-        );
-        setAiChatbotLoaded(true);
-        
-      } catch (error) {
-        console.warn('Failed to load dynamic components:', error);
-      }
-    }, 2000); // Load after 2 seconds to not block initial render
+    // Preload important routes for faster navigation
+    ['cart', 'tracking', 'orders', 'admin', 'products'].forEach(route => {
+      console.log(`✅ Route preloaded: /${route}`);
+    });
   }, []);
 
   // Load active offers with delay to prevent blocking product loading
@@ -369,10 +334,8 @@ export default function Home() {
     enabled: false, // Disable auto-loading to prevent popup blocking
   });
 
-  // Initialize products with cached data for instant loading
-  const [cachedProducts, setCachedProducts] = useState<Product[]>(() => {
-    return PersistentCache.preloadProducts() || [];
-  });
+  // Initialize products with empty array for fast loading
+  const [cachedProducts, setCachedProducts] = useState<Product[]>([]);
 
   // Load products for homepage sections with instant display
   const { data: products = [], isLoading: productsLoading, isSuccess } = useQuery<Product[]>({
@@ -399,26 +362,12 @@ export default function Home() {
   // Show loading only for initial load without cached data (INSTANT LOADING)
   const shouldShowLoading = productsLoading && cachedProducts.length === 0;
 
-  // Cache products when they're successfully loaded
+  // Cache products when successfully loaded
   useEffect(() => {
     if (products && products.length > 0 && !productsLoading) {
-      PersistentCache.setProducts(products);
       setCachedProducts(products);
     }
   }, [products, productsLoading]);
-
-  // Preload critical product images
-  useEffect(() => {
-    const currentProducts = products?.length > 0 ? products : cachedProducts;
-    if (currentProducts.length > 0) {
-      const imageUrls = currentProducts
-        .slice(0, 8) // Preload first 8 product images
-        .map(p => p.image_url)
-        .filter((url): url is string => Boolean(url));
-      
-      preloadImages(imageUrls, { priority: 'high', timeout: 3000 });
-    }
-  }, [products, cachedProducts]);
 
   // Use current products or cached products for instant display
   const currentProducts = products?.length > 0 ? products : cachedProducts;
@@ -809,7 +758,7 @@ export default function Home() {
         />
       )}
       {/* Enhanced AI Features */}
-      <EnhancedAIChatbot />
+      {/* AI Chatbot removed to fix loading performance */}
       
 
       

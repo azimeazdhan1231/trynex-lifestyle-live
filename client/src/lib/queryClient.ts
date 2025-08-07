@@ -16,7 +16,7 @@ export const queryClient = new QueryClient({
 
         // Add timeout for ultra-fast performance
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 5000); // 5s timeout (reduced for faster failure detection)
+        const timeoutId = setTimeout(() => controller.abort(), 2000); // 2s timeout (much faster)
 
         try {
           const headers: Record<string, string> = {
@@ -52,10 +52,10 @@ export const queryClient = new QueryClient({
           throw error;
         }
       },
-      retry: 1, // Only retry once for faster failures
-      retryDelay: 1000, // Quick retry
-      staleTime: 1000 * 60 * 8, // 8 minutes - data considered fresh (increased for better caching)
-      gcTime: 1000 * 60 * 25, // 25 minutes - keep in cache longer
+      retry: 0, // No retries for fastest loading
+      retryDelay: 500, // Faster retry
+      staleTime: 1000 * 60 * 2, // 2 minutes - faster refresh
+      gcTime: 1000 * 60 * 5, // 5 minutes - less memory usage
       refetchOnWindowFocus: false,
       refetchOnReconnect: false,
       networkMode: 'online', // Only run when online
