@@ -386,16 +386,22 @@ export default function Home() {
 
   // Show products immediately when loaded - no artificial delays
 
-  // Remove artificial loading delay - show products as soon as they load
+  // Show premium loading animations during product fetching
   useEffect(() => {
-    if (isSuccess && products.length > 0) {
-      setShowLoadingSkeleton(false);
-      setProductsReady(true);
+    if (productsLoading) {
+      setShowLoadingSkeleton(true);
+      setProductsReady(false);
+    } else if (isSuccess && products.length > 0) {
+      // Add slight delay to show premium loading animations
+      setTimeout(() => {
+        setShowLoadingSkeleton(false);
+        setProductsReady(true);
+      }, 1200); // Show loading for 1.2 seconds to display premium animations
     }
-  }, [isSuccess, products.length]);
+  }, [productsLoading, isSuccess, products.length]);
 
-  // Show loading only for initial load without cached data (INSTANT LOADING)
-  const shouldShowLoading = productsLoading && cachedProducts.length === 0;
+  // Always show loading when products are being fetched for premium UX
+  const shouldShowLoading = showLoadingSkeleton;
 
   // Cache products when successfully loaded
   useEffect(() => {

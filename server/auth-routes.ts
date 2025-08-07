@@ -103,6 +103,59 @@ export function setupAuthRoutes(app: Express) {
     }
   });
 
+  // Admin login endpoint
+  app.post('/api/admin/login', async (req, res) => {
+    try {
+      const { email, password } = req.body;
+
+      if (!email || !password) {
+        return res.status(400).json({ 
+          success: false, 
+          message: 'ইমেইল এবং পাসওয়ার্ড দিন' 
+        });
+      }
+
+      // Check admin credentials - hardcoded for now
+      const ADMIN_EMAIL = "admin@trynex.com";
+      const ADMIN_PASSWORD = "admin123";
+
+      if (email !== ADMIN_EMAIL || password !== ADMIN_PASSWORD) {
+        return res.status(401).json({ 
+          success: false, 
+          message: 'ভুল ইমেইল বা পাসওয়ার্ড' 
+        });
+      }
+
+      // Generate admin JWT token
+      const token = jwt.sign(
+        { 
+          id: 'admin', 
+          email: ADMIN_EMAIL, 
+          role: 'admin' 
+        }, 
+        JWT_SECRET, 
+        { expiresIn: '24h' }
+      );
+
+      res.json({
+        success: true,
+        message: 'এডমিন লগইন সফল',
+        token,
+        admin: {
+          id: 'admin',
+          email: ADMIN_EMAIL,
+          role: 'admin'
+        }
+      });
+    } catch (error) {
+      console.error('Admin login error:', error);
+      res.status(500).json({ 
+        success: false, 
+        message: 'সার্ভার এরর' 
+      });
+    }
+  });
+
   // Verify token middleware
   app.get('/api/auth/verify', (req, res) => {
     const authHeader = req.headers['authorization'];
