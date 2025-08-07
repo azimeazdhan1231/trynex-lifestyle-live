@@ -239,23 +239,47 @@ function ProductSection({
 }) {
   if (isLoading) {
     return (
-      <section className={`py-20 ${bgColor}`}>
-        <div className="container mx-auto px-4">
+      <section className={`py-20 ${bgColor} relative overflow-hidden`}>
+        {/* Premium Background Pattern */}
+        <div className="absolute inset-0 opacity-5">
+          <div className="absolute inset-0" style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23059669' fill-opacity='0.1'%3E%3Ccircle cx='30' cy='30' r='4'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
+          }} />
+        </div>
+        
+        <div className="container mx-auto px-4 relative z-10">
+          {/* Premium Loading Header */}
           <div className="text-center mb-16">
-            <div className="flex items-center justify-center space-x-3 mb-4">
-              <div className="w-10 h-10 bg-gradient-to-r from-primary/20 to-primary/40 rounded-full animate-pulse" />
-              <div className="h-10 w-48 bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 rounded animate-shimmer"></div>
+            <div className="flex items-center justify-center space-x-4 mb-6">
+              <div className="w-12 h-12 bg-gradient-to-r from-primary/30 via-primary/50 to-primary/30 rounded-full animate-premium-pulse flex items-center justify-center">
+                <div className="w-6 h-6 bg-white rounded-full animate-float" />
+              </div>
+              <div className="space-y-2">
+                <div className="h-8 w-56 bg-gradient-to-r from-gray-200 via-white to-gray-200 rounded-lg animate-shimmer-wave shadow-sm" />
+                <div className="h-4 w-40 bg-gradient-to-r from-gray-100 via-gray-50 to-gray-100 rounded animate-shimmer-wave" style={{ animationDelay: '0.5s' }} />
+              </div>
             </div>
-            <div className="h-6 w-96 mx-auto bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 rounded animate-shimmer"></div>
-            <div className="w-24 h-1 bg-gradient-to-r from-primary/30 to-primary/60 mx-auto mt-6 rounded-full animate-pulse"></div>
+            <div className="space-y-3">
+              <div className="h-6 w-96 max-w-full mx-auto bg-gradient-to-r from-gray-200 via-white to-gray-200 rounded-md animate-shimmer-wave shadow-sm" style={{ animationDelay: '0.8s' }} />
+              <div className="h-4 w-80 max-w-full mx-auto bg-gradient-to-r from-gray-100 via-gray-50 to-gray-100 rounded animate-shimmer-wave" style={{ animationDelay: '1.2s' }} />
+            </div>
+            <div className="w-32 h-1 bg-gradient-to-r from-primary/40 via-primary/60 to-primary/40 mx-auto mt-8 rounded-full animate-premium-pulse" />
           </div>
 
-          <PremiumLoadingSkeleton count={6} />
+          {/* Premium Product Grid Loading */}
+          <PremiumLoadingSkeleton count={8} />
 
-          <div className="text-center mt-12">
-            <div className="h-12 w-40 mx-auto bg-gradient-to-r from-primary/20 to-primary/40 rounded-full animate-pulse"></div>
+          {/* Premium Loading Footer */}
+          <div className="text-center mt-16">
+            <div className="inline-flex items-center space-x-3 bg-gradient-to-r from-gray-100 via-white to-gray-100 px-8 py-4 rounded-full shadow-lg animate-shimmer-wave">
+              <div className="w-5 h-5 bg-gradient-to-r from-primary/40 to-primary/60 rounded-full animate-pulse" />
+              <div className="h-4 w-32 bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 rounded animate-shimmer" />
+            </div>
           </div>
         </div>
+        
+        {/* Premium Loading Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-br from-transparent via-white/20 to-transparent pointer-events-none animate-shine" />
       </section>
     );
   }
@@ -276,24 +300,37 @@ function ProductSection({
           <div className="w-24 h-1 bg-gradient-to-r from-primary to-primary/50 mx-auto mt-6 rounded-full"></div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-          {products.map((product) => (
-            <UnifiedProductCard
-              key={product.id}
-              product={product}
-              onAddToCart={onAddToCart}
-              onViewProduct={onViewProduct}
-              onCustomize={onCustomize}
-              showBadge={true}
-            />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 sm:gap-8">
+          {products.map((product, index) => (
+            <div 
+              key={product.id} 
+              className="transform transition-all duration-500"
+              style={{
+                animationDelay: `${index * 100}ms`,
+                animation: 'fadeInUp 0.8s ease-out forwards'
+              }}
+            >
+              <UnifiedProductCard
+                product={product}
+                onAddToCart={onAddToCart}
+                onViewProduct={onViewProduct}
+                onCustomize={onCustomize}
+                showBadge={true}
+              />
+            </div>
           ))}
         </div>
 
-        <div className="text-center">
-          <Button asChild size="lg" variant="outline" className="group">
+        <div className="text-center mt-12">
+          <Button 
+            asChild 
+            size="lg" 
+            variant="outline" 
+            className="group bg-white hover:bg-primary hover:text-white border-2 border-primary/20 hover:border-primary shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 px-8 py-4"
+          >
             <Link href="/products">
-              সব পণ্য দেখুন
-              <ChevronRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
+              <span className="font-medium text-lg">সব পণ্য দেখুন</span>
+              <ChevronRight className="w-5 h-5 ml-3 group-hover:translate-x-1 transition-transform duration-300" />
             </Link>
           </Button>
         </div>
@@ -475,62 +512,78 @@ export default function Home() {
 
 
 
-      {/* Hero Section */}
+      {/* Premium Hero Section */}
       <section 
-        className="relative bg-gradient-to-br from-primary via-primary/90 to-emerald-700 text-white py-16 sm:py-20 lg:py-24 overflow-hidden"
+        className="relative bg-gradient-to-br from-primary via-primary/95 to-emerald-700 text-white py-16 sm:py-20 lg:py-24 overflow-hidden"
         style={{ marginTop: "56px" }}
       >
-        {/* Background Pattern */}
-        <div className="absolute inset-0 opacity-10">
+        {/* Enhanced Background Pattern */}
+        <div className="absolute inset-0 opacity-20">
           <div className="absolute inset-0" style={{
-            backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.1'%3E%3Ccircle cx='30' cy='30' r='4'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
-          }}></div>
+            backgroundImage: `url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.1'%3E%3Ccircle cx='20' cy='20' r='3'/%3E%3Ccircle cx='80' cy='80' r='2'/%3E%3Ccircle cx='50' cy='10' r='1.5'/%3E%3Ccircle cx='10' cy='70' r='2.5'/%3E%3Ccircle cx='90' cy='30' r='1'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
+          }} />
         </div>
+        
+        {/* Premium Gradient Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-r from-primary/20 via-transparent to-emerald-600/20 animate-shimmer-wave" style={{ animationDuration: '8s' }} />
 
         <div className="container mx-auto px-3 sm:px-4 text-center relative z-10">
           <div className="max-w-4xl mx-auto">
-            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold mb-6 sm:mb-8 leading-tight">
-              বিশেষ গিফট কালেকশন
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold mb-6 sm:mb-8 leading-tight animate-fade-in-up">
+              <span className="bg-clip-text text-transparent bg-gradient-to-r from-white via-emerald-100 to-white animate-shimmer-wave" style={{ animationDuration: '4s' }}>
+                বিশেষ গিফট কালেকশন
+              </span>
             </h1>
-            <p className="text-lg sm:text-xl md:text-2xl lg:text-3xl mb-8 sm:mb-10 lg:mb-12 text-emerald-100 leading-relaxed px-2">
-              আপনার প্রিয়জনের জন্য সেরা উপহার এবং লাইফস্টাইল পণ্য
+            <p className="text-lg sm:text-xl md:text-2xl lg:text-3xl mb-8 sm:mb-10 lg:mb-12 text-emerald-100 leading-relaxed px-2 animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
+              <span className="drop-shadow-lg">আপনার প্রিয়জনের জন্য সেরা উপহার এবং লাইফস্টাইল পণ্য</span>
             </p>
 
-            <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center items-center px-2">
+            <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center items-center px-2 animate-fade-in-up" style={{ animationDelay: '0.6s' }}>
               <Button 
                 onClick={scrollToProducts}
                 size="lg"
-                className="bg-white text-primary hover:bg-gray-100 text-lg sm:text-xl px-6 sm:px-8 lg:px-10 py-4 sm:py-5 lg:py-6 rounded-full shadow-xl transform hover:scale-105 transition-all duration-300 w-full sm:w-auto"
+                className="bg-white text-primary hover:bg-gray-50 text-lg sm:text-xl px-8 sm:px-10 lg:px-12 py-4 sm:py-5 lg:py-6 rounded-full shadow-2xl transform hover:scale-110 transition-all duration-500 w-full sm:w-auto font-bold relative overflow-hidden group"
               >
-                এখনই কিনুন 
-                <ArrowRight className="ml-2 sm:ml-3 w-5 h-5 sm:w-6 sm:h-6" />
+                <span className="relative z-10 flex items-center">
+                  এখনই কিনুন 
+                  <ArrowRight className="ml-3 w-5 h-5 sm:w-6 sm:h-6 group-hover:translate-x-1 transition-transform duration-300" />
+                </span>
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
               </Button>
 
               <Button 
                 asChild
                 size="lg"
                 variant="outline"
-                className="border-white text-white hover:bg-white hover:text-primary text-lg sm:text-xl px-6 sm:px-8 lg:px-10 py-4 sm:py-5 lg:py-6 rounded-full shadow-xl transform hover:scale-105 transition-all duration-300 w-full sm:w-auto"
+                className="border-2 border-white/80 text-white hover:bg-white hover:text-primary text-lg sm:text-xl px-8 sm:px-10 lg:px-12 py-4 sm:py-5 lg:py-6 rounded-full shadow-2xl transform hover:scale-110 transition-all duration-500 w-full sm:w-auto font-bold backdrop-blur-sm bg-white/10 relative overflow-hidden group"
               >
                 <a
                   href={createWhatsAppUrl("আসসালামু আলাইকুম। আমি Trynex Lifestyle সম্পর্কে জানতে চাই।")}
                   target="_blank"
                   rel="noopener noreferrer"
+                  className="flex items-center relative z-10"
                 >
-                  <MessageCircle className="mr-2 sm:mr-3 w-5 h-5 sm:w-6 sm:h-6" />
+                  <MessageCircle className="mr-3 w-5 h-5 sm:w-6 sm:h-6 group-hover:rotate-12 transition-transform duration-300" />
                   হোয়াটসঅ্যাপে যোগাযোগ
                 </a>
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
               </Button>
             </div>
           </div>
         </div>
 
-        {/* Floating Elements */}
-        <div className="absolute top-10 sm:top-20 left-4 sm:left-10 animate-bounce">
-          <Gift className="w-8 h-8 sm:w-12 sm:h-12 text-white/30" />
+        {/* Premium Floating Elements */}
+        <div className="absolute top-10 sm:top-20 left-4 sm:left-10 animate-float">
+          <Gift className="w-8 h-8 sm:w-12 sm:h-12 text-white/40 drop-shadow-lg" />
         </div>
-        <div className="absolute bottom-10 sm:bottom-20 right-4 sm:right-10 animate-bounce delay-700">
-          <Star className="w-10 h-10 sm:w-16 sm:h-16 text-white/20" />
+        <div className="absolute bottom-10 sm:bottom-20 right-4 sm:right-10 animate-float" style={{ animationDelay: '1s' }}>
+          <Star className="w-10 h-10 sm:w-16 sm:h-16 text-white/30 drop-shadow-lg" />
+        </div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 animate-float" style={{ animationDelay: '2s' }}>
+          <div className="w-2 h-2 bg-white/20 rounded-full" />
+        </div>
+        <div className="absolute top-1/4 right-1/4 animate-float" style={{ animationDelay: '1.5s' }}>
+          <div className="w-1 h-1 bg-emerald-200/40 rounded-full" />
         </div>
       </section>
 
