@@ -5,12 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
-import { Upload, X, ShoppingCart, MessageCircle, Palette, Type, Image as ImageIcon, Package } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { formatPrice, createWhatsAppUrl } from "@/lib/constants";
-import DirectOrderModal from "@/components/direct-order-modal";
+import { ShoppingCart, MessageCircle, Upload, X } from "lucide-react";
 import type { Product } from "@shared/schema";
 
 interface CustomizeModalProps {
@@ -18,15 +14,24 @@ interface CustomizeModalProps {
   isOpen: boolean;
   onClose: () => void;
   onAddToCart: (product: Product, customization: any) => Promise<void>;
-  productVariant?: string; // For handling multiple product variants in same page
+  productVariant?: string;
 }
 
 interface ProductVariant {
   id: string;
   name: string;
-  image?: string;
   basePrice: number;
 }
+
+const formatPrice = (price: number): string => {
+  return `৳${price.toFixed(0)}`;
+};
+
+const createWhatsAppUrl = (message: string): string => {
+  const phoneNumber = "8801700000000"; // Replace with actual WhatsApp number
+  const encodedMessage = encodeURIComponent(message);
+  return `https://wa.me/${phoneNumber}?text=${encodedMessage}`;
+};
 
 const CUSTOMIZATION_OPTIONS = {
   "T-Shirts": {
@@ -61,7 +66,8 @@ const convertFileToBase64 = (file: File): Promise<string> => {
   });
 };
 
-export default function CustomizeModal({ product, isOpen, onClose, onAddToCart, productVariant }: CustomizeModalProps) {
+export default function CustomizeModalFixed({ product, isOpen, onClose, onAddToCart, productVariant }: CustomizeModalProps) {
+  // ALL HOOKS MUST BE CALLED AT THE TOP LEVEL BEFORE ANY CONDITIONAL RETURNS
   const [customization, setCustomization] = useState({
     size: "",
     color: "",
@@ -78,7 +84,10 @@ export default function CustomizeModal({ product, isOpen, onClose, onAddToCart, 
 
   const { toast } = useToast();
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [selectedVariant, setSelectedVariant] = useState<string>("");
+  const [showDirectOrder, setShowDirectOrder] = useState(false);
 
+  // Early return after ALL hooks are called
   if (!product) return null;
 
   const getProductType = (productName: string): keyof typeof CUSTOMIZATION_OPTIONS => {
@@ -95,38 +104,6 @@ export default function CustomizeModal({ product, isOpen, onClose, onAddToCart, 
   const productType = getProductType(currentProductName);
   const options = CUSTOMIZATION_OPTIONS[productType];
 
-  // Detect if there are multiple product variants (from name or description)
-  const detectProductVariants = (product: Product): ProductVariant[] => {
-    const variants: ProductVariant[] = [];
-    const description = product.description || "";
-
-    // If product description mentions multiple items
-    if (description.includes("2") && (description.includes("product") || description.includes("item") || description.includes("পণ্য"))) {
-      // Create variants based on the product type
-      if (productType === "T-Shirts") {
-        variants.push(
-          { id: "variant1", name: `${product.name} - Design 1`, basePrice: Number(product.price) },
-          { id: "variant2", name: `${product.name} - Design 2`, basePrice: Number(product.price) }
-        );
-      } else if (productType === "Mugs") {
-        variants.push(
-          { id: "variant1", name: `${product.name} - Front Design`, basePrice: Number(product.price) },
-          { id: "variant2", name: `${product.name} - Back Design`, basePrice: Number(product.price) }
-        );
-      } else {
-        variants.push(
-          { id: "variant1", name: `${product.name} - Option 1`, basePrice: Number(product.price) },
-          { id: "variant2", name: `${product.name} - Option 2`, basePrice: Number(product.price) }
-        );
-      }
-    }
-
-    return variants;
-  };
-
-  const productVariants = detectProductVariants(product);
-  const [selectedVariant, setSelectedVariant] = useState<string>(productVariants.length > 0 ? productVariants[0].id : "");
-
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -139,6 +116,13 @@ export default function CustomizeModal({ product, isOpen, onClose, onAddToCart, 
         return;
       }
       setCustomization(prev => ({ ...prev, customImage: file }));
+      
+      // Create image preview
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setImagePreview(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
     }
   };
 
@@ -172,7 +156,6 @@ export default function CustomizeModal({ product, isOpen, onClose, onAddToCart, 
       }
     }
 
-    // Clean up customization data - remove empty values
     const customizationData = {
       size: customization.size,
       color: customization.color,
@@ -187,14 +170,6 @@ export default function CustomizeModal({ product, isOpen, onClose, onAddToCart, 
       additionalRequests: customization.additionalRequests?.trim() || ""
     };
 
-    // Remove empty fields to avoid confusion
-    Object.keys(customizationData).forEach(key => {
-      const value = customizationData[key as keyof typeof customizationData];
-      if (value === "" || value === null || value === undefined) {
-        delete customizationData[key as keyof typeof customizationData];
-      }
-    });
-
     console.log('Sending customization data:', customizationData);
 
     await onAddToCart(product, customizationData);
@@ -203,22 +178,6 @@ export default function CustomizeModal({ product, isOpen, onClose, onAddToCart, 
       description: `${product.name} আপনার পছন্দমতো কাস্টমাইজ করে কার্টে যোগ করা হয়েছে`,
     });
     onClose();
-  };
-
-  const [showDirectOrder, setShowDirectOrder] = useState(false);
-
-  const handleDirectBuyNow = async () => {
-    if (!customization.size || !customization.color) {
-      toast({
-        title: "তথ্য অসম্পূর্ণ",
-        description: "দয়া করে সাইজ এবং রং নির্বাচন করুন",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    // Open direct order modal
-    setShowDirectOrder(true);
   };
 
   const handleWhatsAppOrder = () => {
@@ -239,367 +198,215 @@ export default function CustomizeModal({ product, isOpen, onClose, onAddToCart, 
 
   const totalPrice = parseFloat(product.price.toString()) * customization.quantity;
 
-    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (file) {
-            setCustomization(prev => ({ ...prev, customImage: file }));
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setImagePreview(reader.result as string);
-            };
-            reader.readAsDataURL(file);
-        } else {
-            setCustomization(prev => ({ ...prev, customImage: null }));
-            setImagePreview(null);
-        }
-    };
-
-
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      
-      <DialogContent className="w-[95vw] max-w-4xl max-h-[90vh] overflow-y-auto product-modal-content">
-          <DialogHeader>
-            <DialogTitle className="text-2xl font-bold text-center">
-              পণ্য কাস্টমাইজ করুন
-            </DialogTitle>
-          </DialogHeader>
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-white dark:bg-gray-900">
+        <DialogHeader>
+          <DialogTitle className="text-xl font-bold text-gray-900 dark:text-white">
+            {product.name} কাস্টমাইজ করুন
+          </DialogTitle>
+        </DialogHeader>
 
-        <div className="grid md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Product Preview */}
           <div className="space-y-4">
-            <Card>
-              <CardContent className="p-4">
-                <img
-                  src={product.image_url || "https://images.unsplash.com/photo-1544787219-7f47ccb76574?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"}
-                  alt={product.name}
-                  className="w-full h-48 object-cover rounded-lg mb-4"
-                />
-                <div className="space-y-2">
-                  <h4 className="font-semibold">{product.name}</h4>
-                  <div className="flex items-center justify-between">
-                    <span className="text-xl font-bold text-primary">{formatPrice(product.price)}</span>
-                    <Badge>স্টক: {product.stock}</Badge>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Customization Preview */}
-            <Card className="bg-blue-50 border-blue-200">
-              <CardContent className="p-4">
-                <h4 className="font-semibold text-blue-900 mb-3">আপনার কাস্টমাইজেশন</h4>
-                <div className="space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span>সাইজ:</span>
-                    <span className="font-medium">{customization.size || "নির্বাচন করুন"}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>রং:</span>
-                    <span className="font-medium">{customization.color || "নির্বাচন করুন"}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>প্রিন্ট এরিয়া:</span>
-                    <span className="font-medium">{customization.printArea || "নির্বাচন করুন"}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>পরিমাণ:</span>
-                    <span className="font-medium">{customization.quantity}</span>
-                  </div>
-                  <div className="border-t pt-2 mt-2">
-                    <div className="flex justify-between font-semibold text-base">
-                      <span>মোট:</span>
-                      <span className="text-primary">{formatPrice(totalPrice)}</span>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            <img 
+              src={product.image_url || '/placeholder-product.jpg'} 
+              alt={product.name}
+              className="w-full h-64 object-cover rounded-lg"
+            />
+            <div className="text-center">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{product.name}</h3>
+              <p className="text-2xl font-bold text-green-600">
+                {formatPrice(totalPrice)}
+              </p>
+            </div>
           </div>
 
           {/* Customization Options */}
-          <div className="space-y-6">
-            {/* Product Variant Selection */}
-            {productVariants.length > 0 && (
-              <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-                <Label className="text-base font-semibold text-yellow-800 mb-3 block">
-                  🎯 এই পণ্যে একাধিক অপশন রয়েছে - আপনার পছন্দের অপশন নির্বাচন করুন:
-                </Label>
-                <Select value={selectedVariant} onValueChange={setSelectedVariant}>
-                  <SelectTrigger className="mt-2">
-                    <SelectValue placeholder="পণ্যের ভ্যারিয়েন্ট নির্বাচন করুন" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {productVariants.map((variant) => (
-                      <SelectItem key={variant.id} value={variant.id}>
-                        {variant.name} - {formatPrice(variant.basePrice)}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
+          <div className="space-y-4">
+            {/* Size Selection */}
+            <div>
+              <Label htmlFor="size" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                সাইজ নির্বাচন করুন *
+              </Label>
+              <Select value={customization.size} onValueChange={(value) => 
+                setCustomization(prev => ({ ...prev, size: value }))
+              }>
+                <SelectTrigger>
+                  <SelectValue placeholder="সাইজ নির্বাচন করুন" />
+                </SelectTrigger>
+                <SelectContent>
+                  {options.sizes.map(size => (
+                    <SelectItem key={size} value={size}>{size}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
 
-            {/* Basic Options */}
-            <div className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="size">সাইজ</Label>
-                  <Select value={customization.size} onValueChange={(value) => 
-                    setCustomization({...customization, size: value})
-                  }>
-                    <SelectTrigger className="mt-2">
-                      <SelectValue placeholder="সাইজ নির্বাচন করুন" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="XS">XS</SelectItem>
-                      <SelectItem value="S">S</SelectItem>
-                      <SelectItem value="M">M</SelectItem>
-                      <SelectItem value="L">L</SelectItem>
-                      <SelectItem value="XL">XL</SelectItem>
-                      <SelectItem value="XXL">XXL</SelectItem>
-                      <SelectItem value="XXXL">XXXL</SelectItem>
-                      <SelectItem value="custom">কাস্টম সাইজ</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+            {/* Color Selection */}
+            <div>
+              <Label htmlFor="color" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                রং নির্বাচন করুন *
+              </Label>
+              <Select value={customization.color} onValueChange={(value) => 
+                setCustomization(prev => ({ ...prev, color: value }))
+              }>
+                <SelectTrigger>
+                  <SelectValue placeholder="রং নির্বাচন করুন" />
+                </SelectTrigger>
+                <SelectContent>
+                  {options.colors.map(color => (
+                    <SelectItem key={color} value={color}>{color}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
 
-                <div>
-                  <Label htmlFor="color">রঙ</Label>
-                  <Select value={customization.color} onValueChange={(value) => 
-                    setCustomization({...customization, color: value})
-                  }>
-                    <SelectTrigger className="mt-2">
-                      <SelectValue placeholder="রঙ নির্বাচন করুন" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="red">লাল</SelectItem>
-                      <SelectItem value="blue">নীল</SelectItem>
-                      <SelectItem value="green">সবুজ</SelectItem>
-                      <SelectItem value="black">কালো</SelectItem>
-                      <SelectItem value="white">সাদা</SelectItem>
-                      <SelectItem value="yellow">হলুদ</SelectItem>
-                      <SelectItem value="pink">গোলাপী</SelectItem>
-                      <SelectItem value="purple">বেগুনী</SelectItem>
-                      <SelectItem value="orange">কমলা</SelectItem>
-                      <SelectItem value="gray">ধূসর</SelectItem>
-                      <SelectItem value="custom">কাস্টম রঙ</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Label className="text-base font-semibold">পরিমাণ</Label>
-                  <div className="flex items-center space-x-3 mt-2">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => setCustomization(prev => ({ ...prev, quantity: Math.max(1, prev.quantity - 1) }))}
-                      className="w-10 h-10 p-0"
-                    >
-                      -
-                    </Button>
-                    <span className="text-lg font-semibold min-w-[3rem] text-center">
-                      {customization.quantity}
-                    </span>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => setCustomization(prev => ({ ...prev, quantity: Math.min(product.stock, prev.quantity + 1) }))}
-                      className="w-10 h-10 p-0"
-                    >
-                      +
-                    </Button>
-                  </div>
-                </div>
-
-                <div>
-                  <Label htmlFor="urgency" className="text-base font-semibold">জরুরী প্রয়োজন</Label>
-                  <Select value={customization.urgency} onValueChange={(value) => 
-                    setCustomization({...customization, urgency: value})
-                  }>
-                    <SelectTrigger className="mt-2">
-                      <SelectValue placeholder="জরুরীতা নির্বাচন করুন" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="normal">সাধারণ</SelectItem>
-                      <SelectItem value="urgent">জরুরী (২-৩ দিন)</SelectItem>
-                      <SelectItem value="express">অতি জরুরী (১-২ দিন)</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              <div>
-                <Label className="text-base font-semibold">প্রিন্ট এরিয়া</Label>
-                <Select value={customization.printArea} onValueChange={(value) => setCustomization(prev => ({ ...prev, printArea: value }))}>
-                  <SelectTrigger className="mt-2">
-                    <SelectValue placeholder="প্রিন্ট এরিয়া নির্বাচন করুন" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {options.printAreas.map((area) => (
-                      <SelectItem key={area} value={area}>{area}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+            {/* Print Area */}
+            <div>
+              <Label htmlFor="printArea" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                প্রিন্ট এরিয়া
+              </Label>
+              <Select value={customization.printArea} onValueChange={(value) => 
+                setCustomization(prev => ({ ...prev, printArea: value }))
+              }>
+                <SelectTrigger>
+                  <SelectValue placeholder="প্রিন্ট এরিয়া নির্বাচন করুন" />
+                </SelectTrigger>
+                <SelectContent>
+                  {options.printAreas.map(area => (
+                    <SelectItem key={area} value={area}>{area}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             {/* Custom Text */}
             <div>
-              <Label className="text-base font-semibold flex items-center gap-2">
-                <Type className="w-4 h-4" />
-                কাস্টম টেক্সট / ডিজাইন
+              <Label htmlFor="customText" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                কাস্টম টেক্সট
               </Label>
-              <Input
+              <Textarea
+                id="customText"
+                placeholder="আপনার পছন্দের টেক্সট লিখুন..."
                 value={customization.customText}
                 onChange={(e) => setCustomization(prev => ({ ...prev, customText: e.target.value }))}
-                placeholder="আপনার পছন্দের টেক্সট বা ডিজাইনের বর্ণনা লিখুন"
-                className="mt-2"
+                className="resize-none"
+                rows={3}
               />
             </div>
 
-            {/* Custom Image */}
+            {/* Image Upload */}
             <div>
-              <Label className="text-base font-semibold flex items-center gap-2">
-                <ImageIcon className="w-4 h-4" />
-                কাস্টম ছবি আপলোড
+              <Label htmlFor="image" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                কাস্টম ইমেজ আপলোড
               </Label>
-              <div className="mt-2">
+              <div className="mt-1 flex items-center space-x-4">
                 <Input
+                  id="image"
                   type="file"
                   accept="image/*"
-                  onChange={handleImageChange}
-                  className="mb-2"
+                  onChange={handleImageUpload}
+                  className="hidden"
                 />
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => document.getElementById('image')?.click()}
+                  className="flex items-center space-x-2"
+                >
+                  <Upload className="w-4 h-4" />
+                  <span>ছবি আপলোড করুন</span>
+                </Button>
                 {imagePreview && (
-                  <div className="mt-2">
-                    <p className="text-sm text-gray-600 mb-2">প্রিভিউ:</p>
-                    <img src={imagePreview} alt="Preview" className="w-32 h-32 object-cover rounded-lg border" />
+                  <div className="relative">
+                    <img src={imagePreview} alt="Preview" className="w-12 h-12 rounded object-cover" />
+                    <Button
+                      size="sm"
+                      variant="destructive"
+                      className="absolute -top-2 -right-2 w-5 h-5 p-0 rounded-full"
+                      onClick={() => {
+                        setImagePreview(null);
+                        setCustomization(prev => ({ ...prev, customImage: null }));
+                      }}
+                    >
+                      <X className="w-3 h-3" />
+                    </Button>
                   </div>
                 )}
-                <p className="text-xs text-gray-500">সর্বোচ্চ ৫MB, JPG/PNG ফরম্যাট</p>
               </div>
             </div>
 
+            {/* Quantity */}
             <div>
-                <Label htmlFor="deliveryPreference" className="text-base font-semibold">ডেলিভারি পছন্দ</Label>
-                <Select value={customization.deliveryPreference} onValueChange={(value) => 
-                  setCustomization({...customization, deliveryPreference: value})
-                }>
-                  <SelectTrigger className="mt-2">
-                    <SelectValue placeholder="ডেলিভারি পছন্দ নির্বাচন করুন" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="standard">স্ট্যান্ডার্ড (৫-৭ দিন)</SelectItem>
-                    <SelectItem value="fast">দ্রুত (৩-৪ দিন)</SelectItem>
-                    <SelectItem value="express">এক্সপ্রেস (১-২ দিন)</SelectItem>
-                  </SelectContent>
-                </Select>
+              <Label htmlFor="quantity" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                পরিমাণ
+              </Label>
+              <div className="flex items-center space-x-2 mt-1">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCustomization(prev => ({ 
+                    ...prev, 
+                    quantity: Math.max(1, prev.quantity - 1) 
+                  }))}
+                >
+                  -
+                </Button>
+                <span className="px-4 py-2 border rounded text-center min-w-[60px]">
+                  {customization.quantity}
+                </span>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCustomization(prev => ({ 
+                    ...prev, 
+                    quantity: prev.quantity + 1 
+                  }))}
+                >
+                  +
+                </Button>
               </div>
+            </div>
 
             {/* Special Instructions */}
             <div>
-              <Label className="text-base font-semibold">বিশেষ নির্দেশনা</Label>
+              <Label htmlFor="specialInstructions" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                বিশেষ নির্দেশনা
+              </Label>
               <Textarea
+                id="specialInstructions"
+                placeholder="কোনো বিশেষ নির্দেশনা থাকলে লিখুন..."
                 value={customization.specialInstructions}
                 onChange={(e) => setCustomization(prev => ({ ...prev, specialInstructions: e.target.value }))}
-                placeholder="অতিরিক্ত নির্দেশনা, পছন্দের রঙের কোড, মাপের বিস্তারিত, ডিজাইনের বিশেষত্ব ইত্যাদি লিখুন..."
-                className="mt-2"
-                rows={3}
+                className="resize-none"
+                rows={2}
               />
-            </div>
-
-            <div>
-              <Label htmlFor="additionalRequests" className="text-base font-semibold">অতিরিক্ত অনুরোধ</Label>
-              <Textarea
-                id="additionalRequests"
-                value={customization.additionalRequests}
-                onChange={(e) => setCustomization({...customization, additionalRequests: e.target.value})}
-                placeholder="প্যাকেজিং, গিফট র‍্যাপিং, বিশেষ কোনো অনুরোধ থাকলে লিখুন..."
-                className="min-h-[80px] mt-2"
-                rows={3}
-              />
-            </div>
-
-            {/* Payment Information */}
-            <div className="bg-green-50 p-4 rounded-lg border border-green-200">
-              <h4 className="font-semibold text-green-800 mb-3">💰 অর্ডার ও পেমেন্ট প্রক্রিয়া</h4>
-              <div className="space-y-3 text-sm text-green-700">
-                <div className="bg-white p-3 rounded border border-green-300">
-                  <p className="font-bold text-green-800 mb-2">🌐 ওয়েবসাইট অর্ডার (প্রাথমিক)</p>
-                  <ul className="list-disc list-inside space-y-1 text-xs">
-                    <li>ওয়েবসাইটে ঠিকানা ও ডেলিভারি তথ্য দিন</li>
-                    <li>১০০ টাকা অগ্রিম পেমেন্ট করে অর্ডার কনফার্ম করুন</li>
-                    <li>বাকি টাকা পণ্য পাওয়ার সময় দিন</li>
-                  </ul>
-                </div>
-                <div className="text-gray-600">
-                  <p><strong>মোট মূল্য:</strong> {formatPrice(totalPrice)}</p>
-                  <p><strong>অগ্রিম পেমেন্ট:</strong> ১০০ টাকা (অর্ডার কনফার্ম করতে)</p>
-                  <p><strong>ডেলিভারি চার্জ:</strong> 80-120৳ (এলাকা অনুযায়ী)</p>
-                </div>
-              </div>
             </div>
 
             {/* Action Buttons */}
-            <div className="space-y-3 pt-4 border-t">
+            <div className="flex flex-col sm:flex-row gap-3 pt-4">
               <Button
-                onClick={handleDirectBuyNow}
-                className="w-full bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700 text-white font-semibold"
-                size="lg"
-                disabled={!customization.size || !customization.color}
+                onClick={handleAddToCart}
+                className="flex-1 bg-green-600 hover:bg-green-700 text-white"
               >
-                <Package className="w-5 h-5 mr-2" />
-                সরাসরি অর্ডার করুন
+                <ShoppingCart className="w-4 h-4 mr-2" />
+                কার্টে যোগ করুন
               </Button>
-
-              <div className="grid grid-cols-2 gap-2">
-                <Button
-                  onClick={handleAddToCart}
-                  variant="outline"
-                  size="sm"
-                  disabled={!customization.size || !customization.color}
-                  className="border-blue-300 text-blue-600 hover:bg-blue-50"
-                >
-                  <ShoppingCart className="w-4 h-4 mr-1" />
-                  কার্টে যোগ করুন
-                </Button>
-                <Button
-                  onClick={handleWhatsAppOrder}
-                  variant="outline"
-                  className="bg-gray-50 text-gray-600 hover:bg-gray-100 border-gray-300 text-xs"
-                  size="sm"
-                >
-                  <MessageCircle className="w-4 h-4 mr-1" />
-                  হোয়াটসঅ্যাপে যোগাযোগ
-                </Button>
-              </div>
-
-              <p className="text-xs text-gray-500 text-center">
-                💡 সর্বোত্তম সেবার জন্য ওয়েবসাইটে অর্ডার করুন
-              </p>
+              <Button
+                onClick={handleWhatsAppOrder}
+                variant="outline"
+                className="flex-1 border-green-600 text-green-600 hover:bg-green-50"
+              >
+                <MessageCircle className="w-4 h-4 mr-2" />
+                WhatsApp অর্ডার
+              </Button>
             </div>
           </div>
         </div>
-
-        {/* Direct Order Modal */}
-        <DirectOrderModal
-          product={product}
-          customization={customization}
-          isOpen={showDirectOrder}
-          onClose={() => setShowDirectOrder(false)}
-          onOrderSuccess={(orderId) => {
-            setShowDirectOrder(false);
-            onClose();
-            toast({
-              title: "অর্ডার সফল!",
-              description: `অর্ডার ID: ${orderId}`,
-            });
-          }}
-        />
       </DialogContent>
     </Dialog>
   );
