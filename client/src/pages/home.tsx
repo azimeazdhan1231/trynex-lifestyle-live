@@ -314,7 +314,7 @@ function ProductSection({
                 product={product}
                 onAddToCart={onAddToCart}
                 onViewProduct={onViewProduct}
-                onCustomize={onCustomize}
+                onCustomize={onCustomize || (() => {})}
                 showBadge={true}
               />
             </div>
@@ -323,15 +323,13 @@ function ProductSection({
 
         <div className="text-center mt-12">
           <Button 
-            asChild 
             size="lg" 
             variant="outline" 
             className="group bg-white hover:bg-primary hover:text-white border-2 border-primary/20 hover:border-primary shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 px-8 py-4"
+            onClick={() => window.location.href = '/products'}
           >
-            <Link href="/products">
-              <span className="font-medium text-lg">সব পণ্য দেখুন</span>
-              <ChevronRight className="w-5 h-5 ml-3 group-hover:translate-x-1 transition-transform duration-300" />
-            </Link>
+            <span className="font-medium text-lg">সব পণ্য দেখুন</span>
+            <ChevronRight className="w-5 h-5 ml-3 group-hover:translate-x-1 transition-transform duration-300" />
           </Button>
         </div>
       </div>
@@ -377,8 +375,6 @@ export default function Home() {
   // Load products for homepage sections with instant display
   const { data: products = [], isLoading: productsLoading, isSuccess } = useQuery<Product[]>({
     queryKey: ["/api/products"],
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    gcTime: 10 * 60 * 1000, // 10 minutes
     staleTime: 1000 * 60 * 10, // 10 minutes stale time
     gcTime: 1000 * 60 * 30, // Keep in memory for 30 minutes
     retry: 2,
@@ -552,20 +548,15 @@ export default function Home() {
               </Button>
 
               <Button 
-                asChild
                 size="lg"
                 variant="outline"
                 className="border-2 border-white/80 text-white hover:bg-white hover:text-primary text-lg sm:text-xl px-8 sm:px-10 lg:px-12 py-4 sm:py-5 lg:py-6 rounded-full shadow-2xl transform hover:scale-110 transition-all duration-500 w-full sm:w-auto font-bold backdrop-blur-sm bg-white/10 relative overflow-hidden group"
+                onClick={() => window.open(createWhatsAppUrl("আসসালামু আলাইকুম। আমি Trynex Lifestyle সম্পর্কে জানতে চাই।"), '_blank')}
               >
-                <a
-                  href={createWhatsAppUrl("আসসালামু আলাইকুম। আমি Trynex Lifestyle সম্পর্কে জানতে চাই।")}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center relative z-10"
-                >
+                <div className="flex items-center relative z-10">
                   <MessageCircle className="mr-3 w-5 h-5 sm:w-6 sm:h-6 group-hover:rotate-12 transition-transform duration-300" />
                   হোয়াটসঅ্যাপে যোগাযোগ
-                </a>
+                </div>
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
               </Button>
             </div>
@@ -665,32 +656,22 @@ export default function Home() {
 
               <div className="flex flex-col sm:flex-row gap-6 justify-center">
                 <Button
-                  asChild
                   size="lg"
                   className="bg-green-600 hover:bg-green-700 text-white text-xl px-10 py-6 rounded-full shadow-xl transform hover:scale-105 transition-all duration-300"
+                  onClick={() => window.open(createWhatsAppUrl("আসসালামু আলাইকুম। আমি Trynex Lifestyle থেকে পণ্য কিনতে চাই।"), '_blank')}
                 >
-                  <a
-                    href={createWhatsAppUrl("আসসালামু আলাইকুম। আমি Trynex Lifestyle থেকে পণ্য কিনতে চাই।")}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <MessageCircle className="mr-3 w-6 h-6" />
-                    হোয়াটসঅ্যাপে অর্ডার করুন
-                  </a>
+                  <MessageCircle className="mr-3 w-6 h-6" />
+                  হোয়াটসঅ্যাপে অর্ডার করুন
                 </Button>
 
                 <Button
-                  asChild
                   size="lg"
                   variant="outline"
                   className="border-green-600 text-green-600 hover:bg-green-50 text-xl px-10 py-6 rounded-full shadow-xl transform hover:scale-105 transition-all duration-300"
+                  onClick={() => window.open(`tel:${WHATSAPP_NUMBER}`)}
                 >
-                  <a
-                    href={`tel:${WHATSAPP_NUMBER}`}
-                  >
-                    <Phone className="mr-3 w-6 h-6" />
-                    ফোন করুন
-                  </a>
+                  <Phone className="mr-3 w-6 h-6" />
+                  ফোন করুন
                 </Button>
               </div>
 
@@ -730,18 +711,13 @@ export default function Home() {
                   </a>
                 </Button>
                 <Button 
-                  asChild
                   className="bg-green-600 hover:bg-green-700 text-white border-green-600 font-medium"
+                  onClick={() => window.open('https://wa.me/8801747292277', '_blank')}
                 >
-                  <a 
-                    href="https://wa.me/8801747292277" 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="flex items-center space-x-2 text-white hover:text-white"
-                  >
+                  <div className="flex items-center space-x-2 text-white hover:text-white">
                     <span className="text-lg">💬</span>
                     <span className="text-white font-medium">WhatsApp</span>
-                  </a>
+                  </div>
                 </Button>
               </div>
             </div>
