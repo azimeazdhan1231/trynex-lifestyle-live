@@ -36,11 +36,10 @@ const saveCartToStorage = (cart: CartItem[]): void => {
     // Validate cart data before saving
     const validCart = cart.filter(item => 
       item && 
-      typeof item.id === 'string' && 
-      typeof item.name === 'string' && 
-      typeof item.price === 'number' && 
-      typeof item.quantity === 'number' && 
-      item.quantity > 0
+      typeof item.id === 'string' && item.id.length > 0 &&
+      typeof item.name === 'string' && item.name.length > 0 &&
+      typeof item.price === 'number' && item.price > 0 &&
+      typeof item.quantity === 'number' && item.quantity > 0
     );
     localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(validCart));
   } catch (error) {

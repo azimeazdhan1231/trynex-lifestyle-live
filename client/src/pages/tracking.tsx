@@ -46,7 +46,8 @@ export default function TrackingPage() {
       if (!searchId) throw new Error("No tracking ID provided");
       const response = await fetch(`/api/orders/${searchId}`);
       if (!response.ok) {
-        throw new Error("Order not found");
+        const errorData = await response.json().catch(() => ({ error: 'Order not found' }));
+        throw new Error(errorData.error || "Order not found");
       }
       return response.json();
     },
@@ -86,7 +87,8 @@ export default function TrackingPage() {
     return statusMap[status as keyof typeof statusMap] || statusMap.pending;
   };
 
-  const formatDate = (dateString: string) => {
+  const formatDate = (dateString: string | null) => {
+    if (!dateString) return 'তারিখ পাওয়া যায়নি';
     return new Date(dateString).toLocaleDateString('bn-BD', {
       year: 'numeric',
       month: 'long',
@@ -227,7 +229,7 @@ export default function TrackingPage() {
                       <Calendar className="w-5 h-5 text-gray-500" />
                       <div>
                         <p className="text-sm text-gray-600">অর্ডার তারিখ</p>
-                        <p className="font-semibold">{formatDate(order.created_at)}</p>
+                        <p className="font-semibold">{formatDate(order.created_at || null)}</p>
                       </div>
                     </div>
                   </div>
@@ -248,7 +250,7 @@ export default function TrackingPage() {
               </Card>
 
               {/* Order Instructions Alert for Customer */}
-              {order && order.items && order.items.some((item: any) => 
+              {order && order.items && Array.isArray(order.items) && order.items.some((item: any) => 
                 item.customization && (
                   item.customization.customText || 
                   item.customization.customImage || 
@@ -407,7 +409,7 @@ export default function TrackingPage() {
                       <p className="font-semibold">
                         {typeof order.payment_info === 'string' 
                           ? order.payment_info 
-                          : order.payment_info.method || 'ক্যাশ অন ডেলিভারি'
+                          : (order.payment_info as any)?.method || 'ক্যাশ অন ডেলিভারি'
                         }
                       </p>
                     </div>

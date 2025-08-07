@@ -41,11 +41,16 @@ export async function onRequest(context) {
       return await response.json();
     }
 
-    // Products routes
+    // Products routes - OPTIMIZED with caching
     if (path === "/api/products" && method === "GET") {
       const data = await supabaseRequest('products?select=*&order=created_at.desc');
       return new Response(JSON.stringify(data), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" }
+        headers: { 
+          ...corsHeaders, 
+          "Content-Type": "application/json",
+          "Cache-Control": "public, max-age=60, stale-while-revalidate=300",
+          "CDN-Cache-Control": "public, max-age=300"
+        }
       });
     }
 
@@ -74,9 +79,15 @@ export async function onRequest(context) {
         serviceKey: true
       });
       
+      // Cache invalidation headers for live updates
       return new Response(JSON.stringify(data[0]), {
         status: 201,
-        headers: { ...corsHeaders, "Content-Type": "application/json" }
+        headers: { 
+          ...corsHeaders, 
+          "Content-Type": "application/json",
+          "Cache-Control": "no-cache, no-store, must-revalidate",
+          "X-Cache-Invalidate": "/api/products"
+        }
       });
     }
 
@@ -90,8 +101,14 @@ export async function onRequest(context) {
         serviceKey: true
       });
       
+      // Cache invalidation for live updates
       return new Response(JSON.stringify(data[0]), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" }
+        headers: { 
+          ...corsHeaders, 
+          "Content-Type": "application/json",
+          "Cache-Control": "no-cache, no-store, must-revalidate",
+          "X-Cache-Invalidate": "/api/products"
+        }
       });
     }
 
@@ -102,16 +119,26 @@ export async function onRequest(context) {
         serviceKey: true
       });
       
+      // Cache invalidation for live updates
       return new Response(JSON.stringify({ message: "Product deleted successfully" }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" }
+        headers: { 
+          ...corsHeaders, 
+          "Content-Type": "application/json",
+          "Cache-Control": "no-cache, no-store, must-revalidate",
+          "X-Cache-Invalidate": "/api/products"
+        }
       });
     }
 
-    // Orders routes
+    // Orders routes - OPTIMIZED with caching
     if (path === "/api/orders" && method === "GET") {
       const data = await supabaseRequest('orders?select=*&order=created_at.desc');
       return new Response(JSON.stringify(data), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" }
+        headers: { 
+          ...corsHeaders, 
+          "Content-Type": "application/json",
+          "Cache-Control": "public, max-age=30, stale-while-revalidate=60"
+        }
       });
     }
 
@@ -147,17 +174,34 @@ export async function onRequest(context) {
 
     if (path.startsWith("/api/orders/") && !path.includes("/status") && method === "GET") {
       const trackingId = path.split("/")[3];
+      console.log('Tracking ID requested:', trackingId);
+      
       const data = await supabaseRequest(`orders?tracking_id=eq.${trackingId}`);
+      console.log('Order data found:', data.length > 0 ? 'YES' : 'NO');
       
       if (data.length === 0) {
-        return new Response(JSON.stringify({ error: "Order not found" }), {
+        return new Response(JSON.stringify({ error: "Order not found", tracking_id: trackingId }), {
           status: 404,
           headers: { ...corsHeaders, "Content-Type": "application/json" }
         });
       }
       
-      return new Response(JSON.stringify(data[0]), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" }
+      // Parse items if they're stored as JSON string
+      const order = data[0];
+      if (typeof order.items === 'string') {
+        try {
+          order.items = JSON.parse(order.items);
+        } catch (e) {
+          console.error('Error parsing order items:', e);
+        }
+      }
+      
+      return new Response(JSON.stringify(order), {
+        headers: { 
+          ...corsHeaders, 
+          "Content-Type": "application/json",
+          "Cache-Control": "public, max-age=10, stale-while-revalidate=30"
+        }
       });
     }
 
@@ -179,8 +223,14 @@ export async function onRequest(context) {
         serviceKey: true
       });
       
+      // Cache invalidation for live order updates  
       return new Response(JSON.stringify(data[0]), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" }
+        headers: { 
+          ...corsHeaders, 
+          "Content-Type": "application/json",
+          "Cache-Control": "no-cache, no-store, must-revalidate",
+          "X-Cache-Invalidate": `/api/orders,/api/orders/${data[0]?.tracking_id}`
+        }
       });
     }
 

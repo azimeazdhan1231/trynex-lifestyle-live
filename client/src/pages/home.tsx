@@ -340,6 +340,8 @@ export default function Home() {
   // Load products for homepage sections with instant display
   const { data: products = [], isLoading: productsLoading, isSuccess } = useQuery<Product[]>({
     queryKey: ["/api/products"],
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes
     staleTime: 1000 * 60 * 10, // 10 minutes stale time
     gcTime: 1000 * 60 * 30, // Keep in memory for 30 minutes
     retry: 2,
