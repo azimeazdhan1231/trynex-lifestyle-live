@@ -195,7 +195,7 @@ const ProductCard = memo(function ProductCard({ product, onAddToCart, onViewProd
                 <MessageCircle className="w-4 h-4 mr-1" />
                 অর্ডার
               </Button>
-              
+
               {onCustomize && (
                 <Button
                   onClick={handleCustomize}
@@ -249,9 +249,9 @@ function ProductSection({
             <div className="h-6 w-96 mx-auto bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 rounded animate-shimmer"></div>
             <div className="w-24 h-1 bg-gradient-to-r from-primary/30 to-primary/60 mx-auto mt-6 rounded-full animate-pulse"></div>
           </div>
-          
+
           <PremiumLoadingSkeleton count={6} />
-          
+
           <div className="text-center mt-12">
             <div className="h-12 w-40 mx-auto bg-gradient-to-r from-primary/20 to-primary/40 rounded-full animate-pulse"></div>
           </div>
@@ -320,7 +320,7 @@ export default function Home() {
   useEffect(() => {
     console.log('🚀 Database optimizations initialized');
     console.log('🚀 Route optimizations initialized');
-    
+
     // Preload important routes for faster navigation
     ['cart', 'tracking', 'orders', 'admin', 'products'].forEach(route => {
       console.log(`✅ Route preloaded: /${route}`);
@@ -371,7 +371,7 @@ export default function Home() {
 
   // Use current products or cached products for instant display
   const currentProducts = products?.length > 0 ? products : cachedProducts;
-  
+
   // Memoized product filtering for better performance
   const featuredProducts = useMemo(() => 
     currentProducts.filter(p => p.is_featured), [currentProducts]
@@ -398,7 +398,7 @@ export default function Home() {
         setShowScrollTop(window.scrollY > 300);
       }, 100);
     };
-    
+
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => {
       window.removeEventListener('scroll', handleScroll);
@@ -448,7 +448,7 @@ export default function Home() {
       price: Number(product.price),
       customization: customization,
     });
-    
+
     toast({
       title: "কাস্টমাইজড পণ্য যোগ করা হয়েছে!",
       description: `${product.name} আপনার পছন্দমতো কাস্টমাইজ করে কার্টে যোগ করা হয়েছে`,
@@ -757,11 +757,10 @@ export default function Home() {
           onAddToCart={handleCustomizeAddToCart}
         />
       )}
-      {/* Enhanced AI Features */}
-      {/* AI Chatbot removed to fix loading performance */}
-      
+      {/* Enhanced AI Chatbot - Component temporarily disabled */}
 
-      
+
+
 
     </div>
   );

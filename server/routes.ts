@@ -15,17 +15,17 @@ async function preloadCache() {
   try {
     console.log('🚀 Preloading products cache...');
     const start = Date.now();
-    
+
     const [products, categories] = await Promise.all([
       storage.getProducts(),
       storage.getCategories()
     ]);
-    
+
     productsCache = products;
     categoriesCache = categories;
     lastProductsCacheTime = Date.now();
     lastCategoriesCacheTime = Date.now();
-    
+
     console.log(`✅ Cache preloaded in ${Date.now() - start}ms - ${products.length} products, ${categories.length} categories`);
   } catch (error) {
     console.error('❌ Failed to preload cache:', error);
@@ -35,14 +35,14 @@ async function preloadCache() {
 export async function registerRoutes(app: Express): Promise<Server> {
   // Preload cache immediately
   await preloadCache();
-  
+
   // Setup authentication routes
   setupAuthRoutes(app);
 
   // Ultra-fast products endpoint with memory cache
   app.get('/api/products', (req, res) => {
     const start = Date.now();
-    
+
     try {
       // Aggressive caching headers for client-side caching
       res.set({
@@ -56,7 +56,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Check if client has fresh cache
       const ifNoneMatch = req.headers['if-none-match'];
       const expectedETag = `products-v2-${lastProductsCacheTime}`;
-      
+
       if (ifNoneMatch === expectedETag) {
         res.status(304).end();
         return;
@@ -64,23 +64,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const category = req.query.category as string;
       let result = productsCache;
-      
+
       // Filter by category if specified
       if (category && category !== 'all') {
         result = productsCache.filter(p => p.category === category);
       }
-      
+
       const duration = Date.now() - start;
       res.set('X-Response-Time', `${duration}ms`);
-      
+
       console.log(`⚡ Products instant response: ${duration}ms - ${result.length} items`);
       res.json(result);
-      
+
       // Background refresh if cache is getting old
       if (Date.now() - lastProductsCacheTime > CACHE_TTL) {
         refreshProductsCache();
       }
-      
+
     } catch (error) {
       console.error('❌ Products endpoint error:', error);
       res.status(500).json({ message: 'Server error' });
@@ -90,7 +90,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Ultra-fast categories endpoint
   app.get('/api/categories', (req, res) => {
     const start = Date.now();
-    
+
     try {
       res.set({
         'Cache-Control': 'public, max-age=31536000, immutable',
@@ -100,15 +100,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const duration = Date.now() - start;
       res.set('X-Response-Time', `${duration}ms`);
-      
+
       console.log(`⚡ Categories served from memory in ${duration}ms`);
       res.json(categoriesCache);
-      
+
       // Background refresh if needed
       if (Date.now() - lastCategoriesCacheTime > CACHE_TTL) {
         refreshCategoriesCache();
       }
-      
+
     } catch (error) {
       console.error('❌ Categories endpoint error:', error);
       res.status(500).json({ message: 'Server error' });
@@ -119,26 +119,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/orders', async (req, res) => {
     try {
       // Generate a proper tracking ID 
-      const trackingId = 'TRX' + Date.now() + Math.floor(Math.random() * 1000);
-      
+      const trackingId = `TRX${Date.now()}${Math.random().toString(36).substr(2, 4).toUpperCase()}`;
+
+    if (!trackingId) {
+      throw new Error('Failed to generate tracking ID');
+    }
+
       const orderData = {
         ...req.body,
         tracking_id: trackingId,
         status: 'pending'
       };
-      
+
       // Ensure items are properly stringified
       if (orderData.items && typeof orderData.items !== 'string') {
         orderData.items = JSON.stringify(orderData.items);
       }
-      
+
       if (orderData.payment_info && typeof orderData.payment_info !== 'string') {
         orderData.payment_info = JSON.stringify(orderData.payment_info);
       }
-      
+
       console.log('Creating order with tracking ID:', trackingId);
       const order = await storage.createOrder(orderData);
-      
+
       res.status(201).json({
         success: true,
         tracking_id: order.tracking_id,
@@ -167,7 +171,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Verify JWT token
       const jwt = require('jsonwebtoken');
       const JWT_SECRET = process.env.JWT_SECRET || "trynex_secret_key_2025";
-      
+
       try {
         const decoded: any = jwt.verify(token, JWT_SECRET);
         const userOrders = await storage.getUserOrders(decoded.id);
@@ -185,13 +189,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/settings', async (req, res) => {
     try {
       res.set('Cache-Control', 'public, max-age=3600'); // 1 hour cache
-      
+
       const settings = await storage.getSettings();
       const settingsObj: any = {};
       settings.forEach(setting => {
         settingsObj[setting.key] = setting.value;
       });
-      
+
       res.json(settingsObj);
     } catch (error) {
       console.error('❌ Settings error:', error);
@@ -204,18 +208,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { getAIChatResponse } = await import("./ai-chat");
       const { message, businessData, products, chatHistory } = req.body;
-      
+
       if (!message) {
         return res.status(400).json({ error: 'Message is required' });
       }
-      
+
       const reply = await getAIChatResponse({
         message,
         businessData,
         products: products || productsCache.slice(0, 20),
         chatHistory: chatHistory || []
       });
-      
+
       res.json({ reply });
     } catch (error) {
       console.error('AI Chat Error:', error);
@@ -231,13 +235,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { getAIProductRecommendations } = await import("./ai-chat");
       const { userQuery, userBehavior, currentProduct } = req.body;
-      
+
       const recommendations = await getAIProductRecommendations(
         productsCache,
         userQuery || '',
         userBehavior
       );
-      
+
       res.json({ data: recommendations });
     } catch (error) {
       console.error('AI Recommendations Error:', error);
