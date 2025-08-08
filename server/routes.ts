@@ -1,53 +1,34 @@
-
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuthRoutes } from "./auth-routes";
 
-// Ultra-fast in-memory cache with better error handling
+// Ultra-fast in-memory cache
 let productsCache: any[] = [];
 let categoriesCache: any[] = [];
 let lastProductsCacheTime = 0;
 let lastCategoriesCacheTime = 0;
-const CACHE_TTL = 60000; // 1 minute cache for faster updates
-const MAX_RETRIES = 3;
+const CACHE_TTL = 30000; // 30 second cache for faster updates
 
 // Preload products into memory on server start
 async function preloadCache() {
-  let retries = 0;
-  
-  while (retries < MAX_RETRIES) {
-    try {
-      console.log(`🚀 Preloading products cache (attempt ${retries + 1}/${MAX_RETRIES})...`);
-      const start = Date.now();
+  try {
+    console.log('🚀 Preloading products cache...');
+    const start = Date.now();
 
-      const [products, categories] = await Promise.all([
-        storage.getProducts(),
-        storage.getCategories()
-      ]);
+    const [products, categories] = await Promise.all([
+      storage.getProducts(),
+      storage.getCategories()
+    ]);
 
-      productsCache = products || [];
-      categoriesCache = categories || [];
-      lastProductsCacheTime = Date.now();
-      lastCategoriesCacheTime = Date.now();
+    productsCache = products;
+    categoriesCache = categories;
+    lastProductsCacheTime = Date.now();
+    lastCategoriesCacheTime = Date.now();
 
-      console.log(`✅ Cache preloaded in ${Date.now() - start}ms - ${products?.length || 0} products, ${categories?.length || 0} categories`);
-      return;
-    } catch (error) {
-      retries++;
-      console.error(`❌ Failed to preload cache (attempt ${retries}):`, error);
-      
-      if (retries >= MAX_RETRIES) {
-        console.error('❌ Max retries reached, starting with empty cache');
-        productsCache = [];
-        categoriesCache = [];
-        lastProductsCacheTime = Date.now();
-        lastCategoriesCacheTime = Date.now();
-      } else {
-        // Wait before retry
-        await new Promise(resolve => setTimeout(resolve, 1000 * retries));
-      }
-    }
+    console.log(`✅ Cache preloaded in ${Date.now() - start}ms - ${products.length} products, ${categories.length} categories`);
+  } catch (error) {
+    console.error('❌ Failed to preload cache:', error);
   }
 }
 
@@ -58,15 +39,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Setup authentication routes
   setupAuthRoutes(app);
 
-  // Ultra-fast products endpoint with robust error handling
-  app.get('/api/products', async (req, res) => {
+  // Ultra-fast products endpoint with memory cache
+  app.get('/api/products', (req, res) => {
     const start = Date.now();
 
     try {
       // Aggressive caching headers for client-side caching
       res.set({
-        'Cache-Control': 'public, max-age=60, stale-while-revalidate=300',
-        'ETag': `products-v3-${lastProductsCacheTime}`,
+        'Cache-Control': 'public, max-age=300, stale-while-revalidate=60', // 5 minute cache with background refresh
+        'ETag': `products-v2-${lastProductsCacheTime}`,
         'Last-Modified': new Date(lastProductsCacheTime).toUTCString(),
         'Vary': 'Accept-Encoding',
         'X-Cache': 'MEMORY-HIT'
@@ -74,7 +55,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Check if client has fresh cache
       const ifNoneMatch = req.headers['if-none-match'];
-      const expectedETag = `products-v3-${lastProductsCacheTime}`;
+      const expectedETag = `products-v2-${lastProductsCacheTime}`;
 
       if (ifNoneMatch === expectedETag) {
         res.status(304).end();
@@ -92,7 +73,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const duration = Date.now() - start;
       res.set('X-Response-Time', `${duration}ms`);
 
-      console.log(`⚡ Products served from memory: ${duration}ms - ${result.length} items`);
+      console.log(`⚡ Products instant response: ${duration}ms - ${result.length} items`);
       res.json(result);
 
       // Background refresh if cache is getting old
@@ -102,28 +83,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
     } catch (error) {
       console.error('❌ Products endpoint error:', error);
-      
-      // Return cached data if available, even if old
-      if (productsCache.length > 0) {
-        console.log('🔄 Returning cached products due to error');
-        res.json(productsCache);
-      } else {
-        res.status(500).json({ 
-          message: 'পণ্য লোড করতে সমস্যা হয়েছে',
-          error: 'Server error'
-        });
-      }
+      res.status(500).json({ message: 'Server error' });
     }
   });
 
   // Ultra-fast categories endpoint
-  app.get('/api/categories', async (req, res) => {
+  app.get('/api/categories', (req, res) => {
     const start = Date.now();
 
     try {
       res.set({
-        'Cache-Control': 'public, max-age=300, stale-while-revalidate=600',
-        'ETag': `categories-v3-${lastCategoriesCacheTime}`,
+        'Cache-Control': 'public, max-age=31536000, immutable',
+        'ETag': `categories-v2-${lastCategoriesCacheTime}`,
         'X-Cache': 'MEMORY-HIT'
       });
 
@@ -140,12 +111,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
     } catch (error) {
       console.error('❌ Categories endpoint error:', error);
-      
-      if (categoriesCache.length > 0) {
-        res.json(categoriesCache);
-      } else {
-        res.status(500).json({ message: 'Categories could not be loaded' });
-      }
+      res.status(500).json({ message: 'Server error' });
     }
   });
 
@@ -291,18 +257,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/products/:id', async (req, res) => {
     try {
       const { id } = req.params;
-      
-      // Try to find in cache first
-      const cachedProduct = productsCache.find(p => p.id === id);
-      if (cachedProduct) {
-        res.set({
-          'Cache-Control': 'public, max-age=300',
-          'X-Cache': 'MEMORY-HIT'
-        });
-        return res.json(cachedProduct);
-      }
-      
-      // Fallback to database
       const product = await storage.getProduct(id);
       
       if (!product) {
@@ -524,51 +478,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
   return createServer(app);
 }
 
-// Background cache refresh functions with retry logic
+// Background cache refresh functions
 async function refreshProductsCache() {
-  let retries = 0;
-  
-  while (retries < MAX_RETRIES) {
-    try {
-      console.log(`🔄 Refreshing products cache (attempt ${retries + 1})...`);
-      const products = await storage.getProducts();
-      productsCache = products || [];
-      lastProductsCacheTime = Date.now();
-      console.log(`✅ Products cache refreshed - ${products?.length || 0} items`);
-      return;
-    } catch (error) {
-      retries++;
-      console.error(`❌ Failed to refresh products cache (attempt ${retries}):`, error);
-      
-      if (retries >= MAX_RETRIES) {
-        console.error('❌ Max retries reached for products cache refresh');
-      } else {
-        await new Promise(resolve => setTimeout(resolve, 1000 * retries));
-      }
-    }
+  try {
+    console.log('🔄 Refreshing products cache...');
+    const products = await storage.getProducts();
+    productsCache = products;
+    lastProductsCacheTime = Date.now();
+    console.log(`✅ Products cache refreshed - ${products.length} items`);
+  } catch (error) {
+    console.error('❌ Failed to refresh products cache:', error);
   }
 }
 
 async function refreshCategoriesCache() {
-  let retries = 0;
-  
-  while (retries < MAX_RETRIES) {
-    try {
-      console.log(`🔄 Refreshing categories cache (attempt ${retries + 1})...`);
-      const categories = await storage.getCategories();
-      categoriesCache = categories || [];
-      lastCategoriesCacheTime = Date.now();
-      console.log(`✅ Categories cache refreshed - ${categories?.length || 0} items`);
-      return;
-    } catch (error) {
-      retries++;
-      console.error(`❌ Failed to refresh categories cache (attempt ${retries}):`, error);
-      
-      if (retries >= MAX_RETRIES) {
-        console.error('❌ Max retries reached for categories cache refresh');
-      } else {
-        await new Promise(resolve => setTimeout(resolve, 1000 * retries));
-      }
-    }
+  try {
+    console.log('🔄 Refreshing categories cache...');
+    const categories = await storage.getCategories();
+    categoriesCache = categories;
+    lastCategoriesCacheTime = Date.now();
+    console.log(`✅ Categories cache refreshed - ${categories.length} items`);
+  } catch (error) {
+    console.error('❌ Failed to refresh categories cache:', error);
   }
 }
