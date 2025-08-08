@@ -102,7 +102,9 @@ export interface IStorage {
 
 export class DatabaseStorage implements IStorage {
   async getProducts(): Promise<Product[]> {
+    console.time('Database Query: getProducts');
     const result = await db.select().from(products).orderBy(desc(products.created_at));
+    console.timeEnd('Database Query: getProducts');
     return result;
   }
 
