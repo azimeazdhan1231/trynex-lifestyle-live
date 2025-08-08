@@ -525,14 +525,7 @@ export default function AdminPanelNew() {
     setIsProductDialogOpen(true);
   };
 
-  const handleViewOrderDetails = (order: Order) => {
-    setSelectedOrder(order);
-    setOrderDetailsOpen(true);
-  };
-
-  const handleUpdateOrderStatus = (orderId: string, status: string) => {
-    updateOrderMutation.mutate({ id: orderId, status });
-  };
+  
 
   const handleViewCustomOrderDetails = (customOrder: any) => {
     setSelectedCustomOrder(customOrder);
