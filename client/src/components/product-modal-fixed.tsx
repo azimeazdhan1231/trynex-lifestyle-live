@@ -1,7 +1,7 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ShoppingCart, MessageCircle, X, Plus, Minus, Palette } from "lucide-react";
+import { ShoppingCart, MessageCircle, X, Plus, Minus, Palette, Expand } from "lucide-react";
 import { useState, useEffect } from "react";
 import { formatPrice, createWhatsAppUrl } from "@/lib/constants";
 import { useToast } from "@/hooks/use-toast";
@@ -18,6 +18,7 @@ interface ProductModalProps {
 
 export default function ProductModal({ product, isOpen, onClose, onAddToCart, onCustomize }: ProductModalProps) {
   const [quantity, setQuantity] = useState(1);
+  const [isImageOverlayOpen, setIsImageOverlayOpen] = useState(false);
   const { toast } = useToast();
 
   // Debug logging
@@ -91,13 +92,20 @@ export default function ProductModal({ product, isOpen, onClose, onAddToCart, on
           </DialogHeader>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Product Image */}
-            <div className="aspect-square overflow-hidden rounded-lg border bg-gray-50">
+            <div className="relative aspect-square overflow-hidden rounded-lg border bg-gray-50 cursor-pointer group">
               <img
                 src={product.image_url || "https://images.unsplash.com/photo-1544787219-7f47ccb76574?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"}
                 alt={product.name}
                 className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
                 loading="lazy"
+                onClick={() => setIsImageOverlayOpen(true)}
               />
+              {/* Expand Icon Overlay */}
+              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300 flex items-center justify-center">
+                <div className="bg-white/90 p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                  <Expand className="w-5 h-5 text-gray-700" />
+                </div>
+              </div>
             </div>
 
             {/* Product Details */}
@@ -223,6 +231,40 @@ export default function ProductModal({ product, isOpen, onClose, onAddToCart, on
           </div>
         </div>
       </DialogContent>
+
+      {/* Image Overlay Modal */}
+      <Dialog open={isImageOverlayOpen} onOpenChange={setIsImageOverlayOpen}>
+        <DialogContent className="max-w-4xl w-[95vw] h-[95vh] p-0 bg-black/95 border-0">
+          <DialogHeader className="sr-only">
+            <DialogTitle>ছবি দেখুন</DialogTitle>
+            <DialogDescription>পূর্ণ আকারে পণ্যের ছবি</DialogDescription>
+          </DialogHeader>
+          
+          {/* Close Button */}
+          <button
+            onClick={() => setIsImageOverlayOpen(false)}
+            className="absolute top-4 right-4 z-50 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full transition-colors"
+          >
+            <X className="w-6 h-6" />
+          </button>
+
+          {/* Full Size Image */}
+          <div className="flex items-center justify-center h-full p-4">
+            <img
+              src={product.image_url || "https://images.unsplash.com/photo-1544787219-7f47ccb76574?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&h=900"}
+              alt={product.name}
+              className="max-w-full max-h-full object-contain rounded-lg"
+              loading="lazy"
+            />
+          </div>
+
+          {/* Product Name Overlay */}
+          <div className="absolute bottom-4 left-4 right-4 bg-black/70 text-white p-4 rounded-lg">
+            <h3 className="text-lg font-semibold">{product.name}</h3>
+            <p className="text-sm opacity-80">ছবিতে ক্লিক করে বন্ধ করুন অথবা ESC চাপুন</p>
+          </div>
+        </DialogContent>
+      </Dialog>
     </Dialog>
   );
 }
