@@ -122,6 +122,49 @@
   transform: scale(1.02);
 }
 
+/* Modal styling - Enhanced for proper display */
+.modal-container {
+  @apply w-[95vw] max-w-6xl max-h-[95vh];
+  @apply mx-auto my-auto;
+  @apply flex flex-col;
+  @apply border-0 shadow-2xl rounded-xl bg-white;
+  overflow: hidden !important;
+}
+
+/* Ensure modal content scrolls properly */
+.modal-content {
+  @apply overflow-y-auto flex-1 p-6;
+  max-height: calc(95vh - 120px);
+}
+
+/* Large Modal for Product Details */
+.modal-large {
+  @apply w-[98vw] max-w-7xl max-h-[98vh];
+}
+
+/* Mobile specific modal adjustments */
+@media (max-width: 768px) {
+  .modal-container {
+    @apply w-[98vw] max-h-[96vh] rounded-lg;
+  }
+  
+  .modal-content {
+    @apply p-4;
+    max-height: calc(96vh - 100px);
+  }
+}
+
+/* Fix dialog positioning */
+[role="dialog"] {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 50 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 1rem !important;
+}
+
 /* Additional performance optimizations */
 img[loading="lazy"] {
   will-change: transform;

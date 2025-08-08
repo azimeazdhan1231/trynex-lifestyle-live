@@ -39,7 +39,8 @@ export default function CartModal({ isOpen, onClose }: CartModalProps) {
     <>
       <Dialog open={isOpen} onOpenChange={onClose}>
         <DialogContent className="modal-container">
-          <DialogHeader>
+          <div className="modal-content">
+            <DialogHeader>
             <DialogTitle className="text-2xl font-bold">
               🛒 আপনার কার্ট ({cart.length}টি পণ্য)
             </DialogTitle>
@@ -147,6 +148,7 @@ export default function CartModal({ isOpen, onClose }: CartModalProps) {
               </div>
             </div>
           )}
+          </div>
         </DialogContent>
       </Dialog>
 
