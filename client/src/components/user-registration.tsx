@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
-import { Loader2, User, Phone, Lock, UserPlus } from 'lucide-react';
+import { Loader2, User, Phone, Lock, UserPlus, MapPin } from 'lucide-react';
 
 interface UserRegistrationProps {
   isOpen: boolean;
@@ -20,6 +20,7 @@ interface RegistrationData {
   phone: string;
   password: string;
   confirmPassword: string;
+  address: string;
 }
 
 export default function UserRegistration({ isOpen, onClose, onLoginClick }: UserRegistrationProps) {
@@ -31,7 +32,8 @@ export default function UserRegistration({ isOpen, onClose, onLoginClick }: User
     lastName: '',
     phone: '',
     password: '',
-    confirmPassword: ''
+    confirmPassword: '',
+    address: ''
   });
 
   const [errors, setErrors] = useState<Partial<RegistrationData>>({});
@@ -42,7 +44,8 @@ export default function UserRegistration({ isOpen, onClose, onLoginClick }: User
         firstName: data.firstName.trim(),
         lastName: data.lastName.trim(),
         phone: data.phone.trim(),
-        password: data.password
+        password: data.password,
+        address: data.address.trim()
       });
       
       if (!response.ok) {
@@ -64,7 +67,8 @@ export default function UserRegistration({ isOpen, onClose, onLoginClick }: User
         lastName: '',
         phone: '',
         password: '',
-        confirmPassword: ''
+        confirmPassword: '',
+        address: ''
       });
       setErrors({});
       
@@ -105,6 +109,10 @@ export default function UserRegistration({ isOpen, onClose, onLoginClick }: User
 
     if (formData.password !== formData.confirmPassword) {
       newErrors.confirmPassword = 'পাসওয়ার্ড মিলছে না';
+    }
+
+    if (!formData.address.trim()) {
+      newErrors.address = 'ঠিকানা প্রয়োজন';
     }
 
     setErrors(newErrors);
@@ -191,6 +199,26 @@ export default function UserRegistration({ isOpen, onClose, onLoginClick }: User
             </div>
             {errors.phone && (
               <p className="text-red-500 text-xs mt-1">{errors.phone}</p>
+            )}
+          </div>
+
+          <div>
+            <Label htmlFor="address" className="text-sm font-medium">
+              ঠিকানা *
+            </Label>
+            <div className="relative">
+              <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <Input
+                id="address"
+                type="text"
+                value={formData.address}
+                onChange={(e) => handleInputChange('address', e.target.value)}
+                placeholder="বাড়ির ঠিকানা"
+                className={`pl-10 ${errors.address ? 'border-red-500' : ''}`}
+              />
+            </div>
+            {errors.address && (
+              <p className="text-red-500 text-xs mt-1">{errors.address}</p>
             )}
           </div>
 

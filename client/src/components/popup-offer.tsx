@@ -30,8 +30,31 @@ export default function PopupOffer() {
   if (!activePopupOffer || !isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 sm:p-6">
-      <div className="relative bg-white rounded-2xl p-6 sm:p-8 max-w-sm w-full mx-auto shadow-2xl animate-in zoom-in-95 duration-300 transform-gpu">
+    <div 
+      className="fixed z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 sm:p-6"
+      style={{ 
+        position: 'fixed', 
+        top: 0, 
+        left: 0, 
+        right: 0, 
+        bottom: 0,
+        height: '100vh',
+        width: '100vw',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
+      }}
+    >
+      <div 
+        className="relative bg-white rounded-2xl p-6 sm:p-8 max-w-sm w-full shadow-2xl animate-in zoom-in-95 duration-300 transform-gpu"
+        style={{ 
+          position: 'relative', 
+          zIndex: 10000,
+          maxHeight: '90vh',
+          overflow: 'auto',
+          margin: 'auto'
+        }}
+      >
         {/* Close Button */}
         <button
           onClick={() => setIsOpen(false)}

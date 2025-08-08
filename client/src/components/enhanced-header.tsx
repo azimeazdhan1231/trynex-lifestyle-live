@@ -56,26 +56,7 @@ export default function EnhancedHeader() {
   return (
     <>
       <header className="sticky top-0 z-50 bg-white shadow-sm border-b">
-        {/* Top Bar */}
-        <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white py-2 hidden sm:block">
-          <div className="container mx-auto px-4">
-            <div className="flex justify-between items-center text-sm">
-              <div className="flex items-center gap-4">
-                <div className="flex items-center gap-1">
-                  <Phone className="w-3 h-3" />
-                  <span>+৮৮০ ১৭৪৭২৯২২৭৭</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <MapPin className="w-3 h-3" />
-                  <span>বিনামূল্যে ডেলিভারি ৫০০+ টাকায়</span>
-                </div>
-              </div>
-              <div className="text-sm">
-                বিশেষ ছাড় এবং অফার পেতে আমাদের সাথে থাকুন
-              </div>
-            </div>
-          </div>
-        </div>
+
 
         {/* Main Header */}
         <div className="container mx-auto px-4 py-3">
