@@ -240,6 +240,44 @@ export default function AdminPanelNew() {
     }
   });
 
+  // Offer mutations
+  const createOfferMutation = useMutation({
+    mutationFn: async (data: any) => {
+      const response = await apiRequest("POST", "/api/offers", data);
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/offers"] });
+      setIsOfferDialogOpen(false);
+      resetOfferForm();
+      toast({ title: "অফার যোগ হয়েছে", description: "নতুন অফার সফলভাবে যোগ করা হয়েছে" });
+    }
+  });
+
+  const updateOfferMutation = useMutation({
+    mutationFn: async (data: any) => {
+      const response = await apiRequest("PATCH", `/api/offers/${editingOffer?.id}`, data);
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/offers"] });
+      setIsOfferDialogOpen(false);
+      setEditingOffer(null);
+      resetOfferForm();
+      toast({ title: "অফার আপডেট হয়েছে", description: "অফার সফলভাবে আপডেট করা হয়েছে" });
+    }
+  });
+
+  const deleteOfferMutation = useMutation({
+    mutationFn: async (id: string) => {
+      await apiRequest("DELETE", `/api/offers/${id}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/offers"] });
+      toast({ title: "অফার মুছে ফেলা হয়েছে", description: "অফার সফলভাবে মুছে ফেলা হয়েছে" });
+    }
+  });
+
   // Helper functions
   const resetProductForm = () => {
     setProductForm({
@@ -384,6 +422,46 @@ export default function AdminPanelNew() {
   const handleDeleteCategory = (id: string) => {
     if (confirm("আপনি কি নিশ্চিত যে এই ক্যাটাগরিটি মুছে ফেলতে চান?")) {
       deleteCategoryMutation.mutate(id);
+    }
+  };
+
+  const handleEditOffer = (offer: any) => {
+    setEditingOffer(offer);
+    setOfferForm({
+      title: offer.title,
+      description: offer.description || "",
+      image_url: offer.image_url || "",
+      discount_percentage: offer.discount_percentage || 0,
+      min_order_amount: offer.min_order_amount?.toString() || "",
+      button_text: offer.button_text || "অর্ডার করুন",
+      button_link: offer.button_link || "/products",
+      is_popup: offer.is_popup || false,
+      popup_delay: offer.popup_delay || 3000,
+      active: offer.active ?? true,
+      expiry: offer.expiry ? new Date(offer.expiry).toISOString().split('T')[0] : ""
+    });
+    setIsOfferDialogOpen(true);
+  };
+
+  const handleDeleteOffer = (id: string) => {
+    if (confirm('এই অফার মুছে ফেলতে চান?')) {
+      deleteOfferMutation.mutate(id);
+    }
+  };
+
+  const handleSubmitOffer = async () => {
+    const offerData = {
+      ...offerForm,
+      discount_percentage: Number(offerForm.discount_percentage),
+      min_order_amount: offerForm.min_order_amount ? Number(offerForm.min_order_amount) : 0,
+      popup_delay: Number(offerForm.popup_delay),
+      expiry: offerForm.expiry ? new Date(offerForm.expiry).toISOString() : null
+    };
+
+    if (editingOffer) {
+      updateOfferMutation.mutate(offerData);
+    } else {
+      createOfferMutation.mutate(offerData);
     }
   };
 
@@ -1084,10 +1162,20 @@ export default function AdminPanelNew() {
                           </TableCell>
                           <TableCell>
                             <div className="flex gap-1">
-                              <Button variant="ghost" size="sm">
+                              <Button 
+                                variant="ghost" 
+                                size="sm"
+                                onClick={() => handleEditOffer(offer)}
+                                data-testid={`button-edit-offer-${offer.id}`}
+                              >
                                 <Edit2 className="w-4 h-4" />
                               </Button>
-                              <Button variant="ghost" size="sm">
+                              <Button 
+                                variant="ghost" 
+                                size="sm"
+                                onClick={() => handleDeleteOffer(offer.id)}
+                                data-testid={`button-delete-offer-${offer.id}`}
+                              >
                                 <Trash2 className="w-4 h-4" />
                               </Button>
                             </div>
@@ -1257,6 +1345,122 @@ export default function AdminPanelNew() {
         onClose={() => setOrderDetailsOpen(false)}
         order={selectedOrder}
       />
+
+      {/* Offer Dialog */}
+      <Dialog open={isOfferDialogOpen} onOpenChange={setIsOfferDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>
+              {editingOffer ? "অফার এডিট করুন" : "নতুন অফার যোগ করুন"}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="offer-title">শিরোনাম *</Label>
+              <Input
+                id="offer-title"
+                value={offerForm.title}
+                onChange={(e) => setOfferForm({...offerForm, title: e.target.value})}
+                placeholder="অফারের শিরোনাম লিখুন"
+                data-testid="input-offer-title"
+              />
+            </div>
+            
+            <div>
+              <Label htmlFor="offer-description">বিবরণ</Label>
+              <Textarea
+                id="offer-description"
+                value={offerForm.description}
+                onChange={(e) => setOfferForm({...offerForm, description: e.target.value})}
+                placeholder="অফারের বিবরণ লিখুন"
+                data-testid="input-offer-description"
+              />
+            </div>
+            
+            <div>
+              <Label htmlFor="offer-discount">ছাড়ের পরিমাণ (%)</Label>
+              <Input
+                id="offer-discount"
+                type="number"
+                value={offerForm.discount_percentage}
+                onChange={(e) => setOfferForm({...offerForm, discount_percentage: Number(e.target.value)})}
+                placeholder="0"
+                min="0"
+                max="100"
+                data-testid="input-offer-discount"
+              />
+            </div>
+            
+            <div>
+              <Label htmlFor="offer-min-amount">সর্বনিম্ন অর্ডার (৳)</Label>
+              <Input
+                id="offer-min-amount"
+                type="number"
+                value={offerForm.min_order_amount}
+                onChange={(e) => setOfferForm({...offerForm, min_order_amount: e.target.value})}
+                placeholder="0"
+                min="0"
+                data-testid="input-offer-min-amount"
+              />
+            </div>
+            
+            <div className="flex items-center space-x-2">
+              <Switch
+                id="offer-popup"
+                checked={offerForm.is_popup}
+                onCheckedChange={(checked) => setOfferForm({...offerForm, is_popup: checked})}
+                data-testid="switch-offer-popup"
+              />
+              <Label htmlFor="offer-popup">পপআপ হিসেবে দেখান</Label>
+            </div>
+            
+            {offerForm.is_popup && (
+              <div>
+                <Label htmlFor="popup-delay">পপআপ দেরি (মিলিসেকেন্ড)</Label>
+                <Input
+                  id="popup-delay"
+                  type="number"
+                  value={offerForm.popup_delay}
+                  onChange={(e) => setOfferForm({...offerForm, popup_delay: Number(e.target.value)})}
+                  placeholder="3000"
+                  min="1000"
+                  data-testid="input-popup-delay"
+                />
+              </div>
+            )}
+            
+            <div className="flex items-center space-x-2">
+              <Switch
+                id="offer-active"
+                checked={offerForm.active}
+                onCheckedChange={(checked) => setOfferForm({...offerForm, active: checked})}
+                data-testid="switch-offer-active"
+              />
+              <Label htmlFor="offer-active">সক্রিয়</Label>
+            </div>
+            
+            <div className="flex gap-2 pt-4">
+              <Button
+                onClick={handleSubmitOffer}
+                disabled={!offerForm.title || createOfferMutation.isPending || updateOfferMutation.isPending}
+                className="flex-1"
+                data-testid="button-submit-offer"
+              >
+                {createOfferMutation.isPending || updateOfferMutation.isPending ? "সেভ হচ্ছে..." : 
+                 editingOffer ? "আপডেট করুন" : "যোগ করুন"}
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => setIsOfferDialogOpen(false)}
+                className="flex-1"
+                data-testid="button-cancel-offer"
+              >
+                বাতিল
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
