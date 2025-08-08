@@ -495,6 +495,8 @@ a:focus-visible {
 @media (max-width: 1024px) {
   .mobile-optimized {
     overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
   }
   
   .mobile-optimized .container {
@@ -506,15 +508,74 @@ a:focus-visible {
     padding: 1rem;
     border-bottom: 1px solid #f3f4f6;
     transition: all 0.2s ease;
+    touch-action: manipulation;
   }
   
   .mobile-nav-item:active {
     background-color: #f9fafb;
+    transform: scale(0.98);
   }
   
   .mobile-nav-item:last-child {
     border-bottom: none;
   }
+}
+
+/* Perfect swipe and gesture support */
+.swipe-enabled {
+  touch-action: pan-x pan-y;
+  -webkit-overflow-scrolling: touch;
+  overflow-scrolling: touch;
+  scroll-snap-type: x mandatory;
+}
+
+.swipe-item {
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+}
+
+/* Perfect zoom support */
+.zoom-enabled {
+  touch-action: pinch-zoom;
+  transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.zoom-enabled:hover,
+.zoom-enabled:focus {
+  transform: scale(1.02);
+}
+
+/* Touch-friendly buttons */
+.touch-button {
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  position: relative;
+  overflow: hidden;
+}
+
+.touch-button:active {
+  transform: scale(0.98);
+  transition: transform 0.1s ease;
+}
+
+.touch-button::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.3);
+  transform: translate(-50%, -50%);
+  transition: width 0.3s ease, height 0.3s ease;
+}
+
+.touch-button:active::before {
+  width: 300px;
+  height: 300px;
 }
 
 /* Improved touch targets */

@@ -99,7 +99,8 @@ export default function EnhancedHeader() {
                 variant="ghost"
                 size="sm"
                 onClick={() => setIsMenuOpen(true)}
-                className="p-2"
+                className="p-2 touch-button hover:bg-gray-100 rounded-lg transition-all duration-200"
+                data-testid="button-mobile-search"
               >
                 <Search className="w-5 h-5" />
               </Button>
@@ -151,11 +152,12 @@ export default function EnhancedHeader() {
                 variant="ghost"
                 size="sm"
                 onClick={() => setIsCartOpen(true)}
-                className="relative p-2"
+                className="relative p-2 touch-button hover:bg-gray-100 rounded-lg transition-all duration-200"
+                data-testid="button-cart"
               >
                 <ShoppingCart className="w-5 h-5" />
                 {totalItems > 0 && (
-                  <Badge className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs">
+                  <Badge className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs animate-pulse">
                     {totalItems}
                   </Badge>
                 )}
@@ -164,7 +166,12 @@ export default function EnhancedHeader() {
               {/* Mobile Menu */}
               <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
                 <SheetTrigger asChild>
-                  <Button variant="ghost" size="sm" className="lg:hidden p-2 hover:bg-gray-100 rounded-lg transition-all duration-200">
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="lg:hidden p-2 touch-button hover:bg-gray-100 rounded-lg transition-all duration-200"
+                    data-testid="button-mobile-menu"
+                  >
                     <Menu className="w-5 h-5" />
                   </Button>
                 </SheetTrigger>

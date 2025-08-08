@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import EnhancedProductLoader from "@/components/enhanced-product-loader";
 import MobileOptimizedLayout from "@/components/mobile-optimized-layout";
 import TrackingSection from "@/components/tracking-section";
-import NewPopupOffer from "../components/new-popup-offer";
+import PerfectPopupOffer from "../components/perfect-popup-offer";
 import ProductModal from "@/components/product-modal-fixed";
 import CustomizeModal from "@/components/customize-modal";
 import { useToast } from "@/hooks/use-toast";
@@ -16,6 +16,8 @@ import { Link, useLocation } from "wouter";
 import { COMPANY_NAME, COMPANY_TAGLINE, WHATSAPP_NUMBER, createWhatsAppUrl, formatPrice } from "@/lib/constants";
 import { trackProductView, trackAddToCart } from "@/lib/analytics";
 import UnifiedProductCard from "@/components/unified-product-card";
+import MobileEnhancedProductCard from "@/components/mobile-enhanced-product-card";
+import MobileEnhancedCarousel from "@/components/mobile-enhanced-carousel";
 import DynamicProductCarousel from "@/components/dynamic-product-carousel";
 // Optimized imports - removed heavy utilities
 import type { Product, Offer } from "@shared/schema";
@@ -539,7 +541,7 @@ export default function Home() {
 
   return (
     <MobileOptimizedLayout>
-      <NewPopupOffer />
+      <PerfectPopupOffer />
 
       {/* Premium Hero Section */}
       <section 

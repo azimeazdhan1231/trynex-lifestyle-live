@@ -6,6 +6,8 @@ import EnhancedFooter from './enhanced-footer';
 import MobileResponsiveFixes from './mobile-responsive-fixes';
 import EnhancedPerformanceOptimizer from './enhanced-performance-optimizer';
 import ComprehensiveMobileOptimizer from './comprehensive-mobile-optimizer';
+import UltimateMobileResponsiveness from './ultimate-mobile-responsiveness';
+import ResponsiveViewportHandler from './responsive-viewport-handler';
 
 interface MobileOptimizedLayoutProps {
   children: React.ReactNode;
@@ -53,6 +55,8 @@ export default function MobileOptimizedLayout({
       <MobileResponsiveFixes />
       <EnhancedPerformanceOptimizer />
       <ComprehensiveMobileOptimizer />
+      <UltimateMobileResponsiveness />
+      <ResponsiveViewportHandler />
       <EnhancedHeader />
       
       <main className="pt-24 lg:pt-32">
