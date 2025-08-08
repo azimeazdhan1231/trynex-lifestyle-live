@@ -235,10 +235,12 @@ export default function ProductModal({ product, isOpen, onClose, onAddToCart, on
       {/* Image Overlay Modal */}
       <Dialog open={isImageOverlayOpen} onOpenChange={setIsImageOverlayOpen}>
         <DialogContent className="max-w-[95vw] w-[95vw] max-h-[95vh] h-[95vh] p-0 bg-black/95 border-0 overflow-hidden">
-          <DialogHeader className="sr-only">
-            <DialogTitle>ছবি দেখুন</DialogTitle>
-            <DialogDescription>পূর্ণ আকারে পণ্যের ছবি</DialogDescription>
-          </DialogHeader>
+          <DialogTitle className="sr-only">
+            {product.name} - সম্পূর্ণ ছবি
+          </DialogTitle>
+          <DialogDescription className="sr-only">
+            {product.name} এর সম্পূর্ণ আকারের ছবি দেখুন। বন্ধ করতে ESC চাপুন বা ছবির বাইরে ক্লিক করুন।
+          </DialogDescription>
           
           {/* Close Button */}
           <button
