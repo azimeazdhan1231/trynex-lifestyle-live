@@ -257,16 +257,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/products/:id', async (req, res) => {
     try {
       const { id } = req.params;
-      const product = await storage.getProduct(id);
       
+      // Set cache headers for individual products
+      res.set({
+        'Cache-Control': 'public, max-age=300',
+        'ETag': `product-${id}-${Date.now()}`,
+        'X-Cache': 'API-HIT'
+      });
+
+      // First try to find in memory cache
+      let product = productsCache.find(p => p.id === id);
+      
+      // If not in cache, fetch from storage
       if (!product) {
-        return res.status(404).json({ error: 'Product not found' });
+        product = await storage.getProduct(id);
       }
       
+      if (!product) {
+        return res.status(404).json({ 
+          error: 'Product not found',
+          message: 'পণ্য পাওয়া যায়নি' 
+        });
+      }
+      
+      console.log(`✅ Product ${id} fetched successfully:`, product.name);
       res.json(product);
     } catch (error) {
-      console.error('Failed to fetch product:', error);
-      res.status(500).json({ error: 'Failed to fetch product' });
+      console.error('❌ Failed to fetch product:', error);
+      res.status(500).json({ 
+        error: 'Failed to fetch product',
+        message: 'পণ্য লোড করতে সমস্যা হয়েছে'
+      });
     }
   });
 
