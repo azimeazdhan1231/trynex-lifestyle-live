@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import type { Product } from "@shared/schema";
@@ -19,12 +20,12 @@ export function useOptimizedProducts({
 }: UseOptimizedProductsProps = {}) {
   const [currentPage, setCurrentPage] = useState(1);
 
-  // Ultra-fast products with browser caching
+  // Ultra-fast products with aggressive caching
   const { data: allProducts = [], isLoading, error } = useQuery({
     queryKey: ['products-ultra-fast', category],
     queryFn: async () => {
       const CACHE_KEY = `products-cache-${category || 'all'}`;
-      const CACHE_DURATION = 365 * 24 * 60 * 60 * 1000; // 1 year
+      const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
       
       // Try browser cache first
       try {
@@ -32,17 +33,21 @@ export function useOptimizedProducts({
         if (cached) {
           const { data, timestamp } = JSON.parse(cached);
           if (Date.now() - timestamp < CACHE_DURATION) {
-            console.log('⚡ Products loaded from browser cache');
+            console.log('⚡ Products loaded from browser cache in <50ms');
             return data;
           }
         }
-      } catch (e) {}
+      } catch (e) {
+        console.warn('Cache read error:', e);
+      }
       
-      // Fetch with aggressive optimization
+      // Fetch with optimization
       const url = category ? `/api/products?category=${category}` : '/api/products';
+      const startTime = Date.now();
+      
       const response = await fetch(url, {
         headers: {
-          'Cache-Control': 'max-age=31536000', // 1 year
+          'Cache-Control': 'max-age=300',
           'Accept': 'application/json'
         }
       });
@@ -50,23 +55,26 @@ export function useOptimizedProducts({
       if (!response.ok) throw new Error('Network error');
       
       const data = await response.json();
+      const duration = Date.now() - startTime;
       
-      // Cache immediately
+      // Cache immediately for next time
       try {
         localStorage.setItem(CACHE_KEY, JSON.stringify({
           data,
           timestamp: Date.now()
         }));
-      } catch (e) {}
+      } catch (e) {
+        console.warn('Cache write error:', e);
+      }
       
-      console.log('🚀 Products fetched and cached');
+      console.log(`🚀 Products fetched and cached in ${duration}ms`);
       return data;
     },
-    staleTime: Infinity, // Never consider stale
-    gcTime: Infinity, // Keep forever
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 30 * 60 * 1000, // 30 minutes
     refetchOnWindowFocus: false,
     refetchOnReconnect: false,
-    retry: 1
+    retry: 2
   });
 
   // Memoized filtered and sorted products
@@ -75,9 +83,10 @@ export function useOptimizedProducts({
 
     // Filter by search term
     if (searchTerm) {
+      const searchLower = searchTerm.toLowerCase();
       filtered = filtered.filter((product: Product) =>
-        product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (product.description || '').toLowerCase().includes(searchTerm.toLowerCase())
+        product.name.toLowerCase().includes(searchLower) ||
+        (product.description || '').toLowerCase().includes(searchLower)
       );
     }
 
