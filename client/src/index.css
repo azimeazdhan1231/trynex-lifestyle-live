@@ -178,24 +178,24 @@
     padding-left: 1rem;
     padding-right: 1rem;
   }
-  
+
   .text-4xl {
     font-size: 1.875rem;
   }
-  
+
   .text-3xl {
     font-size: 1.5rem;
   }
-  
+
   .text-2xl {
     font-size: 1.25rem;
   }
-  
+
   .py-20 {
     padding-top: 3rem;
     padding-bottom: 3rem;
   }
-  
+
   .py-16 {
     padding-top: 2.5rem;
     padding-bottom: 2.5rem;
@@ -208,7 +208,7 @@
     min-height: 44px;
     min-width: 44px;
   }
-  
+
   .btn-sm {
     min-height: 40px;
     padding: 0.5rem 1rem;
@@ -278,20 +278,20 @@ a:focus-visible {
   .hero-section {
     padding: 2rem 1rem;
   }
-  
+
   .product-card {
     margin-bottom: 1rem;
   }
-  
+
   .container {
     padding-left: 0.75rem;
     padding-right: 0.75rem;
   }
-  
+
   .text-responsive {
     font-size: clamp(0.875rem, 4vw, 1.125rem);
   }
-  
+
   .btn-responsive {
     padding: 0.75rem 1.5rem;
     font-size: 0.875rem;
@@ -357,7 +357,7 @@ a:focus-visible {
   .card {
     border: 2px solid #000;
   }
-  
+
   .btn {
     border: 2px solid #000;
   }
@@ -386,7 +386,7 @@ a:focus-visible {
     0 0 0 1px rgba(59, 130, 246, 0.05);
 }
 
-/* Enhanced typography for Bengali */
+/* Bengali typography enhancement */
 .bengali-text {
   font-family: 'Kalpurush', 'SolaimanLipi', 'Noto Sans Bengali', sans-serif;
   line-height: 1.6;
@@ -496,22 +496,22 @@ a:focus-visible {
   .mobile-optimized {
     overflow-x: hidden;
   }
-  
+
   .mobile-optimized .container {
     padding-left: 1rem;
     padding-right: 1rem;
   }
-  
+
   .mobile-nav-item {
     padding: 1rem;
     border-bottom: 1px solid #f3f4f6;
     transition: all 0.2s ease;
   }
-  
+
   .mobile-nav-item:active {
     background-color: #f9fafb;
   }
-  
+
   .mobile-nav-item:last-child {
     border-bottom: none;
   }
@@ -523,13 +523,13 @@ a:focus-visible {
     min-height: 44px;
     min-width: 44px;
   }
-  
+
   .btn-mobile {
     padding: 0.875rem 1.5rem;
     font-size: 1rem;
     min-height: 48px;
   }
-  
+
   .input-mobile {
     padding: 1rem;
     font-size: 16px; /* Prevents zoom on iOS */
@@ -960,17 +960,9 @@ img[loading="lazy"] {
   --popover-foreground: hsl(20, 14.3%, 4.1%);
   --card: hsl(0, 0%, 100%);
   --card-foreground: hsl(20, 14.3%, 4.1%);
-  --border: hsl(20, 5.9%, 90%);
-  --input: hsl(20, 5.9%, 90%);
-  --primary: hsl(158, 64%, 52%);
-  --primary-foreground: hsl(210, 40%, 98%);
-  --secondary: hsl(0, 74%, 42%);
-  --secondary-foreground: hsl(60, 9.1%, 97.8%);
-  --accent: hsl(43, 89%, 48%);
-  --accent-foreground: hsl(0, 0%, 100%);
-  --destructive: hsl(0, 84.2%, 60.2%);
-  --destructive-foreground: hsl(60, 9.1%, 97.8%);
-  --ring: hsl(20, 14.3%, 4.1%);
+  --border: 214.3 31.8% 91.4%;
+  --input: 214.3 31.8% 91.4%;
+  --ring: 222.2 84% 4.9%;
   --radius: 0.5rem;
 }
 
@@ -1222,7 +1214,7 @@ img[loading="lazy"] {
 }
 
 .animate-pulseGlow {
-  animation: pulseGlow 2s infinite;
+  animation: pulseGlow 2s ease-in-out infinite;
 }
 
 .animate-loadingDots {
@@ -1491,7 +1483,7 @@ img[loading="lazy"] {
     grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
     gap: 1rem;
   }
-  
+
   .product-card-image {
     height: 150px;
   }
@@ -1584,4 +1576,53 @@ img[loading="lazy"] {
 /* Smooth scrolling for carousel */
 .scroll-smooth {
   scroll-behavior: smooth;
+}
+
+/* Desktop Modal Improvements */
+@media (min-width: 1024px) {
+  .dialog-content {
+    max-width: min(90vw, 1200px);
+    min-height: 400px;
+  }
+
+  .modal-container {
+    padding: 2rem;
+  }
+
+  .grid-desktop {
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+  }
+}
+
+/* Improved Button Spacing */
+@media (min-width: 768px) {
+  .button-group {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+  }
+
+  .button-group button {
+    min-width: 120px;
+  }
+}
+
+/* Card Grid Responsive */
+@media (min-width: 1280px) {
+  .product-grid {
+    grid-template-columns: repeat(5, 1fr);
+  }
+}
+
+@media (min-width: 1024px) and (max-width: 1279px) {
+  .product-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  .product-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
 }

@@ -81,7 +81,7 @@ export default function CartModal({ isOpen, onClose }: CartModalProps) {
                           />
                         </div>
                       )}
-                      
+
                       <div className="flex-1 min-w-0">
                         <h5 className="font-semibold text-sm sm:text-base text-gray-900 line-clamp-2 leading-tight">{item.name}</h5>
                         <p className="text-primary font-medium text-sm sm:text-base mt-1">{formatPrice(item.price)} প্রতিটি</p>
@@ -183,7 +183,7 @@ export default function CartModal({ isOpen, onClose }: CartModalProps) {
             </div>
           )}
           </div>
-          
+
           {/* Footer Actions - Mobile Optimized */}
           {cart.length > 0 && (
             <div className="flex-shrink-0 border-t bg-gray-50/80 px-4 sm:px-6 py-3 sm:py-4">

@@ -176,7 +176,7 @@ export default function ProductsPage() {
         price: Number(product.price),
         image_url: product.image_url
       }, customization);
-      
+
       toast({
         title: "কাস্টম অর্ডার যোগ করা হয়েছে",
         description: `${product.name} কাস্টমাইজেশন সহ কার্টে যোগ করা হয়েছে`,
@@ -216,7 +216,7 @@ export default function ProductsPage() {
 
   return (
     <MobileOptimizedLayout>
-      
+
       <div className="container mx-auto px-4 py-8">
         {/* Hero Section - Professional E-commerce Style */}
         <div className="relative bg-gradient-to-br from-emerald-600 via-blue-600 to-purple-700 rounded-2xl p-6 sm:p-8 md:p-12 mb-8 text-white overflow-hidden shadow-2xl border border-white/20">
@@ -325,7 +325,7 @@ export default function ProductsPage() {
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-2 xs:grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4 md:gap-6">
+            <div className="product-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 md:gap-6">
               {displayedProducts.map((product) => (
                 <UnifiedProductCard
                   key={product.id}

@@ -200,7 +200,7 @@ export default function Header({ cartCount, onCartOpen }: HeaderProps) {
                       <h2 className="text-lg font-bold text-primary">{COMPANY_NAME}</h2>
                       <p className="text-sm text-gray-600">নেভিগেশন মেনু</p>
                     </div>
-                    
+
                     <div className="flex flex-col space-y-2">
                       {navItems.map((item) => (
                         <Link
@@ -217,7 +217,7 @@ export default function Header({ cartCount, onCartOpen }: HeaderProps) {
                         </Link>
                       ))}
                     </div>
-                    
+
                     {/* User section in mobile menu */}
                     {!isLoading && !isAuthenticated && (
                       <div className="border-t pt-4 mt-6">
