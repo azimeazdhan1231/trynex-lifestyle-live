@@ -10,6 +10,7 @@ import DebugInfo from "@/components/debug-info";
 
 // Dynamic imports for better code splitting
 const Home = lazy(() => import("./pages/home"));
+const Product = lazy(() => import("./pages/product"));
 const Products = lazy(() => import("./pages/products"));
 const Contact = lazy(() => import("./pages/contact"));
 const Tracking = lazy(() => import("./pages/tracking"));
@@ -50,6 +51,7 @@ function Router() {
     <Suspense fallback={<LoadingFallback />}>
       <Switch>
         <Route path="/" component={Home} />
+        <Route path="/product" component={Product} />
         <Route path="/products" component={Products} />
         <Route path="/offers" component={Offers} />
         <Route path="/contact" component={Contact} />

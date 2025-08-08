@@ -36,50 +36,11 @@ export default function UserManagement() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
 
-  // Mock data - replace with real API
-  const mockUsers: User[] = [
-    {
-      id: "1",
-      name: "রহিম উদ্দিন",
-      email: "rahim@example.com",
-      phone: "+8801712345678",
-      role: "customer",
-      status: "active",
-      created_at: "2024-01-15",
-      last_login: "2024-08-08",
-      total_orders: 12,
-      total_spent: 15600
-    },
-    {
-      id: "2", 
-      name: "ফাতেমা খাতুন",
-      email: "fatema@example.com",
-      phone: "+8801812345678",
-      role: "customer",
-      status: "active",
-      created_at: "2024-02-20",
-      last_login: "2024-08-07",
-      total_orders: 8,
-      total_spent: 9200
-    },
-    {
-      id: "3",
-      name: "করিম মিয়া",
-      email: "karim@example.com", 
-      phone: "+8801912345678",
-      role: "moderator",
-      status: "active",
-      created_at: "2024-01-10",
-      last_login: "2024-08-08",
-      total_orders: 0,
-      total_spent: 0
-    }
-  ];
-
-  // For now using mock data - replace with real query
-  const { data: users = mockUsers, isLoading } = useQuery({
+  // Real API query for users data
+  const { data: users = [], isLoading } = useQuery({
     queryKey: ["/api/users"],
-    queryFn: () => Promise.resolve(mockUsers)
+    staleTime: 1000 * 60 * 5, // Cache for 5 minutes
+    refetchOnWindowFocus: false
   });
 
   // Update user mutation

@@ -49,8 +49,8 @@ export default function UnifiedProductCard({
   const handleCardClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    console.log("🔍 UnifiedProductCard: Card clicked, calling onViewProduct with:", product.name);
-    onViewProduct(product);
+    console.log("🔍 UnifiedProductCard: Card clicked, navigating to product page:", product.name);
+    window.location.href = `/product?id=${product.id}`;
   };
 
   const handleAddToCart = (e: React.MouseEvent) => {
@@ -69,7 +69,7 @@ export default function UnifiedProductCard({
     e.preventDefault();
     e.stopPropagation();
     console.log("👁️ UnifiedProductCard: View details clicked for:", product.name);
-    onViewProduct(product);
+    window.location.href = `/product?id=${product.id}`;
   };
 
   const handleToggleFavorite = (e: React.MouseEvent) => {

@@ -6,62 +6,16 @@ import { Badge } from "@/components/ui/badge";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell, Legend } from "recharts";
 import { TrendingUp, TrendingDown, Users, ShoppingCart, DollarSign, Package, Calendar, Eye, MousePointer, ArrowUpRight } from "lucide-react";
 
-// Mock analytics data
-const mockAnalytics = {
-  overview: {
-    total_revenue: 156000,
-    revenue_change: 12.5,
-    total_orders: 342,
-    orders_change: 8.3,
-    total_customers: 128,
-    customers_change: -2.1,
-    conversion_rate: 3.8,
-    conversion_change: 5.2
-  },
-  revenue_chart: [
-    { month: "জানুয়ারি", revenue: 12000, orders: 45 },
-    { month: "ফেব্রুয়ারি", revenue: 15000, orders: 52 },
-    { month: "মার্চ", revenue: 18000, orders: 61 },
-    { month: "এপ্রিল", revenue: 22000, orders: 68 },
-    { month: "মে", revenue: 19000, orders: 58 },
-    { month: "জুন", revenue: 25000, orders: 75 },
-    { month: "জুলাই", revenue: 28000, orders: 82 },
-    { month: "আগস্ট", revenue: 31000, orders: 95 }
-  ],
-  top_products: [
-    { name: "কাস্টম মগ", sales: 156, revenue: 23400 },
-    { name: "ফ্রেম", sales: 124, revenue: 18600 },
-    { name: "টি-শার্ট", sales: 98, revenue: 44100 },
-    { name: "কুশন", sales: 87, revenue: 13050 },
-    { name: "ক্যালেন্ডার", sales: 76, revenue: 15200 }
-  ],
-  category_distribution: [
-    { name: "মগ", value: 35, color: "#3b82f6" },
-    { name: "পোশাক", value: 28, color: "#ef4444" },
-    { name: "ফ্রেম", value: 20, color: "#10b981" },
-    { name: "এক্সেসরিজ", value: 17, color: "#f59e0b" }
-  ],
-  traffic_sources: [
-    { source: "Facebook", visitors: 2840, percentage: 45.2 },
-    { source: "Google", visitors: 1920, percentage: 30.5 },
-    { source: "Direct", visitors: 890, percentage: 14.2 },
-    { source: "Instagram", visitors: 640, percentage: 10.1 }
-  ],
-  recent_activities: [
-    { id: 1, type: "order", message: "নতুন অর্ডার #TRX12345", time: "২ মিনিট আগে" },
-    { id: 2, type: "user", message: "নতুন ব্যবহারকারী নিবন্ধিত", time: "১৫ মিনিট আগে" },
-    { id: 3, type: "product", message: "পণ্য স্টক কম", time: "৩০ মিনিট আগে" },
-    { id: 4, type: "revenue", message: "দৈনিক লক্ষ্য অর্জিত", time: "১ ঘণ্টা আগে" }
-  ]
-};
+// All data now comes from real API endpoints
 
 export default function AnalyticsDashboard() {
   const [dateRange, setDateRange] = useState("last_30_days");
   
-  // Mock query - replace with real API
-  const { data: analytics = mockAnalytics, isLoading } = useQuery({
+  // Real API query for analytics data
+  const { data: analytics, isLoading } = useQuery({
     queryKey: ["/api/analytics", dateRange],
-    queryFn: () => Promise.resolve(mockAnalytics)
+    staleTime: 1000 * 60 * 5, // Cache for 5 minutes
+    refetchOnWindowFocus: false
   });
 
   const formatCurrency = (amount: number) => `৳${amount.toLocaleString()}`;
@@ -78,7 +32,7 @@ export default function AnalyticsDashboard() {
     return change >= 0 ? "text-green-600" : "text-red-600";
   };
 
-  if (isLoading) {
+  if (isLoading || !analytics) {
     return (
       <div className="space-y-6">
         {Array.from({ length: 4 }).map((_, i) => (
@@ -204,7 +158,7 @@ export default function AnalyticsDashboard() {
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={analytics.revenue_chart}>
+              <BarChart data={analytics?.revenue_chart || []}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="month" />
                 <YAxis />

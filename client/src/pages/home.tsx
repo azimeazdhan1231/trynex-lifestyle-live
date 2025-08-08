@@ -4,7 +4,7 @@ import { ArrowRight, MessageCircle, ShoppingCart, Gift, Star, Clock, TrendingUp,
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import PremiumLoadingSkeleton from "@/components/PremiumLoadingSkeleton";
+import EnhancedProductLoader from "@/components/enhanced-product-loader";
 import Header from "@/components/header";
 import TrackingSection from "@/components/tracking-section";
 import PopupOffer from "../components/popup-offer";
@@ -266,8 +266,8 @@ function ProductSection({
             <div className="w-32 h-1 bg-gradient-to-r from-primary/40 via-primary/60 to-primary/40 mx-auto mt-8 rounded-full animate-premium-pulse" />
           </div>
 
-          {/* Premium Product Grid Loading */}
-          <PremiumLoadingSkeleton count={8} />
+          {/* Enhanced Product Grid Loading */}
+          <EnhancedProductLoader count={8} />
 
           {/* Premium Loading Footer */}
           <div className="text-center mt-16">
