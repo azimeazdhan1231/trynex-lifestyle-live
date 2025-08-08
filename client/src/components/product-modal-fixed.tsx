@@ -43,7 +43,7 @@ export default function ProductModal({ product, isOpen, onClose, onAddToCart, on
     if (product.stock === 0) {
       toast({
         title: "স্টক নেই",
-        description: "এই পণ্যটি বর্তমানে স্টকে নেই",
+        description: "এই পণ্যটি currently স্টকে নেই",
         variant: "destructive",
       });
       return;
@@ -161,35 +161,37 @@ export default function ProductModal({ product, isOpen, onClose, onAddToCart, on
               )}
 
               {/* Action Buttons */}
-              <div className="space-y-3">
-                <Button
-                  onClick={handleAddToCart}
-                  disabled={product.stock === 0}
-                  className="w-full"
-                  size="lg"
-                >
-                  <ShoppingCart className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-                  {product.stock === 0 ? "স্টক নেই" : "কার্টে যোগ করুন"}
-                </Button>
+              <div className="space-y-3 pt-6">
+                {/* First Row - Add to Cart and WhatsApp Order */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <Button
-                    onClick={handleWhatsAppOrder}
+                    onClick={handleAddToCart}
                     variant="outline"
-                    className="bg-green-500 text-white hover:bg-green-600 border-green-500"
+                    className="w-full border-2 border-blue-500 text-blue-600 hover:bg-blue-50"
                     size="lg"
+                    disabled={product.stock === 0}
                   >
-                    <MessageCircle className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-                    হোয়াটসঅ্যাপে অর্ডার
+                    <ShoppingCart className="w-5 h-5 mr-2" />
+                    কার্টে যোগ করুন
                   </Button>
                   <Button
+                    onClick={handleWhatsAppOrder}
+                    className="w-full bg-green-500 hover:bg-green-600 text-white"
+                    size="lg"
+                  >
+                    <MessageCircle className="w-5 h-5 mr-2" />
+                    WhatsApp অর্ডার
+                  </Button>
+                </div>
+
+                {/* Second Row - Customize Button */}
+                <div className="w-full">
+                  <Button
                     onClick={() => {
-                      if (onCustomize) {
-                        onCustomize(product);
-                        onClose();
-                      }
+                      onClose();
+                      if (onCustomize) onCustomize(product);
                     }}
-                    variant="outline"
-                    className="bg-purple-500 text-white hover:bg-purple-600 border-purple-500"
+                    className="w-full bg-purple-500 text-white hover:bg-purple-600"
                     size="lg"
                     disabled={!onCustomize}
                   >
