@@ -70,7 +70,7 @@ function Router() {
         <Route path="/auth-old" component={Auth} />
         <Route path="/dashboard" component={Dashboard} />
         <Route path="/refund-policy" component={RefundPolicyDynamic} />
-        <Route path="/return-policy" element={ReturnPolicy} />
+        <Route path="/return-policy" component={ReturnPolicy} />
         <Route path="/terms-conditions" component={TermsConditionsDynamic} />
         <Route component={NotFound} />
       </Switch>
