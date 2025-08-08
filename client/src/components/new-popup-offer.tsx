@@ -31,7 +31,7 @@ export default function NewPopupOffer() {
 
   return (
     <div 
-      className="fixed inset-0 z-[99999] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"
+      className="fixed inset-0 z-[99999] bg-black/60 backdrop-blur-sm flex items-center justify-center p-6"
       style={{ 
         position: 'fixed',
         top: 0,
@@ -55,17 +55,23 @@ export default function NewPopupOffer() {
           position: 'relative',
           zIndex: 100000,
           maxHeight: '90vh',
-          overflow: 'auto'
+          overflow: 'auto',
+          margin: '20px' // Ensure space around the modal for the close button
         }}
         onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside modal
       >
         {/* Close Button */}
         <button
           onClick={() => setIsOpen(false)}
-          className="absolute -top-3 -right-3 w-10 h-10 bg-gray-900 hover:bg-gray-800 text-white rounded-full flex items-center justify-center shadow-lg transition-all duration-200 hover:scale-105 z-10"
+          className="absolute -top-4 -right-4 w-12 h-12 bg-gray-900 hover:bg-gray-800 text-white rounded-full flex items-center justify-center shadow-xl transition-all duration-200 hover:scale-105 z-[100001]"
+          style={{
+            position: 'absolute',
+            top: '-16px',
+            right: '-16px'
+          }}
           data-testid="button-close-popup"
         >
-          <X className="w-5 h-5" />
+          <X className="w-6 h-6" />
         </button>
 
         {/* Header with gradient */}
