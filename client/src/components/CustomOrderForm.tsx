@@ -7,6 +7,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation } from "@tanstack/react-query";
+import Header from "@/components/header";
+import { useCart } from "@/hooks/use-cart";
 import { 
   Upload, 
   Phone, 
@@ -169,9 +171,13 @@ export default function CustomOrderForm() {
     customOrderMutation.mutate(formData);
   };
 
+  const { totalItems } = useCart();
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 py-8 px-4">
-      <div className="max-w-2xl mx-auto">
+    <div className="min-h-screen bg-gray-50">
+      <Header cartCount={totalItems} onCartOpen={() => {}} />
+      <div className="pt-16 min-h-screen bg-gradient-to-br from-green-50 to-blue-50 py-8 px-4">
+        <div className="max-w-2xl mx-auto">
         <Card className="shadow-xl border-0">
           <CardHeader className="bg-gradient-to-r from-green-500 to-blue-500 text-white rounded-t-lg">
             <CardTitle className="text-center text-2xl flex items-center justify-center gap-2">
@@ -432,6 +438,7 @@ export default function CustomOrderForm() {
             </form>
           </CardContent>
         </Card>
+        </div>
       </div>
     </div>
   );
