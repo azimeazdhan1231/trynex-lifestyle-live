@@ -70,33 +70,70 @@ export default function CheckoutModal({ isOpen, onClose, cart, onOrderComplete }
 
   const createOrderMutation = useMutation({
     mutationFn: async (orderData: any) => {
-      const response = await apiRequest("POST", "/api/orders", orderData);
-      if (!response.ok) {
-        throw new Error('Order creation failed');
+      try {
+        const response = await apiRequest("POST", "/api/orders", orderData);
+        if (!response.ok) {
+          const errorData = await response.text();
+          throw new Error(`Order creation failed: ${errorData}`);
+        }
+        const result = await response.json();
+        return result;
+      } catch (error) {
+        console.error('Order submission error:', error);
+        throw error;
       }
-      return response.json();
     },
-    onSuccess: (order: Order) => {
-      // Track successful purchase
-      trackPurchase(Number(order.total), order.tracking_id);
+    onSuccess: (orderResponse: any) => {
+      console.log('Order response:', orderResponse);
+      
+      if (orderResponse && orderResponse.success) {
+        // Track successful purchase
+        if (orderResponse.tracking_id) {
+          trackPurchase(Number(totalPrice), orderResponse.tracking_id);
+        }
 
-      queryClient.invalidateQueries({ queryKey: ["/api/orders"] });
-      setCompletedOrder(order);
-      setShowSuccessModal(true);
-      onClose(); // Close checkout modal
-      onOrderComplete();
-      // Reset form
-      setFormData({
-        customer_name: "",
-        phone: "",
-        district: "",
-        thana: "",
-        address: "",
-        payment_number: "",
-        trx_id: "",
-      });
+        queryClient.invalidateQueries({ queryKey: ["/api/orders"] });
+        
+        // Create order object for success modal
+        const orderForModal = {
+          id: orderResponse.order_id,
+          tracking_id: orderResponse.tracking_id,
+          total: totalPrice.toString(),
+          items: cart,
+          customer_name: formData.customer_name,
+          phone: formData.phone,
+          district: formData.district,
+          thana: formData.thana,
+          address: formData.address,
+          status: 'pending',
+          created_at: new Date().toISOString()
+        };
+        
+        setCompletedOrder(orderForModal);
+        setShowSuccessModal(true);
+        onClose(); // Close checkout modal
+        onOrderComplete();
+        
+        // Reset form
+        setFormData({
+          customer_name: "",
+          phone: "",
+          district: "",
+          thana: "",
+          address: "",
+          payment_number: "",
+          trx_id: "",
+        });
+
+        toast({
+          title: "অর্ডার সফল!",
+          description: `আপনার অর্ডার নিশ্চিত হয়েছে। ট্র্যাকিং আইডি: ${orderResponse.tracking_id}`,
+        });
+      } else {
+        throw new Error('Invalid order response');
+      }
     },
-    onError: (error) => {
+    onError: (error: any) => {
       console.error('Order creation error:', error);
       toast({
         title: "অর্ডার ব্যর্থ",

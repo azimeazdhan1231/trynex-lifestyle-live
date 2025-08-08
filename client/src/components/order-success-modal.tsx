@@ -39,8 +39,16 @@ export default function OrderSuccessModal({ isOpen, onClose, order }: OrderSucce
     window.open(createWhatsAppUrl(message), '_blank');
   };
 
-  const orderItems = Array.isArray(order.items) ? order.items : [];
-  const orderTotal = parseFloat(order.total.toString());
+  const orderItems = order?.items ? (Array.isArray(order.items) ? order.items : 
+    (typeof order.items === 'string' ? (() => {
+      try {
+        return JSON.parse(order.items);
+      } catch {
+        return [];
+      }
+    })() : [])) : [];
+
+  const orderTotal = parseFloat(order?.total || '0');
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
