@@ -155,6 +155,7 @@ export default function ProductsPage() {
       toast({
         title: "কার্টে যোগ করা হয়েছে",
         description: `${product.name} কার্টে যোগ করা হয়েছে`,
+        duration: 3000,
       });
     } catch (error) {
       console.error('Error adding to cart:', error);
@@ -179,6 +180,7 @@ export default function ProductsPage() {
       toast({
         title: "কাস্টম অর্ডার যোগ করা হয়েছে",
         description: `${product.name} কাস্টমাইজেশন সহ কার্টে যোগ করা হয়েছে`,
+        duration: 3000,
       });
     } catch (error) {
       console.error('Error adding customized product to cart:', error);
