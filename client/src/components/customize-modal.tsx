@@ -191,20 +191,20 @@ export default function CustomizeModalFixed({ product, isOpen, onClose, onAddToC
 • কাস্টম টেক্সট: ${customization.customText || "নেই"}
 • বিশেষ নির্দেশনা: ${customization.specialInstructions || "নেই"}
 • পরিমাণ: ${customization.quantity}
-• মূল্য: ${formatPrice(parseFloat(product.price.toString()) * customization.quantity)}
+• মূল্য: ${formatPrice(parseFloat((product?.price || 0).toString()) * customization.quantity)}
     `;
 
     window.open(createWhatsAppUrl(customDetails.trim()), '_blank');
   };
 
-  const totalPrice = parseFloat(product.price.toString()) * customization.quantity;
+  const totalPrice = parseFloat((product?.price || 0).toString()) * customization.quantity;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-white dark:bg-gray-900">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold text-gray-900 dark:text-white">
-            {product.name} কাস্টমাইজ করুন
+            {product?.name || "প্রোডাক্ট"} কাস্টমাইজ করুন
           </DialogTitle>
         </DialogHeader>
 
@@ -217,7 +217,7 @@ export default function CustomizeModalFixed({ product, isOpen, onClose, onAddToC
               className="w-full h-64 object-cover rounded-lg"
             />
             <div className="text-center">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{product.name}</h3>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{product?.name || "প্রোডাক্ট"}</h3>
               <p className="text-2xl font-bold text-green-600">
                 {formatPrice(totalPrice)}
               </p>

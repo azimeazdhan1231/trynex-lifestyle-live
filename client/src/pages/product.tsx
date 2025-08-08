@@ -338,8 +338,8 @@ export default function ProductPage(props: any) {
         </div>
       </div>
 
-      {/* Customize Modal */}
-      {product && (
+      {/* Customize Modal - Temporarily disabled to fix navigation */}
+      {/* {product && (
         <CustomizeModal
           isOpen={isCustomizeModalOpen}
           onClose={() => setIsCustomizeModalOpen(false)}
@@ -360,7 +360,7 @@ export default function ProductPage(props: any) {
           setIsCustomizeModalOpen(false);
         }}
         />
-      )}
+      )} */}
     </div>
   );
 }
