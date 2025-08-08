@@ -35,6 +35,8 @@ export default function CheckoutModal({ isOpen, onClose, cart, onOrderComplete }
     district: "",
     thana: "",
     address: "",
+    payment_number: "",
+    trx_id: "",
   });
   const [deliveryFee, setDeliveryFee] = useState(80);
   const [availableThanas, setAvailableThanas] = useState<string[]>([]);
@@ -90,6 +92,8 @@ export default function CheckoutModal({ isOpen, onClose, cart, onOrderComplete }
         district: "",
         thana: "",
         address: "",
+        payment_number: "",
+        trx_id: "",
       });
     },
     onError: (error) => {
@@ -164,11 +168,20 @@ export default function CheckoutModal({ isOpen, onClose, cart, onOrderComplete }
       return processedItem;
     }));
 
+    // Collect payment info
+    const paymentInfo = {
+      payment_number: formData.payment_number,
+      trx_id: formData.trx_id,
+      payment_method: "bKash/Nagad",
+      amount_paid: isCustomOrder ? customAdvancePayment : totalPrice,
+    };
+
     const orderData = {
       ...formData,
       items: processedItems,
       total: totalPrice.toString(),
       delivery_fee: deliveryFee,
+      payment_info: paymentInfo,
     };
 
     console.log('Submitting order with processed items:', orderData);
@@ -331,6 +344,8 @@ export default function CheckoutModal({ isOpen, onClose, cart, onOrderComplete }
                     id="payment_number"
                     type="text"
                     maxLength={4}
+                    value={formData.payment_number}
+                    onChange={(e) => handleInputChange("payment_number", e.target.value)}
                     placeholder="যেমন: 2277"
                     className="text-sm"
                   />
@@ -340,6 +355,8 @@ export default function CheckoutModal({ isOpen, onClose, cart, onOrderComplete }
                   <Input
                     id="trx_id"
                     type="text"
+                    value={formData.trx_id}
+                    onChange={(e) => handleInputChange("trx_id", e.target.value)}
                     placeholder="TrxID12345"
                     className="text-sm"
                   />
