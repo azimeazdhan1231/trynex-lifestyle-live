@@ -300,15 +300,14 @@ function ProductSection({
           <div className="w-24 h-1 bg-gradient-to-r from-primary to-primary/50 mx-auto mt-6 rounded-full"></div>
         </div>
 
-        {/* Desktop Grid View */}
-        <div className="hidden lg:grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 sm:gap-8">
+        {/* Desktop Grid View - Improved with uniform heights */}
+        <div className="hidden lg:grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 auto-rows-fr">
           {products.map((product, index) => (
             <div 
               key={product.id} 
-              className="transform transition-all duration-500"
+              className="h-full transform transition-all duration-500 opacity-0"
               style={{
-                animationDelay: `${index * 100}ms`,
-                animation: 'fadeInUp 0.8s ease-out forwards'
+                animation: `fadeInUp 0.8s ease-out ${index * 150}ms forwards`
               }}
             >
               <UnifiedProductCard
@@ -322,36 +321,26 @@ function ProductSection({
           ))}
         </div>
 
-        {/* Mobile Carousel View */}
+        {/* Mobile Grid View - Improved responsive design */}
         <div className="lg:hidden">
-          <div className="relative overflow-hidden">
-            <div className="flex gap-4 overflow-x-auto scrollbar-hide pb-4 snap-x snap-mandatory" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
-              {products.map((product, index) => (
-                <div 
-                  key={product.id} 
-                  className="flex-shrink-0 w-[280px] sm:w-[320px] snap-start transform transition-all duration-500"
-                  style={{
-                    animationDelay: `${index * 100}ms`,
-                    animation: 'fadeInUp 0.8s ease-out forwards'
-                  }}
-                >
-                  <UnifiedProductCard
-                    product={product}
-                    onAddToCart={onAddToCart}
-                    onViewProduct={onViewProduct}
-                    onCustomize={onCustomize || (() => {})}
-                    showBadge={true}
-                  />
-                </div>
-              ))}
-            </div>
-            
-            {/* Scroll Indicators */}
-            <div className="flex justify-center mt-4 space-x-2">
-              {Array.from({ length: Math.ceil(products.length / 2) }).map((_, index) => (
-                <div key={index} className="w-2 h-2 bg-gray-300 rounded-full"></div>
-              ))}
-            </div>
+          <div className="grid grid-cols-1 xs:grid-cols-2 gap-4 sm:gap-6">
+            {products.map((product, index) => (
+              <div 
+                key={product.id} 
+                className="h-full transform transition-all duration-500 opacity-0"
+                style={{
+                  animation: `fadeInUp 0.8s ease-out ${index * 100}ms forwards`
+                }}
+              >
+                <UnifiedProductCard
+                  product={product}
+                  onAddToCart={onAddToCart}
+                  onViewProduct={onViewProduct}
+                  onCustomize={onCustomize || (() => {})}
+                  showBadge={true}
+                />
+              </div>
+            ))}
           </div>
         </div>
 
@@ -359,7 +348,7 @@ function ProductSection({
           <Button 
             size="lg" 
             variant="outline" 
-            className="group bg-white hover:bg-primary hover:text-white border-2 border-primary/20 hover:border-primary shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 px-8 py-4"
+            className="group bg-white hover:bg-primary hover:text-white border-2 border-primary/20 hover:border-primary shadow-lg hover:shadow-xl btn-professional hover-lift px-8 py-4"
             onClick={() => window.location.href = '/products'}
           >
             <span className="font-medium text-lg">সব পণ্য দেখুন</span>

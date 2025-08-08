@@ -118,10 +118,14 @@ export default function UnifiedProductCard({
   };
 
   return (
-    <Card className="group hover:shadow-xl transition-all duration-300 border border-gray-100 overflow-hidden bg-white hover:border-primary/30 transform hover:-translate-y-1 sm:hover:-translate-y-2 h-full flex flex-col">
-      <div className="relative flex-shrink-0">
+    <Card 
+      className="group relative overflow-hidden bg-white border border-gray-200/50 hover:border-primary/30 hover-lift h-full flex flex-col rounded-xl shadow-sm hover:shadow-2xl hover:shadow-primary/10"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      <div className="relative flex-shrink-0 overflow-hidden rounded-t-xl">
         {/* Premium Product Image with Progressive Loading */}
-        <div className="aspect-[4/5] overflow-hidden bg-gradient-to-br from-gray-50 via-white to-gray-50 relative">
+        <div className="aspect-[3/4] overflow-hidden bg-gradient-to-br from-gray-50 via-white to-gray-50 relative">
           {/* Image Loading Placeholder */}
           {!imageLoaded && (
             <div className="absolute inset-0 bg-gradient-to-br from-gray-100 via-gray-50 to-gray-100 flex items-center justify-center">
@@ -135,9 +139,9 @@ export default function UnifiedProductCard({
           <img
             src={product.image_url || "https://images.unsplash.com/photo-1544787219-7f47ccb76574?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=750&q=80"}
             alt={product.name}
-            className={`w-full h-full object-cover transition-all duration-700 transform
+            className={`w-full h-full object-cover transition-all duration-700 ease-out transform
               ${imageLoaded ? 'opacity-100 scale-100' : 'opacity-0 scale-105'}
-              ${isHovered ? 'scale-110' : 'scale-100'}
+              ${isHovered ? 'scale-[1.08]' : 'scale-100'}
             `}
             loading="lazy"
             onLoad={() => setImageLoaded(true)}
@@ -149,9 +153,14 @@ export default function UnifiedProductCard({
           />
 
           {/* Premium Gradient Overlay */}
-          <div className={`absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 transition-opacity duration-300
-            ${isHovered ? 'opacity-100' : ''}
+          <div className={`absolute inset-0 bg-gradient-to-t from-black/40 via-black/10 to-transparent transition-all duration-500 ease-out
+            ${isHovered ? 'opacity-100' : 'opacity-0'}
           `} />
+          
+          {/* Premium Shine Effect */}
+          <div className={`absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent transform transition-all duration-700 ease-out
+            ${isHovered ? 'translate-x-full opacity-100' : '-translate-x-full opacity-0'}
+          `} style={{ transform: isHovered ? 'translateX(100%)' : 'translateX(-100%)' }} />
         </div>
 
         {/* Premium Product Badges with Animation */}
@@ -217,39 +226,41 @@ export default function UnifiedProductCard({
         </Button>
 
         {/* Premium Action Buttons Overlay */}
-        <div className={`absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500 transform translate-y-2 group-hover:translate-y-0
+        <div className={`absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent flex flex-col justify-end p-4 transition-all duration-500 ease-out
+          ${isHovered ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}
         `}>
-          <div className="flex gap-2 mb-3">
+          <div className="space-y-3">
+            <div className="flex gap-2">
+              <Button
+                size="sm"
+                variant="secondary"
+                className="flex-1 bg-white/95 hover:bg-white text-gray-900 shadow-xl font-medium border-0 backdrop-blur-md transition-all duration-300 hover:scale-105 rounded-lg"
+                onClick={handleCustomize}
+              >
+                <Palette className="w-4 h-4 mr-1" />
+                কাস্টমাইজ
+              </Button>
+              <Button
+                size="sm"
+                className="flex-1 bg-gradient-to-r from-primary via-primary to-primary/90 hover:from-primary/90 hover:to-primary text-white shadow-xl font-medium transition-all duration-300 hover:scale-105 rounded-lg"
+                onClick={handleAddToCart}
+                disabled={product.stock === 0}
+              >
+                <ShoppingCart className="w-4 h-4 mr-1" />
+                অর্ডার
+              </Button>
+            </div>
+
             <Button
               size="sm"
-              variant="secondary"
-              className="flex-1 bg-white/95 text-black hover:bg-white shadow-xl font-medium border border-white/50 backdrop-blur-sm transition-all duration-300 hover:scale-105 hover:shadow-2xl"
-              onClick={handleCustomize}
+              variant="outline"
+              className="w-full bg-white/95 hover:bg-white text-gray-900 border-0 shadow-xl font-medium backdrop-blur-md transition-all duration-300 hover:scale-105 rounded-lg"
+              onClick={handleViewDetails}
             >
-              <Plus className="w-4 h-4 mr-1" />
-              কাস্টমাইজ
-            </Button>
-            <Button
-              size="sm"
-              className="flex-1 bg-gradient-to-r from-primary to-primary/90 text-white hover:from-primary/90 hover:to-primary shadow-xl font-medium transition-all duration-300 hover:scale-105 hover:shadow-2xl"
-              onClick={handleAddToCart}
-              disabled={product.stock === 0}
-            >
-              <ShoppingCart className="w-4 h-4 mr-1" />
-              অর্ডার
+              <Eye className="w-4 h-4 mr-1" />
+              বিস্তারিত দেখুন
             </Button>
           </div>
-
-          {/* Premium View Details Button */}
-          <Button
-            size="sm"
-            variant="outline"
-            className="w-full bg-white/95 text-black hover:bg-white border-white/50 shadow-xl font-medium backdrop-blur-sm transition-all duration-300 hover:scale-105 hover:shadow-2xl"
-            onClick={handleViewDetails}
-          >
-            <Eye className="w-4 h-4 mr-1" />
-            বিস্তারিত দেখুন
-          </Button>
         </div>
 
         {/* Premium Shine Effect */}
@@ -259,20 +270,25 @@ export default function UnifiedProductCard({
       </div>
 
       {/* Premium Product Information */}
-      <CardContent className="p-4 sm:p-6 flex-grow flex flex-col">
-        <div className="space-y-4 flex-grow flex flex-col">
+      <CardContent className="p-5 flex-grow flex flex-col justify-between">
+        <div className="space-y-4 flex-grow">
           {/* Premium Product Name */}
-          <h3 className={`font-bold text-gray-900 line-clamp-2 min-h-[3rem] leading-snug transition-all duration-300 text-lg
-            ${isHovered ? 'text-primary scale-[1.02]' : ''}
+          <h3 className={`font-semibold text-gray-900 line-clamp-2 min-h-[3rem] leading-tight transition-all duration-300 text-base
+            ${isHovered ? 'text-primary' : ''}
           `}>
             {product.name}
           </h3>
 
+          {/* Category */}
+          <div className="text-sm text-gray-500 font-medium">
+            {product.category || 'পণ্য'}
+          </div>
+
           {/* Premium Price and Rating */}
           <div className="flex items-center justify-between">
-            <div className="flex flex-col space-y-2">
-              <span className={`text-2xl font-bold bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent transition-all duration-300
-                ${isHovered ? 'scale-110' : ''}
+            <div className="flex flex-col">
+              <span className={`text-xl font-bold text-primary transition-all duration-300
+                ${isHovered ? 'scale-105' : ''}
               `}>
                 ৳{formatPrice(Number(product.price))}
               </span>
@@ -302,7 +318,7 @@ export default function UnifiedProductCard({
             <Button 
               onClick={handleAddToCart}
               disabled={product.stock === 0}
-              className="w-full bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary text-white font-medium py-3 rounded-lg transition-all duration-300 transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
+              className="w-full bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary text-white font-medium py-3 rounded-lg btn-professional shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
             >
               <ShoppingCart className="w-4 h-4 mr-2" />
               {product.stock === 0 ? "স্টক নেই" : "কার্টে যোগ করুন"}
@@ -313,7 +329,7 @@ export default function UnifiedProductCard({
               <Button 
                 onClick={handleViewDetails}
                 variant="outline"
-                className="border-blue-300 text-blue-600 hover:bg-blue-50 hover:border-blue-400 font-medium py-2.5 sm:py-3 rounded-lg transition-all duration-300 text-xs sm:text-sm"
+                className="border-blue-300 text-blue-600 hover:bg-blue-50 hover:border-blue-400 font-medium py-2.5 sm:py-3 rounded-lg btn-professional text-xs sm:text-sm"
               >
                 <Eye className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
                 <span className="hidden xs:inline">বিস্তারিত</span>
@@ -322,7 +338,7 @@ export default function UnifiedProductCard({
 
               <Button
                 onClick={handleCustomize}
-                className="bg-purple-500 text-white hover:bg-purple-600 border-purple-500 font-medium py-2.5 sm:py-3 rounded-lg transition-all duration-300 text-xs sm:text-sm"
+                className="bg-gradient-to-r from-purple-500 to-purple-600 text-white hover:from-purple-600 hover:to-purple-700 font-medium py-2.5 sm:py-3 rounded-lg btn-professional shadow-md hover:shadow-lg text-xs sm:text-sm"
               >
                 <Palette className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
                 কাস্টমাইজ
@@ -333,7 +349,7 @@ export default function UnifiedProductCard({
             <Button 
               onClick={handleWhatsAppOrder}
               variant="outline"
-              className="w-full border-green-500 text-green-600 hover:bg-green-50 hover:border-green-600 font-medium py-2.5 sm:py-3 rounded-lg transition-all duration-300 text-sm"
+              className="w-full border-green-500 text-green-600 hover:bg-green-50 hover:border-green-600 font-medium py-2.5 sm:py-3 rounded-lg btn-professional text-sm"
             >
               <MessageCircle className="w-4 h-4 mr-2" />
               <span className="hidden sm:inline">হোয়াটসঅ্যাপে অর্ডার</span>
