@@ -53,12 +53,20 @@ export default function UnifiedProductCard({
     e.preventDefault();
     e.stopPropagation();
     console.log("🔍 UnifiedProductCard: Card clicked, navigating to product page:", product.name);
+    
+    // Call the onViewProduct callback first if provided
+    if (onViewProduct) {
+      console.log("🔍 UnifiedProductCard: Calling onViewProduct callback");
+      onViewProduct(product);
+      return;
+    }
+    
+    // Fallback to direct navigation
     try {
-      // Use direct navigation for better reliability
+      console.log("🔍 UnifiedProductCard: Using direct navigation fallback");
       window.location.href = `/product/${product.id}`;
     } catch (error) {
       console.error('Error navigating to product:', error);
-      // Fallback to wouter navigation
       setLocation(`/product/${product.id}`);
     }
   };
@@ -79,12 +87,20 @@ export default function UnifiedProductCard({
     e.preventDefault();
     e.stopPropagation();
     console.log("👁️ UnifiedProductCard: View details clicked for:", product.name);
+    
+    // Call the onViewProduct callback first if provided
+    if (onViewProduct) {
+      console.log("👁️ UnifiedProductCard: Calling onViewProduct callback");
+      onViewProduct(product);
+      return;
+    }
+    
+    // Fallback to direct navigation
     try {
-      // Use direct navigation for better reliability
+      console.log("👁️ UnifiedProductCard: Using direct navigation fallback");
       window.location.href = `/product/${product.id}`;
     } catch (error) {
       console.error('Error navigating to product:', error);
-      // Fallback to wouter navigation
       setLocation(`/product/${product.id}`);
     }
   };
