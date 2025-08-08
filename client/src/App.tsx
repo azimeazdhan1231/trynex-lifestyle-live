@@ -40,7 +40,7 @@ const Categories = lazy(() => import("./pages/categories"));
 const CustomizeProduct = lazy(() => import("./pages/customize-product"));
 
 // Performance and Mobile Optimization Components
-const MobileResponsiveFixes = lazy(() => import("./components/MobileResponsiveFixes"));
+const EmergencyFix = lazy(() => import("./components/emergency-fix"));
 // const PerformanceOptimizer = lazy(() => import("./components/PerformanceOptimizer"));
 
 // Loading fallback component
@@ -115,7 +115,7 @@ function App() {
         <TooltipProvider>
           <div className="font-bengali">
             <Suspense fallback={null}>
-              <MobileResponsiveFixes />
+              <EmergencyFix />
               {/* <PerformanceOptimizer /> */}
             </Suspense>
             <UltraPerformanceLoader />

@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import EnhancedProductLoader from "@/components/enhanced-product-loader";
 import MobileOptimizedLayout from "@/components/mobile-optimized-layout";
 import TrackingSection from "@/components/tracking-section";
-import PerfectPopupOffer from "../components/perfect-popup-offer";
+import FixedPerfectPopupOffer from "../components/fixed-perfect-popup-offer";
 import ProductModal from "@/components/product-modal-fixed";
 import CustomizeModal from "@/components/customize-modal";
 import { useToast } from "@/hooks/use-toast";
@@ -541,7 +541,7 @@ export default function Home() {
 
   return (
     <MobileOptimizedLayout>
-      <PerfectPopupOffer />
+      <FixedPerfectPopupOffer />
 
       {/* Premium Hero Section */}
       <section 
