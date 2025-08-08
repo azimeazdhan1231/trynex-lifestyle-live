@@ -35,14 +35,13 @@
 /* Complete Modal System Reset and Fix */
 [data-radix-dialog-content] {
   position: fixed !important;
-  top: 2% !important;
+  top: 50% !important;
   left: 50% !important;
-  transform: translateX(-50%) !important;
+  transform: translate(-50%, -50%) !important;
   z-index: 9999 !important;
   width: 95vw !important;
-  max-width: 1100px !important;
-  height: 94vh !important;
-  max-height: 94vh !important;
+  max-width: 500px !important;
+  max-height: 90vh !important;
   margin: 0 !important;
   padding: 0 !important;
   overflow: visible !important;
@@ -50,6 +49,19 @@
   background: white !important;
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
   border: 1px solid #e5e7eb !important;
+}
+
+/* Admin Panel Modal Specific Styling */
+.admin-modal [data-radix-dialog-content] {
+  max-width: 800px !important;
+  height: auto !important;
+  max-height: 90vh !important;
+}
+
+/* Large modals for product/category management */
+.modal-large [data-radix-dialog-content] {
+  max-width: 900px !important;
+  width: 90vw !important;
 }
 
 /* Fix close button positioning */

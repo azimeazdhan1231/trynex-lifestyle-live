@@ -2,11 +2,8 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell, Legend } from "recharts";
-import { TrendingUp, TrendingDown, Users, ShoppingCart, DollarSign, Package, Calendar, Eye, MousePointer, ArrowUpRight } from "lucide-react";
-
-// All data now comes from real API endpoints
+import { TrendingUp, TrendingDown, Users, ShoppingCart, DollarSign, Package, Calendar } from "lucide-react";
+import { formatPrice } from "@/lib/constants";
 
 export default function AnalyticsDashboard() {
   const [dateRange, setDateRange] = useState("last_30_days");
@@ -49,10 +46,24 @@ export default function AnalyticsDashboard() {
     );
   }
 
+  const overviewData = (analytics as any)?.overview || {
+    total_revenue: 0,
+    revenue_change: 0,
+    total_orders: 0,
+    orders_change: 0,
+    total_customers: 0,
+    customers_change: 0,
+    conversion_rate: 0,
+    conversion_change: 0
+  };
+
+  const monthlyData = (analytics as any)?.monthly_revenue || [];
+  const topProductsData = (analytics as any)?.top_products || [];
+
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h2 className="text-2xl font-bold text-gray-800">অ্যানালিটিক্স ড্যাশবোর্ড</h2>
           <p className="text-gray-600">ব্যবসার পারফরম্যান্স ট্র্যাক করুন</p>
@@ -80,12 +91,12 @@ export default function AnalyticsDashboard() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-blue-600">
-              {formatCurrency(analytics.overview.total_revenue)}
+              {formatCurrency(overviewData.total_revenue)}
             </div>
             <div className="flex items-center gap-1 mt-1">
-              {getChangeIcon(analytics.overview.revenue_change)}
-              <span className={`text-xs font-medium ${getChangeColor(analytics.overview.revenue_change)}`}>
-                {Math.abs(analytics.overview.revenue_change)}%
+              {getChangeIcon(overviewData.revenue_change)}
+              <span className={`text-xs font-medium ${getChangeColor(overviewData.revenue_change)}`}>
+                {Math.abs(overviewData.revenue_change)}%
               </span>
               <span className="text-xs text-gray-600">গত মাস থেকে</span>
             </div>
@@ -99,12 +110,12 @@ export default function AnalyticsDashboard() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-green-600">
-              {analytics.overview.total_orders}
+              {overviewData.total_orders}
             </div>
             <div className="flex items-center gap-1 mt-1">
-              {getChangeIcon(analytics.overview.orders_change)}
-              <span className={`text-xs font-medium ${getChangeColor(analytics.overview.orders_change)}`}>
-                {Math.abs(analytics.overview.orders_change)}%
+              {getChangeIcon(overviewData.orders_change)}
+              <span className={`text-xs font-medium ${getChangeColor(overviewData.orders_change)}`}>
+                {Math.abs(overviewData.orders_change)}%
               </span>
               <span className="text-xs text-gray-600">গত মাস থেকে</span>
             </div>
@@ -113,17 +124,17 @@ export default function AnalyticsDashboard() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">গ্রাহক</CardTitle>
+            <CardTitle className="text-sm font-medium">মোট গ্রাহক</CardTitle>
             <Users className="h-4 w-4 text-purple-600" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-purple-600">
-              {analytics.overview.total_customers}
+              {overviewData.total_customers}
             </div>
             <div className="flex items-center gap-1 mt-1">
-              {getChangeIcon(analytics.overview.customers_change)}
-              <span className={`text-xs font-medium ${getChangeColor(analytics.overview.customers_change)}`}>
-                {Math.abs(analytics.overview.customers_change)}%
+              {getChangeIcon(overviewData.customers_change)}
+              <span className={`text-xs font-medium ${getChangeColor(overviewData.customers_change)}`}>
+                {Math.abs(overviewData.customers_change)}%
               </span>
               <span className="text-xs text-gray-600">গত মাস থেকে</span>
             </div>
@@ -133,16 +144,16 @@ export default function AnalyticsDashboard() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">কনভার্শন রেট</CardTitle>
-            <MousePointer className="h-4 w-4 text-orange-600" />
+            <Package className="h-4 w-4 text-orange-600" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-orange-600">
-              {analytics.overview.conversion_rate}%
+              {overviewData.conversion_rate}%
             </div>
             <div className="flex items-center gap-1 mt-1">
-              {getChangeIcon(analytics.overview.conversion_change)}
-              <span className={`text-xs font-medium ${getChangeColor(analytics.overview.conversion_change)}`}>
-                {Math.abs(analytics.overview.conversion_change)}%
+              {getChangeIcon(overviewData.conversion_change)}
+              <span className={`text-xs font-medium ${getChangeColor(overviewData.conversion_change)}`}>
+                {Math.abs(overviewData.conversion_change)}%
               </span>
               <span className="text-xs text-gray-600">গত মাস থেকে</span>
             </div>
@@ -150,126 +161,40 @@ export default function AnalyticsDashboard() {
         </Card>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Revenue Chart */}
-        <Card>
-          <CardHeader>
-            <CardTitle>মাসিক আয় ও অর্ডার</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={analytics?.revenue_chart || []}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="month" />
-                <YAxis />
-                <Tooltip 
-                  formatter={(value, name) => [
-                    name === "revenue" ? formatCurrency(Number(value)) : value,
-                    name === "revenue" ? "আয়" : "অর্ডার"
-                  ]}
-                />
-                <Bar dataKey="revenue" fill="#3b82f6" name="revenue" />
-                <Bar dataKey="orders" fill="#10b981" name="orders" />
-              </BarChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-
-        {/* Category Distribution */}
-        <Card>
-          <CardHeader>
-            <CardTitle>ক্যাটাগরি অনুযায়ী বিক্রয়</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <PieChart>
-                <Pie
-                  data={analytics.category_distribution}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  label={({ name, percentage }) => `${name} ${percentage}%`}
-                  outerRadius={80}
-                  fill="#8884d8"
-                  dataKey="value"
-                >
-                  {analytics.category_distribution.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Pie>
-                <Tooltip formatter={(value) => [`${value}%`, "শতাংশ"]} />
-              </PieChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Top Products */}
-        <Card>
-          <CardHeader>
-            <CardTitle>শীর্ষ বিক্রিত পণ্য</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {analytics.top_products.map((product, index) => (
-                <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                      <span className="text-sm font-bold text-blue-600">#{index + 1}</span>
-                    </div>
-                    <div>
-                      <p className="font-medium">{product.name}</p>
-                      <p className="text-sm text-gray-600">{product.sales} টি বিক্রি</p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-bold text-green-600">{formatCurrency(product.revenue)}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Traffic Sources */}
-        <Card>
-          <CardHeader>
-            <CardTitle>ট্রাফিক সোর্স</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {analytics.traffic_sources.map((source, index) => (
-                <div key={index} className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-3 h-3 rounded-full bg-blue-500"></div>
-                    <span className="font-medium">{source.source}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-gray-600">{source.visitors.toLocaleString()}</span>
-                    <Badge variant="secondary">{source.percentage}%</Badge>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Recent Activities */}
+      {/* Monthly Revenue */}
       <Card>
         <CardHeader>
-          <CardTitle>সাম্প্রতিক কার্যক্রম</CardTitle>
+          <CardTitle>মাসিক আয়</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {analytics.recent_activities.map((activity) => (
-              <div key={activity.id} className="flex items-center gap-3 p-3 border-l-4 border-blue-500 bg-blue-50">
-                <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                <div className="flex-1">
-                  <p className="text-sm font-medium">{activity.message}</p>
-                  <p className="text-xs text-gray-600">{activity.time}</p>
+            {monthlyData.map((item: { month: string; revenue: number; orders: number }, index: number) => (
+              <div key={index} className="flex justify-between items-center p-4 bg-gray-50 rounded-lg">
+                <span className="font-medium">{item.month}</span>
+                <div className="text-right">
+                  <div className="font-bold text-blue-600">{formatPrice(item.revenue)}</div>
+                  <div className="text-sm text-gray-600">{item.orders} টি অর্ডার</div>
                 </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Top Products */}
+      <Card>
+        <CardHeader>
+          <CardTitle>জনপ্রিয় পণ্য</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {topProductsData.map((product: { name: string; sales: number; revenue: number }, index: number) => (
+              <div key={index} className="flex justify-between items-center p-4 bg-gray-50 rounded-lg">
+                <div>
+                  <div className="font-medium">{product.name}</div>
+                  <div className="text-sm text-gray-600">{product.sales} টি বিক্রি</div>
+                </div>
+                <div className="font-bold text-green-600">{formatPrice(product.revenue)}</div>
               </div>
             ))}
           </div>

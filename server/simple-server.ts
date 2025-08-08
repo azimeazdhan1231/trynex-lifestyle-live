@@ -68,9 +68,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Enhanced Orders API with detailed customization support
   app.post('/api/orders', async (req, res) => {
     try {
+      const trackingId = generateTrackingId();
       const orderData = {
         ...req.body,
-        tracking_id: generateTrackingId(),
+        tracking_id: trackingId,
         status: 'pending',
         created_at: new Date(),
         updated_at: new Date()
@@ -90,13 +91,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       const validatedData = insertOrderSchema.parse(orderData);
-      const order = await storage.createOrder(validatedData);
+      const order = await storage.createOrder({ ...validatedData, tracking_id: trackingId });
       
       console.log(`✅ Order created: ${order.tracking_id}`);
       
       res.status(201).json({
         success: true,
-        tracking_id: order.tracking_id,
+        tracking_id: trackingId,
         order_id: order.id,
         message: 'অর্ডার সফলভাবে তৈরি হয়েছে'
       });
@@ -205,6 +206,161 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('❌ Analytics error:', error);
       res.status(500).json({ message: 'Analytics data could not be saved' });
+    }
+  });
+
+  // Get analytics data
+  app.get('/api/analytics', async (req, res) => {
+    try {
+      // Mock analytics data since we don't have real analytics collection yet
+      const analytics = {
+        overview: {
+          total_revenue: 150000,
+          revenue_change: 12.5,
+          total_orders: 45,
+          orders_change: 8.3,
+          total_customers: 32,
+          customers_change: 15.2,
+          conversion_rate: 3.2,
+          conversion_change: -2.1
+        },
+        monthly_revenue: [
+          { month: 'জানুয়ারি', revenue: 45000, orders: 15 },
+          { month: 'ফেব্রুয়ারি', revenue: 52000, orders: 18 },
+          { month: 'মার্চ', revenue: 48000, orders: 16 },
+          { month: 'এপ্রিল', revenue: 61000, orders: 22 },
+          { month: 'মে', revenue: 58000, orders: 19 },
+          { month: 'জুন', revenue: 65000, orders: 24 }
+        ],
+        top_products: [
+          { name: 'কাস্টম মগ', sales: 45, revenue: 22500 },
+          { name: 'কাস্টম টি-শার্ট', sales: 38, revenue: 19000 },
+          { name: 'কাস্টম কীচেইন', sales: 32, revenue: 9600 }
+        ]
+      };
+      
+      res.json(analytics);
+    } catch (error) {
+      console.error('❌ Error fetching analytics:', error);
+      res.status(500).json({ message: 'Analytics could not be loaded' });
+    }
+  });
+
+  // Offers API
+  app.get('/api/offers', async (req, res) => {
+    try {
+      const offers = await storage.getOffers();
+      res.json(offers);
+    } catch (error) {
+      console.error('❌ Error fetching offers:', error);
+      res.status(500).json({ message: 'অফার লোড করতে সমস্যা হয়েছে' });
+    }
+  });
+
+  app.post('/api/offers', async (req, res) => {
+    try {
+      const offerData = {
+        ...req.body,
+        created_at: new Date()
+      };
+      
+      const validatedData = insertOfferSchema.parse(offerData);
+      const offer = await storage.createOffer(validatedData);
+      
+      res.status(201).json(offer);
+    } catch (error) {
+      console.error('❌ Error creating offer:', error);
+      res.status(500).json({ message: 'অফার তৈরি করতে সমস্যা হয়েছে' });
+    }
+  });
+
+  app.patch('/api/offers/:id', async (req, res) => {
+    try {
+      const offer = await storage.updateOffer(req.params.id, req.body);
+      res.json(offer);
+    } catch (error) {
+      console.error('❌ Error updating offer:', error);
+      res.status(500).json({ message: 'অফার আপডেট করতে সমস্যা হয়েছে' });
+    }
+  });
+
+  app.delete('/api/offers/:id', async (req, res) => {
+    try {
+      await storage.deleteOffer(req.params.id);
+      res.json({ success: true });
+    } catch (error) {
+      console.error('❌ Error deleting offer:', error);
+      res.status(500).json({ message: 'অফার মুছতে সমস্যা হয়েছে' });
+    }
+  });
+
+  // Promo Codes API
+  app.get('/api/promo-codes', async (req, res) => {
+    try {
+      // Mock promo codes data
+      const promoCodes = [
+        {
+          id: '1',
+          code: 'SAVE10',
+          description: '১০% ছাড়',
+          discount_type: 'percentage',
+          discount_value: 10,
+          min_order_amount: 1000,
+          usage_limit: 100,
+          expires_at: '2025-12-31',
+          is_active: true
+        },
+        {
+          id: '2',
+          code: 'WELCOME20',
+          description: '২০% ছাড় নতুন গ্রাহকদের জন্য',
+          discount_type: 'percentage',
+          discount_value: 20,
+          min_order_amount: 1500,
+          usage_limit: 50,
+          expires_at: '2025-12-31',
+          is_active: true
+        }
+      ];
+      res.json(promoCodes);
+    } catch (error) {
+      console.error('❌ Error fetching promo codes:', error);
+      res.status(500).json({ message: 'প্রমো কোড লোড করতে সমস্যা হয়েছে' });
+    }
+  });
+
+  // Blogs API
+  app.get('/api/blogs', async (req, res) => {
+    try {
+      // Mock blogs data
+      const blogs: any[] = [];
+      res.json(blogs);
+    } catch (error) {
+      console.error('❌ Error fetching blogs:', error);
+      res.status(500).json({ message: 'ব্লগ লোড করতে সমস্যা হয়েছে' });
+    }
+  });
+
+  // Users API
+  app.get('/api/users', async (req, res) => {
+    try {
+      // Mock users data
+      const users = [
+        {
+          id: 'user1',
+          phone: '01747292277',
+          firstName: 'Azim',
+          lastName: 'Eazdhan',
+          email: null,
+          address: 'Dhaka, Bangladesh',
+          profileImageUrl: null,
+          createdAt: '2025-01-01T00:00:00Z'
+        }
+      ];
+      res.json(users);
+    } catch (error) {
+      console.error('❌ Error fetching users:', error);
+      res.status(500).json({ message: 'ব্যবহারকারী তথ্য লোড করতে সমস্যা হয়েছে' });
     }
   });
 
