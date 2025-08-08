@@ -282,7 +282,10 @@ export default function ProductPage(props: any) {
                   <Button 
                     variant="outline" 
                     size="sm" 
-                    onClick={() => setIsCustomizeModalOpen(true)}
+                    onClick={() => toast({
+                      title: "শীঘ্রই আসছে",
+                      description: "কাস্টমাইজেশন ফিচার শীঘ্রই চালু হবে",
+                    })}
                     className="flex-1 sm:flex-none"
                   >
                     <Package className="w-4 h-4 mr-2" />

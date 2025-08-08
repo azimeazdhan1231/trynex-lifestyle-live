@@ -8,9 +8,9 @@ export const initGA = () => {
     document.head.appendChild(script);
 
     window.dataLayer = window.dataLayer || [];
-    function gtag(...args: any[]) {
+    const gtag = (...args: any[]) => {
       window.dataLayer.push(args);
-    }
+    };
     window.gtag = gtag;
     gtag('js', new Date());
     gtag('config', measurementId);
@@ -72,7 +72,8 @@ export const loadFacebookPixelFromSettings = async () => {
   try {
     const response = await fetch('/api/settings');
     if (!response.ok) {
-      throw new Error('Failed to fetch settings');
+      console.log('No settings available, skipping Facebook Pixel');
+      return;
     }
     
     const settings = await response.json();
@@ -87,7 +88,11 @@ export const loadFacebookPixelFromSettings = async () => {
       console.log('No Facebook Pixel ID found in settings');
     }
   } catch (error) {
-    console.error('Failed to load Facebook Pixel from settings:', error);
+    if (error instanceof DOMException && error.name === 'AbortError') {
+      console.log('Facebook Pixel loading was cancelled');
+    } else {
+      console.warn('Failed to load Facebook Pixel from settings:', error);
+    }
   }
 };
 

@@ -14,10 +14,6 @@ export const queryClient = new QueryClient({
           url += `?${params}`;
         }
 
-        // Add timeout for ultra-fast performance
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 2000); // 2s timeout (much faster)
-
         try {
           const headers: Record<string, string> = {
             'Cache-Control': 'public, max-age=480', // 8 minute client cache (aligned with staleTime)
@@ -31,12 +27,10 @@ export const queryClient = new QueryClient({
           }
 
           const response = await fetch(url, { 
-            signal: signal || controller.signal,
+            signal: signal, // Only use the provided signal, no custom timeout
             credentials: 'include', // Include credentials for auth endpoints
             headers
           });
-
-          clearTimeout(timeoutId);
 
           if (!response.ok) {
             // For auth endpoints, don't throw for 401s as they're expected when not logged in
@@ -48,11 +42,16 @@ export const queryClient = new QueryClient({
 
           return response.json();
         } catch (error) {
-          clearTimeout(timeoutId);
+          // Handle AbortError gracefully
+          if (error instanceof DOMException && error.name === 'AbortError') {
+            console.warn(`Request aborted for ${url}`);
+          } else {
+            console.warn(`Fetch failed for ${url}:`, error);
+          }
           throw error;
         }
       },
-      retry: 0, // No retries for fastest loading
+      retry: 1, // Allow 1 retry for failed requests
       retryDelay: 500, // Faster retry
       staleTime: 1000 * 60 * 2, // 2 minutes - faster refresh
       gcTime: 1000 * 60 * 5, // 5 minutes - less memory usage
