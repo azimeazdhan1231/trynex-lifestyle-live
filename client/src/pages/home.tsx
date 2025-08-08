@@ -5,8 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import EnhancedProductLoader from "@/components/enhanced-product-loader";
-import EnhancedHeader from "@/components/enhanced-header";
-import EnhancedFooter from "@/components/enhanced-footer";
+import MobileOptimizedLayout from "@/components/mobile-optimized-layout";
 import TrackingSection from "@/components/tracking-section";
 import PopupOffer from "../components/popup-offer";
 import ProductModal from "@/components/product-modal-fixed";
@@ -539,16 +538,12 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <EnhancedHeader />
+    <MobileOptimizedLayout>
       <PopupOffer />
-
-
 
       {/* Premium Hero Section */}
       <section 
         className="relative bg-gradient-to-br from-primary via-primary/95 to-emerald-700 text-white py-16 sm:py-20 lg:py-24 overflow-hidden"
-        style={{ marginTop: "120px" }}
       >
         {/* Enhanced Background Pattern */}
         <div className="absolute inset-0 opacity-20">
@@ -722,18 +717,7 @@ export default function Home() {
         </div>
       </section>
 
-      <EnhancedFooter />
 
-      {/* Scroll to Top Button */}
-      {showScrollTop && (
-        <Button
-          onClick={scrollToTop}
-          className="fixed bottom-8 right-8 z-50 rounded-full w-14 h-14 shadow-2xl bg-primary hover:bg-primary/80 transform hover:scale-110 transition-all duration-300"
-          size="lg"
-        >
-          <ArrowUp className="w-6 h-6" />
-        </Button>
-      )}
 
       {/* Product Modal */}
       {selectedProduct && (
@@ -762,10 +746,6 @@ export default function Home() {
         />
       )}
       {/* Enhanced AI Chatbot - Component temporarily disabled */}
-
-
-
-
-    </div>
+    </MobileOptimizedLayout>
   );
 }

@@ -39,6 +39,15 @@ export default function EnhancedHeader() {
     setIsMenuOpen(false);
   }, [location]);
 
+  // Close menu and remove effects when clicking close
+  const handleMenuClose = () => {
+    setIsMenuOpen(false);
+    // Force reset any persisting effects
+    setTimeout(() => {
+      document.body.classList.remove('menu-open');
+    }, 100);
+  };
+
   const navigation = [
     { name: 'হোম', href: '/', icon: '🏠' },
     { name: 'পণ্যসমূহ', href: '/products', icon: '🛍️' },
@@ -179,8 +188,9 @@ export default function EnhancedHeader() {
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => setIsMenuOpen(!isMenuOpen)}
-                className="lg:hidden w-10 h-10 p-0 hover:bg-gray-100 rounded-full"
+                onClick={isMenuOpen ? handleMenuClose : () => setIsMenuOpen(true)}
+                className="lg:hidden w-10 h-10 p-0 hover:bg-gray-100 rounded-full transition-all duration-200 active:scale-95 focus:outline-none focus:ring-2 focus:ring-primary/20"
+                aria-label={isMenuOpen ? "মেনু বন্ধ করুন" : "মেনু খুলুন"}
               >
                 {isMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
               </Button>
@@ -210,7 +220,7 @@ export default function EnhancedHeader() {
 
         {/* Mobile Menu */}
         {isMenuOpen && (
-          <div className="lg:hidden border-t border-gray-100 bg-white">
+          <div className="lg:hidden border-t border-gray-100 bg-white/95 backdrop-blur-sm animate-slide-down">
             {/* Mobile Search */}
             <div className="p-4 border-b border-gray-100">
               <form onSubmit={handleSearch} className="relative">
@@ -219,7 +229,7 @@ export default function EnhancedHeader() {
                   placeholder="পণ্য খুঁজুন..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-20 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                  className="w-full pl-12 pr-20 py-4 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200 input-mobile"
                 />
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                 <Button
@@ -233,38 +243,61 @@ export default function EnhancedHeader() {
             </div>
 
             {/* Mobile Navigation */}
-            <nav className="p-4 space-y-2">
+            <nav className="py-2">
               {navigation.map((item) => (
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`flex items-center space-x-3 px-4 py-3 rounded-lg font-medium transition-all duration-300 ${
+                  className={`mobile-nav-item flex items-center space-x-4 px-6 py-4 font-medium transition-all duration-200 touch-target ${
                     location === item.href 
-                      ? 'bg-primary/10 text-primary' 
-                      : 'text-gray-700 hover:bg-gray-50'
+                      ? 'bg-primary/10 text-primary border-r-4 border-primary' 
+                      : 'text-gray-700 hover:bg-gray-50 active:bg-gray-100'
                   }`}
+                  onClick={handleMenuClose}
                 >
-                  <span className="text-lg">{item.icon}</span>
-                  <span>{item.name}</span>
+                  <span className="text-xl w-6 flex justify-center">{item.icon}</span>
+                  <span className="text-lg">{item.name}</span>
+                  {location === item.href && (
+                    <div className="ml-auto w-2 h-2 bg-primary rounded-full"></div>
+                  )}
                 </Link>
               ))}
             </nav>
 
             {/* Mobile Actions */}
-            <div className="p-4 border-t border-gray-100 space-y-3">
-              <Button className="w-full bg-primary hover:bg-primary/90 text-white py-3">
-                <User className="w-4 h-4 mr-2" />
-                লগইন / সাইন আপ
+            <div className="p-6 border-t border-gray-100 space-y-4 bg-gray-50/50">
+              <Button className="w-full bg-primary hover:bg-primary/90 text-white py-4 rounded-xl btn-mobile touch-target">
+                <User className="w-5 h-5 mr-3" />
+                <span className="text-lg font-medium">লগইন / সাইন আপ</span>
               </Button>
-              <div className="flex space-x-3">
-                <Button variant="outline" className="flex-1 py-3">
-                  <Heart className="w-4 h-4 mr-2" />
-                  উইশলিস্ট
+              <div className="grid grid-cols-2 gap-3">
+                <Button variant="outline" className="py-4 rounded-xl btn-mobile touch-target border-2">
+                  <Heart className="w-5 h-5 mr-2" />
+                  <span className="font-medium">উইশলিস্ট</span>
                 </Button>
-                <Button variant="outline" className="flex-1 py-3">
-                  <Phone className="w-4 h-4 mr-2" />
-                  যোগাযোগ
+                <Button 
+                  variant="outline" 
+                  className="py-4 rounded-xl btn-mobile touch-target border-2"
+                  onClick={() => window.open(`https://wa.me/${WHATSAPP_NUMBER.replace(/[^0-9]/g, '')}`, '_blank')}
+                >
+                  <Phone className="w-5 h-5 mr-2" />
+                  <span className="font-medium">কল করুন</span>
                 </Button>
+              </div>
+              
+              {/* Quick Contact Info */}
+              <div className="text-center pt-4 border-t border-gray-200">
+                <p className="text-sm text-gray-600 mb-2">দ্রুত যোগাযোগ</p>
+                <div className="flex items-center justify-center space-x-4 text-sm">
+                  <div className="flex items-center space-x-1">
+                    <Phone className="w-4 h-4 text-primary" />
+                    <span className="font-medium">{WHATSAPP_NUMBER}</span>
+                  </div>
+                  <div className="flex items-center space-x-1">
+                    <Clock className="w-4 h-4 text-primary" />
+                    <span>২৪/৭</span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
