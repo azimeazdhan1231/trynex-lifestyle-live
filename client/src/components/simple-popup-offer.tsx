@@ -61,7 +61,7 @@ export default function SimplePopupOffer() {
         {/* Perfect Close Button */}
         <button
           onClick={() => setIsOpen(false)}
-          className="absolute -top-2 -right-2 z-10 w-6 h-6 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center border-2 border-white shadow-lg transition-all duration-200 pl-[25px] pr-[25px]"
+          className="absolute -top-2 -right-2 z-10 w-6 h-6 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center border-2 border-white shadow-lg transition-all duration-200 touch-friendly pl-[25px] pr-[25px]"
           style={{ fontSize: '12px' }}
         >
           <X className="w-3 h-3" />
