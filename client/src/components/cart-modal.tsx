@@ -41,16 +41,19 @@ export default function CartModal({ isOpen, onClose }: CartModalProps) {
   return (
     <>
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="sm:max-w-lg lg:max-w-2xl xl:max-w-3xl max-h-[90vh] overflow-hidden flex flex-col">
-          <DialogHeader className="flex-shrink-0 px-4 sm:px-6 py-4 border-b">
-            <DialogTitle className="text-xl sm:text-2xl font-bold text-gray-800">
-              🛒 আপনার কার্ট ({cart.length}টি পণ্য)
+        <DialogContent className="w-[95vw] max-w-lg sm:max-w-xl lg:max-w-2xl xl:max-w-3xl max-h-[95vh] sm:max-h-[90vh] overflow-hidden flex flex-col m-2 sm:m-6">
+          <DialogHeader className="flex-shrink-0 px-3 sm:px-4 lg:px-6 py-3 sm:py-4 border-b bg-gradient-to-r from-primary/5 to-primary/10">
+            <DialogTitle className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-800 flex items-center gap-2">
+              🛒 আপনার কার্ট 
+              <span className="bg-primary/20 text-primary px-2 py-1 rounded-full text-sm font-medium">
+                {cart.length}টি পণ্য
+              </span>
             </DialogTitle>
-            <DialogDescription className="text-sm text-gray-600 mt-1">
+            <DialogDescription className="text-xs sm:text-sm text-gray-600 mt-1">
               আপনার শপিং কার্টে থাকা পণ্যসমূহ দেখুন এবং পরিচালনা করুন
             </DialogDescription>
           </DialogHeader>
-          <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-4">
+          <div className="flex-1 overflow-y-auto px-3 sm:px-4 lg:px-6 py-3 sm:py-4">
 
           {!cart || !Array.isArray(cart) || cart.length === 0 ? (
             <div className="text-center py-12">
@@ -63,80 +66,82 @@ export default function CartModal({ isOpen, onClose }: CartModalProps) {
           ) : (
             <div className="space-y-4">
               {/* Cart Items */}
-              <div className="space-y-3 max-h-96 overflow-y-auto">
+              <div className="space-y-2 sm:space-y-3 max-h-80 sm:max-h-96 overflow-y-auto">
                 {cart.map((item) => (
-                  <div key={item.id} className="border rounded-lg p-3">
-                    <div className="flex items-start gap-3 mb-2">
+                  <div key={item.id} className="border border-gray-200 rounded-xl p-3 sm:p-4 bg-white shadow-sm hover:shadow-md transition-shadow duration-200">
+                    <div className="flex items-start gap-2 sm:gap-3 mb-2">
                       {/* Product Image */}
                       {item.image_url && (
                         <div className="flex-shrink-0">
                           <img
                             src={item.image_url}
                             alt={item.name}
-                            className="w-16 h-16 md:w-20 md:h-20 object-cover rounded-lg border border-gray-200 shadow-sm"
+                            className="w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 object-cover rounded-lg border border-gray-200 shadow-sm"
                             loading="lazy"
                           />
                         </div>
                       )}
                       
                       <div className="flex-1 min-w-0">
-                        <h5 className="font-medium text-sm md:text-base line-clamp-2">{item.name}</h5>
-                        <p className="text-gray-600 text-sm">{formatPrice(item.price)} প্রতিটি</p>
+                        <h5 className="font-semibold text-sm sm:text-base text-gray-900 line-clamp-2 leading-tight">{item.name}</h5>
+                        <p className="text-primary font-medium text-sm sm:text-base mt-1">{formatPrice(item.price)} প্রতিটি</p>
 
                         {/* Customization Display */}
                         {item.customization && (
-                          <div className="mt-2 p-2 bg-blue-50 rounded-md text-xs">
-                            <p className="font-medium text-blue-800 mb-1">কাস্টমাইজেশন:</p>
-                            {item.customization.size && <p>সাইজ: {item.customization.size}</p>}
-                            {item.customization.color && <p>রং: {item.customization.color}</p>}
-                            {item.customization.printArea && <p>প্রিন্ট এরিয়া: {item.customization.printArea}</p>}
-                            {item.customization.customText && item.customization.customText.trim() && (
-                              <p>কাস্টম টেক্সট: {item.customization.customText.trim()}</p>
-                            )}
-                            {item.customization.specialInstructions && item.customization.specialInstructions.trim() && (
-                              <p>বিশেষ নির্দেশনা: {item.customization.specialInstructions.trim()}</p>
-                            )}
-                            {item.customization.customImage && (
-                              <div className="mt-2">
-                                <p className="mb-1">কাস্টম ছবি:</p>
-                                <img 
-                                  src={typeof item.customization.customImage === 'string' ? item.customization.customImage : URL.createObjectURL(item.customization.customImage)}
-                                  alt="Custom upload"
-                                  className="w-12 h-12 object-cover rounded border"
-                                />
-                              </div>
-                            )}
+                          <div className="mt-2 p-2 sm:p-3 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg text-xs sm:text-sm border border-blue-100">
+                            <p className="font-semibold text-blue-800 mb-1 sm:mb-2">কাস্টমাইজেশন:</p>
+                            <div className="space-y-1">
+                              {item.customization.size && <p className="text-blue-700">সাইজ: {item.customization.size}</p>}
+                              {item.customization.color && <p className="text-blue-700">রং: {item.customization.color}</p>}
+                              {item.customization.printArea && <p className="text-blue-700">প্রিন্ট এরিয়া: {item.customization.printArea}</p>}
+                              {item.customization.customText && item.customization.customText.trim() && (
+                                <p className="text-blue-700">কাস্টম টেক্সট: {item.customization.customText.trim()}</p>
+                              )}
+                              {item.customization.specialInstructions && item.customization.specialInstructions.trim() && (
+                                <p className="text-blue-700">বিশেষ নির্দেশনা: {item.customization.specialInstructions.trim()}</p>
+                              )}
+                              {item.customization.customImage && (
+                                <div className="mt-2">
+                                  <p className="mb-1 text-blue-700">কাস্টম ছবি:</p>
+                                  <img 
+                                    src={typeof item.customization.customImage === 'string' ? item.customization.customImage : URL.createObjectURL(item.customization.customImage)}
+                                    alt="Custom upload"
+                                    className="w-10 h-10 sm:w-12 sm:h-12 object-cover rounded-md border border-blue-200"
+                                  />
+                                </div>
+                              )}
+                            </div>
                           </div>
                         )}
                       </div>
                       {/* Quantity Controls - Mobile Optimized */}
-                      <div className="flex flex-col sm:flex-row items-center gap-2 flex-shrink-0">
-                        <div className="flex items-center space-x-1 sm:space-x-2">
+                      <div className="flex flex-col items-end gap-2 flex-shrink-0">
+                        <div className="flex items-center bg-gray-50 rounded-lg p-1">
                           <Button
                             size="sm"
-                            variant="outline"
+                            variant="ghost"
                             onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                            className="w-7 h-7 sm:w-8 sm:h-8 p-0"
+                            className="w-7 h-7 sm:w-8 sm:h-8 p-0 hover:bg-gray-200"
                           >
                             <Minus className="w-3 h-3 sm:w-4 sm:h-4" />
                           </Button>
-                          <Badge variant="secondary" className="w-8 sm:w-10 text-center text-sm font-semibold">
+                          <span className="w-8 sm:w-10 text-center text-sm font-bold text-gray-900">
                             {item.quantity}
-                          </Badge>
+                          </span>
                           <Button
                             size="sm"
-                            variant="outline"
+                            variant="ghost"
                             onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                            className="w-7 h-7 sm:w-8 sm:h-8 p-0"
+                            className="w-7 h-7 sm:w-8 sm:h-8 p-0 hover:bg-gray-200"
                           >
                             <Plus className="w-3 h-3 sm:w-4 sm:h-4" />
                           </Button>
                         </div>
                         <Button
                           size="sm"
-                          variant="destructive"
+                          variant="outline"
                           onClick={() => removeFromCart(item.id)}
-                          className="w-7 h-7 sm:w-8 sm:h-8 p-0"
+                          className="w-7 h-7 sm:w-8 sm:h-8 p-0 text-red-500 border-red-200 hover:bg-red-50 hover:border-red-300"
                           title="পণ্য মুছুন"
                         >
                           <Trash2 className="w-3 h-3 sm:w-4 sm:h-4" />
@@ -151,17 +156,27 @@ export default function CartModal({ isOpen, onClose }: CartModalProps) {
 
               {/* Cart Summary */}
               <div className="space-y-3 sm:space-y-4">
-                <div className="flex justify-between items-center bg-gray-50 p-3 sm:p-4 rounded-lg">
-                  <span className="text-base sm:text-lg font-semibold text-gray-800">মোট:</span>
-                  <span className="text-xl sm:text-2xl font-bold text-green-600">{formatPrice(totalPrice)}</span>
+                <div className="bg-gradient-to-r from-emerald-50 to-green-50 border border-emerald-200 rounded-xl p-4 sm:p-5">
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-sm text-gray-600">মোট পণ্য:</span>
+                    <span className="text-sm font-medium text-gray-900">{totalItems} টি</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-lg sm:text-xl font-bold text-gray-800">সর্বমোট:</span>
+                    <span className="text-xl sm:text-2xl font-bold text-emerald-600 flex items-center">
+                      {formatPrice(totalPrice)}
+                      <span className="text-sm font-normal text-gray-500 ml-1">৳</span>
+                    </span>
+                  </div>
                 </div>
 
                 <Button 
                   onClick={handleCheckout} 
-                  className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 sm:py-4 text-base sm:text-lg shadow-lg hover:shadow-xl transition-all duration-200" 
+                  className="w-full bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white font-bold py-4 sm:py-5 text-base sm:text-lg shadow-lg hover:shadow-xl transition-all duration-200 rounded-xl" 
                   size="lg"
                   disabled={cart.length === 0 || totalItems === 0}
                 >
+                  <ShoppingCart className="w-5 h-5 mr-2" />
                   চেকআউট করুন ({totalItems} টি পণ্য)
                 </Button>
               </div>

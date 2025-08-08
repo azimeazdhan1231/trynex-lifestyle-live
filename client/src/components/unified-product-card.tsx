@@ -13,6 +13,7 @@ interface UnifiedProductCardProps {
   onViewProduct: (product: Product) => void;
   onCustomize?: (product: Product) => void;
   onAddToCart: (product: Product) => void;
+  showBadge?: boolean;
 }
 
 export default function UnifiedProductCard({ 
@@ -55,10 +56,11 @@ export default function UnifiedProductCard({
 
   return (
     <Card 
-      className={`group cursor-pointer transition-all duration-300 hover:shadow-lg hover:-translate-y-1 overflow-hidden ${className}`}
+      className={`group cursor-pointer transition-all duration-300 hover:shadow-lg mobile-transition overflow-hidden product-card ${className}`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       onClick={handleViewProduct}
+      data-testid={`card-product-${product.id}`}
     >
         <div className="relative">
           {/* Product Image */}
@@ -130,7 +132,7 @@ export default function UnifiedProductCard({
           )}
         </div>
 
-        <CardContent className="p-4">
+        <CardContent className="p-3 sm:p-4">
           {/* Product Category */}
           {product.category && (
             <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">
@@ -140,7 +142,7 @@ export default function UnifiedProductCard({
 
           {/* Product Name */}
           <h3 
-            className="font-medium text-gray-900 line-clamp-2 mb-2 min-h-[2.5rem] hover:text-primary cursor-pointer"
+            className="font-medium text-gray-900 line-clamp-2 mb-2 min-h-[2.5rem] hover:text-primary cursor-pointer responsive-text"
             onClick={handleViewProduct}
           >
             {product.name}
@@ -168,7 +170,7 @@ export default function UnifiedProductCard({
           {/* Price */}
           <div className="flex items-center justify-between mb-3">
             <div>
-              <span className="text-lg font-bold text-gray-900">
+              <span className="text-base sm:text-lg font-bold text-gray-900 responsive-price">
                 {formatPrice(parseFloat(product.price))}
               </span>
             </div>
@@ -182,20 +184,22 @@ export default function UnifiedProductCard({
             <Button
               onClick={handleAddToCart}
               disabled={product.stock <= 0}
-              className="w-full transition-all duration-300"
+              className="w-full transition-all duration-300 text-sm mobile-transition"
               size="sm"
+              data-testid={`button-add-to-cart-${product.id}`}
             >
               <ShoppingCart className="w-4 h-4 mr-2" />
               কার্টে যোগ করুন
             </Button>
             
             {/* View Details Button */}
-            <div className="grid grid-cols-2 gap-2">
+            <div className="mobile-button-group grid grid-cols-2 gap-2">
               <Button
                 onClick={handleViewProduct}
                 variant="outline"
                 size="sm"
-                className="w-full"
+                className="w-full mobile-transition"
+                data-testid={`button-view-${product.id}`}
               >
                 <Eye className="w-4 h-4 mr-1" />
                 দেখুন

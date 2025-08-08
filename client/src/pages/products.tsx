@@ -78,7 +78,6 @@ export default function ProductsPage() {
     retry: 3,
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
     refetchOnReconnect: false,
-    retry: 2,
   });
 
   // Filter and sort products
@@ -299,7 +298,7 @@ export default function ProductsPage() {
             <ProgressiveLoader 
               loadingState={{ 
                 isLoading, 
-                error: error?.message,
+                error: error ? String(error) : undefined,
                 progress: isLoading ? undefined : 100 
               }}
               onRetry={() => refetch()}
@@ -362,6 +361,9 @@ export default function ProductsPage() {
             )}
           </>
         )}
+            </ProgressiveLoader>
+          </PerformanceMonitor>
+        </PerformanceErrorBoundary>
 
         {/* Mobile Search Drawer */}
         <MobileSearchDrawer

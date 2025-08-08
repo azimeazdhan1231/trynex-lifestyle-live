@@ -3,6 +3,9 @@ import { Button } from '@/components/ui/button';
 import { ArrowUp } from 'lucide-react';
 import EnhancedHeader from './enhanced-header';
 import EnhancedFooter from './enhanced-footer';
+import MobileResponsiveFixes from './mobile-responsive-fixes';
+import EnhancedPerformanceOptimizer from './enhanced-performance-optimizer';
+import ComprehensiveMobileOptimizer from './comprehensive-mobile-optimizer';
 
 interface MobileOptimizedLayoutProps {
   children: React.ReactNode;
@@ -47,6 +50,9 @@ export default function MobileOptimizedLayout({
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <MobileResponsiveFixes />
+      <EnhancedPerformanceOptimizer />
+      <ComprehensiveMobileOptimizer />
       <EnhancedHeader />
       
       <main className="pt-24 lg:pt-32">

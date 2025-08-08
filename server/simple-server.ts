@@ -15,19 +15,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Setup authentication routes
   setupAuthRoutes(app);
 
-  // Optimized Products API with enhanced caching
+  // Ultra-optimized Products API with aggressive caching
   app.get('/api/products', async (req, res) => {
     try {
       const startTime = Date.now();
+      console.log('🔍 Executing optimized products query...');
       
-      // Enhanced cache headers for better performance
+      // Aggressive cache headers for maximum performance
       res.set({
-        'Cache-Control': 'public, max-age=300, stale-while-revalidate=60',
-        'ETag': `products-${Date.now()}`,
-        'Vary': 'Accept-Encoding'
+        'Cache-Control': 'public, max-age=600, stale-while-revalidate=300, stale-if-error=86400',
+        'ETag': `products-v2-${Date.now()}`,
+        'Vary': 'Accept-Encoding',
+        'X-Content-Type-Options': 'nosniff',
+        'X-DNS-Prefetch-Control': 'on'
       });
       
       const category = req.query.category as string;
+      const limit = parseInt(req.query.limit as string) || 50;
+      const offset = parseInt(req.query.offset as string) || 0;
+      
       let products;
       
       if (category && category !== 'all') {
@@ -36,13 +42,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
         products = await storage.getProducts();
       }
       
+      // Apply pagination for better performance
+      const paginatedProducts = products.slice(offset, offset + limit);
+      
       // Add performance metrics
       const duration = Date.now() - startTime;
       res.set('X-Response-Time', `${duration}ms`);
+      res.set('X-Total-Count', products.length.toString());
+      res.set('X-Pagination-Limit', limit.toString());
+      res.set('X-Pagination-Offset', offset.toString());
       
-      console.log(`✅ Products fetched in ${duration}ms - ${products.length} items`);
+      console.log(`✅ Products query completed in ${duration}ms - ${paginatedProducts.length} items returned (${products.length} total)`);
       
-      res.json(products);
+      res.json(paginatedProducts);
     } catch (error) {
       console.error('❌ Error fetching products:', error);
       res.status(500).json({ message: 'পণ্য লোড করতে সমস্যা হয়েছে' });

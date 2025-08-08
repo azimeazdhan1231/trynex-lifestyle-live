@@ -231,16 +231,16 @@ export default function CheckoutModal({ isOpen, onClose, cart, onOrderComplete }
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="modal-container">
-        <DialogHeader className="px-6 py-4 border-b">
-          <DialogTitle className="text-2xl font-bold">
+      <DialogContent className="w-[95vw] max-w-lg sm:max-w-2xl lg:max-w-4xl max-h-[95vh] sm:max-h-[90vh] overflow-hidden flex flex-col m-2 sm:m-6">
+        <DialogHeader className="flex-shrink-0 px-3 sm:px-4 lg:px-6 py-3 sm:py-4 border-b bg-gradient-to-r from-blue-50 to-indigo-50">
+          <DialogTitle className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-800">
             অর্ডার সম্পূর্ণ করুন
           </DialogTitle>
-          <DialogDescription className="sr-only">
+          <DialogDescription className="text-xs sm:text-sm text-gray-600 mt-1 sm:mt-2">
             আপনার অর্ডার সম্পূর্ণ করতে প্রয়োজনীয় তথ্য প্রদান করুন
           </DialogDescription>
         </DialogHeader>
-        <div className="modal-content">
+        <div className="flex-1 overflow-y-auto px-3 sm:px-4 lg:px-6 py-3 sm:py-4">
 
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Customer Information */}
