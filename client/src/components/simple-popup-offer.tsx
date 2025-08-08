@@ -58,13 +58,20 @@ export default function SimplePopupOffer() {
         className="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm mx-auto overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Perfect Close Button */}
+        {/* Enhanced Perfect Close Button */}
         <button
           onClick={() => setIsOpen(false)}
-          className="absolute -top-2 -right-2 z-10 w-6 h-6 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center border-2 border-white shadow-lg transition-all duration-200 touch-friendly pl-[25px] pr-[25px]"
-          style={{ fontSize: '12px' }}
+          className="absolute -top-3 -right-3 z-50 w-8 h-8 bg-gradient-to-br from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white rounded-full flex items-center justify-center border-3 border-white shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-110 active:scale-95 touch-friendly group"
+          style={{ 
+            fontSize: '14px',
+            minWidth: '44px',
+            minHeight: '44px',
+            WebkitTapHighlightColor: 'transparent'
+          }}
+          aria-label="Close popup"
         >
-          <X className="w-3 h-3" />
+          <X className="w-4 h-4 group-hover:rotate-90 transition-transform duration-300" strokeWidth={2.5} />
+          <div className="absolute inset-0 rounded-full bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
         </button>
 
         {/* Header */}

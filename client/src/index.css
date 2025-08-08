@@ -557,8 +557,33 @@ a:focus-visible {
 
 /* Special handling for small close buttons */
 .touch-button:not(.btn):not(.button) {
-  min-height: 32px;
-  min-width: 32px;
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* Enhanced close button animations */
+.touch-button.group {
+  cursor: pointer;
+  will-change: transform;
+}
+
+.touch-button.group:focus {
+  outline: 2px solid rgba(239, 68, 68, 0.5);
+  outline-offset: 2px;
+}
+
+/* Pulse animation for close button */
+@keyframes pulse-close {
+  0%, 100% { 
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+  }
+  50% { 
+    box-shadow: 0 0 0 8px rgba(239, 68, 68, 0);
+  }
+}
+
+.touch-button.group:hover {
+  animation: pulse-close 1.5s infinite;
 }
 
 .touch-button:active {
