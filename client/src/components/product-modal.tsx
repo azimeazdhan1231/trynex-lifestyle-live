@@ -21,14 +21,7 @@ export default function ProductModal({ product, isOpen, onClose, onAddToCart, on
   const { toast } = useToast();
 
   // Debug logging
-  console.log("🔍 ProductModal: Received props:", { 
-    productName: product?.name, 
-    productId: product?.id,
-    isOpen, 
-    hasOnClose: !!onClose, 
-    hasOnAddToCart: !!onAddToCart, 
-    hasOnCustomize: !!onCustomize 
-  });
+  console.log("🔍 ProductModal: Received props:", { product: product?.name, isOpen, onClose, onAddToCart, onCustomize });
 
   if (!product) {
     console.log("❌ ProductModal: No product provided, returning null");
@@ -36,13 +29,7 @@ export default function ProductModal({ product, isOpen, onClose, onAddToCart, on
   }
 
   console.log("✅ ProductModal: Rendering with product:", product.name, "isOpen:", isOpen);
-  console.log("✅ ProductModal: Product details:", {
-    id: product.id,
-    name: product.name,
-    price: product.price,
-    stock: product.stock,
-    category: product.category
-  });
+  console.log("✅ ProductModal: Product details:", product);
 
   // Track product view when modal opens
   useEffect(() => {

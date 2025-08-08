@@ -28,18 +28,7 @@ export default function ProductPage() {
 
   const { data: product, isLoading, error } = useQuery<Product>({
     queryKey: ["/api/products", productId],
-    queryFn: async () => {
-      if (!productId) throw new Error('No product ID provided');
-      
-      const response = await fetch(`/api/products/${productId}`);
-      if (!response.ok) {
-        throw new Error(`Failed to fetch product: ${response.status}`);
-      }
-      
-      return response.json();
-    },
-    enabled: !!productId,
-    retry: 3
+    enabled: !!productId
   });
 
   const { data: relatedProducts = [] } = useQuery<Product[]>({
