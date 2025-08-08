@@ -90,7 +90,8 @@ export default function CustomizeModalFixed({ product, isOpen, onClose, onAddToC
   // Early return after ALL hooks are called
   if (!product) return null;
 
-  const getProductType = (productName: string): keyof typeof CUSTOMIZATION_OPTIONS => {
+  const getProductType = (productName: string | undefined): keyof typeof CUSTOMIZATION_OPTIONS => {
+    if (!productName) return "T-Shirts"; // Default fallback
     const name = productName.toLowerCase();
     if (name.includes("t-shirt") || name.includes("tshirt") || name.includes("shirt")) return "T-Shirts";
     if (name.includes("mug")) return "Mugs";
@@ -99,8 +100,8 @@ export default function CustomizeModalFixed({ product, isOpen, onClose, onAddToC
     return "T-Shirts"; // Default
   };
 
-  // Support product variants from same page
-  const currentProductName = productVariant || product.name;
+  // Support product variants from same page - add null checks
+  const currentProductName = productVariant || product?.name || "";
   const productType = getProductType(currentProductName);
   const options = CUSTOMIZATION_OPTIONS[productType];
 

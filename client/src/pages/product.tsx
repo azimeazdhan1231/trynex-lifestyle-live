@@ -339,11 +339,12 @@ export default function ProductPage(props: any) {
       </div>
 
       {/* Customize Modal */}
-      <CustomizeModal
-        isOpen={isCustomizeModalOpen}
-        onClose={() => setIsCustomizeModalOpen(false)}
-        product={product}
-        onAddToCart={async (product, customization) => {
+      {product && (
+        <CustomizeModal
+          isOpen={isCustomizeModalOpen}
+          onClose={() => setIsCustomizeModalOpen(false)}
+          product={product}
+          onAddToCart={async (product, customization) => {
           addToCart({
             id: product.id,
             name: product.name,
@@ -358,7 +359,8 @@ export default function ProductPage(props: any) {
 
           setIsCustomizeModalOpen(false);
         }}
-      />
+        />
+      )}
     </div>
   );
 }
