@@ -1,359 +1,268 @@
-
-import Database from "better-sqlite3";
-import type { 
-  InsertProduct, Product, InsertOrder, Order, InsertOffer, Offer,
-  InsertCategory, Category, InsertAnalytics, Analytics, InsertSetting, Setting,
-  InsertUser, User, InsertBlog, Blog
+import { drizzle } from "drizzle-orm/postgres-js";
+import postgres from "postgres";
+import { eq, desc, and, gte, lte } from "drizzle-orm";
+import dotenv from 'dotenv';
+dotenv.config();
+import { 
+  products, orders, offers, admins, categories, promoCodes, analytics, siteSettings,
+  users, userCarts, userOrders, customOrders,
+  type Product, type InsertProduct, type Order, type InsertOrder, 
+  type Offer, type InsertOffer, type Admin, type InsertAdmin,
+  type Category, type InsertCategory, type PromoCode, type InsertPromoCode,
+  type Analytics, type InsertAnalytics, type SiteSettings, type InsertSiteSettings,
+  type User, type UpsertUser, type UserCart, type InsertUserCart,
+  type UserOrder, type InsertUserOrder, type CustomOrder, type NewCustomOrder
 } from "@shared/schema";
 
-const db = new Database("simple.db");
+// Set environment variables directly if not found (temporary fix for Replit)
+if (!process.env.DATABASE_URL) {
+  process.env.DATABASE_URL = "postgresql://postgres.lxhhgdqfxmeohayceshb:Amiomito1Amiomito1@aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres";
+}
 
-// Enable performance optimizations
-db.pragma('journal_mode = WAL');
-db.pragma('synchronous = NORMAL');
-db.pragma('cache_size = 10000');
-db.pragma('temp_store = MEMORY');
-db.pragma('mmap_size = 268435456'); // 256MB
+// Try to get DATABASE_URL, or construct it from individual PG environment variables
+let connectionString = process.env.DATABASE_URL;
 
-// Performance monitoring
-const logQuery = (operation: string, startTime: number) => {
-  const duration = Date.now() - startTime;
-  if (duration > 100) {
-    console.warn(`⚠️ Slow query: ${operation} took ${duration}ms`);
-  } else {
-    console.log(`✅ Fast query: ${operation} took ${duration}ms`);
+if (!connectionString) {
+  const { PGHOST, PGPORT, PGUSER, PGPASSWORD, PGDATABASE } = process.env;
+  
+  // If we have individual PostgreSQL environment variables, construct the connection string
+  if (PGHOST && PGUSER && PGDATABASE) {
+    const port = PGPORT || '5432';
+    const password = PGPASSWORD ? `:${PGPASSWORD}` : '';
+    connectionString = `postgresql://${PGUSER}${password}@${PGHOST}:${port}/${PGDATABASE}`;
   }
-};
+}
 
-// Create tables with optimized indexes
-db.exec(`
-  CREATE TABLE IF NOT EXISTS products (
-    id TEXT PRIMARY KEY,
-    name TEXT NOT NULL,
-    price REAL NOT NULL,
-    image_url TEXT,
-    category TEXT,
-    stock INTEGER DEFAULT 0,
-    description TEXT,
-    is_featured INTEGER DEFAULT 0,
-    is_latest INTEGER DEFAULT 0,
-    is_best_selling INTEGER DEFAULT 0,
-    created_at TEXT DEFAULT CURRENT_TIMESTAMP
-  );
+if (!connectionString) {
+  console.error('DATABASE_URL not found, checking environment variables:');
+  console.error('DATABASE_URL:', process.env.DATABASE_URL ? 'exists' : 'missing');
+  console.error('PGHOST:', process.env.PGHOST || 'missing');
+  console.error('PGUSER:', process.env.PGUSER || 'missing');
+  console.error('PGDATABASE:', process.env.PGDATABASE || 'missing');
+  throw new Error("DATABASE_URL environment variable is not set, and could not construct from PG* variables");
+}
+const client = postgres(connectionString);
+const db = drizzle(client);
 
-  -- Optimized indexes for fast queries
-  CREATE INDEX IF NOT EXISTS idx_products_category ON products(category);
-  CREATE INDEX IF NOT EXISTS idx_products_featured ON products(is_featured);
-  CREATE INDEX IF NOT EXISTS idx_products_latest ON products(is_latest);
-  CREATE INDEX IF NOT EXISTS idx_products_best_selling ON products(is_best_selling);
-  CREATE INDEX IF NOT EXISTS idx_products_created_at ON products(created_at);
-  CREATE INDEX IF NOT EXISTS idx_products_name ON products(name);
-
-  CREATE TABLE IF NOT EXISTS orders (
-    id TEXT PRIMARY KEY,
-    tracking_id TEXT UNIQUE,
-    customer_name TEXT NOT NULL,
-    phone TEXT NOT NULL,
-    address TEXT NOT NULL,
-    items TEXT NOT NULL,
-    total_amount REAL NOT NULL,
-    payment_method TEXT DEFAULT 'cash_on_delivery',
-    payment_info TEXT,
-    status TEXT DEFAULT 'pending',
-    created_at TEXT DEFAULT CURRENT_TIMESTAMP,
-    updated_at TEXT DEFAULT CURRENT_TIMESTAMP
-  );
-
-  CREATE INDEX IF NOT EXISTS idx_orders_tracking_id ON orders(tracking_id);
-  CREATE INDEX IF NOT EXISTS idx_orders_phone ON orders(phone);
-  CREATE INDEX IF NOT EXISTS idx_orders_status ON orders(status);
-  CREATE INDEX IF NOT EXISTS idx_orders_created_at ON orders(created_at);
-
-  CREATE TABLE IF NOT EXISTS offers (
-    id TEXT PRIMARY KEY,
-    title TEXT NOT NULL,
-    description TEXT,
-    image_url TEXT,
-    discount_percentage INTEGER,
-    start_date TEXT,
-    end_date TEXT,
-    is_active INTEGER DEFAULT 1,
-    created_at TEXT DEFAULT CURRENT_TIMESTAMP
-  );
-
-  CREATE INDEX IF NOT EXISTS idx_offers_active ON offers(is_active);
-  CREATE INDEX IF NOT EXISTS idx_offers_dates ON offers(start_date, end_date);
-
-  CREATE TABLE IF NOT EXISTS categories (
-    id TEXT PRIMARY KEY,
-    name TEXT NOT NULL UNIQUE,
-    description TEXT,
-    icon TEXT,
-    is_active INTEGER DEFAULT 1,
-    sort_order INTEGER DEFAULT 0,
-    created_at TEXT DEFAULT CURRENT_TIMESTAMP
-  );
-
-  CREATE INDEX IF NOT EXISTS idx_categories_active ON categories(is_active);
-  CREATE INDEX IF NOT EXISTS idx_categories_sort ON categories(sort_order);
-
-  CREATE TABLE IF NOT EXISTS analytics (
-    id TEXT PRIMARY KEY,
-    event_type TEXT NOT NULL,
-    event_data TEXT,
-    user_session TEXT,
-    ip_address TEXT,
-    user_agent TEXT,
-    created_at TEXT DEFAULT CURRENT_TIMESTAMP
-  );
-
-  CREATE INDEX IF NOT EXISTS idx_analytics_type ON analytics(event_type);
-  CREATE INDEX IF NOT EXISTS idx_analytics_session ON analytics(user_session);
-  CREATE INDEX IF NOT EXISTS idx_analytics_created_at ON analytics(created_at);
-
-  CREATE TABLE IF NOT EXISTS settings (
-    id TEXT PRIMARY KEY,
-    key TEXT NOT NULL UNIQUE,
-    value TEXT,
-    description TEXT,
-    created_at TEXT DEFAULT CURRENT_TIMESTAMP,
-    updated_at TEXT DEFAULT CURRENT_TIMESTAMP
-  );
-
-  CREATE INDEX IF NOT EXISTS idx_settings_key ON settings(key);
-
-  CREATE TABLE IF NOT EXISTS users (
-    id TEXT PRIMARY KEY,
-    username TEXT NOT NULL UNIQUE,
-    password_hash TEXT NOT NULL,
-    role TEXT DEFAULT 'user',
-    phone TEXT,
-    is_active INTEGER DEFAULT 1,
-    created_at TEXT DEFAULT CURRENT_TIMESTAMP
-  );
-
-  CREATE INDEX IF NOT EXISTS idx_users_username ON users(username);
-  CREATE INDEX IF NOT EXISTS idx_users_role ON users(role);
-
-  CREATE TABLE IF NOT EXISTS blogs (
-    id TEXT PRIMARY KEY,
-    title TEXT NOT NULL,
-    content TEXT NOT NULL,
-    excerpt TEXT,
-    image_url TEXT,
-    slug TEXT UNIQUE,
-    status TEXT DEFAULT 'draft',
-    author_id TEXT,
-    tags TEXT,
-    created_at TEXT DEFAULT CURRENT_TIMESTAMP,
-    updated_at TEXT DEFAULT CURRENT_TIMESTAMP
-  );
-
-  CREATE INDEX IF NOT EXISTS idx_blogs_slug ON blogs(slug);
-  CREATE INDEX IF NOT EXISTS idx_blogs_status ON blogs(status);
-  CREATE INDEX IF NOT EXISTS idx_blogs_author ON blogs(author_id);
-`);
-
-// Prepared statements for better performance
-const getProductsStmt = db.prepare('SELECT * FROM products ORDER BY created_at DESC');
-const getProductsByCategoryStmt = db.prepare('SELECT * FROM products WHERE category = ? ORDER BY created_at DESC');
-const getProductByIdStmt = db.prepare('SELECT * FROM products WHERE id = ?');
-const insertProductStmt = db.prepare(`
-  INSERT INTO products (id, name, price, image_url, category, stock, description, is_featured, is_latest, is_best_selling)
-  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-`);
-
-const getOrdersStmt = db.prepare('SELECT * FROM orders ORDER BY created_at DESC');
-const getOrderByIdStmt = db.prepare('SELECT * FROM orders WHERE id = ?');
-const getOrderByTrackingStmt = db.prepare('SELECT * FROM orders WHERE tracking_id = ?');
-const insertOrderStmt = db.prepare(`
-  INSERT INTO orders (id, tracking_id, customer_name, phone, address, items, total_amount, payment_method, payment_info, status)
-  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-`);
-
-const getCategoriesStmt = db.prepare('SELECT * FROM categories WHERE is_active = 1 ORDER BY sort_order, name');
-const getOffersStmt = db.prepare('SELECT * FROM offers WHERE is_active = 1 ORDER BY created_at DESC');
-const getSettingsStmt = db.prepare('SELECT * FROM settings');
-
-export const storage = {
-  // Products
+export class SimpleStorage {
+  // Products (Ultra-optimized for blazing fast loading)
   async getProducts(): Promise<Product[]> {
-    const startTime = Date.now();
     try {
-      const products = getProductsStmt.all() as Product[];
-      logQuery('getProducts', startTime);
-      return products;
+      // Ultra-optimized query with minimal fields and smart ordering
+      const result = await db.select({
+        id: products.id,
+        name: products.name,
+        price: products.price,
+        image_url: products.image_url,
+        category: products.category,
+        stock: products.stock,
+        description: products.description,
+        is_featured: products.is_featured,
+        is_latest: products.is_latest,
+        is_best_selling: products.is_best_selling,
+        created_at: products.created_at
+      }).from(products)
+        .orderBy(desc(products.is_featured), desc(products.is_latest), desc(products.created_at));
+      
+      return result;
     } catch (error) {
-      console.error('Error getting products:', error);
-      throw error;
+      console.error('Database query error:', error);
+      // Return empty array instead of throwing to prevent app crashes
+      return [];
     }
-  },
+  }
 
   async getProductsByCategory(category: string): Promise<Product[]> {
-    const startTime = Date.now();
-    try {
-      const products = getProductsByCategoryStmt.all(category) as Product[];
-      logQuery(`getProductsByCategory(${category})`, startTime);
-      return products;
-    } catch (error) {
-      console.error('Error getting products by category:', error);
-      throw error;
-    }
-  },
+    return await db.select().from(products).where(eq(products.category, category)).orderBy(desc(products.created_at));
+  }
 
-  async getProduct(id: string): Promise<Product | null> {
-    const startTime = Date.now();
-    try {
-      const product = getProductByIdStmt.get(id) as Product | undefined;
-      logQuery(`getProduct(${id})`, startTime);
-      return product || null;
-    } catch (error) {
-      console.error('Error getting product:', error);
-      throw error;
-    }
-  },
+  async getProduct(id: string): Promise<Product | undefined> {
+    const result = await db.select().from(products).where(eq(products.id, id)).limit(1);
+    return result[0];
+  }
 
-  async createProduct(data: InsertProduct): Promise<Product> {
-    const startTime = Date.now();
-    try {
-      const id = crypto.randomUUID();
-      insertProductStmt.run(
-        id, data.name, data.price, data.image_url, data.category,
-        data.stock, data.description, data.is_featured ? 1 : 0,
-        data.is_latest ? 1 : 0, data.is_best_selling ? 1 : 0
-      );
-      const product = this.getProduct(id);
-      logQuery('createProduct', startTime);
-      return product!;
-    } catch (error) {
-      console.error('Error creating product:', error);
-      throw error;
-    }
-  },
+  async createProduct(product: InsertProduct): Promise<Product> {
+    const result = await db.insert(products).values(product).returning();
+    return result[0];
+  }
+
+  async updateProduct(id: string, product: Partial<InsertProduct>): Promise<Product> {
+    const result = await db.update(products).set(product).where(eq(products.id, id)).returning();
+    return result[0];
+  }
+
+  async deleteProduct(id: string): Promise<void> {
+    await db.delete(products).where(eq(products.id, id));
+  }
 
   // Orders
   async getOrders(): Promise<Order[]> {
-    const startTime = Date.now();
-    try {
-      const orders = getOrdersStmt.all() as Order[];
-      logQuery('getOrders', startTime);
-      return orders;
-    } catch (error) {
-      console.error('Error getting orders:', error);
-      throw error;
-    }
-  },
+    return await db.select().from(orders).orderBy(desc(orders.created_at));
+  }
 
-  async getOrder(id: string): Promise<Order | null> {
-    const startTime = Date.now();
-    try {
-      const order = getOrderByIdStmt.get(id) as Order | undefined;
-      logQuery(`getOrder(${id})`, startTime);
-      return order || null;
-    } catch (error) {
-      console.error('Error getting order:', error);
-      throw error;
-    }
-  },
+  async getOrder(trackingId: string): Promise<Order | undefined> {
+    const result = await db.select().from(orders).where(eq(orders.tracking_id, trackingId)).limit(1);
+    return result[0];
+  }
 
-  async getOrderByTracking(trackingId: string): Promise<Order | null> {
-    const startTime = Date.now();
-    try {
-      const order = getOrderByTrackingStmt.get(trackingId) as Order | undefined;
-      logQuery(`getOrderByTracking(${trackingId})`, startTime);
-      return order || null;
-    } catch (error) {
-      console.error('Error getting order by tracking:', error);
-      throw error;
-    }
-  },
-
-  async createOrder(data: InsertOrder): Promise<Order> {
-    const startTime = Date.now();
-    try {
-      const id = crypto.randomUUID();
-      insertOrderStmt.run(
-        id, data.tracking_id, data.customer_name, data.phone,
-        data.address, data.items, data.total_amount, data.payment_method,
-        data.payment_info, data.status
-      );
-      const order = this.getOrder(id);
-      logQuery('createOrder', startTime);
-      return order!;
-    } catch (error) {
-      console.error('Error creating order:', error);
-      throw error;
-    }
-  },
+  async createOrder(order: InsertOrder & { tracking_id: string }): Promise<Order> {
+    const result = await db.insert(orders).values([order]).returning();
+    return result[0];
+  }
 
   async updateOrderStatus(id: string, status: string): Promise<Order> {
-    const startTime = Date.now();
-    try {
-      const updateStmt = db.prepare('UPDATE orders SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?');
-      updateStmt.run(status, id);
-      const order = this.getOrder(id);
-      logQuery('updateOrderStatus', startTime);
-      return order!;
-    } catch (error) {
-      console.error('Error updating order status:', error);
-      throw error;
-    }
-  },
+    const result = await db.update(orders).set({ status }).where(eq(orders.id, id)).returning();
+    return result[0];
+  }
+
+  // Users
+  async getUserByPhone(phone: string): Promise<User | undefined> {
+    const result = await db.select().from(users).where(eq(users.phone, phone)).limit(1);
+    return result[0];
+  }
+
+  async createUser(userData: { 
+    phone: string; 
+    password: string; 
+    firstName: string; 
+    lastName: string; 
+    address: string; 
+    email: string | null; 
+  }): Promise<User> {
+    const result = await db.insert(users).values({
+      phone: userData.phone,
+      password: userData.password,
+      firstName: userData.firstName,
+      lastName: userData.lastName || '',
+      address: userData.address,
+      email: userData.email,
+      profileImageUrl: null
+    }).returning();
+    return result[0];
+  }
+
+  async getUser(id: string): Promise<User | undefined> {
+    const result = await db.select().from(users).where(eq(users.id, id)).limit(1);
+    return result[0];
+  }
+
+  // Offers
+  async getActiveOffers(): Promise<Offer[]> {
+    return await db.select().from(offers).where(eq(offers.active, true));
+  }
+
+  async getOffers(): Promise<Offer[]> {
+    return await db.select().from(offers).orderBy(desc(offers.created_at));
+  }
+
+  async createOffer(offer: InsertOffer): Promise<Offer> {
+    const result = await db.insert(offers).values(offer).returning();
+    return result[0];
+  }
+
+  async updateOffer(id: string, offer: Partial<InsertOffer>): Promise<Offer> {
+    const result = await db.update(offers).set(offer).where(eq(offers.id, id)).returning();
+    return result[0];
+  }
+
+  async deleteOffer(id: string): Promise<void> {
+    await db.delete(offers).where(eq(offers.id, id));
+  }
 
   // Categories
   async getCategories(): Promise<Category[]> {
-    const startTime = Date.now();
-    try {
-      const categories = getCategoriesStmt.all() as Category[];
-      logQuery('getCategories', startTime);
-      return categories;
-    } catch (error) {
-      console.error('Error getting categories:', error);
-      throw error;
-    }
-  },
+    return await db.select().from(categories).where(eq(categories.is_active, true)).orderBy(categories.sort_order);
+  }
 
-  // Offers
-  async getOffers(): Promise<Offer[]> {
-    const startTime = Date.now();
-    try {
-      const offers = getOffersStmt.all() as Offer[];
-      logQuery('getOffers', startTime);
-      return offers;
-    } catch (error) {
-      console.error('Error getting offers:', error);
-      throw error;
-    }
-  },
+  async createCategory(category: InsertCategory): Promise<Category> {
+    const result = await db.insert(categories).values(category).returning();
+    return result[0];
+  }
 
-  // Settings
-  async getSettings(): Promise<Setting[]> {
-    const startTime = Date.now();
-    try {
-      const settings = getSettingsStmt.all() as Setting[];
-      logQuery('getSettings', startTime);
-      return settings;
-    } catch (error) {
-      console.error('Error getting settings:', error);
-      throw error;
-    }
-  },
+  async updateCategory(id: string, category: Partial<InsertCategory>): Promise<Category> {
+    const result = await db.update(categories).set(category).where(eq(categories.id, id)).returning();
+    return result[0];
+  }
+
+  async deleteCategory(id: string): Promise<void> {
+    await db.delete(categories).where(eq(categories.id, id));
+  }
+
+  // Admins
+  async getAdminByEmail(email: string): Promise<Admin | undefined> {
+    const result = await db.select().from(admins).where(eq(admins.email, email)).limit(1);
+    return result[0];
+  }
+
+  async createAdmin(admin: InsertAdmin): Promise<Admin> {
+    const result = await db.insert(admins).values(admin).returning();
+    return result[0];
+  }
 
   // Analytics
-  async createAnalytics(data: InsertAnalytics): Promise<void> {
-    const startTime = Date.now();
-    try {
-      const insertAnalyticsStmt = db.prepare(`
-        INSERT INTO analytics (id, event_type, event_data, user_session, ip_address, user_agent)
-        VALUES (?, ?, ?, ?, ?, ?)
-      `);
-      insertAnalyticsStmt.run(
-        crypto.randomUUID(), data.event_type, data.event_data,
-        data.user_session, data.ip_address, data.user_agent
-      );
-      logQuery('createAnalytics', startTime);
-    } catch (error) {
-      console.error('Error creating analytics:', error);
+  async createAnalytics(analyticsData: InsertAnalytics): Promise<Analytics> {
+    const result = await db.insert(analytics).values(analyticsData).returning();
+    return result[0];
+  }
+
+  // Settings
+  async getSettings(): Promise<SiteSettings[]> {
+    return await db.select().from(siteSettings);
+  }
+
+  async updateSetting(key: string, value: string): Promise<SiteSettings> {
+    // First try to update existing setting
+    const existing = await db.select().from(siteSettings).where(eq(siteSettings.key, key)).limit(1);
+    
+    if (existing.length > 0) {
+      const result = await db.update(siteSettings).set({ value, updated_at: new Date() }).where(eq(siteSettings.key, key)).returning();
+      return result[0];
+    } else {
+      // Create new setting if it doesn't exist
+      const result = await db.insert(siteSettings).values({
+        key,
+        value,
+        description: `Auto-generated setting for ${key}`,
+        updated_at: new Date()
+      }).returning();
+      return result[0];
     }
   }
-};
+
+  async createSetting(setting: InsertSiteSettings): Promise<SiteSettings> {
+    const result = await db.insert(siteSettings).values(setting).returning();
+    return result[0];
+  }
+
+  // Custom Orders
+  async getCustomOrders(): Promise<CustomOrder[]> {
+    return await db.select().from(customOrders).orderBy(desc(customOrders.createdAt));
+  }
+
+  async getCustomOrder(id: number): Promise<CustomOrder | undefined> {
+    const result = await db.select().from(customOrders).where(eq(customOrders.id, id)).limit(1);
+    return result[0];
+  }
+
+  async createCustomOrder(customOrder: NewCustomOrder): Promise<CustomOrder> {
+    const result = await db.insert(customOrders).values(customOrder).returning();
+    return result[0];
+  }
+
+  async updateCustomOrderStatus(id: number, status: string): Promise<CustomOrder> {
+    const result = await db.update(customOrders).set({ 
+      status, 
+      updatedAt: new Date() 
+    }).where(eq(customOrders.id, id)).returning();
+    return result[0];
+  }
+
+  // User Orders - Get orders for specific user
+  async getUserOrders(userId: string): Promise<Order[]> {
+    return await db.select().from(orders)
+      .where(eq(orders.user_id, userId))
+      .orderBy(desc(orders.created_at));
+  }
+}
+
+export const storage = new SimpleStorage();

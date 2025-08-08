@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { useLocation } from 'wouter';
-import { trackPageView, trackEvent as analyticsTrackEvent } from '../lib/analytics';
+import { trackPageView } from '../lib/analytics';
 
 export const useAnalytics = () => {
   const [location] = useLocation();
@@ -12,12 +12,4 @@ export const useAnalytics = () => {
       prevLocationRef.current = location;
     }
   }, [location]);
-
-  const trackEvent = (eventName: string, properties?: Record<string, any>) => {
-    analyticsTrackEvent(eventName, properties?.category, properties?.label, properties?.value);
-  };
-
-  return {
-    trackEvent
-  };
 };
