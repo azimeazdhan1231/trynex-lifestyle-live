@@ -118,7 +118,7 @@ export default function Header({ cartCount, onCartOpen }: HeaderProps) {
                       <DropdownMenuTrigger asChild>
                         <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                           <Avatar className="h-8 w-8">
-                            <AvatarImage src={user?.profileImageUrl || ''} alt={user?.firstName || 'User'} />
+                            <AvatarImage src={''} alt={user?.firstName || 'User'} />
                             <AvatarFallback>
                               {user?.firstName?.[0] || user?.phone?.[0] || 'U'}
                             </AvatarFallback>
@@ -131,10 +131,10 @@ export default function Header({ cartCount, onCartOpen }: HeaderProps) {
                             <p className="text-sm font-medium leading-none">
                               {user?.firstName && user?.lastName 
                                 ? `${user.firstName} ${user.lastName}`
-                                : user?.phone || user?.email}
+                                : user?.phone}
                             </p>
                             <p className="text-xs leading-none text-muted-foreground">
-                              {user?.phone || user?.email}
+                              {user?.phone}
                             </p>
                           </div>
                         </DropdownMenuLabel>
