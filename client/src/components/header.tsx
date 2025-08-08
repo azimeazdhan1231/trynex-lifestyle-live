@@ -4,14 +4,6 @@ import { Badge } from "@/components/ui/badge";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Heart, Search, ShoppingCart, User, Menu, X, Phone, Mail, MapPin, Clock, LogOut } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
-import {
-  Menubar,
-  MenubarContent,
-  MenubarItem,
-  MenubarMenu,
-  MenubarSeparator,
-  MenubarTrigger,
-} from "@/components/ui/menubar";
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { COMPANY_NAME } from "@/lib/constants";
@@ -78,39 +70,20 @@ export default function Header({ cartCount, onCartOpen }: HeaderProps) {
             </div>
 
             {/* Desktop Navigation */}
-            <nav className="hidden lg:flex">
-              <Menubar className="border-none bg-transparent">
-                {navItems.map((item) => (
-                  <MenubarMenu key={item.name}>
-                    <MenubarTrigger asChild>
-                      <Link
-                        href={item.href}
-                        className={`font-medium transition-colors text-sm lg:text-base cursor-pointer ${
-                          isActive(item.href) 
-                            ? "text-primary font-semibold" 
-                            : "text-gray-600 hover:text-primary"
-                        }`}
-                      >
-                        {item.name}
-                      </Link>
-                    </MenubarTrigger>
-                    {item.name === "পণ্য" && (
-                      <MenubarContent>
-                        <MenubarItem asChild>
-                          <Link href="/products?category=all">সব পণ্য</Link>
-                        </MenubarItem>
-                        <MenubarSeparator />
-                        <MenubarItem asChild>
-                          <Link href="/products?category=clothing">পোশাক</Link>
-                        </MenubarItem>
-                        <MenubarItem asChild>
-                          <Link href="/products?category=accessories">আনুষাঙ্গিক</Link>
-                        </MenubarItem>
-                      </MenubarContent>
-                    )}
-                  </MenubarMenu>
-                ))}
-              </Menubar>
+            <nav className="hidden lg:flex space-x-6 xl:space-x-8">
+              {navItems.map((item) => (
+                <Link
+                  key={item.name}
+                  href={item.href}
+                  className={`font-medium transition-colors text-sm lg:text-base ${
+                    isActive(item.href) 
+                      ? "text-primary font-semibold" 
+                      : "text-gray-600 hover:text-primary"
+                  }`}
+                >
+                  {item.name}
+                </Link>
+              ))}
             </nav>
 
             {/* Search, Cart and Mobile Menu */}

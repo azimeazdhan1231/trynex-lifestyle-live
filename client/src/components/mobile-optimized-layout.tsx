@@ -114,18 +114,3 @@ export default function MobileOptimizedLayout({
     </div>
   );
 }
-import { ReactNode } from 'react';
-
-interface MobileOptimizedLayoutProps {
-  children: ReactNode;
-}
-
-export default function MobileOptimizedLayout({ children }: MobileOptimizedLayoutProps) {
-  return (
-    <div className="min-h-screen bg-gray-50 w-full overflow-x-hidden">
-      <div className="max-w-screen-2xl mx-auto">
-        {children}
-      </div>
-    </div>
-  );
-}
