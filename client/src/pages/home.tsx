@@ -300,7 +300,8 @@ function ProductSection({
           <div className="w-24 h-1 bg-gradient-to-r from-primary to-primary/50 mx-auto mt-6 rounded-full"></div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 sm:gap-8">
+        {/* Desktop Grid View */}
+        <div className="hidden lg:grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 sm:gap-8">
           {products.map((product, index) => (
             <div 
               key={product.id} 
@@ -319,6 +320,39 @@ function ProductSection({
               />
             </div>
           ))}
+        </div>
+
+        {/* Mobile Carousel View */}
+        <div className="lg:hidden">
+          <div className="relative overflow-hidden">
+            <div className="flex gap-4 overflow-x-auto scrollbar-hide pb-4 snap-x snap-mandatory" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+              {products.map((product, index) => (
+                <div 
+                  key={product.id} 
+                  className="flex-shrink-0 w-[280px] sm:w-[320px] snap-start transform transition-all duration-500"
+                  style={{
+                    animationDelay: `${index * 100}ms`,
+                    animation: 'fadeInUp 0.8s ease-out forwards'
+                  }}
+                >
+                  <UnifiedProductCard
+                    product={product}
+                    onAddToCart={onAddToCart}
+                    onViewProduct={onViewProduct}
+                    onCustomize={onCustomize || (() => {})}
+                    showBadge={true}
+                  />
+                </div>
+              ))}
+            </div>
+            
+            {/* Scroll Indicators */}
+            <div className="flex justify-center mt-4 space-x-2">
+              {Array.from({ length: Math.ceil(products.length / 2) }).map((_, index) => (
+                <div key={index} className="w-2 h-2 bg-gray-300 rounded-full"></div>
+              ))}
+            </div>
+          </div>
         </div>
 
         <div className="text-center mt-12">
@@ -714,7 +748,7 @@ export default function Home() {
               <p className="text-gray-300 mb-6 leading-relaxed">
                 {COMPANY_TAGLINE}। আমরা গুণগত মানের পণ্য এবং সেবা প্রদানে প্রতিশ্রুতিবদ্ধ।
               </p>
-              <div className="flex space-x-4">
+              <div className="flex flex-wrap gap-3 justify-center">
                 <Button 
                   asChild
                   variant="outline" 
@@ -730,6 +764,23 @@ export default function Home() {
                     <span className="text-white font-medium">Facebook Page</span>
                   </a>
                 </Button>
+                
+                <Button 
+                  asChild
+                  variant="outline" 
+                  className="bg-blue-700 hover:bg-blue-800 text-white border-blue-700 hover:border-blue-800 font-medium"
+                >
+                  <a 
+                    href="https://www.facebook.com/ahmed.amit.333/" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="flex items-center space-x-2 text-white hover:text-white"
+                  >
+                    <span className="text-lg">👨‍💼</span>
+                    <span className="text-white font-medium">Meet Founder</span>
+                  </a>
+                </Button>
+                
                 <Button 
                   className="bg-green-600 hover:bg-green-700 text-white border-green-600 font-medium"
                   onClick={() => window.open('https://wa.me/8801747292277', '_blank')}

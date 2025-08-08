@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Star, Heart, ShoppingCart, Plus, Eye, Sparkles, TrendingUp, Zap } from "lucide-react";
+import { Star, Heart, ShoppingCart, Plus, Eye, Sparkles, TrendingUp, Zap, Palette, MessageCircle } from "lucide-react";
 import { formatPrice } from "@/lib/constants";
 import { useLocation } from "wouter";
 import type { Product } from "@shared/schema";
@@ -53,14 +53,14 @@ export default function UnifiedProductCard({
     e.preventDefault();
     e.stopPropagation();
     console.log("🔍 UnifiedProductCard: Card clicked, navigating to product page:", product.name);
-    
+
     // Call the onViewProduct callback first if provided
     if (onViewProduct) {
       console.log("🔍 UnifiedProductCard: Calling onViewProduct callback");
       onViewProduct(product);
       return;
     }
-    
+
     // Fallback to direct navigation
     try {
       console.log("🔍 UnifiedProductCard: Using direct navigation fallback");
@@ -87,14 +87,14 @@ export default function UnifiedProductCard({
     e.preventDefault();
     e.stopPropagation();
     console.log("👁️ UnifiedProductCard: View details clicked for:", product.name);
-    
+
     // Call the onViewProduct callback first if provided
     if (onViewProduct) {
       console.log("👁️ UnifiedProductCard: Calling onViewProduct callback");
       onViewProduct(product);
       return;
     }
-    
+
     // Fallback to direct navigation
     try {
       console.log("👁️ UnifiedProductCard: Using direct navigation fallback");
@@ -110,24 +110,16 @@ export default function UnifiedProductCard({
     setIsFavorite(!isFavorite);
   };
 
+  const handleWhatsAppOrder = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    // Placeholder for WhatsApp order logic
+    alert("WhatsApp order not implemented yet!");
+  };
+
   return (
-    <Card 
-      ref={cardRef}
-      className={`group hover:shadow-2xl transition-all duration-500 border border-gray-100 overflow-hidden bg-white hover:border-primary/40 transform hover:-translate-y-2 cursor-pointer relative backdrop-blur-sm
-        ${inView ? 'animate-fade-in-up opacity-100' : 'opacity-0 translate-y-8'}
-        ${isHovered ? 'scale-[1.02] shadow-2xl' : ''}
-      `}
-      onClick={handleCardClick}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-      style={{
-        background: 'linear-gradient(135deg, rgba(255,255,255,1) 0%, rgba(249,250,251,1) 100%)',
-        boxShadow: isHovered 
-          ? '0 25px 50px -12px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(59, 130, 246, 0.1)'
-          : '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
-      }}
-    >
-      <div className="relative">
+    <Card className="group hover:shadow-xl transition-all duration-300 border border-gray-100 overflow-hidden bg-white hover:border-primary/30 transform hover:-translate-y-1 sm:hover:-translate-y-2 h-full flex flex-col">
+      <div className="relative flex-shrink-0">
         {/* Premium Product Image with Progressive Loading */}
         <div className="aspect-[4/5] overflow-hidden bg-gradient-to-br from-gray-50 via-white to-gray-50 relative">
           {/* Image Loading Placeholder */}
@@ -139,7 +131,7 @@ export default function UnifiedProductCard({
               </div>
             </div>
           )}
-          
+
           <img
             src={product.image_url || "https://images.unsplash.com/photo-1544787219-7f47ccb76574?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=750&q=80"}
             alt={product.name}
@@ -155,7 +147,7 @@ export default function UnifiedProductCard({
               setImageLoaded(true);
             }}
           />
-          
+
           {/* Premium Gradient Overlay */}
           <div className={`absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 transition-opacity duration-300
             ${isHovered ? 'opacity-100' : ''}
@@ -247,7 +239,7 @@ export default function UnifiedProductCard({
               অর্ডার
             </Button>
           </div>
-          
+
           {/* Premium View Details Button */}
           <Button
             size="sm"
@@ -259,7 +251,7 @@ export default function UnifiedProductCard({
             বিস্তারিত দেখুন
           </Button>
         </div>
-        
+
         {/* Premium Shine Effect */}
         <div className={`absolute inset-0 bg-gradient-to-br from-white/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none
           ${isHovered ? 'animate-shine' : ''}
@@ -267,8 +259,8 @@ export default function UnifiedProductCard({
       </div>
 
       {/* Premium Product Information */}
-      <CardContent className="p-5 relative">
-        <div className="space-y-4">
+      <CardContent className="p-4 sm:p-6 flex-grow flex flex-col">
+        <div className="space-y-4 flex-grow flex flex-col">
           {/* Premium Product Name */}
           <h3 className={`font-bold text-gray-900 line-clamp-2 min-h-[3rem] leading-snug transition-all duration-300 text-lg
             ${isHovered ? 'text-primary scale-[1.02]' : ''}
@@ -294,7 +286,7 @@ export default function UnifiedProductCard({
                 </Badge>
               )}
             </div>
-            
+
             <div className={`flex items-center gap-1 transition-all duration-300
               ${isHovered ? 'scale-110' : ''}
             `}>
@@ -304,39 +296,52 @@ export default function UnifiedProductCard({
             </div>
           </div>
 
-          {/* Premium Mobile Action Buttons */}
-          <div className="flex gap-3 sm:hidden">
-            <Button
-              size="sm"
-              variant="outline"
-              className="flex-1 font-medium border-2 hover:border-purple-300 hover:bg-purple-50 transition-all duration-300 hover:scale-105"
-              onClick={handleCustomize}
-            >
-              <Plus className="w-4 h-4 mr-1" />
-              কাস্টমাইজ
-            </Button>
-            <Button
-              size="sm"
-              className="flex-1 bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary font-medium transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl"
+          {/* Action buttons - Mobile Optimized */}
+          <div className="space-y-2.5 mt-auto">
+            {/* Primary Add to Cart */}
+            <Button 
               onClick={handleAddToCart}
               disabled={product.stock === 0}
+              className="w-full bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary text-white font-medium py-3 rounded-lg transition-all duration-300 transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
             >
-              <ShoppingCart className="w-4 h-4 mr-1" />
-              অর্ডার
+              <ShoppingCart className="w-4 h-4 mr-2" />
+              {product.stock === 0 ? "স্টক নেই" : "কার্টে যোগ করুন"}
+            </Button>
+
+            {/* Secondary Actions Row - Mobile Optimized */}
+            <div className="grid grid-cols-2 gap-2">
+              <Button 
+                onClick={handleViewDetails}
+                variant="outline"
+                className="border-blue-300 text-blue-600 hover:bg-blue-50 hover:border-blue-400 font-medium py-2.5 sm:py-3 rounded-lg transition-all duration-300 text-xs sm:text-sm"
+              >
+                <Eye className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+                <span className="hidden xs:inline">বিস্তারিত</span>
+                <span className="xs:hidden">দেখুন</span>
+              </Button>
+
+              <Button
+                onClick={handleCustomize}
+                className="bg-purple-500 text-white hover:bg-purple-600 border-purple-500 font-medium py-2.5 sm:py-3 rounded-lg transition-all duration-300 text-xs sm:text-sm"
+              >
+                <Palette className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+                কাস্টমাইজ
+              </Button>
+            </div>
+
+            {/* WhatsApp Order */}
+            <Button 
+              onClick={handleWhatsAppOrder}
+              variant="outline"
+              className="w-full border-green-500 text-green-600 hover:bg-green-50 hover:border-green-600 font-medium py-2.5 sm:py-3 rounded-lg transition-all duration-300 text-sm"
+            >
+              <MessageCircle className="w-4 h-4 mr-2" />
+              <span className="hidden sm:inline">হোয়াটসঅ্যাপে অর্ডার</span>
+              <span className="sm:hidden">অর্ডার করুন</span>
             </Button>
           </div>
-          
-          <Button
-            size="sm"
-            variant="secondary"
-            className="w-full sm:hidden font-medium bg-gray-100 hover:bg-gray-200 transition-all duration-300 hover:scale-[1.02] shadow-sm hover:shadow-md"
-            onClick={handleViewDetails}
-          >
-            <Eye className="w-4 h-4 mr-1" />
-            বিস্তারিত দেখুন
-          </Button>
         </div>
-        
+
         {/* Premium Card Background Effect */}
         <div className={`absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-primary/0 via-primary/50 to-primary/0 transition-opacity duration-500
           ${isHovered ? 'opacity-100' : 'opacity-0'}

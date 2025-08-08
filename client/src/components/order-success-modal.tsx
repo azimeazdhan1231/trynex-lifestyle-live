@@ -2,7 +2,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { CheckCircle, Copy, Eye, MessageCircle } from "lucide-react";
+import { CheckCircle, Copy, Eye, MessageCircle, X, Package } from "lucide-react";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { formatPrice, createWhatsAppUrl } from "@/lib/constants";
