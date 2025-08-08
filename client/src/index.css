@@ -48,63 +48,108 @@
   left: 50% !important;
   transform: translate(-50%, -50%) !important;
   z-index: 9999 !important;
-  margin: 0 auto !important;
+  margin: 0 !important;
+  padding: 16px !important;
+  border-radius: 8px !important;
 }
 
-/* Mobile Modal Optimization */
+/* Enhanced Mobile Modal Optimization */
 @media (max-width: 768px) {
+  /* All Dialog Content - Core Responsive Rules */
   [role="dialog"] {
-    width: 95vw !important;
-    max-width: 95vw !important;
-    max-height: 90vh !important;
-    margin: 0 !important;
+    width: calc(100vw - 24px) !important;
+    max-width: calc(100vw - 24px) !important;
+    max-height: calc(100vh - 48px) !important;
+    min-height: auto !important;
+    margin: 12px !important;
     position: fixed !important;
     top: 50% !important;
     left: 50% !important;
     transform: translate(-50%, -50%) !important;
     z-index: 9999 !important;
+    padding: 16px !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
   }
   
-  /* Ensure Dialog Content is properly centered */
+  /* Radix Dialog Content Specific */
   [data-radix-dialog-content] {
     position: fixed !important;
     top: 50% !important;
     left: 50% !important;
     transform: translate(-50%, -50%) !important;
-    width: 95vw !important;
-    max-width: 95vw !important;
-    max-height: 90vh !important;
+    width: calc(100vw - 24px) !important;
+    max-width: calc(100vw - 24px) !important;
+    max-height: calc(100vh - 48px) !important;
     z-index: 9999 !important;
     margin: 0 !important;
+    padding: 16px !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    border-radius: 8px !important;
   }
   
-  /* Drawer Content Mobile Fix */
+  /* Radix Sheet/Drawer Content Mobile Fix */
   [data-radix-drawer-content] {
     position: fixed !important;
     top: 50% !important;
     left: 50% !important;
     transform: translate(-50%, -50%) !important;
-    width: 95vw !important;
+    width: calc(100vw - 24px) !important;
     max-width: 500px !important;
+    max-height: calc(100vh - 48px) !important;
     z-index: 9999 !important;
+    margin: 0 !important;
+    padding: 16px !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
   }
 }
 
-/* Specific fixes for ProductModal */
-.product-modal-content {
+/* Enhanced Mobile Responsive Breakpoints */
+@media (max-width: 640px) {
+  /* Extra Small Screens */
+  [role="dialog"],
+  [data-radix-dialog-content] {
+    width: calc(100vw - 16px) !important;
+    max-width: calc(100vw - 16px) !important;
+    max-height: calc(100vh - 32px) !important;
+    margin: 8px !important;
+    padding: 12px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  /* Very Small Screens */
+  [role="dialog"],
+  [data-radix-dialog-content] {
+    width: calc(100vw - 12px) !important;
+    max-width: calc(100vw - 12px) !important;
+    max-height: calc(100vh - 24px) !important;
+    margin: 6px !important;
+    padding: 10px !important;
+  }
+}
+
+/* Specific Modal Component Classes for Better Control */
+.modal-container {
   position: fixed !important;
   top: 50% !important;
   left: 50% !important;
   transform: translate(-50%, -50%) !important;
   z-index: 9999 !important;
+  margin: 0 !important;
 }
 
-@media (max-width: 640px) {
-  .product-modal-content {
-    width: 95vw !important;
-    max-width: 95vw !important;
-    max-height: 90vh !important;
-    margin: 0 !important;
+@media (max-width: 768px) {
+  .modal-container {
+    width: calc(100vw - 24px) !important;
+    max-width: calc(100vw - 24px) !important;
+    max-height: calc(100vh - 48px) !important;
+    margin: 12px !important;
+    padding: 16px !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
   }
 }
 

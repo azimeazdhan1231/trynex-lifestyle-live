@@ -79,7 +79,7 @@ export default function ProductModal({ product, isOpen, onClose, onAddToCart, on
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="w-[95vw] max-w-2xl max-h-[90vh] overflow-y-auto rounded-lg p-4 sm:p-6 mx-auto">
+      <DialogContent className="modal-container w-[95vw] max-w-2xl max-h-[90vh] overflow-y-auto rounded-lg p-4 sm:p-6 sm:w-full sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold text-gray-800">
             {product.name}

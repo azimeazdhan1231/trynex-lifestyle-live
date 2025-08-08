@@ -61,30 +61,9 @@ export default function PopupOffer() {
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogContent 
-        className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
-        style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          width: '100vw',
-          height: '100vh',
-          margin: 0,
-          maxWidth: 'none',
-          maxHeight: 'none',
-          transform: 'none',
-          border: 'none',
-          borderRadius: 0,
-          padding: '1rem',
-          background: 'rgba(0, 0, 0, 0.6)',
-          backdropFilter: 'blur(4px)',
-          WebkitBackdropFilter: 'blur(4px)',
-        }}
-      >
+      <DialogContent className="modal-container w-[95vw] max-w-md max-h-[90vh] overflow-y-auto bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 sm:w-full sm:max-w-md">
         {/* Modal Container */}
-        <div className="relative w-full max-w-md mx-auto animate-in zoom-in-95 duration-300">
+        <div className="relative w-full max-w-sm mx-auto animate-in zoom-in-95 duration-300">
           {/* Close Button */}
           <button
             onClick={() => setIsOpen(false)}

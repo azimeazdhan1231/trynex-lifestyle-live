@@ -38,7 +38,7 @@ export default function CartModal({ isOpen, onClose }: CartModalProps) {
   return (
     <>
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="w-[95vw] max-w-2xl max-h-[90vh] overflow-y-auto product-modal-content">
+        <DialogContent className="modal-container w-[95vw] max-w-2xl max-h-[90vh] overflow-y-auto sm:w-full sm:max-w-2xl">
           <DialogHeader>
             <DialogTitle className="text-2xl font-bold">
               🛒 আপনার কার্ট ({cart.length}টি পণ্য)

@@ -84,19 +84,86 @@ export default function MobileResponsiveFixes() {
         padding: 0.75rem 1rem !important;
       }
       
-      /* Modal Mobile Responsiveness */
+      /* Enhanced Modal Mobile Responsiveness */
       @media (max-width: 768px) {
-        [role="dialog"] {
-          max-width: 95vw !important;
-          max-height: 95vh !important;
-          margin: 1rem !important;
-          border-radius: 0.5rem !important;
-        }
-        
-        .customize-modal-content {
-          padding: 1rem !important;
-          max-height: 85vh !important;
+        /* Universal Modal Fixes for All Dialog Components */
+        [role="dialog"],
+        [data-radix-dialog-content] {
+          position: fixed !important;
+          top: 50% !important;
+          left: 50% !important;
+          transform: translate(-50%, -50%) !important;
+          width: calc(100vw - 24px) !important;
+          max-width: calc(100vw - 24px) !important;
+          max-height: calc(100vh - 48px) !important;
+          margin: 0 !important;
+          padding: 16px !important;
+          border-radius: 8px !important;
+          z-index: 9999 !important;
           overflow-y: auto !important;
+          overflow-x: hidden !important;
+        }
+
+        /* Cart Modal Specific Fixes */
+        .cart-modal-content,
+        .cart-modal-content [role="dialog"] {
+          width: calc(100vw - 20px) !important;
+          max-width: calc(100vw - 20px) !important;
+          max-height: calc(100vh - 40px) !important;
+          margin: 10px !important;
+        }
+
+        /* Product Details Modal Fixes */
+        .product-modal-content,
+        .product-modal-content [role="dialog"] {
+          width: calc(100vw - 20px) !important;
+          max-width: calc(100vw - 20px) !important;
+          max-height: calc(100vh - 40px) !important;
+          margin: 10px !important;
+        }
+
+        /* Customize Modal Fixes */
+        .customize-modal-content,
+        .customize-modal-content [role="dialog"] {
+          width: calc(100vw - 20px) !important;
+          max-width: calc(100vw - 20px) !important;
+          max-height: calc(100vh - 40px) !important;
+          margin: 10px !important;
+          padding: 12px !important;
+          overflow-y: auto !important;
+        }
+
+        /* Search Modal Fixes */
+        .search-modal-content,
+        .search-modal-content [role="dialog"] {
+          width: calc(100vw - 20px) !important;
+          max-width: calc(100vw - 20px) !important;
+          max-height: calc(100vh - 40px) !important;
+          margin: 10px !important;
+        }
+
+        /* Modal Container Universal Fix */
+        .modal-container {
+          position: fixed !important;
+          top: 50% !important;
+          left: 50% !important;
+          transform: translate(-50%, -50%) !important;
+          width: calc(100vw - 24px) !important;
+          max-width: calc(100vw - 24px) !important;
+          max-height: calc(100vh - 48px) !important;
+          margin: 12px !important;
+          padding: 16px !important;
+          border-radius: 8px !important;
+          z-index: 9999 !important;
+          overflow-y: auto !important;
+          overflow-x: hidden !important;
+        }
+
+        /* Radix Dialog Overlay Fix */
+        [data-radix-dialog-overlay] {
+          position: fixed !important;
+          inset: 0 !important;
+          z-index: 9998 !important;
         }
         
         .admin-table-container {
@@ -136,8 +203,19 @@ export default function MobileResponsiveFixes() {
         }
       }
       
-      /* Small mobile devices */
+      /* Small mobile devices - Extra Small Screens */
       @media (max-width: 480px) {
+        /* Even more aggressive mobile fixes for small screens */
+        [role="dialog"],
+        [data-radix-dialog-content],
+        .modal-container {
+          width: calc(100vw - 16px) !important;
+          max-width: calc(100vw - 16px) !important;
+          max-height: calc(100vh - 32px) !important;
+          margin: 8px !important;
+          padding: 12px !important;
+        }
+
         .customize-modal-content {
           padding: 0.75rem !important;
         }
@@ -170,9 +248,31 @@ export default function MobileResponsiveFixes() {
       
       /* Landscape mobile fixes */
       @media (max-width: 768px) and (orientation: landscape) {
+        [role="dialog"],
+        [data-radix-dialog-content],
+        .modal-container {
+          max-height: calc(100vh - 24px) !important;
+          width: calc(100vw - 32px) !important;
+          margin: 12px 16px !important;
+        }
+
         .modal-landscape {
           max-height: 90vh !important;
         }
+      }
+
+      /* Very Small Screens - Phones in Portrait */
+      @media (max-width: 375px) {
+        [role="dialog"],
+        [data-radix-dialog-content],
+        .modal-container {
+          width: calc(100vw - 12px) !important;
+          max-width: calc(100vw - 12px) !important;
+          max-height: calc(100vh - 24px) !important;
+          margin: 6px !important;
+          padding: 10px !important;
+        }
+      }
         
         .customize-modal-content {
           max-height: 80vh !important;

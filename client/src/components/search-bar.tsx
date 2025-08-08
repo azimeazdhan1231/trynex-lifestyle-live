@@ -30,7 +30,7 @@ export default function SearchBar({ isOpen, onClose, onProductSelect }: SearchBa
   const { data: products = [], isLoading } = useQuery<Product[]>({
     queryKey: ["/api/products"],
     staleTime: 30 * 1000,
-    cacheTime: 2 * 60 * 1000,
+    gcTime: 2 * 60 * 1000,
   });
 
   // Real-time search with debouncing
@@ -39,8 +39,8 @@ export default function SearchBar({ isOpen, onClose, onProductSelect }: SearchBa
 
     const query = searchTerm.toLowerCase().trim();
     
-    return products
-      .filter(product => {
+    return (products || [])
+      .filter((product: Product) => {
         const productName = product.name.toLowerCase();
         const productCategory = product.category?.toLowerCase() || '';
         const productDescription = product.description?.toLowerCase() || '';
@@ -60,7 +60,7 @@ export default function SearchBar({ isOpen, onClose, onProductSelect }: SearchBa
                  productDescription.includes(word)
                );
       })
-      .sort((a, b) => {
+      .sort((a: Product, b: Product) => {
         const aName = a.name.toLowerCase();
         const bName = b.name.toLowerCase();
         
@@ -163,7 +163,7 @@ export default function SearchBar({ isOpen, onClose, onProductSelect }: SearchBa
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] p-0 overflow-hidden">
+      <DialogContent className="modal-container w-[95vw] max-w-4xl max-h-[90vh] p-0 overflow-hidden sm:w-full sm:max-w-4xl">
         <DialogHeader className="px-6 py-4 border-b bg-gray-50">
           <DialogTitle className="flex items-center gap-3 text-xl">
             <Search className="w-6 h-6 text-primary" />
@@ -224,7 +224,7 @@ export default function SearchBar({ isOpen, onClose, onProductSelect }: SearchBa
                 "{searchTerm}" এর জন্য {searchResults.length}টি পণ্য পাওয়া গেছে
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {searchResults.map((product, index) => (
+                {searchResults.map((product: Product, index: number) => (
                   <div
                     key={product.id}
                     onClick={() => handleProductSelect(product)}
