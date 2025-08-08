@@ -32,25 +32,50 @@
   animation: pulse-glow 2s ease-in-out infinite;
 }
 
-/* Global Modal Centering Styles */
+/* Perfect Modal Centering - Clean Implementation */
 [data-radix-popper-content-wrapper] {
-  position: fixed !important;
-  top: 50% !important;
-  left: 50% !important;
-  transform: translate(-50%, -50%) !important;
-  z-index: 9999 !important;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 9999;
 }
 
-/* Dialog Content Centering */
-[role="dialog"] {
-  position: fixed !important;
-  top: 50% !important;
-  left: 50% !important;
-  transform: translate(-50%, -50%) !important;
-  z-index: 9999 !important;
-  margin: 0 !important;
-  padding: 16px !important;
-  border-radius: 8px !important;
+[data-radix-dialog-content] {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 10000;
+  width: calc(100vw - 32px);
+  max-width: 500px;
+  max-height: calc(100vh - 64px);
+  margin: 0;
+  padding: 20px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  border-radius: 12px;
+  background: white;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+  box-sizing: border-box;
+}
+
+@media (max-width: 768px) {
+  [data-radix-dialog-content] {
+    width: calc(100vw - 24px);
+    max-width: calc(100vw - 24px);
+    max-height: calc(100vh - 48px);
+    padding: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  [data-radix-dialog-content] {
+    width: calc(100vw - 16px);
+    max-width: calc(100vw - 16px);
+    max-height: calc(100vh - 32px);
+    padding: 12px;
+  }
 }
 
 /* Enhanced Mobile Modal Optimization */

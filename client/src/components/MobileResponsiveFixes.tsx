@@ -6,6 +6,31 @@ export default function MobileResponsiveFixes() {
     // Add mobile-optimized CSS fixes
     const style = document.createElement('style');
     style.textContent = `
+      /* Mobile Modal Positioning Enhancement */
+      [data-radix-dialog-content] {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 10001;
+      }
+      
+      @media (max-width: 768px) {
+        [data-radix-dialog-content] {
+          width: calc(100vw - 20px);
+          max-width: calc(100vw - 20px);
+          max-height: calc(100vh - 40px);
+        }
+      }
+      
+      @media (max-width: 480px) {
+        [data-radix-dialog-content] {
+          width: calc(100vw - 16px);
+          max-width: calc(100vw - 16px);
+          max-height: calc(100vh - 32px);
+        }
+      }
+
       /* Enhanced Mobile Responsiveness */
       
       /* Custom Order Modal Mobile Fixes */
