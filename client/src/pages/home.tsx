@@ -5,10 +5,11 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import EnhancedProductLoader from "@/components/enhanced-product-loader";
-import Header from "@/components/header";
+import EnhancedHeader from "@/components/enhanced-header";
+import EnhancedFooter from "@/components/enhanced-footer";
 import TrackingSection from "@/components/tracking-section";
 import PopupOffer from "../components/popup-offer";
-import ProductModal from "@/components/product-modal";
+import ProductModal from "@/components/product-modal-fixed";
 import CustomizeModal from "@/components/customize-modal";
 import { useToast } from "@/hooks/use-toast";
 import { useCart } from "@/hooks/use-cart";
@@ -16,6 +17,7 @@ import { Link, useLocation } from "wouter";
 import { COMPANY_NAME, COMPANY_TAGLINE, WHATSAPP_NUMBER, createWhatsAppUrl, formatPrice } from "@/lib/constants";
 import { trackProductView, trackAddToCart } from "@/lib/analytics";
 import UnifiedProductCard from "@/components/unified-product-card";
+import DynamicProductCarousel from "@/components/dynamic-product-carousel";
 // Optimized imports - removed heavy utilities
 import type { Product, Offer } from "@shared/schema";
 
@@ -300,49 +302,41 @@ function ProductSection({
           <div className="w-24 h-1 bg-gradient-to-r from-primary to-primary/50 mx-auto mt-6 rounded-full"></div>
         </div>
 
-        {/* Desktop Grid View - Improved with uniform heights */}
-        <div className="hidden lg:grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 auto-rows-fr">
-          {products.map((product, index) => (
-            <div 
-              key={product.id} 
-              className="h-full transform transition-all duration-500 opacity-0"
-              style={{
-                animation: `fadeInUp 0.8s ease-out ${index * 150}ms forwards`
-              }}
-            >
-              <UnifiedProductCard
-                product={product}
-                onAddToCart={onAddToCart}
-                onViewProduct={onViewProduct}
-                onCustomize={onCustomize || (() => {})}
-                showBadge={true}
-              />
-            </div>
-          ))}
-        </div>
+        {/* Dynamic Product Carousel with swipe functionality */}
+        <DynamicProductCarousel
+          products={products}
+          title={title}
+          onAddToCart={onAddToCart}
+          onViewProduct={onViewProduct}
+          onCustomize={onCustomize}
+          className="mb-8"
+        />
 
-        {/* Mobile Grid View - Improved responsive design */}
-        <div className="lg:hidden">
-          <div className="grid grid-cols-1 xs:grid-cols-2 gap-4 sm:gap-6">
-            {products.map((product, index) => (
-              <div 
-                key={product.id} 
-                className="h-full transform transition-all duration-500 opacity-0"
-                style={{
-                  animation: `fadeInUp 0.8s ease-out ${index * 100}ms forwards`
-                }}
-              >
-                <UnifiedProductCard
-                  product={product}
-                  onAddToCart={onAddToCart}
-                  onViewProduct={onViewProduct}
-                  onCustomize={onCustomize || (() => {})}
-                  showBadge={true}
-                />
-              </div>
-            ))}
+        {/* Additional Grid View for more products */}
+        {products.length > 8 && (
+          <div className="mt-12">
+            <h3 className="text-xl font-bold text-gray-900 mb-6">আরও পণ্য</h3>
+            <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 lg:gap-6">
+              {products.slice(8).map((product, index) => (
+                <div 
+                  key={product.id} 
+                  className="h-full transform transition-all duration-500 opacity-0"
+                  style={{
+                    animation: `fadeInUp 0.8s ease-out ${(index + 8) * 100}ms forwards`
+                  }}
+                >
+                  <UnifiedProductCard
+                    product={product}
+                    onAddToCart={onAddToCart}
+                    onViewProduct={onViewProduct}
+                    onCustomize={onCustomize || (() => {})}
+                    showBadge={true}
+                  />
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
 
         <div className="text-center mt-12">
           <Button 
@@ -546,7 +540,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header cartCount={totalItems} onCartOpen={() => {}} />
+      <EnhancedHeader />
       <PopupOffer />
 
 
@@ -554,7 +548,7 @@ export default function Home() {
       {/* Premium Hero Section */}
       <section 
         className="relative bg-gradient-to-br from-primary via-primary/95 to-emerald-700 text-white py-16 sm:py-20 lg:py-24 overflow-hidden"
-        style={{ marginTop: "56px" }}
+        style={{ marginTop: "120px" }}
       >
         {/* Enhanced Background Pattern */}
         <div className="absolute inset-0 opacity-20">
@@ -728,88 +722,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="bg-gray-900 text-white py-16">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            <div className="md:col-span-2">
-              <h3 className="text-2xl font-bold mb-4">{COMPANY_NAME}</h3>
-              <p className="text-gray-300 mb-6 leading-relaxed">
-                {COMPANY_TAGLINE}। আমরা গুণগত মানের পণ্য এবং সেবা প্রদানে প্রতিশ্রুতিবদ্ধ।
-              </p>
-              <div className="flex flex-wrap gap-3 justify-center">
-                <Button 
-                  asChild
-                  variant="outline" 
-                  className="bg-blue-600 hover:bg-blue-700 text-white border-blue-600 hover:border-blue-700 font-medium"
-                >
-                  <a 
-                    href="https://www.facebook.com/people/TryNex-Lifestyle/61576151563336/" 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="flex items-center space-x-2 text-white hover:text-white"
-                  >
-                    <span className="text-lg">📘</span>
-                    <span className="text-white font-medium">Facebook Page</span>
-                  </a>
-                </Button>
-                
-                <Button 
-                  asChild
-                  variant="outline" 
-                  className="bg-blue-700 hover:bg-blue-800 text-white border-blue-700 hover:border-blue-800 font-medium"
-                >
-                  <a 
-                    href="https://www.facebook.com/ahmed.amit.333/" 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="flex items-center space-x-2 text-white hover:text-white"
-                  >
-                    <span className="text-lg">👨‍💼</span>
-                    <span className="text-white font-medium">Meet Founder</span>
-                  </a>
-                </Button>
-                
-                <Button 
-                  className="bg-green-600 hover:bg-green-700 text-white border-green-600 font-medium"
-                  onClick={() => window.open('https://wa.me/8801747292277', '_blank')}
-                >
-                  <div className="flex items-center space-x-2 text-white hover:text-white">
-                    <span className="text-lg">💬</span>
-                    <span className="text-white font-medium">WhatsApp</span>
-                  </div>
-                </Button>
-              </div>
-            </div>
-
-            <div>
-              <h4 className="text-lg font-semibold mb-4">দ্রুত লিংক</h4>
-              <ul className="space-y-2">
-                <li><Link href="/" className="text-gray-300 hover:text-white transition-colors">হোম</Link></li>
-                <li><Link href="/products" className="text-gray-300 hover:text-white transition-colors">পণ্য</Link></li>
-                <li><Link href="/offers" className="text-gray-300 hover:text-white transition-colors">অফার</Link></li>
-                <li><Link href="/contact" className="text-gray-300 hover:text-white transition-colors">যোগাযোগ</Link></li>
-              </ul>
-            </div>
-
-            <div>
-              <h4 className="text-lg font-semibold mb-4">যোগাযোগ</h4>
-              <ul className="space-y-2 text-gray-300">
-                <li>📱 {WHATSAPP_NUMBER}</li>
-                <li>🕐 সকাল ৯টা - রাত ১০টা</li>
-                <li>🚚 সারা বাংলাদেশে ডেলিভারি</li>
-                <li>💳 ক্যাশ অন ডেলিভারি</li>
-              </ul>
-            </div>
-          </div>
-
-          <div className="border-t border-gray-700 mt-12 pt-8 text-center">
-            <p className="text-gray-400">
-              © 2025 {COMPANY_NAME}. সর্বস্বত্ব সংরক্ষিত।
-            </p>
-          </div>
-        </div>
-      </footer>
+      <EnhancedFooter />
 
       {/* Scroll to Top Button */}
       {showScrollTop && (
