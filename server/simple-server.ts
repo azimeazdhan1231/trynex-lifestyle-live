@@ -122,24 +122,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get orders with enhanced filtering
+  // Get orders with enhanced filtering including date range
   app.get('/api/orders', async (req, res) => {
     try {
       const { status, customer_phone, date_from, date_to } = req.query;
       
-      // Add basic filtering logic here if needed
       const orders = await storage.getOrders();
-      
       let filteredOrders = orders;
       
+      // Status filtering
       if (status && status !== 'all') {
         filteredOrders = filteredOrders.filter(order => order.status === status);
       }
       
+      // Phone filtering
       if (customer_phone) {
         filteredOrders = filteredOrders.filter(order => 
           order.phone.includes(customer_phone as string)
         );
+      }
+      
+      // Date range filtering
+      if (date_from || date_to) {
+        filteredOrders = filteredOrders.filter(order => {
+          const orderDate = new Date(order.created_at || order.createdAt);
+          let isInRange = true;
+          
+          if (date_from) {
+            const fromDate = new Date(date_from as string);
+            isInRange = isInRange && orderDate >= fromDate;
+          }
+          
+          if (date_to) {
+            const toDate = new Date(date_to as string);
+            // Include orders up to end of the day
+            toDate.setHours(23, 59, 59, 999);
+            isInRange = isInRange && orderDate <= toDate;
+          }
+          
+          return isInRange;
+        });
       }
       
       res.json(filteredOrders);
@@ -376,11 +398,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Custom Orders API for product customization
+  // Custom Orders API for product customization with date filtering
   app.get('/api/custom-orders', async (req, res) => {
     try {
+      const { date_from, date_to } = req.query;
+      
       const customOrders = await storage.getCustomOrders();
-      res.json(customOrders);
+      let filteredCustomOrders = customOrders;
+      
+      // Date range filtering
+      if (date_from || date_to) {
+        filteredCustomOrders = filteredCustomOrders.filter(order => {
+          const orderDate = new Date(order.createdAt);
+          let isInRange = true;
+          
+          if (date_from) {
+            const fromDate = new Date(date_from as string);
+            isInRange = isInRange && orderDate >= fromDate;
+          }
+          
+          if (date_to) {
+            const toDate = new Date(date_to as string);
+            // Include orders up to end of the day
+            toDate.setHours(23, 59, 59, 999);
+            isInRange = isInRange && orderDate <= toDate;
+          }
+          
+          return isInRange;
+        });
+      }
+      
+      res.json(filteredCustomOrders);
     } catch (error) {
       console.error('❌ Error fetching custom orders:', error);
       res.status(500).json({ message: 'কাস্টম অর্ডার লোড করতে সমস্যা হয়েছে' });

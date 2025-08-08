@@ -55,22 +55,14 @@ export default function PopupOffer() {
           margin: 'auto'
         }}
       >
-        {/* Close Button - Fixed positioning and z-index */}
+        {/* Close Button - Properly positioned */}
         <button
           onClick={() => setIsOpen(false)}
-          className="absolute -top-3 -right-3 w-10 h-10 bg-gray-800 text-white rounded-full flex items-center justify-center hover:bg-gray-900 transition-all duration-200 shadow-lg hover:scale-110 border-2 border-white"
-          style={{ 
-            zIndex: 10001,
-            position: 'absolute',
-            top: '-12px',
-            right: '-12px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center'
-          }}
+          className="absolute top-3 right-3 w-8 h-8 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-all duration-200 shadow-md hover:scale-105 z-50"
+          aria-label="বন্ধ করুন"
           data-testid="button-close-popup"
         >
-          <X className="w-5 h-5" />
+          <X className="w-4 h-4" />
         </button>
 
         {/* Offer Content */}

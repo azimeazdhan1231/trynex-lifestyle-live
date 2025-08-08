@@ -31,6 +31,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { apiRequest } from "@/lib/queryClient";
 import EnhancedOrderDetailsModal from "@/components/EnhancedOrderDetailsModal";
 import CustomOrderDetailsModal from "@/components/CustomOrderDetailsModal";
+import AdvancedAnalyticsDashboard from "@/components/AdvancedAnalyticsDashboard";
 import type { Product, Order, Offer, Category, PromoCode } from "@shared/schema";
 
 export default function AdminPanelNew() {
@@ -605,7 +606,7 @@ export default function AdminPanelNew() {
 
         {/* Dashboard Tab - Enhanced Analytics */}
         <TabsContent value="dashboard" className="space-y-4">
-          <AnalyticsDashboard />
+          <AdvancedAnalyticsDashboard />
         </TabsContent>
 
         {/* Dashboard Tab - Original Overview */}

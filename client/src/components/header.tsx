@@ -40,6 +40,7 @@ export default function Header({ cartCount, onCartOpen }: HeaderProps) {
   const navItems = [
     { name: "হোম", href: "/" },
     { name: "পণ্য", href: "/products" },
+    { name: "কাস্টমাইজেশন", href: "/products?customize=true" },
     { name: "কাস্টম অর্ডার", href: "/custom-order" },
     { name: "অফার", href: "/offers" },
     { name: "যোগাযোগ", href: "/contact" },
