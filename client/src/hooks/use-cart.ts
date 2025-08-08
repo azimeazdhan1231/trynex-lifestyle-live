@@ -222,6 +222,8 @@ export function useCart(): UseCartReturn {
     return sum + (price * quantity);
   }, 0);
 
+  console.log('useCart returning:', { cart, totalItems, totalPrice });
+
   return {
     cart,
     addToCart,

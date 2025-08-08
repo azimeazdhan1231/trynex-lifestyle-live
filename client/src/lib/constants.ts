@@ -1,6 +1,6 @@
 export const WHATSAPP_NUMBER = "+8801940689487";
-export const COMPANY_NAME = "Trynex Lifestyle";
-export const COMPANY_TAGLINE = "কাস্টম গিফট স্টোর";
+export const COMPANY_NAME = "TryneX Shop";
+export const COMPANY_TAGLINE = "আপনার পছন্দের গিফট শপ";
 
 export const DISTRICTS = [
   "ঢাকা",

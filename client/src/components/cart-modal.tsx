@@ -17,6 +17,9 @@ export default function CartModal({ isOpen, onClose }: CartModalProps) {
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const { cart, updateQuantity, removeFromCart, totalItems, totalPrice, clearCart } = useCart();
 
+  // Debug cart state
+  console.log('CartModal cart state:', { cart, totalItems, totalPrice });
+
   // Force re-render when modal opens to ensure cart state is fresh
   const [refreshKey, setRefreshKey] = useState(0);
 
@@ -49,7 +52,7 @@ export default function CartModal({ isOpen, onClose }: CartModalProps) {
           </DialogHeader>
           <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-4">
 
-          {!cart || cart.length === 0 ? (
+          {!cart || !Array.isArray(cart) || cart.length === 0 ? (
             <div className="text-center py-12">
               <ShoppingCart className="w-16 h-16 text-gray-300 mx-auto mb-4" />
               <p className="text-gray-500 text-lg mb-4">আপনার কার্ট খালি</p>

@@ -210,6 +210,7 @@ export default function OrderSuccessModal({ isOpen, onClose, order }: OrderSucce
               </ul>
             </CardContent>
           </Card>
+        </div>
       </DialogContent>
     </Dialog>
   );

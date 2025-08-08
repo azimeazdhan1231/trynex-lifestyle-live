@@ -16,11 +16,15 @@ import {
 } from 'lucide-react';
 import { useCart } from '@/hooks/use-cart';
 import { COMPANY_NAME, WHATSAPP_NUMBER } from '@/lib/constants';
+import YoutubeSearchBar from '@/components/search/youtube-search-bar';
+import CartModal from '@/components/cart-modal';
 
 export default function EnhancedHeader() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [showSearchModal, setShowSearchModal] = useState(false);
+  const [showCartModal, setShowCartModal] = useState(false);
   const [location] = useLocation();
   const { totalItems } = useCart();
 
@@ -67,7 +71,18 @@ export default function EnhancedHeader() {
 
   return (
     <>
+      {/* YouTube-style Search Modal */}
+      <YoutubeSearchBar
+        isOpen={showSearchModal}
+        onClose={() => setShowSearchModal(false)}
+        initialQuery=""
+      />
 
+      {/* Cart Modal */}
+      <CartModal
+        isOpen={showCartModal}
+        onClose={() => setShowCartModal(false)}
+      />
 
       {/* Main Header */}
       <header className={`sticky top-0 z-50 transition-all duration-300 ${
@@ -82,34 +97,26 @@ export default function EnhancedHeader() {
               <div className="w-10 h-10 lg:w-12 lg:h-12 bg-gradient-to-br from-primary to-primary/80 rounded-xl flex items-center justify-center text-white font-bold text-lg lg:text-xl shadow-lg group-hover:shadow-xl transition-all duration-300 group-hover:scale-105">
                 {COMPANY_NAME.charAt(0)}
               </div>
-              <div className="hidden sm:block">
-                <h1 className="text-xl lg:text-2xl font-bold text-gray-900 group-hover:text-primary transition-colors duration-300">
+              <div className="block">
+                <h1 className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 group-hover:text-primary transition-colors duration-300">
                   {COMPANY_NAME}
                 </h1>
-                <p className="text-xs text-gray-500">আপনার পছন্দের গিফট শপ</p>
+                <p className="text-xs text-gray-500 hidden sm:block">আপনার পছন্দের গিফট শপ</p>
               </div>
             </Link>
 
             {/* Search Bar - Desktop */}
-            <form onSubmit={handleSearch} className="hidden lg:block flex-1 max-w-md mx-8">
-              <div className="relative">
-                <input
-                  type="text"
-                  placeholder="পণ্য খুঁজুন..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent bg-gray-50 hover:bg-white transition-all duration-300"
-                />
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                <Button
-                  type="submit"
-                  size="sm"
-                  className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-primary hover:bg-primary/90 text-white px-4 py-1.5 rounded-lg"
-                >
-                  খুঁজুন
-                </Button>
-              </div>
-            </form>
+            <div className="hidden lg:block flex-1 max-w-md mx-8">
+              <Button
+                variant="outline"
+                onClick={() => setShowSearchModal(true)}
+                className="w-full justify-start text-left text-gray-500 bg-gray-50 hover:bg-white transition-all duration-300 h-12 px-4"
+                data-testid="button-search-desktop"
+              >
+                <Search className="w-4 h-4 mr-3 text-gray-400" />
+                পণ্য খুঁজুন... (যেমন: কাস্টম মগ, টি-শার্ট)
+              </Button>
+            </div>
 
             {/* Navigation Icons */}
             <div className="flex items-center space-x-2 lg:space-x-4">
@@ -117,7 +124,9 @@ export default function EnhancedHeader() {
               <Button
                 variant="ghost"
                 size="sm"
+                onClick={() => setShowSearchModal(true)}
                 className="lg:hidden w-10 h-10 p-0 hover:bg-gray-100 rounded-full"
+                data-testid="button-search-mobile"
               >
                 <Search className="w-5 h-5" />
               </Button>
@@ -141,20 +150,20 @@ export default function EnhancedHeader() {
               </Button>
 
               {/* Cart */}
-              <Link href="/cart">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="relative w-10 h-10 p-0 hover:bg-gray-100 rounded-full"
-                >
-                  <ShoppingCart className="w-5 h-5" />
-                  {totalItems > 0 && (
-                    <Badge className="absolute -top-2 -right-2 w-5 h-5 p-0 bg-primary text-white text-xs flex items-center justify-center rounded-full animate-pulse">
-                      {totalItems}
-                    </Badge>
-                  )}
-                </Button>
-              </Link>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowCartModal(true)}
+                className="relative w-10 h-10 p-0 hover:bg-gray-100 rounded-full"
+                data-testid="button-cart"
+              >
+                <ShoppingCart className="w-5 h-5" />
+                {totalItems > 0 && (
+                  <Badge className="absolute -top-2 -right-2 w-5 h-5 p-0 bg-primary text-white text-xs flex items-center justify-center rounded-full animate-pulse">
+                    {totalItems}
+                  </Badge>
+                )}
+              </Button>
 
               {/* Mobile Menu Toggle */}
               <Button
