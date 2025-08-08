@@ -34,6 +34,7 @@ const RefundPolicy = lazy(() => import("./pages/refund-policy"));
 const PaymentPolicy = lazy(() => import("./pages/payment-policy"));
 const AuthNew = lazy(() => import("./pages/auth-new"));
 const SearchPage = lazy(() => import("./pages/search"));
+const Categories = lazy(() => import("./pages/categories"));
 
 // Performance and Mobile Optimization Components
 const MobileResponsiveFixes = lazy(() => import("./components/MobileResponsiveFixes"));
@@ -85,6 +86,7 @@ function Router() {
         <Route path="/payment-policy" component={PaymentPolicy} />
         <Route path="/payment" component={PaymentPolicy} />
         <Route path="/search" component={SearchPage} />
+        <Route path="/categories" component={Categories} />
         <Route component={NotFound} />
       </Switch>
     </Suspense>
