@@ -1,7 +1,6 @@
-
 import { useState, useEffect, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { useNavigate } from "react-router-dom";
+import { setLocation } from "wouter";
 import { Star, ShoppingCart, Heart, TrendingUp, Award, Zap, ArrowRight, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -23,14 +22,13 @@ let cachedProducts: Product[] = [];
 let lastCacheTime = 0;
 
 export default function HomePage() {
-  const navigate = useNavigate();
   const { toast } = useToast();
   const { cart, addToCart } = useCart();
-  
+
   // Loading states
   const [showLoadingSkeleton, setShowLoadingSkeleton] = useState(false);
   const [productsReady, setProductsReady] = useState(false);
-  
+
   // Modals
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
@@ -48,7 +46,7 @@ export default function HomePage() {
     queryKey: ["products-home-instant"],
     queryFn: async () => {
       const CACHE_KEY = 'home-products-instant';
-      
+
       // Try instant cache first
       try {
         const cached = localStorage.getItem(CACHE_KEY);
@@ -65,7 +63,7 @@ export default function HomePage() {
       } catch (e) {
         console.warn('Cache failed, fetching fresh data');
       }
-      
+
       // Fetch fresh data
       return await fetchFreshProducts(CACHE_KEY);
     },
@@ -84,7 +82,7 @@ export default function HomePage() {
   async function fetchFreshProducts(cacheKey: string) {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 second timeout
-    
+
     try {
       const response = await fetch('/api/products', {
         signal: controller.signal,
@@ -93,15 +91,15 @@ export default function HomePage() {
           'Cache-Control': 'no-cache'
         }
       });
-      
+
       clearTimeout(timeoutId);
-      
+
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: Failed to fetch products`);
       }
-      
+
       const data = await response.json();
-      
+
       // Cache for instant loading next time
       try {
         localStorage.setItem(cacheKey, JSON.stringify({
@@ -113,13 +111,13 @@ export default function HomePage() {
       } catch (e) {
         console.warn('Failed to cache products');
       }
-      
+
       console.log('🚀 Fresh home products fetched');
       return data;
-      
+
     } catch (error) {
       clearTimeout(timeoutId);
-      
+
       if (error.name === 'AbortError') {
         console.error('❌ Home products fetch timeout');
         // Return cached data if available
@@ -129,15 +127,15 @@ export default function HomePage() {
         }
         throw new Error('Connection timeout - please refresh the page');
       }
-      
+
       console.error('❌ Home products fetch failed:', error);
-      
+
       // Return cached data if available
       if (cachedProducts.length > 0) {
         console.log('🔄 Using cached products due to error');
         return cachedProducts;
       }
-      
+
       throw error;
     }
   }
@@ -145,7 +143,7 @@ export default function HomePage() {
   // Optimize loading state management
   useEffect(() => {
     let timeoutId: NodeJS.Timeout;
-    
+
     if (productsLoading && !products.length) {
       setShowLoadingSkeleton(true);
       setProductsReady(false);
@@ -162,7 +160,7 @@ export default function HomePage() {
         }, 300);
       }
     }
-    
+
     return () => {
       if (timeoutId) {
         clearTimeout(timeoutId);
@@ -197,7 +195,7 @@ export default function HomePage() {
       .sort((a, b) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime())
       .slice(0, 8);
     const bestSelling = currentProducts.filter(p => p.is_best_selling).slice(0, 8);
-    
+
     const categories = [...new Set(currentProducts.map(p => p.category))].filter(Boolean);
 
     return {
@@ -270,7 +268,7 @@ export default function HomePage() {
         price: Number(product.price),
         image_url: product.image_url
       }, customization);
-      
+
       toast({
         title: "কাস্টম অর্ডার যোগ করা হয়েছে",
         description: `${product.name} কাস্টমাইজেশন সহ কার্টে যোগ করা হয়েছে`,
@@ -314,7 +312,7 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <Header cartCount={cart.length} onCartOpen={() => {}} />
-      
+
       {/* Hero Section */}
       <section className="relative bg-gradient-to-br from-emerald-600 via-blue-600 to-purple-700 text-white overflow-hidden">
         <div className="absolute inset-0 bg-black/20"></div>
@@ -325,14 +323,14 @@ export default function HomePage() {
               <span className="text-yellow-300 font-semibold text-lg">ট্রাইনেক্স লাইফস্টাইল</span>
               <Sparkles className="w-8 h-8 text-yellow-300 animate-pulse" />
             </div>
-            
+
             <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
               আপনার স্বপ্নের
               <span className="block bg-gradient-to-r from-yellow-300 to-orange-300 bg-clip-text text-transparent">
                 কাস্টম গিফট
               </span>
             </h1>
-            
+
             <p className="text-lg sm:text-xl md:text-2xl text-blue-100 mb-8 leading-relaxed max-w-3xl mx-auto">
               সেরা মানের পণ্য, সাশ্রয়ী দাম এবং দ্রুত ডেলিভারি। 
               আপনার পছন্দমতো ডিজাইন করুন।
@@ -342,7 +340,7 @@ export default function HomePage() {
               <Button 
                 size="lg" 
                 className="bg-white text-blue-600 hover:bg-gray-100 px-8 py-4 text-lg font-semibold"
-                onClick={() => navigate('/products')}
+                onClick={() => setLocation('/products')}
               >
                 <ShoppingCart className="w-5 h-5 mr-2" />
                 এখনই কিনুন
@@ -351,7 +349,7 @@ export default function HomePage() {
                 size="lg" 
                 variant="outline"
                 className="border-white text-white hover:bg-white hover:text-blue-600 px-8 py-4 text-lg font-semibold"
-                onClick={() => navigate('/custom-order')}
+                onClick={() => setLocation('/custom-order')}
               >
                 <Zap className="w-5 h-5 mr-2" />
                 কাস্টম অর্ডার
@@ -395,7 +393,7 @@ export default function HomePage() {
                   </div>
                   <Button 
                     variant="outline" 
-                    onClick={() => navigate('/products')}
+                    onClick={() => setLocation('/products')}
                     className="hidden sm:flex items-center gap-2"
                   >
                     সব দেখুন
@@ -427,7 +425,7 @@ export default function HomePage() {
                   </div>
                   <Button 
                     variant="outline" 
-                    onClick={() => navigate('/products')}
+                    onClick={() => setLocation('/products')}
                     className="hidden sm:flex items-center gap-2"
                   >
                     সব দেখুন
@@ -459,7 +457,7 @@ export default function HomePage() {
                   </div>
                   <Button 
                     variant="outline" 
-                    onClick={() => navigate('/products')}
+                    onClick={() => setLocation('/products')}
                     className="hidden sm:flex items-center gap-2"
                   >
                     সব দেখুন
@@ -494,7 +492,7 @@ export default function HomePage() {
                     <Card 
                       key={category} 
                       className="cursor-pointer hover:shadow-lg transition-all duration-300 group"
-                      onClick={() => navigate(`/products?category=${category}`)}
+                      onClick={() => setLocation(`/products?category=${category}`)}
                     >
                       <CardContent className="p-6 text-center">
                         <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full mx-auto mb-4 flex items-center justify-center group-hover:scale-110 transition-transform">
