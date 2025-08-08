@@ -25,7 +25,7 @@ class ErrorBoundary extends Component<Props, State> {
     console.error('ErrorBoundary caught error:', error, errorInfo);
     
     // Prevent HMR frame errors from breaking the app
-    if (error.message?.includes('frame') || error.message?.includes('Cannot read properties of undefined')) {
+    if (error?.message && (error.message.includes('frame') || error.message.includes('Cannot read properties of undefined'))) {
       // Auto-recover from HMR errors
       setTimeout(() => {
         this.setState({ hasError: false, error: undefined });

@@ -38,16 +38,16 @@ export default function CartModal({ isOpen, onClose }: CartModalProps) {
   return (
     <>
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="modal-container">
-          <DialogHeader className="px-6 py-4 border-b">
-            <DialogTitle className="text-2xl font-bold">
+        <DialogContent className="sm:max-w-lg lg:max-w-2xl xl:max-w-3xl max-h-[90vh] overflow-hidden flex flex-col">
+          <DialogHeader className="flex-shrink-0 px-4 sm:px-6 py-4 border-b">
+            <DialogTitle className="text-xl sm:text-2xl font-bold text-gray-800">
               🛒 আপনার কার্ট ({cart.length}টি পণ্য)
             </DialogTitle>
-            <DialogDescription className="sr-only">
+            <DialogDescription className="text-sm text-gray-600 mt-1">
               আপনার শপিং কার্টে থাকা পণ্যসমূহ দেখুন এবং পরিচালনা করুন
             </DialogDescription>
           </DialogHeader>
-          <div className="modal-content">
+          <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-4">
 
           {!cart || cart.length === 0 ? (
             <div className="text-center py-12">
@@ -63,9 +63,21 @@ export default function CartModal({ isOpen, onClose }: CartModalProps) {
               <div className="space-y-3 max-h-96 overflow-y-auto">
                 {cart.map((item) => (
                   <div key={item.id} className="border rounded-lg p-3">
-                    <div className="flex items-start justify-between mb-2">
-                      <div className="flex-1">
-                        <h5 className="font-medium text-sm">{item.name}</h5>
+                    <div className="flex items-start gap-3 mb-2">
+                      {/* Product Image */}
+                      {item.image_url && (
+                        <div className="flex-shrink-0">
+                          <img
+                            src={item.image_url}
+                            alt={item.name}
+                            className="w-16 h-16 md:w-20 md:h-20 object-cover rounded-lg border border-gray-200 shadow-sm"
+                            loading="lazy"
+                          />
+                        </div>
+                      )}
+                      
+                      <div className="flex-1 min-w-0">
+                        <h5 className="font-medium text-sm md:text-base line-clamp-2">{item.name}</h5>
                         <p className="text-gray-600 text-sm">{formatPrice(item.price)} প্রতিটি</p>
 
                         {/* Customization Display */}
@@ -94,33 +106,37 @@ export default function CartModal({ isOpen, onClose }: CartModalProps) {
                           </div>
                         )}
                       </div>
-                      <div className="flex items-center space-x-2 ml-2">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                          className="w-8 h-8 p-0"
-                        >
-                          <Minus className="w-4 h-4" />
-                        </Button>
-                        <Badge variant="secondary" className="w-8 text-center">
-                          {item.quantity}
-                        </Badge>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                          className="w-8 h-8 p-0"
-                        >
-                          <Plus className="w-4 h-4" />
-                        </Button>
+                      {/* Quantity Controls - Mobile Optimized */}
+                      <div className="flex flex-col sm:flex-row items-center gap-2 flex-shrink-0">
+                        <div className="flex items-center space-x-1 sm:space-x-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                            className="w-7 h-7 sm:w-8 sm:h-8 p-0"
+                          >
+                            <Minus className="w-3 h-3 sm:w-4 sm:h-4" />
+                          </Button>
+                          <Badge variant="secondary" className="w-8 sm:w-10 text-center text-sm font-semibold">
+                            {item.quantity}
+                          </Badge>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                            className="w-7 h-7 sm:w-8 sm:h-8 p-0"
+                          >
+                            <Plus className="w-3 h-3 sm:w-4 sm:h-4" />
+                          </Button>
+                        </div>
                         <Button
                           size="sm"
                           variant="destructive"
                           onClick={() => removeFromCart(item.id)}
-                          className="w-8 h-8 p-0 ml-2"
+                          className="w-7 h-7 sm:w-8 sm:h-8 p-0"
+                          title="পণ্য মুছুন"
                         >
-                          <X className="w-4 h-4" />
+                          <Trash2 className="w-3 h-3 sm:w-4 sm:h-4" />
                         </Button>
                       </div>
                     </div>
@@ -131,15 +147,15 @@ export default function CartModal({ isOpen, onClose }: CartModalProps) {
               <Separator />
 
               {/* Cart Summary */}
-              <div className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <span className="text-lg font-semibold">মোট:</span>
-                  <span className="text-2xl font-bold text-primary">{formatPrice(totalPrice)}</span>
+              <div className="space-y-3 sm:space-y-4">
+                <div className="flex justify-between items-center bg-gray-50 p-3 sm:p-4 rounded-lg">
+                  <span className="text-base sm:text-lg font-semibold text-gray-800">মোট:</span>
+                  <span className="text-xl sm:text-2xl font-bold text-green-600">{formatPrice(totalPrice)}</span>
                 </div>
 
                 <Button 
                   onClick={handleCheckout} 
-                  className="w-full" 
+                  className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 sm:py-4 text-base sm:text-lg shadow-lg hover:shadow-xl transition-all duration-200" 
                   size="lg"
                   disabled={cart.length === 0 || totalItems === 0}
                 >
@@ -149,6 +165,35 @@ export default function CartModal({ isOpen, onClose }: CartModalProps) {
             </div>
           )}
           </div>
+          
+          {/* Footer Actions - Mobile Optimized */}
+          {cart.length > 0 && (
+            <div className="flex-shrink-0 border-t bg-gray-50/80 px-4 sm:px-6 py-3 sm:py-4">
+              <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    if (confirm('সব পণ্য মুছে ফেলতে চান?')) {
+                      clearCart();
+                    }
+                  }}
+                  className="flex-1 sm:flex-none"
+                  size="sm"
+                >
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  সব মুছুন
+                </Button>
+                <Button
+                  onClick={onClose}
+                  variant="outline"
+                  className="flex-1 sm:flex-none"
+                  size="sm"
+                >
+                  কেনাকাটা চালিয়ে যান
+                </Button>
+              </div>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
 

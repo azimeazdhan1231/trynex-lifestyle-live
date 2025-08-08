@@ -6,7 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
-import Header from "@/components/header";
+import MobileOptimizedLayout from "@/components/mobile-optimized-layout";
 import { useCart } from "@/hooks/use-cart";
 import { COMPANY_NAME, formatPrice, createWhatsAppUrl } from "@/lib/constants";
 import { format } from "date-fns";
@@ -34,8 +34,7 @@ export default function BlogPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Header cartCount={cartCount} onCartOpen={openCart} />
+    <MobileOptimizedLayout>
       
       {/* Hero Section */}
       <section className="pt-20 pb-16 bg-gradient-to-br from-primary via-primary/90 to-primary/80">
@@ -255,6 +254,6 @@ export default function BlogPage() {
           </div>
         </div>
       </footer>
-    </div>
+    </MobileOptimizedLayout>
   );
 }

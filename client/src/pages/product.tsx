@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { useCart } from "@/hooks/use-cart";
-import Header from "@/components/header";
+import MobileOptimizedLayout from "@/components/mobile-optimized-layout";
 import CustomizeModal from "@/components/customize-modal";
 import { formatPrice, createWhatsAppUrl } from "@/lib/constants";
 import { trackProductView, trackAddToCart } from "@/lib/analytics";
@@ -46,9 +46,8 @@ export default function ProductPage(props: any) {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <Header cartCount={totalItems} onCartOpen={() => {}} />
-        <div className="pt-20 container mx-auto px-4">
+      <MobileOptimizedLayout>
+        <div className="container mx-auto px-4">
           <div className="animate-pulse">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               <div className="aspect-square bg-gray-200 rounded-lg"></div>
@@ -61,21 +60,20 @@ export default function ProductPage(props: any) {
             </div>
           </div>
         </div>
-      </div>
+      </MobileOptimizedLayout>
     );
   }
 
   if (error || !product) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <Header cartCount={totalItems} onCartOpen={() => {}} />
-        <div className="pt-20 container mx-auto px-4 text-center">
+      <MobileOptimizedLayout>
+        <div className="container mx-auto px-4 text-center">
           <h1 className="text-2xl font-bold text-gray-800 mb-4">পণ্য পাওয়া যায়নি</h1>
           <Button onClick={() => setLocation("/products")}>
             পণ্যের তালিকায় ফিরে যান
           </Button>
         </div>
-      </div>
+      </MobileOptimizedLayout>
     );
   }
 
@@ -134,10 +132,8 @@ export default function ProductPage(props: any) {
   const images = product.image_url ? [product.image_url] : ["https://images.unsplash.com/photo-1544787219-7f47ccb76574?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"];
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Header cartCount={totalItems} onCartOpen={() => {}} />
-      
-      <div className="pt-20 pb-16">
+    <MobileOptimizedLayout>
+      <div className="pb-16">
         <div className="container mx-auto px-4">
           {/* Back Button */}
           <Button 
@@ -364,6 +360,6 @@ export default function ProductPage(props: any) {
         }}
         />
       )} */}
-    </div>
+    </MobileOptimizedLayout>
   );
 }

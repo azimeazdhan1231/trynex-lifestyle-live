@@ -4,7 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Gift, Calendar } from "lucide-react";
-import Header from "@/components/header";
+import MobileOptimizedLayout from "@/components/mobile-optimized-layout";
 import { useCart } from "@/hooks/use-cart";
 import { createWhatsAppUrl } from "@/lib/constants";
 import type { Offer } from "@shared/schema";
@@ -33,8 +33,7 @@ export default function OffersPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <Header cartCount={totalItems} onCartOpen={() => {}} />
+      <MobileOptimizedLayout>
         <div className="pt-20 container mx-auto px-4">
           <div className="animate-pulse space-y-4">
             {[...Array(3)].map((_, i) => (
@@ -42,13 +41,12 @@ export default function OffersPage() {
             ))}
           </div>
         </div>
-      </div>
+      </MobileOptimizedLayout>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Header cartCount={totalItems} onCartOpen={() => {}} />
+    <MobileOptimizedLayout>
       
       <div className="pt-20 py-16">
         <div className="container mx-auto px-4">
@@ -142,6 +140,6 @@ export default function OffersPage() {
           )}
         </div>
       </div>
-    </div>
+    </MobileOptimizedLayout>
   );
 }

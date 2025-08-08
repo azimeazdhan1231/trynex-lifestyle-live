@@ -2,7 +2,7 @@ import { Shield, Award, Users, Clock, CheckCircle, Star, Heart, Truck, MessageCi
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import Header from "@/components/header";
+import MobileOptimizedLayout from "@/components/mobile-optimized-layout";
 import { useCart } from "@/hooks/use-cart";
 import { COMPANY_NAME, COMPANY_TAGLINE, WHATSAPP_NUMBER, createWhatsAppUrl } from "@/lib/constants";
 
@@ -51,8 +51,7 @@ export default function About() {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Header cartCount={cartCount} onCartOpen={openCart} />
+    <MobileOptimizedLayout>
       
       {/* Hero Section */}
       <section className="pt-20 pb-16 bg-gradient-to-br from-primary via-primary/90 to-primary/80">
@@ -259,6 +258,6 @@ export default function About() {
           </div>
         </div>
       </footer>
-    </div>
+    </MobileOptimizedLayout>
   );
 }

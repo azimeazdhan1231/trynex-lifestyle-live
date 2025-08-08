@@ -52,24 +52,24 @@ export default function OrderSuccessModal({ isOpen, onClose, order }: OrderSucce
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
-        <DialogHeader className="text-center">
-          <div className="mx-auto mb-4">
-            <CheckCircle className="w-16 h-16 text-green-500 mx-auto" />
+      <DialogContent className="w-[95vw] max-w-md sm:max-w-lg lg:max-w-xl max-h-[95vh] overflow-hidden flex flex-col p-0">
+        <DialogHeader className="flex-shrink-0 text-center px-4 sm:px-6 py-4 sm:py-6 border-b bg-gradient-to-r from-green-50 to-emerald-50">
+          <div className="mx-auto mb-3 sm:mb-4">
+            <CheckCircle className="w-12 h-12 sm:w-16 sm:h-16 text-green-500 mx-auto animate-pulse" />
           </div>
-          <DialogTitle className="text-2xl font-bold text-green-600">
+          <DialogTitle className="text-xl sm:text-2xl font-bold text-green-600">
             অর্ডার সফল হয়েছে! 🎉
           </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-6">
+        <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-4 sm:py-6 space-y-4 sm:space-y-6">
           {/* Thank You Message */}
-          <Card className="bg-green-50 border-green-200">
-            <CardContent className="p-6 text-center">
-              <h3 className="text-xl font-semibold text-green-800 mb-2">
+          <Card className="bg-gradient-to-r from-green-50 to-emerald-50 border-green-200">
+            <CardContent className="p-4 sm:p-6 text-center">
+              <h3 className="text-lg sm:text-xl font-semibold text-green-800 mb-2">
                 ধন্যবাদ {order.customer_name}!
               </h3>
-              <p className="text-green-700">
+              <p className="text-sm sm:text-base text-green-700">
                 আপনার অর্ডারটি সফলভাবে গ্রহণ করা হয়েছে। আমরা শীঘ্রই আপনার সাথে যোগাযোগ করব।
               </p>
             </CardContent>
@@ -77,52 +77,53 @@ export default function OrderSuccessModal({ isOpen, onClose, order }: OrderSucce
 
           {/* Order Details */}
           <Card>
-            <CardContent className="p-6">
-              <h4 className="font-semibold text-lg mb-4">অর্ডার বিবরণ</h4>
+            <CardContent className="p-4 sm:p-6">
+              <h4 className="font-semibold text-base sm:text-lg mb-3 sm:mb-4">অর্ডার বিবরণ</h4>
 
               {/* Tracking ID */}
-              <div className="bg-blue-50 p-4 rounded-lg border border-blue-200 mb-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-blue-600 font-medium">ট্র্যাকিং আইডি</p>
-                    <p className="text-lg font-bold text-blue-800">{order.tracking_id}</p>
+              <div className="bg-blue-50 p-3 sm:p-4 rounded-lg border border-blue-200 mb-3 sm:mb-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-0">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs sm:text-sm text-blue-600 font-medium">ট্র্যাকিং আইডি</p>
+                    <p className="text-sm sm:text-lg font-bold text-blue-800 break-all">{order.tracking_id}</p>
                   </div>
                   <Button
                     onClick={handleCopyTrackingId}
                     variant="outline"
                     size="sm"
-                    className="border-blue-300 text-blue-600 hover:bg-blue-100"
+                    className="border-blue-300 text-blue-600 hover:bg-blue-100 flex-shrink-0"
                   >
-                    <Copy className="w-4 h-4 mr-1" />
+                    <Copy className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
                     কপি
                   </Button>
                 </div>
               </div>
 
               {/* Customer Info */}
-              <div className="space-y-2 mb-4">
+              <div className="space-y-1 sm:space-y-2 mb-3 sm:mb-4 text-sm sm:text-base">
                 <p><span className="font-medium">গ্রাহক:</span> {order.customer_name}</p>
                 <p><span className="font-medium">ফোন:</span> {order.phone}</p>
                 <p><span className="font-medium">ঠিকানা:</span> {order.district}, {order.thana}</p>
                 {order.address && <p><span className="font-medium">বিস্তারিত:</span> {order.address}</p>}
               </div>
 
-              <Separator className="my-4" />
+              <Separator className="my-3 sm:my-4" />
 
               {/* Order Items */}
-              <div className="space-y-3">
-                <h5 className="font-medium">অর্ডারকৃত পণ্য:</h5>
-                {orderItems.map((item: any, index: number) => (
-                  <div key={index}>
-                    <div className="flex justify-between items-center text-sm">
-                      <span>{item.name} × {item.quantity}</span>
-                      <span className="font-semibold">{formatPrice(item.price * item.quantity)}</span>
-                    </div>
+              <div className="space-y-2 sm:space-y-3">
+                <h5 className="font-medium text-sm sm:text-base">অর্ডারকৃত পণ্য:</h5>
+                <div className="max-h-32 sm:max-h-40 overflow-y-auto space-y-2">
+                  {orderItems.map((item: any, index: number) => (
+                    <div key={index} className="border-l-2 border-blue-200 pl-3">
+                      <div className="flex justify-between items-start text-xs sm:text-sm">
+                        <span className="flex-1 mr-2">{item.name} × {item.quantity}</span>
+                        <span className="font-semibold flex-shrink-0">{formatPrice(item.price * item.quantity)}</span>
+                      </div>
 
-                    {/* Show customization details if present */}
-                    {item.customization && (
-                      <div className="text-xs text-blue-600 mt-1 space-y-1">
-                        {item.customization.size && <p>সাইজ: {item.customization.size}</p>}
+                      {/* Show customization details if present */}
+                      {item.customization && (
+                        <div className="text-xs text-blue-600 mt-1 space-y-0.5">
+                          {item.customization.size && <p>সাইজ: {item.customization.size}</p>}
                         {item.customization.color && <p>রং: {item.customization.color}</p>}
                         {item.customization.printArea && <p>প্রিন্ট এরিয়া: {item.customization.printArea}</p>}
                         {item.customization.customText && item.customization.customText.trim() && <p>কাস্টম টেক্সট: {item.customization.customText.trim()}</p>}
@@ -134,67 +135,74 @@ export default function OrderSuccessModal({ isOpen, onClose, order }: OrderSucce
                 ))}
               </div>
 
-              <Separator className="my-4" />
+                </div>
 
-              {/* Total */}
-              <div className="flex justify-between items-center font-bold text-lg">
-                <span>মোট পরিমাণ:</span>
-                <span className="text-primary">{formatPrice(orderTotal)}</span>
-              </div>
+                <Separator className="my-3 sm:my-4" />
+
+                {/* Total */}
+                <div className="flex justify-between items-center font-bold text-sm sm:text-lg bg-gray-50 p-2 sm:p-3 rounded-lg">
+                  <span>মোট পরিমাণ:</span>
+                  <span className="text-green-600">{formatPrice(orderTotal)}</span>
+                </div>
             </CardContent>
           </Card>
 
           {/* Payment Instructions */}
-          <Card className="bg-orange-50 border-orange-200">
-            <CardContent className="p-6">
-              <h4 className="font-semibold text-orange-900 mb-3">পেমেন্ট নির্দেশনা</h4>
+          <Card className="bg-gradient-to-r from-orange-50 to-yellow-50 border-orange-200">
+            <CardContent className="p-4 sm:p-6">
+              <h4 className="font-semibold text-orange-900 mb-3 text-sm sm:text-base">পেমেন্ট নির্দেশনা</h4>
               <div className="space-y-2 text-orange-800">
-                <p className="font-bold text-lg">bKash/Nagad: 01747292277</p>
-                <p className="text-sm">১. উপরোক্ত নম্বরে টাকা পাঠান</p>
-                <p className="text-sm">২. ট্রানজেকশন আইডি সংরক্ষণ করুন</p>
-                <p className="text-sm">৩. হোয়াটসঅ্যাপে ট্রানজেকশন আইডি পাঠান</p>
-                <p className="text-sm font-medium text-orange-900">
+                <p className="font-bold text-base sm:text-lg">bKash/Nagad: 01747292277</p>
+                <div className="text-xs sm:text-sm space-y-1">
+                  <p>১. উপরোক্ত নম্বরে টাকা পাঠান</p>
+                  <p>২. ট্রানজেকশন আইডি সংরক্ষণ করুন</p>
+                  <p>ৃ. হোয়াটসঅ্যাপে ট্রানজেকশন আইডি পাঠান</p>
+                </div>
+                <p className="text-xs sm:text-sm font-medium text-orange-900 mt-2 p-2 bg-orange-100 rounded">
                   ⚠️ পেমেন্ট ছাড়া পণ্য ডেলিভার করা হবে না
                 </p>
               </div>
             </CardContent>
           </Card>
 
-          {/* Action Buttons */}
-          <div className="grid grid-cols-1 gap-3">
+        </div>
+
+        {/* Action Buttons - Fixed at Bottom */}
+        <div className="flex-shrink-0 border-t bg-gray-50/80 px-4 sm:px-6 py-3 sm:py-4 space-y-2 sm:space-y-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
             <Button
               onClick={handleTrackOrder}
-              className="w-full"
-              size="lg"
+              className="bg-blue-600 hover:bg-blue-700 text-white shadow-sm"
+              size="sm"
             >
-              <Eye className="w-5 h-5 mr-2" />
+              <Eye className="w-4 h-4 mr-2" />
               অর্ডার ট্র্যাক করুন
             </Button>
 
             <Button
               onClick={handleWhatsAppContact}
-              variant="outline"
-              className="w-full bg-green-500 text-white hover:bg-green-600 border-green-500"
-              size="lg"
+              className="bg-green-600 hover:bg-green-700 text-white shadow-sm"
+              size="sm"
             >
-              <MessageCircle className="w-5 h-5 mr-2" />
-              হোয়াটসঅ্যাপে যোগাযোগ করুন
-            </Button>
-
-            <Button
-              onClick={onClose}
-              variant="outline"
-              className="w-full"
-            >
-              বন্ধ করুন
+              <MessageCircle className="w-4 h-4 mr-2" />
+              হোয়াটসঅ্যাপে যোগাযোগ
             </Button>
           </div>
+          
+          <Button
+            onClick={onClose}
+            variant="outline"
+            className="w-full"
+            size="sm"
+          >
+            বন্ধ করুন
+          </Button>
 
           {/* Additional Info */}
-          <Card className="bg-blue-50 border-blue-200">
-            <CardContent className="p-4">
-              <h5 className="font-medium text-blue-900 mb-2">গুরুত্বপূর্ণ তথ্য:</h5>
-              <ul className="text-sm text-blue-800 space-y-1">
+          <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200">
+            <CardContent className="p-3 sm:p-4">
+              <h5 className="font-medium text-blue-900 mb-2 text-sm sm:text-base">গুরুত্বপূর্ণ তথ্য:</h5>
+              <ul className="text-xs sm:text-sm text-blue-800 space-y-1">
                 <li>• ডেলিভারি সময়: ২-৩ কার্যদিবস</li>
                 <li>• অর্ডার স্ট্যাটাস আপডেট পেতে ট্র্যাকিং পেজ দেখুন</li>
                 <li>• যেকোনো সমস্যায় হোয়াটসঅ্যাপে যোগাযোগ করুন</li>
@@ -202,7 +210,6 @@ export default function OrderSuccessModal({ isOpen, onClose, order }: OrderSucce
               </ul>
             </CardContent>
           </Card>
-        </div>
       </DialogContent>
     </Dialog>
   );

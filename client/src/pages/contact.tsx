@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { MapPin, Phone, Mail, MessageCircle, Clock, Facebook } from "lucide-react";
-import Header from "@/components/header";
+import MobileOptimizedLayout from "@/components/mobile-optimized-layout";
 import { useCart } from "@/hooks/use-cart";
 import { createWhatsAppUrl, WHATSAPP_NUMBER, FACEBOOK_PAGE } from "@/lib/constants";
 import { useToast } from "@/hooks/use-toast";
@@ -55,8 +55,7 @@ export default function ContactPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Header cartCount={totalItems} onCartOpen={() => {}} />
+    <MobileOptimizedLayout>
       
       <div className="pt-20 py-16">
         <div className="container mx-auto px-4">
@@ -229,6 +228,6 @@ export default function ContactPage() {
           </div>
         </div>
       </div>
-    </div>
+    </MobileOptimizedLayout>
   );
 }

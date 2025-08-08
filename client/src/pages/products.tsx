@@ -7,7 +7,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Search, Filter, Grid3X3 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useCart } from "@/hooks/use-cart";
-import Header from "@/components/header";
+import MobileOptimizedLayout from "@/components/mobile-optimized-layout";
 import UnifiedProductCard from "@/components/unified-product-card";
 import ProductModal from "@/components/product-modal";
 import CustomizeModal from "@/components/customize-modal";
@@ -198,8 +198,7 @@ export default function ProductsPage() {
   // Show error if products failed to load
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <Header cartCount={globalCart.length} onCartOpen={() => {}} />
+      <MobileOptimizedLayout>
         <div className="container mx-auto px-4 py-16">
           <div className="text-center">
             <h2 className="text-2xl font-bold text-red-600 mb-4">পণ্য লোড করতে সমস্যা হয়েছে</h2>
@@ -209,13 +208,12 @@ export default function ProductsPage() {
             </Button>
           </div>
         </div>
-      </div>
+      </MobileOptimizedLayout>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Header cartCount={globalCart.length} onCartOpen={() => {}} />
+    <MobileOptimizedLayout>
       
       <div className="container mx-auto px-4 py-8">
         {/* Hero Section - Professional E-commerce Style */}
@@ -394,6 +392,6 @@ export default function ProductsPage() {
         product={selectedProduct}
         onAddToCart={handleAddToCartWithCustomization}
       />
-    </div>
+    </MobileOptimizedLayout>
   );
 }
