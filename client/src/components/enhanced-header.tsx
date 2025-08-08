@@ -10,6 +10,12 @@ import CartModal from './cart-modal';
 import UserRegistration from './user-registration';
 import UserLogin from './user-login';
 
+interface UserData {
+  firstName: string;
+  email?: string;
+  id?: string;
+}
+
 export default function EnhancedHeader() {
   const [location, navigate] = useLocation();
   const { totalItems } = useCart();
@@ -18,7 +24,7 @@ export default function EnhancedHeader() {
   const [searchQuery, setSearchQuery] = useState('');
   const [showRegistration, setShowRegistration] = useState(false);
   const [showLogin, setShowLogin] = useState(false);
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState<UserData | null>(null);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -65,7 +71,7 @@ export default function EnhancedHeader() {
                 </div>
               </div>
               <div className="text-sm">
-                ⭐ ৪.৮ রেটিং | ১০০০+ সন্তুষ্ট গ্রাহক
+                বিশেষ ছাড় এবং অফার পেতে আমাদের সাথে থাকুন
               </div>
             </div>
           </div>
@@ -165,37 +171,44 @@ export default function EnhancedHeader() {
               {/* Mobile Menu */}
               <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
                 <SheetTrigger asChild>
-                  <Button variant="ghost" size="sm" className="lg:hidden p-2 hover:bg-gray-100 rounded-lg">
+                  <Button variant="ghost" size="sm" className="lg:hidden p-2 hover:bg-gray-100 rounded-lg transition-all duration-200">
                     <Menu className="w-5 h-5" />
                   </Button>
                 </SheetTrigger>
-                <SheetContent side="right" className="w-80 bg-white border-l border-gray-200 shadow-xl">
-                  <div className="flex flex-col gap-6 pt-6 h-full">
+                <SheetContent side="right" className="w-full max-w-xs sm:max-w-sm bg-white border-l border-gray-200 shadow-xl">
+                  <div className="flex flex-col gap-4 sm:gap-6 pt-4 sm:pt-6 h-full overflow-y-auto">
                     {/* Mobile Search */}
-                    <form onSubmit={handleSearch} className="relative">
+                    <form onSubmit={handleSearch} className="relative px-1">
                       <Input
                         type="text"
                         placeholder="পণ্য খুঁজুন..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full pl-10 h-11 rounded-xl border-gray-300 focus:border-primary focus:ring-2 focus:ring-primary/20"
+                        className="w-full pl-10 pr-4 h-10 sm:h-11 rounded-xl border-gray-300 focus:border-primary focus:ring-2 focus:ring-primary/20 text-sm sm:text-base"
                       />
-                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                      <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                      <Button
+                        type="submit"
+                        size="sm"
+                        className="absolute right-2 top-1/2 transform -translate-y-1/2 h-7 sm:h-8 px-2 sm:px-3 text-xs sm:text-sm rounded-lg"
+                      >
+                        খুঁজুন
+                      </Button>
                     </form>
 
                     {/* Mobile User Actions */}
-                    <div className="bg-gradient-to-r from-primary/10 to-primary/5 rounded-xl p-4">
+                    <div className="bg-gradient-to-r from-primary/10 to-primary/5 rounded-xl p-3 sm:p-4 mx-1">
                       {user ? (
-                        <div className="flex flex-col gap-3">
+                        <div className="flex flex-col gap-2 sm:gap-3">
                           <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center text-white font-bold">
+                            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-primary rounded-full flex items-center justify-center text-white font-bold text-sm sm:text-base">
                               {user.firstName?.charAt(0)}
                             </div>
                             <div>
-                              <div className="text-lg font-medium text-gray-800">
+                              <div className="text-base sm:text-lg font-medium text-gray-800 truncate">
                                 স্বাগতম, {user.firstName}
                               </div>
-                              <div className="text-sm text-gray-500">
+                              <div className="text-xs sm:text-sm text-gray-500">
                                 গ্রাহক অ্যাকাউন্ট
                               </div>
                             </div>
@@ -203,25 +216,25 @@ export default function EnhancedHeader() {
                           <Button
                             variant="outline"
                             onClick={handleLogout}
-                            className="w-full h-11 rounded-xl border-primary text-primary hover:bg-primary hover:text-white"
+                            className="w-full h-9 sm:h-11 rounded-xl border-primary text-primary hover:bg-primary hover:text-white text-sm sm:text-base transition-all duration-200"
                           >
                             লগআউট
                           </Button>
                         </div>
                       ) : (
-                        <div className="flex flex-col gap-3">
-                          <div className="text-center mb-2">
-                            <h3 className="font-semibold text-gray-800">আপনার অ্যাকাউন্ট</h3>
-                            <p className="text-sm text-gray-600">লগইন করুন বা নতুন অ্যাকাউন্ট তৈরি করুন</p>
+                        <div className="flex flex-col gap-2 sm:gap-3">
+                          <div className="text-center mb-1 sm:mb-2">
+                            <h3 className="font-semibold text-gray-800 text-sm sm:text-base">আপনার অ্যাকাউন্ট</h3>
+                            <p className="text-xs sm:text-sm text-gray-600">লগইন করুন বা নতুন অ্যাকাউন্ট তৈরি করুন</p>
                           </div>
                           <Button
                             onClick={() => {
                               setShowLogin(true);
                               setIsMenuOpen(false);
                             }}
-                            className="w-full h-11 rounded-xl bg-primary hover:bg-primary/90"
+                            className="w-full h-9 sm:h-11 rounded-xl bg-primary hover:bg-primary/90 text-sm sm:text-base transition-all duration-200"
                           >
-                            <User className="w-4 h-4 mr-2" />
+                            <User className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
                             লগইন
                           </Button>
                           <Button
@@ -230,7 +243,7 @@ export default function EnhancedHeader() {
                               setShowRegistration(true);
                               setIsMenuOpen(false);
                             }}
-                            className="w-full h-11 rounded-xl border-primary text-primary hover:bg-primary hover:text-white"
+                            className="w-full h-9 sm:h-11 rounded-xl border-primary text-primary hover:bg-primary hover:text-white text-sm sm:text-base transition-all duration-200"
                           >
                             রেজিস্টার করুন
                           </Button>
@@ -239,16 +252,16 @@ export default function EnhancedHeader() {
                     </div>
 
                     {/* Mobile Navigation */}
-                    <nav className="flex flex-col gap-1 flex-1">
-                      <h3 className="font-semibold text-gray-800 mb-3 px-2">মেনু</h3>
+                    <nav className="flex flex-col gap-1 flex-1 px-1">
+                      <h3 className="font-semibold text-gray-800 mb-2 sm:mb-3 px-2 text-sm sm:text-base">মেনু</h3>
                       {navLinks.map((link) => (
                         <Link
                           key={link.href}
                           href={link.href}
-                          className={`flex items-center py-3 px-4 rounded-xl transition-all duration-200 font-medium ${
+                          className={`flex items-center py-2.5 sm:py-3 px-3 sm:px-4 rounded-xl transition-all duration-200 font-medium text-sm sm:text-base ${
                             location === link.href
                               ? 'bg-primary text-white shadow-md'
-                              : 'text-gray-700 hover:bg-gray-100 hover:text-primary'
+                              : 'text-gray-700 hover:bg-gray-100 hover:text-primary active:bg-gray-200'
                           }`}
                           onClick={() => setIsMenuOpen(false)}
                         >
@@ -256,6 +269,14 @@ export default function EnhancedHeader() {
                         </Link>
                       ))}
                     </nav>
+                    
+                    {/* Mobile Menu Footer */}
+                    <div className="mt-auto pt-4 border-t border-gray-200 mx-1">
+                      <div className="text-center">
+                        <p className="text-xs text-gray-500 mb-2">TryneX Shop</p>
+                        <p className="text-xs text-gray-400">Lifestyle Collection</p>
+                      </div>
+                    </div>
                   </div>
                 </SheetContent>
               </Sheet>

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Loader2, AlertCircle, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -8,85 +8,150 @@ interface EnhancedProductLoadingProps {
   children: (products: any[], isLoading: boolean, error: any) => React.ReactNode;
 }
 
+interface Product {
+  id: string;
+  name: string;
+  price: number;
+  image_url?: string;
+  stock: number;
+  category?: string;
+}
+
 export default function EnhancedProductLoading({ children }: EnhancedProductLoadingProps) {
   const [retryCount, setRetryCount] = useState(0);
   const [lastSuccessTime, setLastSuccessTime] = useState<number | null>(null);
 
   const {
-    data: products = [],
+    data: products = [] as Product[],
     isLoading,
     error,
     refetch,
-    isRefetching
-  } = useQuery({
+    isRefetching,
+    isFetching
+  } = useQuery<Product[]>({
     queryKey: ['/api/products', retryCount],
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    cacheTime: 10 * 60 * 1000, // 10 minutes
+    staleTime: 3 * 60 * 1000, // 3 minutes for fresher data
+    gcTime: 15 * 60 * 1000, // 15 minutes cache retention
     refetchOnWindowFocus: false,
     refetchOnReconnect: true,
+    refetchOnMount: true,
+    networkMode: 'online',
     retry: (failureCount, error) => {
-      // Retry up to 3 times with exponential backoff
+      // Enhanced retry logic with better error handling
       if (failureCount < 3) {
         console.log(`🔄 Retrying product fetch (attempt ${failureCount + 1})`);
         return true;
       }
+      console.warn('🚫 Max retry attempts reached for product loading');
       return false;
     },
-    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
-    onSuccess: (data) => {
-      if (data && data.length > 0) {
-        setLastSuccessTime(Date.now());
-        console.log(`✅ Products loaded successfully: ${data.length} items`);
-      }
+    retryDelay: (attemptIndex) => {
+      const delay = Math.min(1000 * 2 ** attemptIndex, 15000);
+      console.log(`⏳ Retrying in ${delay}ms...`);
+      return delay;
     },
-    onError: (error) => {
-      console.error('❌ Product loading failed:', error);
+    meta: {
+      errorMessage: 'পণ্য লোড করতে সমস্যা হচ্ছে'
     }
   });
 
-  const handleRetry = () => {
+  // Handle successful data loading
+  React.useEffect(() => {
+    if (products && products.length > 0 && !isLoading && !error) {
+      setLastSuccessTime(Date.now());
+      console.log(`✅ Products loaded successfully: ${products.length} items`);
+    }
+  }, [products, isLoading, error]);
+
+  // Handle errors
+  React.useEffect(() => {
+    if (error) {
+      console.error('❌ Product loading failed:', error);
+    }
+  }, [error]);
+
+  const handleRetry = React.useCallback(() => {
+    console.log('🔄 Manual retry initiated');
     setRetryCount(prev => prev + 1);
     refetch();
-  };
+  }, [refetch]);
 
-  // Show loading state
+  // Show enhanced loading state
   if (isLoading && !products.length) {
     return (
-      <div className="flex flex-col items-center justify-center py-16">
-        <Loader2 className="w-8 h-8 animate-spin text-primary mb-4" />
-        <p className="text-gray-600 mb-2">পণ্য লোড হচ্ছে...</p>
-        <p className="text-sm text-gray-500">অনুগ্রহ করে অপেক্ষা করুন</p>
+      <div className="flex flex-col items-center justify-center py-12 sm:py-16 px-4">
+        <div className="relative">
+          <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-gradient-to-br from-primary/20 to-primary/40 flex items-center justify-center mb-4 sm:mb-6">
+            <Loader2 className="w-6 h-6 sm:w-8 sm:h-8 animate-spin text-primary" />
+          </div>
+          <div className="absolute inset-0 w-12 h-12 sm:w-16 sm:h-16 rounded-full border-2 border-primary/20 animate-pulse"></div>
+        </div>
+        <div className="text-center">
+          <p className="text-gray-700 mb-2 text-base sm:text-lg font-medium">পণ্য লোড হচ্ছে...</p>
+          <p className="text-sm text-gray-500">সর্বোত্তম পণ্য খুঁজে আনছি</p>
+        </div>
+        
+        {/* Loading skeleton preview */}
+        <div className="mt-8 w-full max-w-4xl">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="animate-pulse">
+                <div className="aspect-[4/5] bg-gray-200 rounded-lg mb-2"></div>
+                <div className="h-3 bg-gray-200 rounded mb-1"></div>
+                <div className="h-2 bg-gray-200 rounded w-2/3"></div>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     );
   }
 
-  // Show error state with retry option
+  // Show enhanced error state with retry option
   if (error && !products.length) {
     return (
-      <div className="flex flex-col items-center justify-center py-16 px-4">
-        <AlertCircle className="w-12 h-12 text-red-500 mb-4" />
-        <h3 className="text-lg font-semibold text-gray-800 mb-2">
-          পণ্য লোড করতে সমস্যা হচ্ছে
-        </h3>
-        <p className="text-gray-600 text-center mb-6 max-w-md">
-          আপনার ইন্টারনেট সংযোগ পরীক্ষা করুন এবং আবার চেষ্টা করুন
-        </p>
+      <div className="flex flex-col items-center justify-center py-12 sm:py-16 px-4">
+        <div className="relative mb-6">
+          <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-red-50 flex items-center justify-center">
+            <AlertCircle className="w-8 h-8 sm:w-10 sm:h-10 text-red-500" />
+          </div>
+          <div className="absolute inset-0 w-16 h-16 sm:w-20 sm:h-20 rounded-full border-2 border-red-200 animate-pulse"></div>
+        </div>
         
-        <Button
-          onClick={handleRetry}
-          disabled={isRefetching}
-          className="flex items-center gap-2"
-        >
-          {isRefetching ? (
-            <Loader2 className="w-4 h-4 animate-spin" />
-          ) : (
-            <RefreshCw className="w-4 h-4" />
-          )}
-          আবার চেষ্টা করুন
-        </Button>
+        <div className="text-center mb-8">
+          <h3 className="text-lg sm:text-xl font-semibold text-gray-800 mb-3">
+            পণ্য লোড করতে সমস্যা হচ্ছে
+          </h3>
+          <p className="text-gray-600 text-center max-w-md text-sm sm:text-base leading-relaxed">
+            আপনার ইন্টারনেট সংযোগ পরীক্ষা করুন এবং আবার চেষ্টা করুন। সমস্যা বজায় থাকলে কিছুক্ষণ পর আবার চেষ্টা করুন।
+          </p>
+        </div>
+        
+        <div className="space-y-3">
+          <Button
+            onClick={handleRetry}
+            disabled={isRefetching}
+            className="flex items-center gap-2 h-11 px-6 text-base"
+          >
+            {isRefetching ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <RefreshCw className="w-4 h-4" />
+            )}
+            আবার চেষ্টা করুন
+          </Button>
+          
+          <Button
+            variant="outline"
+            onClick={() => window.location.reload()}
+            className="flex items-center gap-2 h-10 px-4 text-sm"
+          >
+            পেজ রিফ্রেশ করুন
+          </Button>
+        </div>
 
         {lastSuccessTime && (
-          <p className="text-xs text-gray-500 mt-4">
+          <p className="text-xs text-gray-500 mt-6 text-center">
             শেষ সফল লোড: {new Date(lastSuccessTime).toLocaleTimeString('bn-BD')}
           </p>
         )}
@@ -117,23 +182,44 @@ export default function EnhancedProductLoading({ children }: EnhancedProductLoad
     );
   }
 
-  // Show empty state if no products found
+  // Show enhanced empty state if no products found
   if (!isLoading && products.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-16">
-        <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-          <AlertCircle className="w-8 h-8 text-gray-400" />
+      <div className="flex flex-col items-center justify-center py-12 sm:py-16 px-4">
+        <div className="relative mb-6">
+          <div className="w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-white rounded-full flex items-center justify-center shadow-inner">
+              <AlertCircle className="w-5 h-5 sm:w-6 sm:h-6 text-gray-400" />
+            </div>
+          </div>
         </div>
-        <h3 className="text-lg font-semibold text-gray-800 mb-2">
-          কোনো পণ্য পাওয়া যায়নি
-        </h3>
-        <p className="text-gray-600 text-center mb-6">
-          এই মুহূর্তে আমাদের কোনো পণ্য স্টকে নেই
-        </p>
-        <Button onClick={handleRetry} variant="outline">
-          <RefreshCw className="w-4 h-4 mr-2" />
-          রিফ্রেশ করুন
-        </Button>
+        
+        <div className="text-center mb-8">
+          <h3 className="text-lg sm:text-xl font-semibold text-gray-800 mb-3">
+            কোনো পণ্য পাওয়া যায়নি
+          </h3>
+          <p className="text-gray-600 text-center max-w-md text-sm sm:text-base leading-relaxed">
+            এই মুহূর্তে আমাদের কোনো পণ্য স্টকে নেই। শীঘ্রই নতুন পণ্য যুক্ত হবে।
+          </p>
+        </div>
+        
+        <div className="space-y-3">
+          <Button 
+            onClick={handleRetry} 
+            className="flex items-center gap-2 h-11 px-6"
+          >
+            <RefreshCw className="w-4 h-4" />
+            আবার চেক করুন
+          </Button>
+          
+          <Button 
+            variant="outline"
+            onClick={() => window.location.href = '/categories'}
+            className="flex items-center gap-2 h-10 px-4 text-sm"
+          >
+            ক্যাটেগরি দেখুন
+          </Button>
+        </div>
       </div>
     );
   }
