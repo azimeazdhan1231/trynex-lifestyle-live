@@ -234,39 +234,39 @@ export default function CheckoutModal({ isOpen, onClose, cart, onOrderComplete }
 
             <div>
               <Label htmlFor="district">জেলা *</Label>
-              <Select value={formData.district} onValueChange={(value) => handleInputChange("district", value)} required>
-                <SelectTrigger>
-                  <SelectValue placeholder="জেলা নির্বাচন করুন" />
-                </SelectTrigger>
-                <SelectContent>
-                  {DISTRICTS.map((district) => (
-                    <SelectItem key={district} value={district}>
-                      {district}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <select
+                id="district"
+                value={formData.district}
+                onChange={(e) => handleInputChange("district", e.target.value)}
+                required
+                className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <option value="">জেলা নির্বাচন করুন</option>
+                {DISTRICTS.map((district) => (
+                  <option key={district} value={district}>
+                    {district}
+                  </option>
+                ))}
+              </select>
             </div>
 
             <div>
               <Label htmlFor="thana">থানা *</Label>
-              <Select 
-                value={formData.thana} 
-                onValueChange={(value) => handleInputChange("thana", value)}
+              <select
+                id="thana"
+                value={formData.thana}
+                onChange={(e) => handleInputChange("thana", e.target.value)}
                 disabled={!formData.district}
                 required
+                className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
               >
-                <SelectTrigger>
-                  <SelectValue placeholder={formData.district ? "থানা নির্বাচন করুন" : "প্রথমে জেলা নির্বাচন করুন"} />
-                </SelectTrigger>
-                <SelectContent>
-                  {availableThanas.map((thana) => (
-                    <SelectItem key={thana} value={thana}>
-                      {thana}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                <option value="">{formData.district ? "থানা নির্বাচন করুন" : "প্রথমে জেলা নির্বাচন করুন"}</option>
+                {availableThanas.map((thana) => (
+                  <option key={thana} value={thana}>
+                    {thana}
+                  </option>
+                ))}
+              </select>
             </div>
 
             <div>

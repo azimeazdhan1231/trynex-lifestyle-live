@@ -155,6 +155,10 @@
 [data-radix-select-content] {
   z-index: 99999 !important;
   position: fixed !important;
+  background: white !important;
+  border: 1px solid #e5e7eb !important;
+  border-radius: 8px !important;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
 }
 
 [data-radix-select-content][data-state="open"] {
@@ -165,6 +169,32 @@
 [data-radix-select-trigger] {
   z-index: 1 !important;
   position: relative !important;
+  pointer-events: auto !important;
+  cursor: pointer !important;
+}
+
+/* Fix modal overlay interference */
+[data-radix-dialog-overlay] {
+  pointer-events: none !important;
+}
+
+[data-radix-dialog-content] {
+  pointer-events: auto !important;
+}
+
+/* Additional Select fixes */
+[data-radix-select-trigger]:focus {
+  outline: 2px solid rgb(59 130 246) !important;
+  outline-offset: 2px !important;
+}
+
+[data-radix-select-item] {
+  cursor: pointer !important;
+  padding: 8px 12px !important;
+}
+
+[data-radix-select-item]:hover {
+  background-color: #f3f4f6 !important;
 }
 
 .modal-large .modal-content {
