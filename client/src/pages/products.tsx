@@ -12,8 +12,7 @@ import UnifiedProductCard from "@/components/unified-product-card";
 import ProductModal from "@/components/product-modal";
 import CustomizeModal from "@/components/customize-modal";
 import MobileSearchDrawer from "@/components/mobile-search-drawer";
-import ProductLoadingOptimizer from "@/components/product-loading-optimizer";
-import EnhancedProductLoader from "@/components/enhanced-product-loader";
+import { ProgressiveLoader, PerformanceErrorBoundary, PerformanceMonitor } from "@/components/enhanced-loading-system";
 import type { Product } from "@shared/schema";
 
 // Product categories
@@ -69,13 +68,15 @@ export default function ProductsPage() {
   // Remove local cart state - use global cart hook instead
   const { addToCart: globalAddToCart, cart: globalCart } = useCart();
 
-  // Fetch products with optimized caching
-  const { data: products = [], isLoading, error } = useQuery<Product[]>({
+  // Fetch products with enhanced performance optimization
+  const { data: products = [], isLoading, error, refetch } = useQuery<Product[]>({
     queryKey: ["/api/products"],
-    staleTime: 1000 * 60 * 10, // 10 minutes
-    gcTime: 1000 * 60 * 30, // 30 minutes
+    staleTime: 1000 * 60 * 5, // 5 minutes for faster updates
+    gcTime: 1000 * 60 * 30, // 30 minutes cache
     refetchOnWindowFocus: false,
     refetchOnMount: false,
+    retry: 3,
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
     refetchOnReconnect: false,
     retry: 2,
   });
@@ -293,9 +294,17 @@ export default function ProductsPage() {
         </div>
 
         {/* Products Grid - Mobile Optimized */}
-        {isLoading ? (
-          <EnhancedProductLoader count={12} />
-        ) : filteredProducts.length === 0 ? (
+        <PerformanceErrorBoundary>
+          <PerformanceMonitor>
+            <ProgressiveLoader 
+              loadingState={{ 
+                isLoading, 
+                error: error?.message,
+                progress: isLoading ? undefined : 100 
+              }}
+              onRetry={() => refetch()}
+            >
+              {filteredProducts.length === 0 ? (
           <div className="text-center py-16">
             <div className="bg-white rounded-lg p-8 shadow-sm max-w-md mx-auto">
               <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
