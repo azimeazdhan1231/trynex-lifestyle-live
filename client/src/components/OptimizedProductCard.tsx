@@ -47,7 +47,7 @@ export const OptimizedProductCard: React.FC<OptimizedProductCardProps> = ({
 
   return (
     <Card className={cn(
-      "overflow-hidden group hover:shadow-lg transition-all duration-300 border-0 shadow-md hover:shadow-xl transform hover:scale-[1.02] lg:hover:scale-105",
+      "overflow-hidden group hover:shadow-lg transition-all duration-300 border-0 shadow-md hover:shadow-xl",
       className
     )}>
       {/* Optimized Image with Lazy Loading - Increased Height */}
