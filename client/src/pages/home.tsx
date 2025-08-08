@@ -5,9 +5,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import EnhancedProductLoader from "@/components/enhanced-product-loader";
-import MobileOptimizedLayout from "@/components/mobile-optimized-layout";
+import UltraSimpleLayout from "@/components/ultra-simple-layout";
 import TrackingSection from "@/components/tracking-section";
-import FixedPerfectPopupOffer from "../components/fixed-perfect-popup-offer";
+import SimplePopupOffer from "../components/simple-popup-offer";
 import ProductModal from "@/components/product-modal-fixed";
 import CustomizeModal from "@/components/customize-modal";
 import { useToast } from "@/hooks/use-toast";
@@ -540,8 +540,8 @@ export default function Home() {
   };
 
   return (
-    <MobileOptimizedLayout>
-      <FixedPerfectPopupOffer />
+    <UltraSimpleLayout>
+      <SimplePopupOffer />
 
       {/* Premium Hero Section */}
       <section 
@@ -748,6 +748,6 @@ export default function Home() {
         />
       )}
       {/* Enhanced AI Chatbot - Component temporarily disabled */}
-    </MobileOptimizedLayout>
+    </UltraSimpleLayout>
   );
 }

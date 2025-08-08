@@ -553,8 +553,12 @@ a:focus-visible {
   -webkit-tap-highlight-color: transparent;
   position: relative;
   overflow: hidden;
-  min-height: 44px;
-  min-width: 44px;
+}
+
+/* Special handling for small close buttons */
+.touch-button:not(.btn):not(.button) {
+  min-height: 32px;
+  min-width: 32px;
 }
 
 .touch-button:active {

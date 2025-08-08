@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "wouter";
 import type { Offer } from "@shared/schema";
+import PerfectPopupCSSFix from './perfect-popup-css-fix';
 
 export default function FixedPerfectPopupOffer() {
   const [isOpen, setIsOpen] = useState(false);
@@ -102,6 +103,7 @@ export default function FixedPerfectPopupOffer() {
 
   return (
     <>
+      <PerfectPopupCSSFix />
       {/* Popup Modal */}
       {isOpen && (
         <div 
@@ -123,27 +125,26 @@ export default function FixedPerfectPopupOffer() {
             style={{ 
               touchAction: 'pan-y',
               WebkitOverflowScrolling: 'touch',
-              WebkitTapHighlightColor: 'transparent'
+              WebkitTapHighlightColor: 'transparent',
+              position: 'relative'
             }}
             data-testid="popup-content"
           >
-            {/* Close Button - Fixed Position */}
+            {/* Close Button - Perfectly Positioned */}
             <button
               onClick={closePopup}
-              className="absolute top-3 right-3 z-50 w-8 h-8 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center transition-all duration-200 shadow-lg touch-button"
+              className="absolute -top-2 -right-2 z-50 w-6 h-6 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center transition-all duration-200 shadow-lg touch-button border-2 border-white"
               style={{
                 touchAction: 'manipulation',
-                WebkitTapHighlightColor: 'transparent',
-                minHeight: '44px',
-                minWidth: '44px'
+                WebkitTapHighlightColor: 'transparent'
               }}
               data-testid="popup-close-button"
             >
-              <X className="w-4 h-4" />
+              <X className="w-3 h-3" />
             </button>
 
             {/* Content Container */}
-            <div className="overflow-y-auto max-h-[95vh] scrollbar-hide">
+            <div className="popup-scrollable-content">
               {/* Header Section */}
               <div className="bg-gradient-to-br from-green-500 via-green-600 to-emerald-700 text-white p-6 text-center relative overflow-hidden">
                 {/* Background Pattern */}
