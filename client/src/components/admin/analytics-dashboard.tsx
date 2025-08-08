@@ -1,0 +1,326 @@
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell, Legend } from "recharts";
+import { TrendingUp, TrendingDown, Users, ShoppingCart, DollarSign, Package, Calendar, Eye, MousePointer, ArrowUpRight } from "lucide-react";
+
+// Mock analytics data
+const mockAnalytics = {
+  overview: {
+    total_revenue: 156000,
+    revenue_change: 12.5,
+    total_orders: 342,
+    orders_change: 8.3,
+    total_customers: 128,
+    customers_change: -2.1,
+    conversion_rate: 3.8,
+    conversion_change: 5.2
+  },
+  revenue_chart: [
+    { month: "জানুয়ারি", revenue: 12000, orders: 45 },
+    { month: "ফেব্রুয়ারি", revenue: 15000, orders: 52 },
+    { month: "মার্চ", revenue: 18000, orders: 61 },
+    { month: "এপ্রিল", revenue: 22000, orders: 68 },
+    { month: "মে", revenue: 19000, orders: 58 },
+    { month: "জুন", revenue: 25000, orders: 75 },
+    { month: "জুলাই", revenue: 28000, orders: 82 },
+    { month: "আগস্ট", revenue: 31000, orders: 95 }
+  ],
+  top_products: [
+    { name: "কাস্টম মগ", sales: 156, revenue: 23400 },
+    { name: "ফ্রেম", sales: 124, revenue: 18600 },
+    { name: "টি-শার্ট", sales: 98, revenue: 44100 },
+    { name: "কুশন", sales: 87, revenue: 13050 },
+    { name: "ক্যালেন্ডার", sales: 76, revenue: 15200 }
+  ],
+  category_distribution: [
+    { name: "মগ", value: 35, color: "#3b82f6" },
+    { name: "পোশাক", value: 28, color: "#ef4444" },
+    { name: "ফ্রেম", value: 20, color: "#10b981" },
+    { name: "এক্সেসরিজ", value: 17, color: "#f59e0b" }
+  ],
+  traffic_sources: [
+    { source: "Facebook", visitors: 2840, percentage: 45.2 },
+    { source: "Google", visitors: 1920, percentage: 30.5 },
+    { source: "Direct", visitors: 890, percentage: 14.2 },
+    { source: "Instagram", visitors: 640, percentage: 10.1 }
+  ],
+  recent_activities: [
+    { id: 1, type: "order", message: "নতুন অর্ডার #TRX12345", time: "২ মিনিট আগে" },
+    { id: 2, type: "user", message: "নতুন ব্যবহারকারী নিবন্ধিত", time: "১৫ মিনিট আগে" },
+    { id: 3, type: "product", message: "পণ্য স্টক কম", time: "৩০ মিনিট আগে" },
+    { id: 4, type: "revenue", message: "দৈনিক লক্ষ্য অর্জিত", time: "১ ঘণ্টা আগে" }
+  ]
+};
+
+export default function AnalyticsDashboard() {
+  const [dateRange, setDateRange] = useState("last_30_days");
+  
+  // Mock query - replace with real API
+  const { data: analytics = mockAnalytics, isLoading } = useQuery({
+    queryKey: ["/api/analytics", dateRange],
+    queryFn: () => Promise.resolve(mockAnalytics)
+  });
+
+  const formatCurrency = (amount: number) => `৳${amount.toLocaleString()}`;
+  
+  const getChangeIcon = (change: number) => {
+    return change >= 0 ? (
+      <TrendingUp className="w-4 h-4 text-green-600" />
+    ) : (
+      <TrendingDown className="w-4 h-4 text-red-600" />
+    );
+  };
+
+  const getChangeColor = (change: number) => {
+    return change >= 0 ? "text-green-600" : "text-red-600";
+  };
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <Card key={i} className="animate-pulse">
+            <CardHeader>
+              <div className="h-6 bg-gray-200 rounded w-1/3"></div>
+            </CardHeader>
+            <CardContent>
+              <div className="h-32 bg-gray-100 rounded"></div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex justify-between items-center">
+        <div>
+          <h2 className="text-2xl font-bold text-gray-800">অ্যানালিটিক্স ড্যাশবোর্ড</h2>
+          <p className="text-gray-600">ব্যবসার পারফরম্যান্স ট্র্যাক করুন</p>
+        </div>
+        <Select value={dateRange} onValueChange={setDateRange}>
+          <SelectTrigger className="w-48">
+            <Calendar className="w-4 h-4 mr-2" />
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="last_7_days">গত ৭ দিন</SelectItem>
+            <SelectItem value="last_30_days">গত ৩০ দিন</SelectItem>
+            <SelectItem value="last_90_days">গত ৯০ দিন</SelectItem>
+            <SelectItem value="last_year">গত বছর</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* Overview Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">মোট আয়</CardTitle>
+            <DollarSign className="h-4 w-4 text-blue-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-blue-600">
+              {formatCurrency(analytics.overview.total_revenue)}
+            </div>
+            <div className="flex items-center gap-1 mt-1">
+              {getChangeIcon(analytics.overview.revenue_change)}
+              <span className={`text-xs font-medium ${getChangeColor(analytics.overview.revenue_change)}`}>
+                {Math.abs(analytics.overview.revenue_change)}%
+              </span>
+              <span className="text-xs text-gray-600">গত মাস থেকে</span>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">মোট অর্ডার</CardTitle>
+            <ShoppingCart className="h-4 w-4 text-green-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-green-600">
+              {analytics.overview.total_orders}
+            </div>
+            <div className="flex items-center gap-1 mt-1">
+              {getChangeIcon(analytics.overview.orders_change)}
+              <span className={`text-xs font-medium ${getChangeColor(analytics.overview.orders_change)}`}>
+                {Math.abs(analytics.overview.orders_change)}%
+              </span>
+              <span className="text-xs text-gray-600">গত মাস থেকে</span>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">গ্রাহক</CardTitle>
+            <Users className="h-4 w-4 text-purple-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-purple-600">
+              {analytics.overview.total_customers}
+            </div>
+            <div className="flex items-center gap-1 mt-1">
+              {getChangeIcon(analytics.overview.customers_change)}
+              <span className={`text-xs font-medium ${getChangeColor(analytics.overview.customers_change)}`}>
+                {Math.abs(analytics.overview.customers_change)}%
+              </span>
+              <span className="text-xs text-gray-600">গত মাস থেকে</span>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">কনভার্শন রেট</CardTitle>
+            <MousePointer className="h-4 w-4 text-orange-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-orange-600">
+              {analytics.overview.conversion_rate}%
+            </div>
+            <div className="flex items-center gap-1 mt-1">
+              {getChangeIcon(analytics.overview.conversion_change)}
+              <span className={`text-xs font-medium ${getChangeColor(analytics.overview.conversion_change)}`}>
+                {Math.abs(analytics.overview.conversion_change)}%
+              </span>
+              <span className="text-xs text-gray-600">গত মাস থেকে</span>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Revenue Chart */}
+        <Card>
+          <CardHeader>
+            <CardTitle>মাসিক আয় ও অর্ডার</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={analytics.revenue_chart}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="month" />
+                <YAxis />
+                <Tooltip 
+                  formatter={(value, name) => [
+                    name === "revenue" ? formatCurrency(Number(value)) : value,
+                    name === "revenue" ? "আয়" : "অর্ডার"
+                  ]}
+                />
+                <Bar dataKey="revenue" fill="#3b82f6" name="revenue" />
+                <Bar dataKey="orders" fill="#10b981" name="orders" />
+              </BarChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+
+        {/* Category Distribution */}
+        <Card>
+          <CardHeader>
+            <CardTitle>ক্যাটাগরি অনুযায়ী বিক্রয়</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={300}>
+              <PieChart>
+                <Pie
+                  data={analytics.category_distribution}
+                  cx="50%"
+                  cy="50%"
+                  labelLine={false}
+                  label={({ name, percentage }) => `${name} ${percentage}%`}
+                  outerRadius={80}
+                  fill="#8884d8"
+                  dataKey="value"
+                >
+                  {analytics.category_distribution.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  ))}
+                </Pie>
+                <Tooltip formatter={(value) => [`${value}%`, "শতাংশ"]} />
+              </PieChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Top Products */}
+        <Card>
+          <CardHeader>
+            <CardTitle>শীর্ষ বিক্রিত পণ্য</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {analytics.top_products.map((product, index) => (
+                <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                      <span className="text-sm font-bold text-blue-600">#{index + 1}</span>
+                    </div>
+                    <div>
+                      <p className="font-medium">{product.name}</p>
+                      <p className="text-sm text-gray-600">{product.sales} টি বিক্রি</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="font-bold text-green-600">{formatCurrency(product.revenue)}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Traffic Sources */}
+        <Card>
+          <CardHeader>
+            <CardTitle>ট্রাফিক সোর্স</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {analytics.traffic_sources.map((source, index) => (
+                <div key={index} className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-3 h-3 rounded-full bg-blue-500"></div>
+                    <span className="font-medium">{source.source}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-gray-600">{source.visitors.toLocaleString()}</span>
+                    <Badge variant="secondary">{source.percentage}%</Badge>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Recent Activities */}
+      <Card>
+        <CardHeader>
+          <CardTitle>সাম্প্রতিক কার্যক্রম</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {analytics.recent_activities.map((activity) => (
+              <div key={activity.id} className="flex items-center gap-3 p-3 border-l-4 border-blue-500 bg-blue-50">
+                <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                <div className="flex-1">
+                  <p className="text-sm font-medium">{activity.message}</p>
+                  <p className="text-xs text-gray-600">{activity.time}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}

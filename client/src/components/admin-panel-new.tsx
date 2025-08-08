@@ -13,6 +13,9 @@ import { useToast } from "@/hooks/use-toast";
 import { Plus, Edit2, Trash2, Eye, Package, Users, TrendingUp, Settings, Gift, Tag, BarChart3, DollarSign, ShoppingCart, Star, FileText, Globe } from "lucide-react";
 import BlogManagement from "@/components/admin/blog-management";
 import PagesManagement from "@/components/admin/pages-management";
+import EnhancedSettings from "@/components/admin/enhanced-settings";
+import UserManagement from "@/components/admin/user-management";
+import AnalyticsDashboard from "@/components/admin/analytics-dashboard";
 import { formatPrice, PRODUCT_CATEGORIES } from "@/lib/constants";
 
 // Order status matching tracking page
@@ -187,7 +190,7 @@ export default function AdminPanelNew() {
   // Order status update mutation
   const updateOrderMutation = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: string }) => {
-      const response = await apiRequest("PATCH", `/api/orders/${id}`, { status });
+      const response = await apiRequest("PATCH", `/api/orders/${id}/status`, { status });
       return response.json();
     },
     onSuccess: () => {
@@ -477,8 +480,13 @@ export default function AdminPanelNew() {
           </div>
         </div>
 
-        {/* Dashboard Tab */}
+        {/* Dashboard Tab - Enhanced Analytics */}
         <TabsContent value="dashboard" className="space-y-4">
+          <AnalyticsDashboard />
+        </TabsContent>
+
+        {/* Dashboard Tab - Original Overview */}
+        <TabsContent value="overview" className="space-y-4">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             <Card className="bg-white shadow-sm">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -1165,19 +1173,9 @@ export default function AdminPanelNew() {
           </Card>
         </TabsContent>
 
-        {/* Users Tab */}
+        {/* Users Tab - Enhanced Management */}
         <TabsContent value="users" className="space-y-4">
-          <Card className="bg-white shadow-sm">
-            <CardHeader>
-              <CardTitle className="text-lg flex items-center gap-2">
-                <Users className="w-5 h-5" />
-                ব্যবহারকারী ম্যানেজমেন্ট
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-center py-8 text-gray-500">শীঘ্রই আসছে...</div>
-            </CardContent>
-          </Card>
+          <UserManagement />
         </TabsContent>
 
         {/* Blog Management Tab */}
@@ -1247,19 +1245,9 @@ export default function AdminPanelNew() {
           </Card>
         </TabsContent>
 
-        {/* Settings Tab */}
+        {/* Settings Tab - Enhanced Settings */}
         <TabsContent value="settings" className="space-y-4">
-          <Card className="bg-white shadow-sm">
-            <CardHeader>
-              <CardTitle className="text-lg flex items-center gap-2">
-                <Settings className="w-5 h-5" />
-                সেটিংস
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-center py-8 text-gray-500">শীঘ্রই আসছে...</div>
-            </CardContent>
-          </Card>
+          <EnhancedSettings />
         </TabsContent>
       </Tabs>
 

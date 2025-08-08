@@ -13,6 +13,7 @@ import ProductModal from "@/components/product-modal";
 import CustomizeModal from "@/components/customize-modal";
 import MobileSearchDrawer from "@/components/mobile-search-drawer";
 import ProductLoadingOptimizer from "@/components/product-loading-optimizer";
+import EnhancedProductLoader from "@/components/enhanced-product-loader";
 import type { Product } from "@shared/schema";
 
 // Product categories
@@ -293,11 +294,7 @@ export default function ProductsPage() {
 
         {/* Products Grid - Mobile Optimized */}
         {isLoading ? (
-          <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-4 sm:gap-6">
-            {Array.from({ length: 12 }).map((_, index) => (
-              <ProductSkeleton key={index} />
-            ))}
-          </div>
+          <EnhancedProductLoader count={12} />
         ) : filteredProducts.length === 0 ? (
           <div className="text-center py-16">
             <div className="bg-white rounded-lg p-8 shadow-sm max-w-md mx-auto">
