@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Star, Heart, ShoppingCart, Eye, Zap } from "lucide-react";
 import { formatPrice } from "@/lib/constants";
+import { useLocation } from "wouter";
 import type { Product } from "@shared/schema";
 
 interface ProductCardProps {
@@ -50,6 +51,7 @@ const ProductCard = memo(({
   isInWishlist 
 }: ProductCardProps) => {
   const [isHovered, setIsHovered] = useState(false);
+  const [, setLocation] = useLocation();
 
   const handleQuickView = useCallback(() => {
     onQuickView(product);
@@ -66,6 +68,10 @@ const ProductCard = memo(({
   const handleToggleWishlist = useCallback(() => {
     onToggleWishlist(product.id);
   }, [product.id, onToggleWishlist]);
+
+  const handleViewDetails = useCallback(() => {
+    setLocation(`/product/${product.id}`);
+  }, [product.id, setLocation]);
 
   return (
     <Card 
@@ -115,7 +121,7 @@ const ProductCard = memo(({
                   size="sm"
                   variant="secondary"
                   className="bg-white text-black hover:bg-gray-100"
-                  onClick={handleQuickView}
+                  onClick={handleViewDetails}
                 >
                   <Eye className="w-4 h-4 mr-1" />
                   দেখুন
@@ -136,7 +142,10 @@ const ProductCard = memo(({
         {/* Product Info */}
         <div className="p-4">
           <div className="flex items-start justify-between mb-2">
-            <h3 className="font-semibold text-gray-900 line-clamp-2 text-sm leading-5">
+            <h3 
+              className="font-semibold text-gray-900 line-clamp-2 text-sm leading-5 cursor-pointer hover:text-primary transition-colors"
+              onClick={handleViewDetails}
+            >
               {product.name}
             </h3>
             <div className="flex items-center ml-2">

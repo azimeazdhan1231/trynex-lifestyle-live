@@ -14,7 +14,7 @@ import { formatPrice, createWhatsAppUrl } from "@/lib/constants";
 import { trackProductView, trackAddToCart } from "@/lib/analytics";
 import type { Product } from "@shared/schema";
 
-export default function ProductPage() {
+export default function ProductPage(props: any) {
   const [, setLocation] = useLocation();
   const [quantity, setQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState(0);
@@ -23,8 +23,9 @@ export default function ProductPage() {
   const { toast } = useToast();
   const { addToCart, totalItems } = useCart();
 
-  // Get product ID from URL parameters
-  const productId = new URLSearchParams(window.location.search).get('id');
+  // Get product ID from URL parameters - support both /product/:id and /product?id=xxx
+  const urlParams = new URLSearchParams(window.location.search);
+  const productId = props.params?.id || urlParams.get('id');
 
   const { data: product, isLoading, error } = useQuery<Product>({
     queryKey: ["/api/products", productId],
@@ -148,9 +149,9 @@ export default function ProductPage() {
             পণ্যের তালিকায় ফিরে যান
           </Button>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-8">
             {/* Product Images */}
-            <div className="space-y-4">
+            <div className="space-y-2 lg:space-y-4">
               <div className="aspect-square overflow-hidden rounded-lg bg-white shadow-lg">
                 <img
                   src={images[selectedImage]}
@@ -191,8 +192,8 @@ export default function ProductPage() {
                   )}
                 </div>
                 
-                <h1 className="text-3xl font-bold text-gray-900 mb-3">{product.name}</h1>
-                <div className="text-4xl font-bold text-primary mb-4">
+                <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-3">{product.name}</h1>
+                <div className="text-3xl lg:text-4xl font-bold text-primary mb-4">
                   {formatPrice(product.price)}
                 </div>
                 
@@ -261,18 +262,19 @@ export default function ProductPage() {
                   </Button>
                 </div>
 
-                <div className="flex gap-2">
+                <div className="flex flex-col sm:flex-row gap-2">
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => setIsFavorite(!isFavorite)}
-                    className={isFavorite ? "text-red-500 border-red-500" : ""}
+                    className={`${isFavorite ? "text-red-500 border-red-500" : ""} flex-1 sm:flex-none`}
                   >
                     <Heart className={`w-4 h-4 mr-2 ${isFavorite ? "fill-current" : ""}`} />
-                    {isFavorite ? "পছন্দের তালিকায়" : "পছন্দের তালিকায় যোগ করুন"}
+                    <span className="hidden sm:inline">{isFavorite ? "পছন্দের তালিকায়" : "পছন্দের তালিকায় যোগ করুন"}</span>
+                    <span className="sm:hidden">{isFavorite ? "পছন্দের" : "পছন্দ"}</span>
                   </Button>
                   
-                  <Button variant="outline" size="sm" onClick={handleShare}>
+                  <Button variant="outline" size="sm" onClick={handleShare} className="flex-1 sm:flex-none">
                     <Share2 className="w-4 h-4 mr-2" />
                     শেয়ার করুন
                   </Button>
@@ -281,6 +283,7 @@ export default function ProductPage() {
                     variant="outline" 
                     size="sm" 
                     onClick={() => setIsCustomizeModalOpen(true)}
+                    className="flex-1 sm:flex-none"
                   >
                     <Package className="w-4 h-4 mr-2" />
                     কাস্টমাইজ করুন
@@ -291,7 +294,7 @@ export default function ProductPage() {
               <Separator />
 
               {/* Features */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm">
                 <div className="flex items-center gap-2 text-gray-600">
                   <Truck className="w-4 h-4 text-green-500" />
                   <span>ফ্রি ডেলিভারি</span>

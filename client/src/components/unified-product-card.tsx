@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Star, Heart, ShoppingCart, Plus, Eye, Sparkles, TrendingUp, Zap } from "lucide-react";
 import { formatPrice } from "@/lib/constants";
+import { useLocation } from "wouter";
 import type { Product } from "@shared/schema";
 
 interface UnifiedProductCardProps {
@@ -46,11 +47,13 @@ export default function UnifiedProductCard({
     return () => observer.disconnect();
   }, []);
 
+  const [, setLocation] = useLocation();
+
   const handleCardClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     console.log("🔍 UnifiedProductCard: Card clicked, navigating to product page:", product.name);
-    window.location.href = `/product?id=${product.id}`;
+    setLocation(`/product/${product.id}`);
   };
 
   const handleAddToCart = (e: React.MouseEvent) => {
@@ -69,7 +72,7 @@ export default function UnifiedProductCard({
     e.preventDefault();
     e.stopPropagation();
     console.log("👁️ UnifiedProductCard: View details clicked for:", product.name);
-    window.location.href = `/product?id=${product.id}`;
+    setLocation(`/product/${product.id}`);
   };
 
   const handleToggleFavorite = (e: React.MouseEvent) => {

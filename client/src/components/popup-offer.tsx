@@ -71,8 +71,18 @@ export default function PopupOffer() {
         maxWidth: '400px',
         margin: '0 auto'
       }}>
+        {/* Close Button */}
+        <button
+          onClick={() => setIsOpen(false)}
+          className="absolute -top-2 -right-2 z-50 w-8 h-8 bg-white rounded-full shadow-lg border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition-colors"
+          style={{ zIndex: 10000 }}
+          aria-label="বন্ধ করুন"
+        >
+          <X className="w-4 h-4 text-gray-600" />
+        </button>
 
-        <div className="p-6 text-center">
+        <div className="bg-gradient-to-br from-green-600 via-emerald-600 to-teal-700 rounded-2xl shadow-2xl border border-green-500/20">
+          <div className="p-6 text-center">
           <div className="flex justify-center mb-4">
             {shouldShowFreeDelivery ? 
               <Truck className="w-16 h-16 text-yellow-300 animate-bounce" /> :
@@ -80,10 +90,10 @@ export default function PopupOffer() {
             }
           </div>
 
-          <h3 className="text-2xl font-bold mb-2">{currentOffer.title}</h3>
+          <h3 className="text-2xl font-bold mb-2 text-white">{currentOffer.title}</h3>
 
           {currentOffer.description && (
-            <p className="text-lg mb-4 text-emerald-100">{currentOffer.description}</p>
+            <p className="text-lg mb-4 text-white/90">{currentOffer.description}</p>
           )}
 
           {shouldShowFreeDelivery ? (
@@ -99,13 +109,13 @@ export default function PopupOffer() {
               )}
 
               {'min_order_amount' in currentOffer && currentOffer.min_order_amount && Number(currentOffer.min_order_amount) > 0 && (
-                <p className="text-sm text-emerald-200 mb-4">
+                <p className="text-sm text-white/80 mb-4">
                   ন্যূনতম অর্ডার: ৳{currentOffer.min_order_amount}
                 </p>
               )}
 
               {'expiry' in currentOffer && currentOffer.expiry && (
-                <p className="text-sm text-emerald-200 mb-6">
+                <p className="text-sm text-white/80 mb-6">
                   মেয়াদ: {new Date(currentOffer.expiry).toLocaleDateString('bn-BD')}
                 </p>
               )}
@@ -121,17 +131,18 @@ export default function PopupOffer() {
               {('button_text' in currentOffer && currentOffer.button_text) || "অর্ডার করুন"}
             </Link>
           </Button>
-        </div>
-
-        {'image_url' in currentOffer && currentOffer.image_url && (
-          <div className="h-32 bg-white/10 flex items-center justify-center">
-            <img
-              src={currentOffer.image_url}
-              alt={currentOffer.title}
-              className="max-h-full max-w-full object-contain"
-            />
           </div>
-        )}
+
+          {'image_url' in currentOffer && currentOffer.image_url && (
+            <div className="h-32 bg-white/10 flex items-center justify-center rounded-b-2xl">
+              <img
+                src={currentOffer.image_url}
+                alt={currentOffer.title}
+                className="max-h-full max-w-full object-contain"
+              />
+            </div>
+          )}
+        </div>
       </DialogContent>
     </Dialog>
   );
