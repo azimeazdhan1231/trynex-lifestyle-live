@@ -29,6 +29,10 @@ const RefundPolicyDynamic = lazy(() => import("./pages/refund-policy-dynamic"));
 const ReturnPolicy = lazy(() => import("./pages/return-policy"));
 const TermsConditionsDynamic = lazy(() => import("./pages/terms-conditions-dynamic"));
 const Dashboard = lazy(() => import("./pages/dashboard"));
+const Terms = lazy(() => import("./pages/terms"));
+const RefundPolicy = lazy(() => import("./pages/refund-policy"));
+const PaymentPolicy = lazy(() => import("./pages/payment-policy"));
+const AuthNew = lazy(() => import("./pages/auth-new"));
 
 // Performance and Mobile Optimization Components
 const MobileResponsiveFixes = lazy(() => import("./components/MobileResponsiveFixes"));
@@ -63,15 +67,22 @@ function Router() {
         <Route path="/tracking" component={Tracking} />
         <Route path="/profile" component={Profile} />
         <Route path="/orders" component={Orders} />
-        <Route path="/auth" component={PhoneAuth} />
-        <Route path="/login" component={PhoneAuth} />
-        <Route path="/signup" component={PhoneAuth} />
+        <Route path="/auth" component={AuthNew} />
+        <Route path="/login" component={AuthNew} />
+        <Route path="/signup" component={AuthNew} />
+        <Route path="/auth-phone" component={PhoneAuth} />
         <Route path="/custom-order" component={CustomOrderForm} />
         <Route path="/auth-old" component={Auth} />
         <Route path="/dashboard" component={Dashboard} />
-        <Route path="/refund-policy" component={RefundPolicyDynamic} />
-        <Route path="/return-policy" component={ReturnPolicy} />
-        <Route path="/terms-conditions" component={TermsConditionsDynamic} />
+        <Route path="/refund-policy-old" component={RefundPolicyDynamic} />
+        <Route path="/return-policy-old" component={ReturnPolicy} />
+        <Route path="/terms-conditions-old" component={TermsConditionsDynamic} />
+        <Route path="/terms-conditions" component={Terms} />
+        <Route path="/terms" component={Terms} />
+        <Route path="/refund-policy" component={RefundPolicy} />
+        <Route path="/refund-replacement" component={RefundPolicy} />
+        <Route path="/payment-policy" component={PaymentPolicy} />
+        <Route path="/payment" component={PaymentPolicy} />
         <Route component={NotFound} />
       </Switch>
     </Suspense>

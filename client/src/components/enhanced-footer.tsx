@@ -47,10 +47,10 @@ export default function EnhancedFooter() {
 
   const customerService = [
     { name: 'সাহায্য কেন্দ্র', href: '/help' },
-    { name: 'ফেরত নীতি', href: '/returns' },
-    { name: 'শিপিং তথ্য', href: '/shipping' },
+    { name: 'নিয়ম ও শর্তাবলী', href: '/terms-conditions' },
+    { name: 'রিফান্ড ও রিপ্লেসমেন্ট', href: '/refund-policy' },
+    { name: 'পেমেন্ট নীতিমালা', href: '/payment-policy' },
     { name: 'গোপনীয়তা নীতি', href: '/privacy' },
-    { name: 'নিয়ম ও শর্ত', href: '/terms' },
     { name: 'FAQ', href: '/faq' }
   ];
 

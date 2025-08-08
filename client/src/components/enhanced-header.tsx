@@ -54,6 +54,7 @@ export default function EnhancedHeader() {
     { name: 'ক্যাটাগরি', href: '/categories', icon: '📂' },
     { name: 'অফার', href: '/offers', icon: '🎉' },
     { name: 'আমাদের সম্পর্কে', href: '/about', icon: 'ℹ️' },
+    { name: 'ব্লগ', href: '/blog', icon: '📝' },
     { name: 'যোগাযোগ', href: '/contact', icon: '📞' }
   ];
 
@@ -66,36 +67,7 @@ export default function EnhancedHeader() {
 
   return (
     <>
-      {/* Top Info Bar */}
-      <div className="bg-gradient-to-r from-primary/10 via-primary/5 to-primary/10 border-b border-primary/10">
-        <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between py-2 text-sm">
-            <div className="hidden md:flex items-center space-x-6 text-gray-600">
-              <div className="flex items-center space-x-2">
-                <Phone className="w-3 h-3" />
-                <span>হটলাইন: {WHATSAPP_NUMBER}</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Clock className="w-3 h-3" />
-                <span>২৪/৭ সেবা</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <MapPin className="w-3 h-3" />
-                <span>সারাদেশে ডেলিভারি</span>
-              </div>
-            </div>
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-1 text-yellow-500">
-                <Star className="w-3 h-3 fill-current" />
-                <span className="text-xs text-gray-600">৪.৮ রেটিং</span>
-              </div>
-              <Badge variant="secondary" className="text-xs bg-green-100 text-green-800">
-                বিনামূল্যে ডেলিভারি ৫০০+ টাকায়
-              </Badge>
-            </div>
-          </div>
-        </div>
-      </div>
+
 
       {/* Main Header */}
       <header className={`sticky top-0 z-50 transition-all duration-300 ${
