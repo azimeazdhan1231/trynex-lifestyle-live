@@ -1,307 +1,290 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Link, useLocation } from 'wouter';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { 
-  ShoppingCart, 
-  Search, 
-  Menu, 
-  X, 
-  User, 
-  Heart, 
-  Phone,
-  MapPin,
-  Clock,
-  Star
-} from 'lucide-react';
+import { Search, ShoppingCart, User, Menu, X, Phone, MapPin } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { useCart } from '@/hooks/use-cart';
-import { COMPANY_NAME, WHATSAPP_NUMBER } from '@/lib/constants';
-import YoutubeSearchBar from '@/components/search/youtube-search-bar';
-import CartModal from '@/components/cart-modal';
-import SearchBar from '@/components/search-bar';
+import CartModal from './cart-modal';
+import UserRegistration from './user-registration';
+import UserLogin from './user-login';
 
 export default function EnhancedHeader() {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isScrolled, setIsScrolled] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [showSearchModal, setShowSearchModal] = useState(false);
-  const [showCartModal, setShowCartModal] = useState(false);
-  const [location] = useLocation();
+  const [location, navigate] = useLocation();
   const { totalItems } = useCart();
-
-  // Handle scroll effect
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 10);
-    };
-
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  // Close menu when route changes
-  useEffect(() => {
-    setIsMenuOpen(false);
-  }, [location]);
-
-  // Close menu and remove effects when clicking close
-  const handleMenuClose = () => {
-    setIsMenuOpen(false);
-    // Force reset any persisting effects
-    setTimeout(() => {
-      document.body.classList.remove('menu-open');
-    }, 100);
-  };
-
-  const navigation = [
-    { name: 'হোম', href: '/', icon: '🏠' },
-    { name: 'পণ্যসমূহ', href: '/products', icon: '🛍️' },
-    { name: 'ক্যাটাগরি', href: '/categories', icon: '📂' },
-    { name: 'অফার', href: '/offers', icon: '🎉' },
-    { name: 'আমাদের সম্পর্কে', href: '/about', icon: 'ℹ️' },
-    { name: 'ব্লগ', href: '/blog', icon: '📝' },
-    { name: 'যোগাযোগ', href: '/contact', icon: '📞' }
-  ];
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isCartOpen, setIsCartOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [showRegistration, setShowRegistration] = useState(false);
+  const [showLogin, setShowLogin] = useState(false);
+  const [user, setUser] = useState(null);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      window.location.href = `/products?search=${encodeURIComponent(searchQuery)}`;
+      navigate(`/products?search=${encodeURIComponent(searchQuery.trim())}`);
+      setSearchQuery('');
     }
   };
 
+  const handleLoginSuccess = (userData: any) => {
+    setUser(userData);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('userToken');
+    localStorage.removeItem('userData');
+    setUser(null);
+  };
+
+  const navLinks = [
+    { href: '/', label: 'হোম' },
+    { href: '/products', label: 'পণ্যসমূহ' },
+    { href: '/categories', label: 'ক্যাটেগরি' },
+    { href: '/about', label: 'আমাদের সম্পর্কে' },
+    { href: '/contact', label: 'যোগাযোগ' },
+    { href: '/blog', label: 'ব্লগ' }
+  ];
+
   return (
     <>
-      {/* YouTube-style Search Modal */}
-      <YoutubeSearchBar
-        isOpen={showSearchModal}
-        onClose={() => setShowSearchModal(false)}
-        initialQuery=""
-      />
-
-      {/* Search Modal */}
-      <SearchBar 
-        isOpen={showSearchModal}
-        onClose={() => setShowSearchModal(false)}
-      />
-
-      {/* Cart Modal */}
-      <CartModal 
-        isOpen={showCartModal}
-        onClose={() => setShowCartModal(false)}
-      />
-
-      {/* Main Header */}
-      <header className={`sticky top-0 z-50 transition-all duration-300 ${
-        isScrolled 
-          ? 'bg-white/95 backdrop-blur-md shadow-lg border-b border-gray-200/50' 
-          : 'bg-white shadow-sm border-b border-gray-100'
-      }`}>
-        <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between h-16 lg:h-20">
-            {/* Logo */}
-            <Link href="/" className="flex items-center space-x-3 group">
-              <div className="w-10 h-10 lg:w-12 lg:h-12 bg-gradient-to-br from-primary to-primary/80 rounded-xl flex items-center justify-center text-white font-bold text-lg lg:text-xl shadow-lg group-hover:shadow-xl transition-all duration-300 group-hover:scale-105">
-                {COMPANY_NAME.charAt(0)}
+      <header className="sticky top-0 z-50 bg-white shadow-sm border-b">
+        {/* Top Bar */}
+        <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white py-2 hidden sm:block">
+          <div className="container mx-auto px-4">
+            <div className="flex justify-between items-center text-sm">
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-1">
+                  <Phone className="w-3 h-3" />
+                  <span>+৮৮০ ১৭৪৭২৯২২৭৭</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <MapPin className="w-3 h-3" />
+                  <span>বিনামূল্যে ডেলিভারি ৫০০+ টাকায়</span>
+                </div>
               </div>
-              <div className="block">
-                <h1 className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 group-hover:text-primary transition-colors duration-300">
-                  {COMPANY_NAME}
-                </h1>
-                <p className="text-xs text-gray-500 hidden sm:block">আপনার পছন্দের গিফট শপ</p>
+              <div className="text-sm">
+                ⭐ ৪.৮ রেটিং | ১০০০+ সন্তুষ্ট গ্রাহক
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Main Header */}
+        <div className="container mx-auto px-4 py-3">
+          <div className="flex items-center justify-between">
+            {/* Logo */}
+            <Link href="/" className="flex items-center gap-2">
+              <div className="w-10 h-10 bg-gradient-to-br from-orange-400 to-red-500 rounded-xl flex items-center justify-center text-white font-bold text-lg">
+                T
+              </div>
+              <div className="hidden sm:block">
+                <h1 className="text-xl font-bold text-gray-800">Trynex</h1>
+                <p className="text-xs text-gray-500">Lifestyle Collection</p>
               </div>
             </Link>
 
             {/* Search Bar - Desktop */}
             <div className="hidden lg:block flex-1 max-w-md mx-8">
-              <Button
-                variant="outline"
-                onClick={() => setShowSearchModal(true)}
-                className="w-full justify-start text-left text-gray-500 bg-gray-50 hover:bg-white transition-all duration-300 h-12 px-4"
-                data-testid="button-search-desktop"
-              >
-                <Search className="w-4 h-4 mr-3 text-gray-400" />
-                পণ্য খুঁজুন... (যেমন: কাস্টম মগ, টি-শার্ট)
-              </Button>
-            </div>
-
-            {/* Navigation Icons */}
-            <div className="flex items-center space-x-2 lg:space-x-4">
-              {/* Search - Mobile */}
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setShowSearchModal(true)}
-                className="lg:hidden w-10 h-10 p-0 hover:bg-gray-100 rounded-full"
-                data-testid="button-search-mobile"
-              >
-                <Search className="w-5 h-5" />
-              </Button>
-
-              {/* Wishlist */}
-              <Button
-                variant="ghost"
-                size="sm"
-                className="hidden sm:flex w-10 h-10 p-0 hover:bg-gray-100 rounded-full"
-              >
-                <Heart className="w-5 h-5" />
-              </Button>
-
-              {/* Account */}
-              <Button
-                variant="ghost"
-                size="sm"
-                className="hidden sm:flex w-10 h-10 p-0 hover:bg-gray-100 rounded-full"
-              >
-                <User className="w-5 h-5" />
-              </Button>
-
-              {/* Cart */}
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setShowCartModal(true)}
-                className="relative w-10 h-10 p-0 hover:bg-gray-100 rounded-full"
-                data-testid="button-cart"
-              >
-                <ShoppingCart className="w-5 h-5" />
-                {totalItems > 0 && (
-                  <Badge className="absolute -top-2 -right-2 w-5 h-5 p-0 bg-primary text-white text-xs flex items-center justify-center rounded-full animate-pulse">
-                    {totalItems}
-                  </Badge>
-                )}
-              </Button>
-
-              {/* Mobile Menu Toggle */}
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={isMenuOpen ? handleMenuClose : () => setIsMenuOpen(true)}
-                className="lg:hidden w-10 h-10 p-0 hover:bg-gray-100 rounded-full transition-all duration-200 active:scale-95 focus:outline-none focus:ring-2 focus:ring-primary/20"
-                aria-label={isMenuOpen ? "মেনু বন্ধ করুন" : "মেনু খুলুন"}
-              >
-                {isMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-              </Button>
-            </div>
-          </div>
-
-          {/* Desktop Navigation */}
-          <div className="hidden lg:flex items-center justify-center py-4 border-t border-gray-100">
-            <nav className="flex space-x-8">
-              {navigation.map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-all duration-300 hover:bg-primary/10 hover:text-primary ${
-                    location === item.href 
-                      ? 'bg-primary/10 text-primary' 
-                      : 'text-gray-700 hover:text-primary'
-                  }`}
-                >
-                  <span>{item.icon}</span>
-                  <span>{item.name}</span>
-                </Link>
-              ))}
-            </nav>
-          </div>
-        </div>
-
-        {/* Mobile Menu */}
-        {isMenuOpen && (
-          <div className="lg:hidden border-t border-gray-100 bg-white/95 backdrop-blur-sm animate-slide-down">
-            {/* Mobile Search */}
-            <div className="p-4 border-b border-gray-100">
               <form onSubmit={handleSearch} className="relative">
-                <input
+                <Input
                   type="text"
                   placeholder="পণ্য খুঁজুন..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-12 pr-20 py-4 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200 input-mobile"
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-full focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                 />
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <Button
                   type="submit"
                   size="sm"
-                  className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-primary hover:bg-primary/90 text-white px-4 py-1.5"
+                  className="absolute right-1 top-1/2 transform -translate-y-1/2 rounded-full h-8 px-3"
                 >
                   খুঁজুন
                 </Button>
               </form>
             </div>
 
-            {/* Mobile Navigation */}
-            <nav className="py-2">
-              {navigation.map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={`mobile-nav-item flex items-center space-x-4 px-6 py-4 font-medium transition-all duration-200 touch-target ${
-                    location === item.href 
-                      ? 'bg-primary/10 text-primary border-r-4 border-primary' 
-                      : 'text-gray-700 hover:bg-gray-50 active:bg-gray-100'
-                  }`}
-                  onClick={handleMenuClose}
-                >
-                  <span className="text-xl w-6 flex justify-center">{item.icon}</span>
-                  <span className="text-lg">{item.name}</span>
-                  {location === item.href && (
-                    <div className="ml-auto w-2 h-2 bg-primary rounded-full"></div>
-                  )}
-                </Link>
-              ))}
-              {/* Mobile Search Nav Item */}
-              <button 
-                onClick={() => {
-                  setShowSearchModal(true);
-                  setIsMenuOpen(false);
-                }}
-                className="flex items-center gap-3 px-4 py-3 hover:bg-gray-100 rounded-lg transition-colors w-full text-left"
+            {/* Header Actions */}
+            <div className="flex items-center gap-2 sm:gap-4">
+              {/* User Account */}
+              <div className="hidden sm:block">
+                {user ? (
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-gray-700">
+                      {user.firstName}
+                    </span>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleLogout}
+                      className="text-xs"
+                    >
+                      লগআউট
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setShowLogin(true)}
+                      className="text-sm"
+                    >
+                      <User className="w-4 h-4 mr-1" />
+                      লগইন
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setShowRegistration(true)}
+                      className="text-sm"
+                    >
+                      রেজিস্টার
+                    </Button>
+                  </div>
+                )}
+              </div>
+
+              {/* Cart */}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsCartOpen(true)}
+                className="relative p-2"
               >
-                <Search className="w-5 h-5" />
-                <span>খুঁজুন</span>
-              </button>
-            </nav>
-
-            {/* Mobile Actions */}
-            <div className="p-6 border-t border-gray-100 space-y-4 bg-gray-50/50">
-              <Button className="w-full bg-primary hover:bg-primary/90 text-white py-4 rounded-xl btn-mobile touch-target">
-                <User className="w-5 h-5 mr-3" />
-                <span className="text-lg font-medium">লগইন / সাইন আপ</span>
+                <ShoppingCart className="w-5 h-5" />
+                {totalItems > 0 && (
+                  <Badge className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs">
+                    {totalItems}
+                  </Badge>
+                )}
               </Button>
-              <div className="grid grid-cols-2 gap-3">
-                <Button variant="outline" className="py-4 rounded-xl btn-mobile touch-target border-2">
-                  <Heart className="w-5 h-5 mr-2" />
-                  <span className="font-medium">উইশলিস্ট</span>
-                </Button>
-                <Button 
-                  variant="outline" 
-                  className="py-4 rounded-xl btn-mobile touch-target border-2"
-                  onClick={() => window.open(`https://wa.me/${WHATSAPP_NUMBER.replace(/[^0-9]/g, '')}`, '_blank')}
-                >
-                  <Phone className="w-5 h-5 mr-2" />
-                  <span className="font-medium">কল করুন</span>
-                </Button>
-              </div>
 
-              {/* Quick Contact Info */}
-              <div className="text-center pt-4 border-t border-gray-200">
-                <p className="text-sm text-gray-600 mb-2">দ্রুত যোগাযোগ</p>
-                <div className="flex items-center justify-center space-x-4 text-sm">
-                  <div className="flex items-center space-x-1">
-                    <Phone className="w-4 h-4 text-primary" />
-                    <span className="font-medium">{WHATSAPP_NUMBER}</span>
+              {/* Mobile Menu */}
+              <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
+                <SheetTrigger asChild>
+                  <Button variant="ghost" size="sm" className="lg:hidden p-2">
+                    <Menu className="w-5 h-5" />
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="right" className="w-80">
+                  <div className="flex flex-col gap-6 pt-6">
+                    {/* Mobile Search */}
+                    <form onSubmit={handleSearch} className="relative">
+                      <Input
+                        type="text"
+                        placeholder="পণ্য খুঁজুন..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="w-full pl-10"
+                      />
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                    </form>
+
+                    {/* Mobile User Actions */}
+                    {user ? (
+                      <div className="flex flex-col gap-2">
+                        <div className="text-lg font-medium">
+                          স্বাগতম, {user.firstName}
+                        </div>
+                        <Button
+                          variant="outline"
+                          onClick={handleLogout}
+                          className="w-full"
+                        >
+                          লগআউট
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="flex flex-col gap-2">
+                        <Button
+                          onClick={() => {
+                            setShowLogin(true);
+                            setIsMenuOpen(false);
+                          }}
+                          className="w-full"
+                        >
+                          <User className="w-4 h-4 mr-2" />
+                          লগইন
+                        </Button>
+                        <Button
+                          variant="outline"
+                          onClick={() => {
+                            setShowRegistration(true);
+                            setIsMenuOpen(false);
+                          }}
+                          className="w-full"
+                        >
+                          রেজিস্টার করুন
+                        </Button>
+                      </div>
+                    )}
+
+                    {/* Mobile Navigation */}
+                    <nav className="flex flex-col gap-2">
+                      {navLinks.map((link) => (
+                        <Link
+                          key={link.href}
+                          href={link.href}
+                          className={`flex items-center py-2 px-3 rounded-lg transition-colors ${
+                            location === link.href
+                              ? 'bg-orange-100 text-orange-600'
+                              : 'text-gray-700 hover:bg-gray-100'
+                          }`}
+                          onClick={() => setIsMenuOpen(false)}
+                        >
+                          {link.label}
+                        </Link>
+                      ))}
+                    </nav>
                   </div>
-                  <div className="flex items-center space-x-1">
-                    <Clock className="w-4 h-4 text-primary" />
-                    <span>২৪/৭</span>
-                  </div>
-                </div>
-              </div>
+                </SheetContent>
+              </Sheet>
             </div>
           </div>
-        )}
+
+          {/* Desktop Navigation */}
+          <nav className="hidden lg:flex items-center justify-center gap-8 mt-4 pt-4 border-t">
+            {navLinks.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className={`text-sm font-medium transition-colors hover:text-orange-600 ${
+                  location === link.href
+                    ? 'text-orange-600 border-b-2 border-orange-600 pb-1'
+                    : 'text-gray-700'
+                }`}
+              >
+                {link.label}
+              </Link>
+            ))}
+          </nav>
+        </div>
       </header>
+
+      {/* Modals */}
+      <CartModal isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
+      
+      <UserRegistration
+        isOpen={showRegistration}
+        onClose={() => setShowRegistration(false)}
+        onLoginClick={() => {
+          setShowRegistration(false);
+          setShowLogin(true);
+        }}
+      />
+      
+      <UserLogin
+        isOpen={showLogin}
+        onClose={() => setShowLogin(false)}
+        onRegisterClick={() => {
+          setShowLogin(false);
+          setShowRegistration(true);
+        }}
+        onLoginSuccess={handleLoginSuccess}
+      />
     </>
   );
 }

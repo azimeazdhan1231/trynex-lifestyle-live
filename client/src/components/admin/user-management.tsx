@@ -37,7 +37,7 @@ export default function UserManagement() {
   const [isEditing, setIsEditing] = useState(false);
 
   // Real API query for users data
-  const { data: users = [], isLoading } = useQuery({
+  const { data: users = [], isLoading } = useQuery<User[]>({
     queryKey: ["/api/users"],
     staleTime: 1000 * 60 * 5, // Cache for 5 minutes
     refetchOnWindowFocus: false
@@ -67,11 +67,17 @@ export default function UserManagement() {
     }
   });
 
-  // Filter users
-  const filteredUsers = users.filter(user => {
-    const matchesSearch = user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         user.phone.includes(searchTerm);
+  // Filter users with null checks
+  const filteredUsers = users.filter((user: User) => {
+    if (!user) return false;
+    
+    const name = user.name || '';
+    const email = user.email || '';
+    const phone = user.phone || '';
+    
+    const matchesSearch = name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         phone.includes(searchTerm);
     const matchesRole = filterRole === "all" || user.role === filterRole;
     const matchesStatus = filterStatus === "all" || user.status === filterStatus;
     
@@ -136,7 +142,7 @@ export default function UserManagement() {
               <Users className="w-5 h-5" />
               ব্যবহারকারী ব্যবস্থাপনা
             </div>
-            <Badge variant="secondary">{users.length} জন ব্যবহারকারী</Badge>
+            <Badge variant="secondary">{(users as User[]).length} জন ব্যবহারকারী</Badge>
           </CardTitle>
         </CardHeader>
         <CardContent>

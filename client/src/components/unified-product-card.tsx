@@ -105,22 +105,22 @@ export default function UnifiedProductCard({
             <Button
               size="sm"
               variant="secondary"
-              className="w-8 h-8 p-0 bg-white/90 hover:bg-white"
+              className="w-8 h-8 p-0 bg-white/95 hover:bg-white border border-gray-200 shadow-sm"
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
                 // Handle wishlist
               }}
             >
-              <Heart className="w-4 h-4" />
+              <Heart className="w-4 h-4 text-red-500" />
             </Button>
             <Button
               size="sm"
               variant="secondary"
-              className="w-8 h-8 p-0 bg-white/90 hover:bg-white"
+              className="w-8 h-8 p-0 bg-white/95 hover:bg-white border border-gray-200 shadow-sm"
               onClick={handleViewProduct}
             >
-              <Eye className="w-4 h-4" />
+              <Eye className="w-4 h-4 text-blue-600" />
             </Button>
           </div>
 
