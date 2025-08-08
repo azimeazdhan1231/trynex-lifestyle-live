@@ -92,13 +92,18 @@ export default function ProductModal({ product, isOpen, onClose, onAddToCart, on
           </DialogHeader>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Product Image */}
-            <div className="relative aspect-square overflow-hidden rounded-lg border bg-gray-50 cursor-pointer group">
+            <div 
+              className="relative aspect-square overflow-hidden rounded-lg border bg-gray-50 cursor-pointer group"
+              onClick={() => {
+                console.log("🖼️ Image clicked, opening overlay");
+                setIsImageOverlayOpen(true);
+              }}
+            >
               <img
                 src={product.image_url || "https://images.unsplash.com/photo-1544787219-7f47ccb76574?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"}
                 alt={product.name}
                 className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
                 loading="lazy"
-                onClick={() => setIsImageOverlayOpen(true)}
               />
               {/* Expand Icon Overlay */}
               <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300 flex items-center justify-center">
@@ -233,42 +238,58 @@ export default function ProductModal({ product, isOpen, onClose, onAddToCart, on
       </DialogContent>
 
       {/* Image Overlay Modal */}
-      <Dialog open={isImageOverlayOpen} onOpenChange={setIsImageOverlayOpen}>
-        <DialogContent className="max-w-[95vw] w-[95vw] max-h-[95vh] h-[95vh] p-0 bg-black/95 border-0 overflow-hidden">
-          <DialogHeader className="sr-only">
-            <DialogTitle>ছবি দেখুন</DialogTitle>
-            <DialogDescription>পূর্ণ আকারে পণ্যের ছবি</DialogDescription>
-          </DialogHeader>
-          
-          {/* Close Button */}
-          <button
-            onClick={() => setIsImageOverlayOpen(false)}
-            className="absolute top-4 right-4 z-50 bg-black/70 hover:bg-black/90 text-white p-3 rounded-full transition-all duration-200 shadow-lg"
-          >
-            <X className="w-6 h-6" />
-          </button>
+      {isImageOverlayOpen && (
+        <Dialog open={isImageOverlayOpen} onOpenChange={(open) => {
+          console.log("🔄 Dialog open change:", open);
+          setIsImageOverlayOpen(open);
+        }}>
+          <DialogContent className="max-w-[95vw] w-[95vw] max-h-[95vh] h-[95vh] p-0 bg-black/95 border-0 overflow-hidden fixed inset-0 z-[9999]">
+            <DialogHeader className="sr-only">
+              <DialogTitle>ছবি দেখুন</DialogTitle>
+              <DialogDescription>পূর্ণ আকারে পণ্যের ছবি</DialogDescription>
+            </DialogHeader>
+            
+            {/* Close Button */}
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                console.log("❌ Close button clicked");
+                setIsImageOverlayOpen(false);
+              }}
+              className="absolute top-4 right-4 z-[10000] bg-black/70 hover:bg-black/90 text-white p-3 rounded-full transition-all duration-200 shadow-lg"
+            >
+              <X className="w-6 h-6" />
+            </button>
 
-          {/* Full Size Image Container - Click to close */}
-          <div 
-            className="flex items-center justify-center h-full p-8 cursor-pointer"
-            onClick={() => setIsImageOverlayOpen(false)}
-          >
-            <img
-              src={product.image_url || "https://images.unsplash.com/photo-1544787219-7f47ccb76574?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=1200"}
-              alt={product.name}
-              className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
-              loading="lazy"
-              onClick={(e) => e.stopPropagation()} // Prevent closing when clicking on image itself
-            />
-          </div>
+            {/* Full Size Image Container - Click to close */}
+            <div 
+              className="flex items-center justify-center h-full p-8 cursor-pointer"
+              onClick={(e) => {
+                e.stopPropagation();
+                console.log("🖱️ Background clicked, closing overlay");
+                setIsImageOverlayOpen(false);
+              }}
+            >
+              <img
+                src={product.image_url || "https://images.unsplash.com/photo-1544787219-7f47ccb76574?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=1200"}
+                alt={product.name}
+                className="max-w-full max-h-full object-contain rounded-lg shadow-2xl cursor-zoom-in"
+                loading="lazy"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  console.log("🖼️ Image clicked (no action)");
+                }}
+              />
+            </div>
 
-          {/* Product Name Overlay */}
-          <div className="absolute bottom-6 left-6 right-6 bg-black/80 backdrop-blur-sm text-white p-4 rounded-lg border border-white/10">
-            <h3 className="text-xl font-semibold mb-2">{product.name}</h3>
-            <p className="text-sm opacity-90">ছবির বাইরে ক্লিক করুন অথবা ESC চাপুন বন্ধ করতে</p>
-          </div>
-        </DialogContent>
-      </Dialog>
+            {/* Product Name Overlay */}
+            <div className="absolute bottom-6 left-6 right-6 bg-black/80 backdrop-blur-sm text-white p-4 rounded-lg border border-white/10 z-[10000]">
+              <h3 className="text-xl font-semibold mb-2">{product.name}</h3>
+              <p className="text-sm opacity-90">ছবির বাইরে ক্লিক করুন অথবা ESC চাপুন বন্ধ করতে</p>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
     </Dialog>
   );
 }
