@@ -41,14 +41,35 @@ if (!connectionString) {
   console.error('PGDATABASE:', process.env.PGDATABASE || 'missing');
   throw new Error("DATABASE_URL environment variable is not set, and could not construct from PG* variables");
 }
-const client = postgres(connectionString);
+
+// Optimized postgres client with aggressive connection pooling
+const client = postgres(connectionString, {
+  max: 3, // Smaller pool for better performance on Supabase
+  idle_timeout: 10, // Close idle connections faster 
+  connect_timeout: 5, // Faster connection timeout
+  prepare: false, // Disable prepared statements
+  transform: {
+    undefined: null
+  },
+  ssl: { rejectUnauthorized: false }, // For Supabase compatibility
+  connection: {
+    application_name: 'trynex_fast',
+    statement_timeout: 15000, // 15 second timeout
+    lock_timeout: 10000,
+    idle_in_transaction_session_timeout: 15000
+  }
+});
+
 const db = drizzle(client);
 
 export class SimpleStorage {
   // Products (Ultra-optimized for blazing fast loading)
   async getProducts(): Promise<Product[]> {
     try {
-      // Ultra-optimized query with minimal fields and smart ordering
+      console.log('🔍 Executing optimized products query...');
+      const start = Date.now();
+      
+      // Ultra-optimized query with strategic field selection and indexing
       const result = await db.select({
         id: products.id,
         name: products.name,
@@ -62,11 +83,21 @@ export class SimpleStorage {
         is_best_selling: products.is_best_selling,
         created_at: products.created_at
       }).from(products)
-        .orderBy(desc(products.is_featured), desc(products.is_latest), desc(products.created_at));
+        .orderBy(desc(products.is_featured), desc(products.is_latest), desc(products.created_at))
+        .limit(100); // Limit to prevent massive queries
+      
+      const duration = Date.now() - start;
+      console.log(`✅ Products query completed in ${duration}ms - ${result.length} items`);
       
       return result;
-    } catch (error) {
-      console.error('Database query error:', error);
+    } catch (error: any) {
+      console.error('❌ Database query error:', error);
+      console.error('Error details:', {
+        message: error?.message || 'Unknown error',
+        code: error?.code || 'NO_CODE',
+        stack: error?.stack?.split('\n')[0] || 'No stack trace'
+      });
+      
       // Return empty array instead of throwing to prevent app crashes
       return [];
     }

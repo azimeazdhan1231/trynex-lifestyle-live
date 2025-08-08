@@ -24,19 +24,36 @@ export default function ProductGrid({ onAddToCart }: ProductGridProps) {
     queryKey: ["/api/products"],
     queryFn: async () => {
       try {
-        const response = await fetch("/api/products");
+        console.log('🚀 Fetching products...');
+        const start = Date.now();
+        
+        const response = await fetch("/api/products", {
+          headers: {
+            'Accept': 'application/json',
+            'Cache-Control': 'no-cache' // Force fresh data on manual refresh
+          }
+        });
+        
         if (!response.ok) {
-          throw new Error(`Failed to fetch products: ${response.status}`);
+          throw new Error(`Failed to fetch products: ${response.status} ${response.statusText}`);
         }
+        
         const data = await response.json();
+        const duration = Date.now() - start;
+        console.log(`✅ Products received in ${duration}ms - ${Array.isArray(data) ? data.length : 0} items`);
+        
         return Array.isArray(data) ? data : [];
       } catch (error) {
-        console.error("Product loading error:", error);
+        console.error("❌ Product loading error:", error);
         return [];
       }
     },
-    retry: 3,
-    retryDelay: 1000,
+    retry: 2,
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 5000),
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: true,
   });
 
   // Filter products by category

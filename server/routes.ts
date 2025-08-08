@@ -2,84 +2,109 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuthRoutes } from "./auth-routes";
+import { cacheService } from "./cache-service";
 
-// Ultra-fast in-memory cache
+// Ultra-fast in-memory cache with retry logic
 let productsCache: any[] = [];
 let categoriesCache: any[] = [];
 let lastProductsCacheTime = 0;
 let lastCategoriesCacheTime = 0;
-const CACHE_TTL = 30000; // 30 second cache for faster updates
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes cache for better performance
+let cacheInitialized = false;
+let isCacheLoading = false;
 
-// Preload products into memory on server start
-async function preloadCache() {
+// Enhanced preload with retry and fallback
+async function preloadCache(retryCount = 0): Promise<void> {
+  if (isCacheLoading) {
+    console.log('⏳ Cache loading already in progress...');
+    return;
+  }
+  
+  isCacheLoading = true;
+  
   try {
-    console.log('🚀 Preloading products cache...');
+    console.log(`🚀 Preloading cache (attempt ${retryCount + 1})...`);
     const start = Date.now();
 
-    const [products, categories] = await Promise.all([
+    // Set shorter timeouts for initial load
+    const timeoutPromise = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error('Cache load timeout')), 10000) // 10 second timeout
+    );
+
+    const cachePromise = Promise.all([
       storage.getProducts(),
       storage.getCategories()
     ]);
 
-    productsCache = products;
-    categoriesCache = categories;
+    const [products, categories] = await Promise.race([cachePromise, timeoutPromise]) as [any[], any[]];
+
+    productsCache = products || [];
+    categoriesCache = categories || [];
     lastProductsCacheTime = Date.now();
     lastCategoriesCacheTime = Date.now();
+    cacheInitialized = true;
 
-    console.log(`✅ Cache preloaded in ${Date.now() - start}ms - ${products.length} products, ${categories.length} categories`);
+    console.log(`✅ Cache preloaded successfully in ${Date.now() - start}ms - ${products.length} products, ${categories.length} categories`);
   } catch (error) {
-    console.error('❌ Failed to preload cache:', error);
+    console.error(`❌ Cache preload failed (attempt ${retryCount + 1}):`, error);
+    
+    // Retry up to 3 times with exponential backoff
+    if (retryCount < 2) {
+      const delay = Math.pow(2, retryCount) * 2000; // 2s, 4s, 8s
+      console.log(`⏰ Retrying cache load in ${delay}ms...`);
+      setTimeout(() => preloadCache(retryCount + 1), delay);
+    } else {
+      console.error('❌ Cache preload failed after 3 attempts. Server will start with empty cache.');
+      // Initialize with empty cache to prevent crashes
+      productsCache = [];
+      categoriesCache = [];
+      cacheInitialized = true;
+    }
+  } finally {
+    isCacheLoading = false;
   }
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Preload cache immediately
-  await preloadCache();
+  // Initialize cache service in background (don't block server start)
+  console.log('🚀 Initializing cache service...');
+  cacheService.getProducts().then(() => {
+    console.log('✅ Cache service ready');
+  }).catch(console.error);
 
   // Setup authentication routes
   setupAuthRoutes(app);
 
-  // Ultra-fast products endpoint with memory cache
-  app.get('/api/products', (req, res) => {
+  // Ultra-fast products endpoint with file-backed cache
+  app.get('/api/products', async (req, res) => {
     const start = Date.now();
 
     try {
-      // Aggressive caching headers for client-side caching
+      // Use the new cache service for super fast response
+      const products = await cacheService.getProducts();
+
+      // Enhanced caching headers
       res.set({
-        'Cache-Control': 'public, max-age=300, stale-while-revalidate=60', // 5 minute cache with background refresh
-        'ETag': `products-v2-${lastProductsCacheTime}`,
-        'Last-Modified': new Date(lastProductsCacheTime).toUTCString(),
+        'Cache-Control': 'public, max-age=300, stale-while-revalidate=300',
+        'ETag': `products-v4-${Date.now()}`,
         'Vary': 'Accept-Encoding',
-        'X-Cache': 'MEMORY-HIT'
+        'X-Cache': 'CACHE-SERVICE',
+        'X-Products-Count': products.length.toString()
       });
 
-      // Check if client has fresh cache
-      const ifNoneMatch = req.headers['if-none-match'];
-      const expectedETag = `products-v2-${lastProductsCacheTime}`;
-
-      if (ifNoneMatch === expectedETag) {
-        res.status(304).end();
-        return;
-      }
-
       const category = req.query.category as string;
-      let result = productsCache;
+      let result = products;
 
       // Filter by category if specified
       if (category && category !== 'all') {
-        result = productsCache.filter(p => p.category === category);
+        result = products.filter(p => p.category === category);
       }
 
       const duration = Date.now() - start;
       res.set('X-Response-Time', `${duration}ms`);
 
-      console.log(`⚡ Products instant response: ${duration}ms - ${result.length} items`);
+      console.log(`✅ Products served in ${duration}ms - ${result.length} items`);
       res.json(result);
-
-      // Background refresh if cache is getting old
-      if (Date.now() - lastProductsCacheTime > CACHE_TTL) {
-        refreshProductsCache();
-      }
 
     } catch (error) {
       console.error('❌ Products endpoint error:', error);
@@ -466,10 +491,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/health', (req, res) => {
     res.json({
       status: 'healthy',
+      timestamp: new Date().toISOString(),
       cache: {
+        initialized: cacheInitialized,
+        loading: isCacheLoading,
         products: productsCache.length,
         categories: categoriesCache.length,
-        lastUpdate: new Date(lastProductsCacheTime).toISOString()
+        lastUpdate: lastProductsCacheTime > 0 ? new Date(lastProductsCacheTime).toISOString() : 'never'
       },
       uptime: process.uptime()
     });
@@ -478,27 +506,63 @@ export async function registerRoutes(app: Express): Promise<Server> {
   return createServer(app);
 }
 
-// Background cache refresh functions
-async function refreshProductsCache() {
+// Enhanced background cache refresh functions
+async function refreshProductsCache(): Promise<void> {
+  if (isCacheLoading) return; // Prevent multiple simultaneous refreshes
+  
   try {
     console.log('🔄 Refreshing products cache...');
-    const products = await storage.getProducts();
+    const start = Date.now();
+    
+    // Set timeout for refresh
+    const timeoutPromise = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error('Refresh timeout')), 8000)
+    );
+    
+    const products = await Promise.race([
+      storage.getProducts(),
+      timeoutPromise
+    ]) as any[];
+    
     productsCache = products;
     lastProductsCacheTime = Date.now();
-    console.log(`✅ Products cache refreshed - ${products.length} items`);
+    console.log(`✅ Products cache refreshed in ${Date.now() - start}ms - ${products.length} items`);
   } catch (error) {
     console.error('❌ Failed to refresh products cache:', error);
+    // Don't clear existing cache on refresh failure
   }
 }
 
-async function refreshCategoriesCache() {
+async function refreshCategoriesCache(): Promise<void> {
+  if (isCacheLoading) return;
+  
   try {
     console.log('🔄 Refreshing categories cache...');
-    const categories = await storage.getCategories();
+    const start = Date.now();
+    
+    const timeoutPromise = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error('Refresh timeout')), 5000)
+    );
+    
+    const categories = await Promise.race([
+      storage.getCategories(),
+      timeoutPromise
+    ]) as any[];
+    
     categoriesCache = categories;
     lastCategoriesCacheTime = Date.now();
-    console.log(`✅ Categories cache refreshed - ${categories.length} items`);
+    console.log(`✅ Categories cache refreshed in ${Date.now() - start}ms - ${categories.length} items`);
   } catch (error) {
     console.error('❌ Failed to refresh categories cache:', error);
   }
 }
+
+// Warm up cache periodically
+setInterval(() => {
+  if (cacheInitialized && Date.now() - lastProductsCacheTime > CACHE_TTL) {
+    refreshProductsCache().catch(console.error);
+  }
+  if (cacheInitialized && Date.now() - lastCategoriesCacheTime > CACHE_TTL) {
+    refreshCategoriesCache().catch(console.error);
+  }
+}, 60000); // Check every minute
