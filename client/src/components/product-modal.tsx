@@ -65,7 +65,9 @@ export default function ProductModal({ product, isOpen, onClose, onAddToCart, on
   };
 
   const handleWhatsAppOrder = () => {
-    const message = `আমি ${product.name} কিনতে চাই। দাম ${formatPrice(product.price)} x ${quantity} = ${formatPrice(parseFloat(product.price.toString()) * quantity)}`;
+    const price = typeof product.price === 'string' ? parseFloat(product.price) : product.price;
+    const totalPrice = price * quantity;
+    const message = `আমি ${product.name} কিনতে চাই। দাম ${formatPrice(price)} x ${quantity} = ${formatPrice(totalPrice)}`;
     window.open(createWhatsAppUrl(message), '_blank');
   };
 

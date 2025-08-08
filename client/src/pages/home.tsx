@@ -485,10 +485,10 @@ export default function Home() {
   };
 
   const handleProductView = (product: Product) => {
-    console.log("🚀 Home: handleProductView called, navigating to product page:", product.name);
+    console.log("🚀 Home: handleProductView called, opening product modal:", product.name);
+    setSelectedProduct(product);
+    setIsModalOpen(true);
     trackProductView(product.id, product.name, product.category || 'uncategorized');
-    // Navigate directly to product page instead of opening modal
-    window.location.href = `/product/${product.id}`;
   };
 
   const handleCustomizeProduct = (product: Product) => {

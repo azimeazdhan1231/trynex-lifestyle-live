@@ -120,11 +120,11 @@ export default function ProductsPage() {
   const displayedProducts = filteredProducts.slice(0, displayLimit);
   const hasMoreProducts = filteredProducts.length > displayLimit;
 
-  // Handle view product details - navigate to product page instead of modal
+  // Handle view product details - open modal
   const handleViewProduct = (product: Product) => {
     console.log("📱 Products page: handleViewProduct called with:", product.name);
-    // Navigate directly to product page for better user experience
-    window.location.href = `/product/${product.id}`;
+    setSelectedProduct(product);
+    setIsProductModalOpen(true);
   };
 
   // Handle customize product
