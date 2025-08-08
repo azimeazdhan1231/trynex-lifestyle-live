@@ -8,6 +8,8 @@ import { initGA, loadFacebookPixelFromSettings } from "./lib/analytics";
 import { useAnalytics } from "./hooks/use-analytics";
 import DebugInfo from "@/components/debug-info";
 import ErrorBoundary from "@/components/error-boundary";
+import { PerformanceOptimizer } from './components/PerformanceOptimizer';
+import { UltraPerformanceLoader } from './components/ultra-performance-loader';
 
 // Dynamic imports for better code splitting
 const Home = lazy(() => import("./pages/home"));
@@ -116,6 +118,7 @@ function App() {
               <MobileResponsiveFixes />
               {/* <PerformanceOptimizer /> */}
             </Suspense>
+            <UltraPerformanceLoader />
             <Toaster />
             <Router />
             <DebugInfo />

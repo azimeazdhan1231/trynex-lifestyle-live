@@ -7,29 +7,37 @@ import { queryClient } from '@/lib/queryClient';
  */
 export default function EnhancedPerformanceOptimizer() {
   useEffect(() => {
-    // Prefetch critical resources
-    const prefetchCriticalData = async () => {
-      try {
-        // Prefetch products data
-        await queryClient.prefetchQuery({
-          queryKey: ['/api/products'],
-          staleTime: 1000 * 60 * 10, // 10 minutes
-        });
+    // Prefetch critical data with aggressive caching
+    const prefetchCriticalData = () => {
+      // Prefetch products immediately
+      queryClient.prefetchQuery({
+        queryKey: ['products'],
+        queryFn: () => fetch('/api/products', {
+          headers: { 'Cache-Control': 'max-age=30' }
+        }).then(res => res.json()),
+        staleTime: 30 * 1000, // 30 seconds
+        gcTime: 10 * 60 * 1000, // Keep in memory for 10 minutes
+      });
 
-        // Prefetch categories
-        await queryClient.prefetchQuery({
-          queryKey: ['/api/categories'],
-          staleTime: 1000 * 60 * 30, // 30 minutes
-        });
+      queryClient.prefetchQuery({
+        queryKey: ['categories'],
+        queryFn: () => fetch('/api/categories', {
+          headers: { 'Cache-Control': 'max-age=60' }
+        }).then(res => res.json()),
+        staleTime: 60 * 1000, // 1 minute
+        gcTime: 10 * 60 * 1000,
+      });
 
-        // Prefetch offers
-        await queryClient.prefetchQuery({
-          queryKey: ['/api/offers'],
-          staleTime: 1000 * 60 * 15, // 15 minutes
-        });
-      } catch (error) {
-        console.log('Prefetch optimization completed');
-      }
+      // Preload critical resources
+      const criticalImages = [
+        'https://i.postimg.cc/tJnxb0N1/download-2.jpg',
+        'https://i.postimg.cc/15Gk7LkT/download-1.jpg'
+      ];
+
+      criticalImages.forEach(src => {
+        const img = new Image();
+        img.src = src;
+      });
     };
 
     // Optimize image loading
@@ -143,7 +151,7 @@ export const usePerformanceMonitoring = () => {
         console.log(`⚡ ${name} took ${end - start}ms`);
         return result;
       },
-      
+
       measureAsyncFunction: async (name: string, fn: Function) => {
         const start = performance.now();
         const result = await fn();
