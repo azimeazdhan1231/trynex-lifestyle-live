@@ -27,6 +27,11 @@ if (!connectionString) {
 }
 
 if (!connectionString) {
+  console.error('DATABASE_URL not found, checking environment variables:');
+  console.error('DATABASE_URL:', process.env.DATABASE_URL ? 'exists' : 'missing');
+  console.error('PGHOST:', process.env.PGHOST || 'missing');
+  console.error('PGUSER:', process.env.PGUSER || 'missing');
+  console.error('PGDATABASE:', process.env.PGDATABASE || 'missing');
   throw new Error("DATABASE_URL environment variable is not set, and could not construct from PG* variables");
 }
 const client = postgres(connectionString);
@@ -93,7 +98,7 @@ export class SimpleStorage {
     return result[0];
   }
 
-  async createOrder(order: InsertOrder): Promise<Order> {
+  async createOrder(order: InsertOrder & { tracking_id: string }): Promise<Order> {
     const result = await db.insert(orders).values([order]).returning();
     return result[0];
   }

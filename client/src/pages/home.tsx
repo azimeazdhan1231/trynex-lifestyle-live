@@ -351,22 +351,16 @@ export default function Home() {
   const { toast } = useToast();
   const { addToCart, totalItems } = useCart();
 
-  // Simple initialization without heavy optimization imports
+  // Simple initialization - run only once
   useEffect(() => {
-    console.log('🚀 Database optimizations initialized');
-    console.log('🚀 Route optimizations initialized');
+    console.log('🚀 Home page initialized');
+  }, []); // Empty dependency array to run only once
 
-    // Preload important routes for faster navigation
-    ['cart', 'tracking', 'orders', 'admin', 'products'].forEach(route => {
-      console.log(`✅ Route preloaded: /${route}`);
-    });
-  }, []);
-
-  // Load active offers with delay to prevent blocking product loading
+  // Load active offers - disabled to prevent popup issues
   const { data: offers = [] } = useQuery<Offer[]>({
     queryKey: ["/api/offers", "active=true"],
     staleTime: 1000 * 60 * 10, // Cache for 10 minutes
-    enabled: false, // Disable auto-loading to prevent popup blocking
+    enabled: false, // Disabled to prevent excessive popup blocking
   });
 
   // Initialize products with empty array for fast loading
@@ -386,29 +380,37 @@ export default function Home() {
 
   // Show products immediately when loaded - no artificial delays
 
-  // Show premium loading animations during product fetching
+  // Optimize loading state management
   useEffect(() => {
+    let timeoutId: NodeJS.Timeout;
+    
     if (productsLoading) {
       setShowLoadingSkeleton(true);
       setProductsReady(false);
     } else if (isSuccess && products.length > 0) {
-      // Add slight delay to show premium loading animations
-      setTimeout(() => {
+      // Reduce loading animation time for better performance
+      timeoutId = setTimeout(() => {
         setShowLoadingSkeleton(false);
         setProductsReady(true);
-      }, 1200); // Show loading for 1.2 seconds to display premium animations
+      }, 600); // Reduced from 1200ms to 600ms
     }
+    
+    return () => {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+    };
   }, [productsLoading, isSuccess, products.length]);
 
   // Always show loading when products are being fetched for premium UX
   const shouldShowLoading = showLoadingSkeleton;
 
-  // Cache products when successfully loaded
+  // Cache products when successfully loaded - optimize dependency array
   useEffect(() => {
     if (products && products.length > 0 && !productsLoading) {
       setCachedProducts(products);
     }
-  }, [products, productsLoading]);
+  }, [products, productsLoading]); // Keep dependencies minimal
 
   // Use current products or cached products for instant display
   const currentProducts = products?.length > 0 ? products : cachedProducts;
@@ -431,19 +433,30 @@ export default function Home() {
   const defaultLatest = latestProducts.length > 0 ? latestProducts.slice(0, 4) : currentProducts.slice(4, 8);
   const defaultBestSelling = bestSellingProducts.length > 0 ? bestSellingProducts.slice(0, 4) : currentProducts.slice(8, 12);
 
+  // Optimized scroll handler with proper cleanup
   useEffect(() => {
     let timeoutId: NodeJS.Timeout;
+    let isScrolling = false;
+    
     const handleScroll = () => {
-      clearTimeout(timeoutId);
-      timeoutId = setTimeout(() => {
-        setShowScrollTop(window.scrollY > 300);
-      }, 100);
+      if (!isScrolling) {
+        isScrolling = true;
+        clearTimeout(timeoutId);
+        timeoutId = setTimeout(() => {
+          setShowScrollTop(window.scrollY > 300);
+          isScrolling = false;
+        }, 100);
+      }
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
+    
     return () => {
       window.removeEventListener('scroll', handleScroll);
-      clearTimeout(timeoutId);
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+      isScrolling = false;
     };
   }, []);
 

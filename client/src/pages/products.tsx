@@ -6,6 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Skeleton } from "@/components/ui/skeleton";
 import { Search, Filter, Grid3X3 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useCart } from "@/hooks/use-cart";
 import Header from "@/components/header";
 import UnifiedProductCard from "@/components/unified-product-card";
 import ProductModal from "@/components/product-modal";
@@ -64,16 +65,18 @@ export default function ProductsPage() {
   const [isCustomizeModalOpen, setIsCustomizeModalOpen] = useState(false);
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
   const [displayLimit, setDisplayLimit] = useState(20); // Start with 20 products
-  const [cart, setCart] = useState<Array<{ product: Product; quantity: number; customization?: any }>>([]);
+  // Remove local cart state - use global cart hook instead
+  const { addToCart: globalAddToCart, cart: globalCart } = useCart();
 
-  // Fetch products with ultra-fast caching
+  // Fetch products with optimized caching
   const { data: products = [], isLoading, error } = useQuery<Product[]>({
     queryKey: ["/api/products"],
-    staleTime: Infinity,
-    gcTime: Infinity,
+    staleTime: 1000 * 60 * 10, // 10 minutes
+    gcTime: 1000 * 60 * 30, // 30 minutes
     refetchOnWindowFocus: false,
     refetchOnMount: false,
     refetchOnReconnect: false,
+    retry: 2,
   });
 
   // Filter and sort products
@@ -129,8 +132,8 @@ export default function ProductsPage() {
     setIsCustomizeModalOpen(true);
   };
 
-  // Handle add to cart
-  const handleAddToCart = (product: Product) => {
+  // Handle add to cart using global cart
+  const handleAddToCart = async (product: Product) => {
     if (product.stock === 0) {
       toast({
         title: "স্টক শেষ",
@@ -140,33 +143,50 @@ export default function ProductsPage() {
       return;
     }
 
-    setCart(prev => {
-      const existing = prev.find(item => item.product.id === product.id);
-      if (existing) {
-        return prev.map(item =>
-          item.product.id === product.id
-            ? { ...item, quantity: item.quantity + 1 }
-            : item
-        );
-      } else {
-        return [...prev, { product, quantity: 1 }];
-      }
-    });
+    try {
+      await globalAddToCart({
+        id: product.id,
+        name: product.name,
+        price: Number(product.price),
+        image_url: product.image_url
+      });
 
-    toast({
-      title: "কার্টে যোগ করা হয়েছে",
-      description: `${product.name} কার্টে যোগ করা হয়েছে`,
-    });
+      toast({
+        title: "কার্টে যোগ করা হয়েছে",
+        description: `${product.name} কার্টে যোগ করা হয়েছে`,
+      });
+    } catch (error) {
+      console.error('Error adding to cart:', error);
+      toast({
+        title: "ত্রুটি",
+        description: "কার্টে যোগ করতে সমস্যা হয়েছে",
+        variant: "destructive",
+      });
+    }
   };
 
-  // Handle add to cart with customization
+  // Handle add to cart with customization using global cart
   const handleAddToCartWithCustomization = async (product: Product, customization: any) => {
-    setCart(prev => [...prev, { product, quantity: customization.quantity || 1, customization }]);
-    
-    toast({
-      title: "কাস্টম অর্ডার যোগ করা হয়েছে",
-      description: `${product.name} কাস্টমাইজেশন সহ কার্টে যোগ করা হয়েছে`,
-    });
+    try {
+      await globalAddToCart({
+        id: product.id,
+        name: product.name,
+        price: Number(product.price),
+        image_url: product.image_url
+      }, customization);
+      
+      toast({
+        title: "কাস্টম অর্ডার যোগ করা হয়েছে",
+        description: `${product.name} কাস্টমাইজেশন সহ কার্টে যোগ করা হয়েছে`,
+      });
+    } catch (error) {
+      console.error('Error adding customized product to cart:', error);
+      toast({
+        title: "ত্রুটি",
+        description: "কাস্টম পণ্য কার্টে যোগ করতে সমস্যা হয়েছে",
+        variant: "destructive",
+      });
+    }
   };
 
   // Load more products
@@ -178,7 +198,7 @@ export default function ProductsPage() {
   if (error) {
     return (
       <div className="min-h-screen bg-gray-50">
-        <Header cartCount={cart.length} onCartOpen={() => {}} />
+        <Header cartCount={globalCart.length} onCartOpen={() => {}} />
         <div className="container mx-auto px-4 py-16">
           <div className="text-center">
             <h2 className="text-2xl font-bold text-red-600 mb-4">পণ্য লোড করতে সমস্যা হয়েছে</h2>
@@ -194,7 +214,7 @@ export default function ProductsPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header cartCount={cart.length} onCartOpen={() => {}} />
+      <Header cartCount={globalCart.length} onCartOpen={() => {}} />
       
       <div className="container mx-auto px-4 py-8">
         {/* Hero Section - Mobile Optimized */}
