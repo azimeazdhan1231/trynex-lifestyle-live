@@ -2,9 +2,10 @@ import React from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ShoppingCart, Eye, Settings } from 'lucide-react';
+import { ShoppingCart, Eye, Settings, Palette } from 'lucide-react';
 import LazyImage from './LazyImage';
 import { cn } from '@/lib/utils';
+import { Link } from 'wouter';
 import type { Product } from '@shared/schema';
 
 interface OptimizedProductCardProps {
@@ -118,26 +119,40 @@ export const OptimizedProductCard: React.FC<OptimizedProductCardProps> = ({
         </div>
 
         {/* Action Buttons */}
-        <div className="flex space-x-2">
-          {onCustomize && (
+        <div className="flex flex-col gap-2">
+          <div className="flex space-x-2">
+            {onCustomize && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => onCustomize(product)}
+                className="flex-1 border-purple-500 text-purple-600 hover:bg-purple-50 dark:hover:bg-purple-950"
+              >
+                কাস্টমাইজ
+              </Button>
+            )}
             <Button
-              variant="outline"
               size="sm"
-              onClick={() => onCustomize(product)}
-              className="flex-1 border-purple-500 text-purple-600 hover:bg-purple-50 dark:hover:bg-purple-950"
+              onClick={() => onAddToCart(product)}
+              disabled={product.stock === 0}
+              className="flex-1 bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600"
             >
-              কাস্টমাইজ
+              <ShoppingCart className="w-4 h-4 mr-2" />
+              কার্টে যোগ
             </Button>
-          )}
-          <Button
-            size="sm"
-            onClick={() => onAddToCart(product)}
-            disabled={product.stock === 0}
-            className="flex-1 bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600"
-          >
-            <ShoppingCart className="w-4 h-4 mr-2" />
-            কার্টে যোগ
-          </Button>
+          </div>
+          
+          {/* Always show customize option */}
+          <Link href={`/customize/${product.id}`}>
+            <Button
+              size="sm"
+              variant="outline"
+              className="w-full bg-gradient-to-r from-orange-500 to-red-500 text-white hover:from-orange-600 hover:to-red-600 border-0"
+            >
+              <Palette className="w-4 h-4 mr-2" />
+              কাস্টম ডিজাইন করুন
+            </Button>
+          </Link>
         </div>
       </div>
     </Card>

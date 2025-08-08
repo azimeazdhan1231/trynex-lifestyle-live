@@ -210,19 +210,24 @@ export type InsertUserCart = z.infer<typeof insertUserCartSchema>;
 export type UserOrder = typeof userOrders.$inferSelect;
 export type InsertUserOrder = z.infer<typeof insertUserOrderSchema>;
 
-// Blog table
+// Custom Orders table
 export const customOrders = pgTable('custom_orders', {
   id: serial('id').primaryKey(),
-  name: varchar('name', { length: 255 }).notNull(),
-  whatsapp: varchar('whatsapp', { length: 20 }).notNull(),
-  address: text('address').notNull(),
+  productId: varchar('product_id', { length: 255 }).notNull(),
   productName: varchar('product_name', { length: 255 }).notNull(),
-  customization: text('customization').notNull(),
+  productPrice: decimal('product_price', { precision: 10, scale: 2 }).notNull(),
   quantity: integer('quantity').notNull().default(1),
+  selectedSize: varchar('selected_size', { length: 10 }),
+  selectedColor: varchar('selected_color', { length: 50 }),
+  customImageData: text('custom_image_data'), // JSON array of uploaded images
+  instructions: text('instructions'),
   totalPrice: decimal('total_price', { precision: 10, scale: 2 }).notNull(),
-  paymentMethod: varchar('payment_method', { length: 50 }).notNull(),
-  trxId: varchar('trx_id', { length: 100 }),
-  paymentScreenshot: text('payment_screenshot'),
+  customerName: varchar('customer_name', { length: 255 }).notNull(),
+  phone: varchar('phone', { length: 20 }).notNull(),
+  email: varchar('email', { length: 255 }),
+  address: text('address').notNull(),
+  hasCustomImages: boolean('has_custom_images').notNull().default(false),
+  imageCount: integer('image_count').notNull().default(0),
   status: varchar('status', { length: 20 }).notNull().default('pending'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
@@ -268,8 +273,15 @@ export const insertPageSchema = createInsertSchema(pages).omit({
   updatedAt: true,
 });
 
+export const insertCustomOrderSchema = createInsertSchema(customOrders).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 export type CustomOrder = typeof customOrders.$inferSelect;
 export type NewCustomOrder = typeof customOrders.$inferInsert;
+export type InsertCustomOrder = z.infer<typeof insertCustomOrderSchema>;
 export type Blog = typeof blogs.$inferSelect;
 export type NewBlog = typeof blogs.$inferInsert;
 export type InsertBlog = z.infer<typeof insertBlogSchema>;

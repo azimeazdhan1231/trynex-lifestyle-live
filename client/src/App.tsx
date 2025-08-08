@@ -35,6 +35,7 @@ const PaymentPolicy = lazy(() => import("./pages/payment-policy"));
 const AuthNew = lazy(() => import("./pages/auth-new"));
 const SearchPage = lazy(() => import("./pages/search"));
 const Categories = lazy(() => import("./pages/categories"));
+const CustomizeProduct = lazy(() => import("./pages/customize-product"));
 
 // Performance and Mobile Optimization Components
 const MobileResponsiveFixes = lazy(() => import("./components/MobileResponsiveFixes"));
@@ -87,6 +88,7 @@ function Router() {
         <Route path="/payment" component={PaymentPolicy} />
         <Route path="/search" component={SearchPage} />
         <Route path="/categories" component={Categories} />
+        <Route path="/customize/:id" component={CustomizeProduct} />
         <Route component={NotFound} />
       </Switch>
     </Suspense>

@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Star, ShoppingCart, Heart, Eye, Palette } from "lucide-react";
 import { formatPrice } from "@/lib/constants";
 import { useCart } from "@/hooks/use-cart";
+import { useLocation } from "wouter";
 import type { Product } from "@shared/schema";
 
 interface UnifiedProductCardProps {
@@ -24,6 +25,7 @@ export default function UnifiedProductCard({
   onAddToCart 
 }: UnifiedProductCardProps) {
   const [isHovered, setIsHovered] = useState(false);
+  const [, setLocation] = useLocation();
 
   const handleAddToCart = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -46,9 +48,7 @@ export default function UnifiedProductCard({
   const handleCustomize = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    if (onCustomize) {
-      onCustomize(product);
-    }
+    setLocation(`/customize/${product.id}`);
   };
 
   const rating = 4.5; // Mock rating - replace with actual rating

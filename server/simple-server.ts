@@ -376,6 +376,105 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Custom Orders API for product customization
+  app.get('/api/custom-orders', async (req, res) => {
+    try {
+      const customOrders = await storage.getCustomOrders();
+      res.json(customOrders);
+    } catch (error) {
+      console.error('❌ Error fetching custom orders:', error);
+      res.status(500).json({ message: 'কাস্টম অর্ডার লোড করতে সমস্যা হয়েছে' });
+    }
+  });
+
+  app.post('/api/custom-orders', async (req, res) => {
+    try {
+      const customOrderData = {
+        ...req.body,
+        status: 'pending',
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
+      
+      // Process custom images if provided
+      if (req.body.customImages && req.body.customImages.length > 0) {
+        // Convert base64 images to references (in production, upload to storage)
+        customOrderData.hasCustomImages = true;
+        customOrderData.imageCount = req.body.customImages.length;
+        customOrderData.customImageData = JSON.stringify(req.body.customImages);
+      }
+
+      const customOrder = await storage.createCustomOrder(customOrderData);
+      
+      console.log(`✅ Custom order created: ${customOrder.id}`);
+      
+      res.status(201).json({
+        success: true,
+        customOrder,
+        message: 'কাস্টম অর্ডার সফলভাবে তৈরি হয়েছে'
+      });
+    } catch (error) {
+      console.error('❌ Error creating custom order:', error);
+      res.status(500).json({ message: 'কাস্টম অর্ডার তৈরিতে সমস্যা হয়েছে' });
+    }
+  });
+
+  app.patch('/api/custom-orders/:id/status', async (req, res) => {
+    try {
+      const { status } = req.body;
+      const customOrder = await storage.updateCustomOrderStatus(parseInt(req.params.id), status);
+      
+      res.json({
+        success: true,
+        customOrder,
+        message: 'কাস্টম অর্ডার স্ট্যাটাস আপডেট হয়েছে'
+      });
+    } catch (error) {
+      console.error('❌ Error updating custom order status:', error);
+      res.status(500).json({ message: 'স্ট্যাটাস আপডেট করতে সমস্যা হয়েছে' });
+    }
+  });
+
+  app.get('/api/custom-orders/:id', async (req, res) => {
+    try {
+      const customOrder = await storage.getCustomOrder(parseInt(req.params.id));
+      if (!customOrder) {
+        return res.status(404).json({ message: 'কাস্টম অর্ডার পাওয়া যায়নি' });
+      }
+      res.json(customOrder);
+    } catch (error) {
+      console.error('❌ Error fetching custom order:', error);
+      res.status(500).json({ message: 'কাস্টম অর্ডার লোড করতে সমস্যা হয়েছে' });
+    }
+  });
+
+  // Enhanced cart API for customization
+  app.post('/api/cart', async (req, res) => {
+    try {
+      const cartData = req.body;
+      
+      // Process customization data
+      if (cartData.customization) {
+        cartData.customizationData = JSON.stringify(cartData.customization);
+      }
+      
+      // Store custom images info
+      if (cartData.customImages && cartData.customImages.length > 0) {
+        cartData.hasCustomImages = true;
+        cartData.customImageCount = cartData.customImages.length;
+      }
+
+      // For now, return success (implement actual cart storage as needed)
+      res.json({
+        success: true,
+        message: 'কাস্টম পণ্য কার্টে যোগ করা হয়েছে'
+      });
+    } catch (error) {
+      console.error('❌ Error adding to cart:', error);
+      res.status(500).json({ message: 'কার্টে যোগ করতে সমস্যা হয়েছে' });
+    }
+  });
+
   // Settings API
   app.get('/api/settings', async (req, res) => {
     try {

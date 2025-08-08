@@ -30,6 +30,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { apiRequest } from "@/lib/queryClient";
 import EnhancedOrderDetailsModal from "@/components/EnhancedOrderDetailsModal";
+import CustomOrderDetailsModal from "@/components/CustomOrderDetailsModal";
 import type { Product, Order, Offer, Category, PromoCode } from "@shared/schema";
 
 export default function AdminPanelNew() {
@@ -99,6 +100,8 @@ export default function AdminPanelNew() {
   const [isPromoDialogOpen, setIsPromoDialogOpen] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [orderDetailsOpen, setOrderDetailsOpen] = useState(false);
+  const [selectedCustomOrder, setSelectedCustomOrder] = useState<any>(null);
+  const [customOrderDetailsOpen, setCustomOrderDetailsOpen] = useState(false);
 
   // Fetch data with error handling
   const { data: orders = [], isLoading: ordersLoading, error: ordersError } = useQuery<Order[]>({ 
@@ -121,12 +124,17 @@ export default function AdminPanelNew() {
     queryKey: ["/api/promo-codes"]
   });
 
+  const { data: customOrders = [], isLoading: customOrdersLoading, error: customOrdersError } = useQuery<any[]>({ 
+    queryKey: ["/api/custom-orders"]
+  });
+
   // Handle errors silently
   if (ordersError) console.log("Orders loading failed");
   if (productsError) console.log("Products loading failed");
   if (categoriesError) console.log("Categories loading failed");
   if (offersError) console.log("Offers loading failed");
   if (promoError) console.log("Promo codes loading failed");
+  if (customOrdersError) console.log("Custom orders loading failed");
 
   // Dashboard statistics with safe calculations
   const totalRevenue = Array.isArray(orders) ? orders.reduce((sum: number, order: Order) => {
@@ -199,6 +207,21 @@ export default function AdminPanelNew() {
     },
     onError: () => {
       toast({ title: "ত্রুটি", description: "অর্ডার আপডেট করতে সমস্যা হয়েছে", variant: "destructive" });
+    }
+  });
+
+  // Custom order status update mutation
+  const updateCustomOrderMutation = useMutation({
+    mutationFn: async ({ id, status }: { id: number; status: string }) => {
+      const response = await apiRequest("PATCH", `/api/custom-orders/${id}/status`, { status });
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/custom-orders"] });
+      toast({ title: "কাস্টম অর্ডার আপডেট হয়েছে", description: "কাস্টম অর্ডারের স্ট্যাটাস আপডেট করা হয়েছে" });
+    },
+    onError: () => {
+      toast({ title: "ত্রুটি", description: "কাস্টম অর্ডার আপডেট করতে সমস্যা হয়েছে", variant: "destructive" });
     }
   });
 
@@ -501,6 +524,24 @@ export default function AdminPanelNew() {
     setIsProductDialogOpen(true);
   };
 
+  const handleViewOrderDetails = (order: Order) => {
+    setSelectedOrder(order);
+    setOrderDetailsOpen(true);
+  };
+
+  const handleUpdateOrderStatus = (orderId: string, status: string) => {
+    updateOrderMutation.mutate({ id: orderId, status });
+  };
+
+  const handleViewCustomOrderDetails = (customOrder: any) => {
+    setSelectedCustomOrder(customOrder);
+    setCustomOrderDetailsOpen(true);
+  };
+
+  const handleUpdateCustomOrderStatus = (orderId: number, status: string) => {
+    updateCustomOrderMutation.mutate({ id: orderId, status });
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 p-2 sm:p-4">
       {/* Header */}
@@ -513,7 +554,7 @@ export default function AdminPanelNew() {
         {/* Mobile-responsive tabs */}
         <div className="bg-white rounded-lg shadow-sm p-2">
           <div className="overflow-x-auto pb-2">
-            <TabsList className="inline-flex w-max min-w-full sm:grid sm:w-full sm:grid-cols-8 h-auto p-1 bg-gray-100 rounded-md">
+            <TabsList className="inline-flex w-max min-w-full sm:grid sm:w-full sm:grid-cols-9 h-auto p-1 bg-gray-100 rounded-md">
               <TabsTrigger value="dashboard" className="whitespace-nowrap px-3 py-2 text-xs sm:text-sm">
                 <BarChart3 className="w-4 h-4 mr-1" />
                 ড্যাশবোর্ড
@@ -521,6 +562,10 @@ export default function AdminPanelNew() {
               <TabsTrigger value="orders" className="whitespace-nowrap px-3 py-2 text-xs sm:text-sm">
                 <ShoppingCart className="w-4 h-4 mr-1" />
                 অর্ডার
+              </TabsTrigger>
+              <TabsTrigger value="custom-orders" className="whitespace-nowrap px-3 py-2 text-xs sm:text-sm">
+                <Star className="w-4 h-4 mr-1" />
+                কাস্টম অর্ডার
               </TabsTrigger>
               <TabsTrigger value="products" className="whitespace-nowrap px-3 py-2 text-xs sm:text-sm">
                 <Package className="w-4 h-4 mr-1" />
@@ -707,6 +752,98 @@ export default function AdminPanelNew() {
                               variant="ghost" 
                               size="sm"
                               onClick={() => handleViewOrderDetails(order)}
+                            >
+                              <Eye className="w-4 h-4" />
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Custom Orders Tab */}
+        <TabsContent value="custom-orders" className="space-y-4">
+          <Card className="bg-white shadow-sm">
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center gap-2">
+                <Star className="w-5 h-5" />
+                কাস্টম অর্ডার ({Array.isArray(customOrders) ? customOrders.length : 0} টি)
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {customOrdersLoading ? (
+                <div className="text-center py-8">লোড হচ্ছে...</div>
+              ) : customOrders.length === 0 ? (
+                <div className="text-center py-8 text-gray-500">কোনো কাস্টম অর্ডার নেই</div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>অর্ডার ID</TableHead>
+                        <TableHead>গ্রাহক</TableHead>
+                        <TableHead>পণ্য</TableHead>
+                        <TableHead>কাস্টমাইজেশন</TableHead>
+                        <TableHead>মোট</TableHead>
+                        <TableHead>স্ট্যাটাস</TableHead>
+                        <TableHead>অ্যাকশন</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {customOrders.map((customOrder: any) => (
+                        <TableRow key={customOrder.id}>
+                          <TableCell className="font-mono text-xs">#{customOrder.id}</TableCell>
+                          <TableCell>
+                            <div>
+                              <div className="font-medium">{customOrder.customerName}</div>
+                              <div className="text-xs text-gray-500">{customOrder.phone}</div>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div>
+                              <div className="font-medium">{customOrder.productName}</div>
+                              <div className="text-xs text-gray-500">পরিমাণ: {customOrder.quantity}</div>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="space-y-1">
+                              {customOrder.selectedSize && (
+                                <div className="text-xs bg-blue-100 px-2 py-1 rounded">সাইজ: {customOrder.selectedSize}</div>
+                              )}
+                              {customOrder.selectedColor && (
+                                <div className="text-xs bg-green-100 px-2 py-1 rounded">রঙ: {customOrder.selectedColor}</div>
+                              )}
+                              {customOrder.hasCustomImages && (
+                                <div className="text-xs bg-purple-100 px-2 py-1 rounded">ছবি: {customOrder.imageCount || 1} টি</div>
+                              )}
+                            </div>
+                          </TableCell>
+                          <TableCell>{formatPrice(Number(customOrder.totalPrice))}</TableCell>
+                          <TableCell>
+                            <Select
+                              value={customOrder.status || "pending"}
+                              onValueChange={(value) => handleUpdateCustomOrderStatus(customOrder.id, value)}
+                            >
+                              <SelectTrigger className="w-32">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {Object.entries(ORDER_STATUSES).map(([key, value]) => (
+                                  <SelectItem key={key} value={key}>{value}</SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </TableCell>
+                          <TableCell>
+                            <Button 
+                              variant="ghost" 
+                              size="sm"
+                              onClick={() => handleViewCustomOrderDetails(customOrder)}
                             >
                               <Eye className="w-4 h-4" />
                             </Button>
@@ -1344,6 +1481,13 @@ export default function AdminPanelNew() {
         isOpen={orderDetailsOpen}
         onClose={() => setOrderDetailsOpen(false)}
         order={selectedOrder}
+      />
+
+      {/* Custom Order Details Modal */}
+      <CustomOrderDetailsModal
+        isOpen={customOrderDetailsOpen}
+        onClose={() => setCustomOrderDetailsOpen(false)}
+        order={selectedCustomOrder}
       />
 
       {/* Offer Dialog */}

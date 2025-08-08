@@ -58,8 +58,8 @@ const ProductCard = memo(({
   }, [product, onQuickView]);
 
   const handleCustomize = useCallback(() => {
-    onCustomize(product);
-  }, [product, onCustomize]);
+    setLocation(`/customize/${product.id}`);
+  }, [product.id, setLocation]);
 
   const handleAddToCart = useCallback(() => {
     onAddToCart(product);

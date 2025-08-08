@@ -55,13 +55,22 @@ export default function PopupOffer() {
           margin: 'auto'
         }}
       >
-        {/* Close Button */}
+        {/* Close Button - Fixed positioning and z-index */}
         <button
           onClick={() => setIsOpen(false)}
-          className="absolute -top-2 -right-2 sm:-top-3 sm:-right-3 w-8 h-8 sm:w-9 sm:h-9 bg-gray-800 text-white rounded-full flex items-center justify-center hover:bg-gray-900 transition-all duration-200 shadow-lg hover:scale-110 z-10"
+          className="absolute -top-3 -right-3 w-10 h-10 bg-gray-800 text-white rounded-full flex items-center justify-center hover:bg-gray-900 transition-all duration-200 shadow-lg hover:scale-110 border-2 border-white"
+          style={{ 
+            zIndex: 10001,
+            position: 'absolute',
+            top: '-12px',
+            right: '-12px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}
           data-testid="button-close-popup"
         >
-          <X className="w-3 h-3 sm:w-4 sm:h-4" />
+          <X className="w-5 h-5" />
         </button>
 
         {/* Offer Content */}
