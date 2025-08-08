@@ -1,6 +1,8 @@
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import { eq, desc, and, gte, lte } from "drizzle-orm";
+import dotenv from 'dotenv';
+dotenv.config();
 import { 
   products, orders, offers, admins, categories, promoCodes, analytics, siteSettings,
   users, userCarts, userOrders, customOrders,
@@ -11,6 +13,11 @@ import {
   type User, type UpsertUser, type UserCart, type InsertUserCart,
   type UserOrder, type InsertUserOrder, type CustomOrder, type NewCustomOrder
 } from "@shared/schema";
+
+// Set environment variables directly if not found (temporary fix for Replit)
+if (!process.env.DATABASE_URL) {
+  process.env.DATABASE_URL = "postgresql://postgres.lxhhgdqfxmeohayceshb:Amiomito1Amiomito1@aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres";
+}
 
 // Try to get DATABASE_URL, or construct it from individual PG environment variables
 let connectionString = process.env.DATABASE_URL;

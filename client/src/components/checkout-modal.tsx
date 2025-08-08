@@ -181,13 +181,16 @@ export default function CheckoutModal({ isOpen, onClose, cart, onOrderComplete }
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-
-      <DialogContent className="w-[95vw] max-w-2xl max-h-[90vh] overflow-y-auto product-modal-content">
-          <DialogHeader>
-            <DialogTitle className="text-2xl font-bold text-center">
-              অর্ডার সম্পূর্ণ করুন
-            </DialogTitle>
-          </DialogHeader>
+      <DialogContent className="modal-container">
+        <DialogHeader className="px-6 py-4 border-b">
+          <DialogTitle className="text-2xl font-bold">
+            অর্ডার সম্পূর্ণ করুন
+          </DialogTitle>
+          <DialogDescription className="sr-only">
+            আপনার অর্ডার সম্পূর্ণ করতে প্রয়োজনীয় তথ্য প্রদান করুন
+          </DialogDescription>
+        </DialogHeader>
+        <div className="modal-content">
 
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Customer Information */}
@@ -367,6 +370,7 @@ export default function CheckoutModal({ isOpen, onClose, cart, onOrderComplete }
             {createOrderMutation.isPending ? "অর্ডার প্রক্রিয়াধীন..." : "অর্ডার নিশ্চিত করুন"}
           </Button>
         </form>
+        </div>
       </DialogContent>
 
       <OrderSuccessModal

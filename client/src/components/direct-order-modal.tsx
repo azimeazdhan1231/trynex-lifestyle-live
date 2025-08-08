@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -225,13 +225,17 @@ ${pricing.urgencyFee > 0 ? `• জরুরি ডেলিভারি: ${form
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="w-[95vw] max-w-2xl max-h-[90vh] overflow-y-auto product-modal-content">
-          <DialogHeader>
-            <DialogTitle className="text-2xl font-bold text-center">
-              সরাসরি অর্ডার করুন
-            </DialogTitle>
-          </DialogHeader>
-
+      <DialogContent className="modal-container">
+        <DialogHeader className="px-6 py-4 border-b">
+          <DialogTitle className="text-2xl font-bold">
+            সরাসরি অর্ডার করুন
+          </DialogTitle>
+          <DialogDescription className="sr-only">
+            সরাসরি অর্ডার করতে প্রয়োজনীয় তথ্য প্রদান করুন
+          </DialogDescription>
+        </DialogHeader>
+        <div className="modal-content">
+        
         {/* Progress Indicator */}
         <div className="flex items-center justify-between mb-6">
           {[1, 2, 3, 4].map((stepNumber) => (
@@ -504,6 +508,7 @@ ${pricing.urgencyFee > 0 ? `• জরুরি ডেলিভারি: ${form
               </Button>
             )}
           </div>
+        </div>
         </div>
       </DialogContent>
     </Dialog>

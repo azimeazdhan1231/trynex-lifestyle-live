@@ -218,8 +218,8 @@ export default function ProductsPage() {
       <Header cartCount={globalCart.length} onCartOpen={() => {}} />
       
       <div className="container mx-auto px-4 py-8">
-        {/* Hero Section - Mobile Optimized */}
-        <div className="relative bg-gradient-to-br from-blue-600 via-purple-600 to-blue-800 rounded-2xl p-6 sm:p-8 md:p-12 mb-8 text-white overflow-hidden">
+        {/* Hero Section - Professional E-commerce Style */}
+        <div className="relative bg-gradient-to-br from-emerald-600 via-blue-600 to-purple-700 rounded-2xl p-6 sm:p-8 md:p-12 mb-8 text-white overflow-hidden shadow-2xl border border-white/20">
           <div className="absolute inset-0 bg-black/20 rounded-2xl"></div>
           <div className="relative z-10 text-center">
             <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-4 leading-tight">
@@ -317,7 +317,7 @@ export default function ProductsPage() {
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-4 sm:gap-6">
+            <div className="grid grid-cols-2 xs:grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4 md:gap-6">
               {displayedProducts.map((product) => (
                 <UnifiedProductCard
                   key={product.id}

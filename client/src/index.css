@@ -222,19 +222,20 @@ img[loading="lazy"] {
 @media (max-width: 768px) {
   /* All Dialog Content - Core Responsive Rules */
   [role="dialog"] {
-    width: calc(100vw - 24px) !important;
-    max-width: calc(100vw - 24px) !important;
-    max-height: calc(100vh - 48px) !important;
+    width: calc(100vw - 20px) !important;
+    max-width: calc(100vw - 20px) !important;
+    max-height: calc(100vh - 40px) !important;
     min-height: auto !important;
-    margin: 12px !important;
+    margin: 10px !important;
     position: fixed !important;
     top: 50% !important;
     left: 50% !important;
     transform: translate(-50%, -50%) !important;
     z-index: 9999 !important;
-    padding: 16px !important;
+    padding: 12px !important;
     overflow-y: auto !important;
     overflow-x: hidden !important;
+    border-radius: 12px !important;
   }
   
   /* Radix Dialog Content Specific */
@@ -243,15 +244,16 @@ img[loading="lazy"] {
     top: 50% !important;
     left: 50% !important;
     transform: translate(-50%, -50%) !important;
-    width: calc(100vw - 24px) !important;
-    max-width: calc(100vw - 24px) !important;
-    max-height: calc(100vh - 48px) !important;
+    width: calc(100vw - 20px) !important;
+    max-width: calc(100vw - 20px) !important;
+    max-height: calc(100vh - 40px) !important;
     z-index: 9999 !important;
     margin: 0 !important;
-    padding: 16px !important;
+    padding: 12px !important;
     overflow-y: auto !important;
     overflow-x: hidden !important;
-    border-radius: 8px !important;
+    border-radius: 12px !important;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25) !important;
   }
   
   /* Radix Sheet/Drawer Content Mobile Fix */
