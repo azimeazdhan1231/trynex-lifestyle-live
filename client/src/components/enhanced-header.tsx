@@ -80,7 +80,7 @@ export default function EnhancedHeader() {
                 T
               </div>
               <div className="hidden sm:block">
-                <h1 className="text-xl font-bold text-gray-800">Trynex</h1>
+                <h1 className="text-xl font-bold text-gray-800">TryneX Shop</h1>
                 <p className="text-xs text-gray-500">Lifestyle Collection</p>
               </div>
             </Link>
@@ -165,12 +165,12 @@ export default function EnhancedHeader() {
               {/* Mobile Menu */}
               <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
                 <SheetTrigger asChild>
-                  <Button variant="ghost" size="sm" className="lg:hidden p-2">
+                  <Button variant="ghost" size="sm" className="lg:hidden p-2 hover:bg-gray-100 rounded-lg">
                     <Menu className="w-5 h-5" />
                   </Button>
                 </SheetTrigger>
-                <SheetContent side="right" className="w-80">
-                  <div className="flex flex-col gap-6 pt-6">
+                <SheetContent side="right" className="w-80 bg-white border-l border-gray-200 shadow-xl">
+                  <div className="flex flex-col gap-6 pt-6 h-full">
                     {/* Mobile Search */}
                     <form onSubmit={handleSearch} className="relative">
                       <Input
@@ -178,60 +178,77 @@ export default function EnhancedHeader() {
                         placeholder="পণ্য খুঁজুন..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full pl-10"
+                        className="w-full pl-10 h-11 rounded-xl border-gray-300 focus:border-primary focus:ring-2 focus:ring-primary/20"
                       />
                       <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
                     </form>
 
                     {/* Mobile User Actions */}
-                    {user ? (
-                      <div className="flex flex-col gap-2">
-                        <div className="text-lg font-medium">
-                          স্বাগতম, {user.firstName}
+                    <div className="bg-gradient-to-r from-primary/10 to-primary/5 rounded-xl p-4">
+                      {user ? (
+                        <div className="flex flex-col gap-3">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center text-white font-bold">
+                              {user.firstName?.charAt(0)}
+                            </div>
+                            <div>
+                              <div className="text-lg font-medium text-gray-800">
+                                স্বাগতম, {user.firstName}
+                              </div>
+                              <div className="text-sm text-gray-500">
+                                গ্রাহক অ্যাকাউন্ট
+                              </div>
+                            </div>
+                          </div>
+                          <Button
+                            variant="outline"
+                            onClick={handleLogout}
+                            className="w-full h-11 rounded-xl border-primary text-primary hover:bg-primary hover:text-white"
+                          >
+                            লগআউট
+                          </Button>
                         </div>
-                        <Button
-                          variant="outline"
-                          onClick={handleLogout}
-                          className="w-full"
-                        >
-                          লগআউট
-                        </Button>
-                      </div>
-                    ) : (
-                      <div className="flex flex-col gap-2">
-                        <Button
-                          onClick={() => {
-                            setShowLogin(true);
-                            setIsMenuOpen(false);
-                          }}
-                          className="w-full"
-                        >
-                          <User className="w-4 h-4 mr-2" />
-                          লগইন
-                        </Button>
-                        <Button
-                          variant="outline"
-                          onClick={() => {
-                            setShowRegistration(true);
-                            setIsMenuOpen(false);
-                          }}
-                          className="w-full"
-                        >
-                          রেজিস্টার করুন
-                        </Button>
-                      </div>
-                    )}
+                      ) : (
+                        <div className="flex flex-col gap-3">
+                          <div className="text-center mb-2">
+                            <h3 className="font-semibold text-gray-800">আপনার অ্যাকাউন্ট</h3>
+                            <p className="text-sm text-gray-600">লগইন করুন বা নতুন অ্যাকাউন্ট তৈরি করুন</p>
+                          </div>
+                          <Button
+                            onClick={() => {
+                              setShowLogin(true);
+                              setIsMenuOpen(false);
+                            }}
+                            className="w-full h-11 rounded-xl bg-primary hover:bg-primary/90"
+                          >
+                            <User className="w-4 h-4 mr-2" />
+                            লগইন
+                          </Button>
+                          <Button
+                            variant="outline"
+                            onClick={() => {
+                              setShowRegistration(true);
+                              setIsMenuOpen(false);
+                            }}
+                            className="w-full h-11 rounded-xl border-primary text-primary hover:bg-primary hover:text-white"
+                          >
+                            রেজিস্টার করুন
+                          </Button>
+                        </div>
+                      )}
+                    </div>
 
                     {/* Mobile Navigation */}
-                    <nav className="flex flex-col gap-2">
+                    <nav className="flex flex-col gap-1 flex-1">
+                      <h3 className="font-semibold text-gray-800 mb-3 px-2">মেনু</h3>
                       {navLinks.map((link) => (
                         <Link
                           key={link.href}
                           href={link.href}
-                          className={`flex items-center py-2 px-3 rounded-lg transition-colors ${
+                          className={`flex items-center py-3 px-4 rounded-xl transition-all duration-200 font-medium ${
                             location === link.href
-                              ? 'bg-orange-100 text-orange-600'
-                              : 'text-gray-700 hover:bg-gray-100'
+                              ? 'bg-primary text-white shadow-md'
+                              : 'text-gray-700 hover:bg-gray-100 hover:text-primary'
                           }`}
                           onClick={() => setIsMenuOpen(false)}
                         >

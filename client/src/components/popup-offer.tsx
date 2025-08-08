@@ -30,12 +30,12 @@ export default function PopupOffer() {
   if (!activePopupOffer || !isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-      <div className="relative bg-white rounded-2xl p-6 m-4 max-w-sm w-full shadow-2xl">
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+      <div className="relative bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl animate-in zoom-in-95 duration-300">
         {/* Close Button */}
         <button
           onClick={() => setIsOpen(false)}
-          className="absolute -top-2 -right-2 w-8 h-8 bg-gray-800 text-white rounded-full flex items-center justify-center hover:bg-gray-900 transition-colors z-10"
+          className="absolute -top-3 -right-3 w-9 h-9 bg-gray-800 text-white rounded-full flex items-center justify-center hover:bg-gray-900 transition-all duration-200 shadow-lg hover:scale-110"
           data-testid="button-close-popup"
         >
           <X className="w-4 h-4" />
@@ -43,22 +43,24 @@ export default function PopupOffer() {
 
         {/* Offer Content */}
         <div className="text-center">
-          <div className="mb-4">
-            <Gift className="w-12 h-12 mx-auto text-green-600" />
+          <div className="mb-6">
+            <div className="w-16 h-16 mx-auto bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center shadow-lg">
+              <Gift className="w-8 h-8 text-white" />
+            </div>
           </div>
           
-          <h2 className="text-xl font-bold text-gray-800 mb-3">
-            {activePopupOffer.title}
+          <h2 className="text-2xl font-bold text-gray-800 mb-4 leading-tight">
+            🎉 {activePopupOffer.title}
           </h2>
           
-          <p className="text-gray-600 mb-6 text-sm">
+          <p className="text-gray-600 mb-8 text-base leading-relaxed">
             {activePopupOffer.description}
           </p>
           
-          <div className="space-y-3">
+          <div className="space-y-4">
             <Link href="/products">
               <Button 
-                className="w-full bg-green-600 hover:bg-green-700 text-white font-medium"
+                className="w-full h-12 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-bold text-lg rounded-xl shadow-lg hover:shadow-xl transition-all duration-200"
                 onClick={() => setIsOpen(false)}
                 data-testid="button-accept-offer"
               >
@@ -68,7 +70,7 @@ export default function PopupOffer() {
             
             <Button 
               variant="outline" 
-              className="w-full text-gray-600 hover:bg-gray-50"
+              className="w-full h-10 text-gray-600 hover:bg-gray-50 border-gray-300 rounded-xl"
               onClick={() => setIsOpen(false)}
               data-testid="button-dismiss-offer"
             >

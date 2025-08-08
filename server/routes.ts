@@ -50,8 +50,8 @@ class PerformanceCache {
       return this.fetchPromises.get('products')!;
     }
 
-    // Start new fetch with optimized query
-    const fetchPromise = this.fetchProductsFromDB();
+    // Start new fetch with robust error handling and retry logic
+    const fetchPromise = this.fetchProductsFromDBWithRetry();
     this.fetchPromises.set('products', fetchPromise);
 
     try {
@@ -63,6 +63,10 @@ class PerformanceCache {
       };
       console.log(`✅ Products cached - ${products.length} items`);
       return products;
+    } catch (error) {
+      console.error('❌ Failed to fetch products:', error);
+      // Return empty array as fallback to prevent UI crashes
+      return [];
     } finally {
       this.fetchPromises.delete('products');
     }
@@ -95,27 +99,56 @@ class PerformanceCache {
     }
   }
 
-  private async fetchProductsFromDB(): Promise<any[]> {
-    console.log('🔍 Executing optimized products query...');
-    const start = Date.now();
+  private async fetchProductsFromDBWithRetry(maxRetries = 3): Promise<any[]> {
+    console.log('🔍 Executing robust products query...');
+    const startTime = Date.now();
     
-    try {
-      // Use optimized query with timeout
-      const products = await Promise.race([
-        storage.getProducts(),
-        new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('Database timeout')), 5000)
-        )
-      ]) as any[];
-      
-      const duration = Date.now() - start;
-      console.log(`✅ Products query completed in ${duration}ms - ${products.length} items`);
-      return products || [];
-    } catch (error) {
-      console.error('❌ Products fetch failed:', error);
-      // Return empty array instead of throwing to prevent crashes
-      return [];
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        const products = await Promise.race([
+          storage.getProducts(),
+          new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Database timeout')), 8000)
+          )
+        ]) as any[];
+        
+        // Validate products data
+        if (!Array.isArray(products)) {
+          throw new Error('Invalid products data structure');
+        }
+        
+        // Ensure each product has required fields
+        const validProducts = products.filter(product => 
+          product && 
+          product.id && 
+          product.name && 
+          product.price !== undefined
+        );
+        
+        const duration = Date.now() - startTime;
+        console.log(`✅ Products query completed in ${duration}ms - ${validProducts.length} valid items (attempt ${attempt})`);
+        
+        return validProducts;
+      } catch (error) {
+        console.error(`❌ Products query failed (attempt ${attempt}/${maxRetries}):`, error);
+        
+        if (attempt === maxRetries) {
+          console.error('❌ All retry attempts failed, returning empty array');
+          return [];
+        }
+        
+        // Wait before retry with exponential backoff
+        const delay = Math.min(1000 * Math.pow(2, attempt - 1), 5000);
+        console.log(`⏳ Retrying in ${delay}ms...`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+      }
     }
+    
+    return [];
+  }
+
+  private async fetchProductsFromDB(): Promise<any[]> {
+    return this.fetchProductsFromDBWithRetry();
   }
 
   private async fetchCategoriesFromDB(): Promise<any[]> {
