@@ -39,10 +39,10 @@
   left: 50% !important;
   transform: translateX(-50%) !important;
   z-index: 9999 !important;
-  width: 96vw !important;
-  max-width: 1200px !important;
-  height: 96vh !important;
-  max-height: 96vh !important;
+  width: 95vw !important;
+  max-width: 1100px !important;
+  height: 94vh !important;
+  max-height: 94vh !important;
   margin: 0 !important;
   padding: 0 !important;
   overflow: hidden !important;
@@ -50,6 +50,25 @@
   background: white !important;
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
   border: 1px solid #e5e7eb !important;
+}
+
+/* Fix close button positioning */
+[data-radix-dialog-content] > button[data-radix-dialog-close] {
+  position: absolute !important;
+  top: 16px !important;
+  right: 16px !important;
+  z-index: 10 !important;
+  width: 32px !important;
+  height: 32px !important;
+  padding: 0 !important;
+  border: none !important;
+  background: rgba(0, 0, 0, 0.1) !important;
+  border-radius: 6px !important;
+  cursor: pointer !important;
+}
+
+[data-radix-dialog-content] > button[data-radix-dialog-close]:hover {
+  background: rgba(0, 0, 0, 0.2) !important;
 }
 
 /* Sheet and Drawer Content */
@@ -126,12 +145,14 @@
   flex: 1 !important;
   overflow-y: auto !important;
   overflow-x: hidden !important;
-  padding: 24px !important;
+  padding: 24px 24px 24px 24px !important;
+  padding-top: 60px !important; /* Space for close button */
   scrollbar-width: thin !important;
+  scrollbar-gutter: stable;
 }
 
 .modal-large .modal-content {
-  padding: 32px !important;
+  padding: 72px 32px 32px 32px !important; /* More space for close button in large modal */
 }
 
 /* Override all existing modal positioning */
@@ -156,23 +177,28 @@
   }
 }
 
-/* Ensure scrollable content */
+/* Custom scrollbar styling */
 .modal-content::-webkit-scrollbar {
-  width: 8px;
+  width: 6px;
 }
 
 .modal-content::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 4px;
+  background: transparent;
+  margin: 10px 0;
 }
 
 .modal-content::-webkit-scrollbar-thumb {
-  background: #888;
-  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 3px;
 }
 
 .modal-content::-webkit-scrollbar-thumb:hover {
-  background: #555;
+  background: rgba(0, 0, 0, 0.4);
+}
+
+/* Remove default dialog header padding to prevent overlap */
+.modal-content .grid {
+  margin-top: 0 !important;
 }
 
 /* Additional performance optimizations */

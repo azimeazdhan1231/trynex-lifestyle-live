@@ -82,7 +82,7 @@ export default function ProductModal({ product, isOpen, onClose, onAddToCart, on
       <DialogContent className="modal-container modal-large">
         <div className="modal-content">
           <DialogHeader className="mb-6">
-            <DialogTitle className="text-2xl font-bold text-gray-800">
+            <DialogTitle className="text-2xl font-bold text-gray-800 pr-12">
               {product.name}
             </DialogTitle>
             <DialogDescription className="sr-only">

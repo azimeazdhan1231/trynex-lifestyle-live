@@ -39,8 +39,7 @@ export default function CartModal({ isOpen, onClose }: CartModalProps) {
     <>
       <Dialog open={isOpen} onOpenChange={onClose}>
         <DialogContent className="modal-container">
-          <div className="modal-content">
-            <DialogHeader>
+          <DialogHeader className="px-6 py-4 border-b">
             <DialogTitle className="text-2xl font-bold">
               🛒 আপনার কার্ট ({cart.length}টি পণ্য)
             </DialogTitle>
@@ -48,6 +47,7 @@ export default function CartModal({ isOpen, onClose }: CartModalProps) {
               আপনার শপিং কার্টে থাকা পণ্যসমূহ দেখুন এবং পরিচালনা করুন
             </DialogDescription>
           </DialogHeader>
+          <div className="modal-content">
 
           {!cart || cart.length === 0 ? (
             <div className="text-center py-12">

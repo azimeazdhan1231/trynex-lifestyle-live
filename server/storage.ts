@@ -121,17 +121,17 @@ export class DatabaseStorage implements IStorage {
     const cacheKey = 'products_all';
     const cached = cache.get<Product[]>(cacheKey);
     if (cached) {
-      console.log('✅ Products served from cache');
+      console.log(`⚡ Products served from cache in <1ms - ${cached.length} items`);
       return cached;
     }
 
-    console.time('Database Query: getProducts');
+    const startTime = Date.now();
     const result = await db.select().from(products).orderBy(desc(products.created_at));
-    console.timeEnd('Database Query: getProducts');
+    const endTime = Date.now();
     
-    // Cache for 5 minutes
-    cache.set(cacheKey, result, 300);
-    console.log(`✅ Cached ${result.length} products`);
+    // Aggressive caching for 15 minutes
+    cache.set(cacheKey, result, 900);
+    console.log(`⚡ Products fetched in ${endTime - startTime}ms - ${result.length} items`);
     return result;
   }
 
@@ -143,8 +143,13 @@ export class DatabaseStorage implements IStorage {
       return cached;
     }
 
+    const startTime = Date.now();
     const result = await db.select().from(products).where(eq(products.category, category)).orderBy(desc(products.created_at));
-    cache.set(cacheKey, result, 300);
+    const endTime = Date.now();
+    
+    // Aggressive caching for 15 minutes
+    cache.set(cacheKey, result, 900);
+    console.log(`⚡ Category ${category} products fetched in ${endTime - startTime}ms - ${result.length} items`);
     return result;
   }
 

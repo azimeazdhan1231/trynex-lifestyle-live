@@ -202,15 +202,15 @@ export default function CustomizeModalFixed({ product, isOpen, onClose, onAddToC
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="modal-container">
-        <div className="modal-content">
-          <DialogHeader>
+        <DialogHeader className="px-6 py-4 border-b">
           <DialogTitle className="text-xl font-bold text-gray-900 dark:text-white">
             {product?.name || "প্রোডাক্ট"} কাস্টমাইজ করুন
           </DialogTitle>
+        </DialogHeader>
+        <div className="modal-content">
           <DialogDescription className="sr-only">
             পণ্যটি আপনার পছন্দ অনুযায়ী কাস্টমাইজ করুন
           </DialogDescription>
-        </DialogHeader>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Product Preview */}

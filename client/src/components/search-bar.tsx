@@ -164,8 +164,7 @@ export default function SearchBar({ isOpen, onClose, onProductSelect }: SearchBa
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="modal-container">
-        <div className="modal-content">
-          <DialogHeader className="px-6 py-4 border-b bg-gray-50">
+        <DialogHeader className="px-6 py-4 border-b bg-gray-50">
           <DialogTitle className="flex items-center gap-3 text-xl">
             <Search className="w-6 h-6 text-primary" />
             পণ্য খুঁজুন
@@ -174,6 +173,7 @@ export default function SearchBar({ isOpen, onClose, onProductSelect }: SearchBa
             পণ্য খুঁজুন এবং তাৎক্ষণিক ফলাফল দেখুন
           </DialogDescription>
         </DialogHeader>
+        <div className="modal-content">
 
         {/* Search Input */}
         <div className="px-6 py-4 border-b">
