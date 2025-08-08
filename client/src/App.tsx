@@ -7,6 +7,7 @@ import { useEffect, Suspense, lazy } from "react";
 import { initGA, loadFacebookPixelFromSettings } from "./lib/analytics";
 import { useAnalytics } from "./hooks/use-analytics";
 import DebugInfo from "@/components/debug-info";
+import ErrorBoundary from "@/components/error-boundary";
 
 // Dynamic imports for better code splitting
 const Home = lazy(() => import("./pages/home"));
@@ -90,19 +91,21 @@ function App() {
   }, []);
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <div className="font-bengali">
-          <Suspense fallback={null}>
-            <MobileResponsiveFixes />
-            {/* <PerformanceOptimizer /> */}
-          </Suspense>
-          <Toaster />
-          <Router />
-          <DebugInfo />
-        </div>
-      </TooltipProvider>
-    </QueryClientProvider>
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
+          <div className="font-bengali">
+            <Suspense fallback={null}>
+              <MobileResponsiveFixes />
+              {/* <PerformanceOptimizer /> */}
+            </Suspense>
+            <Toaster />
+            <Router />
+            <DebugInfo />
+          </div>
+        </TooltipProvider>
+      </QueryClientProvider>
+    </ErrorBoundary>
   );
 }
 

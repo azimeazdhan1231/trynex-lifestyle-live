@@ -53,7 +53,14 @@ export default function UnifiedProductCard({
     e.preventDefault();
     e.stopPropagation();
     console.log("🔍 UnifiedProductCard: Card clicked, navigating to product page:", product.name);
-    setLocation(`/product/${product.id}`);
+    try {
+      // Use direct navigation for better reliability
+      window.location.href = `/product/${product.id}`;
+    } catch (error) {
+      console.error('Error navigating to product:', error);
+      // Fallback to wouter navigation
+      setLocation(`/product/${product.id}`);
+    }
   };
 
   const handleAddToCart = (e: React.MouseEvent) => {
@@ -72,7 +79,14 @@ export default function UnifiedProductCard({
     e.preventDefault();
     e.stopPropagation();
     console.log("👁️ UnifiedProductCard: View details clicked for:", product.name);
-    setLocation(`/product/${product.id}`);
+    try {
+      // Use direct navigation for better reliability
+      window.location.href = `/product/${product.id}`;
+    } catch (error) {
+      console.error('Error navigating to product:', error);
+      // Fallback to wouter navigation
+      setLocation(`/product/${product.id}`);
+    }
   };
 
   const handleToggleFavorite = (e: React.MouseEvent) => {
