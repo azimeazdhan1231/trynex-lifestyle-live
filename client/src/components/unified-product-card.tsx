@@ -1,9 +1,8 @@
 import { useState } from "react";
-import { Link } from "wouter";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Star, ShoppingCart, Heart, Eye } from "lucide-react";
+import { Star, ShoppingCart, Heart, Eye, Palette } from "lucide-react";
 import { formatPrice } from "@/lib/constants";
 import { useCart } from "@/hooks/use-cart";
 import type { Product } from "@shared/schema";
@@ -11,21 +10,43 @@ import type { Product } from "@shared/schema";
 interface UnifiedProductCardProps {
   product: Product;
   className?: string;
+  onViewProduct: (product: Product) => void;
+  onCustomize?: (product: Product) => void;
+  onAddToCart: (product: Product) => void;
 }
 
-export default function UnifiedProductCard({ product, className = "" }: UnifiedProductCardProps) {
+export default function UnifiedProductCard({ 
+  product, 
+  className = "", 
+  onViewProduct, 
+  onCustomize, 
+  onAddToCart 
+}: UnifiedProductCardProps) {
   const [isHovered, setIsHovered] = useState(false);
-  const { addToCart } = useCart();
 
   const handleAddToCart = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     
     try {
-      await addToCart(product);
+      onAddToCart(product);
       console.log('Product added to cart:', product.name);
     } catch (error) {
       console.error('Error adding to cart:', error);
+    }
+  };
+
+  const handleViewProduct = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    onViewProduct(product);
+  };
+
+  const handleCustomize = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (onCustomize) {
+      onCustomize(product);
     }
   };
 
@@ -37,8 +58,8 @@ export default function UnifiedProductCard({ product, className = "" }: UnifiedP
       className={`group cursor-pointer transition-all duration-300 hover:shadow-lg hover:-translate-y-1 overflow-hidden ${className}`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
+      onClick={handleViewProduct}
     >
-      <Link href={`/product/${product.id}`} className="block">
         <div className="relative">
           {/* Product Image */}
           <div className="aspect-square overflow-hidden bg-gray-100">
@@ -95,11 +116,7 @@ export default function UnifiedProductCard({ product, className = "" }: UnifiedP
               size="sm"
               variant="secondary"
               className="w-8 h-8 p-0 bg-white/90 hover:bg-white"
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                // Handle quick view
-              }}
+              onClick={handleViewProduct}
             >
               <Eye className="w-4 h-4" />
             </Button>
@@ -122,7 +139,10 @@ export default function UnifiedProductCard({ product, className = "" }: UnifiedP
           )}
 
           {/* Product Name */}
-          <h3 className="font-medium text-gray-900 line-clamp-2 mb-2 min-h-[2.5rem]">
+          <h3 
+            className="font-medium text-gray-900 line-clamp-2 mb-2 min-h-[2.5rem] hover:text-primary cursor-pointer"
+            onClick={handleViewProduct}
+          >
             {product.name}
           </h3>
 
@@ -157,18 +177,44 @@ export default function UnifiedProductCard({ product, className = "" }: UnifiedP
             </div>
           </div>
 
-          {/* Add to Cart Button */}
-          <Button
-            onClick={handleAddToCart}
-            disabled={product.stock <= 0}
-            className="w-full transition-all duration-300"
-            size="sm"
-          >
-            <ShoppingCart className="w-4 h-4 mr-2" />
-            কার্টে যোগ করুন
-          </Button>
+          {/* Action Buttons */}
+          <div className="space-y-2">
+            <Button
+              onClick={handleAddToCart}
+              disabled={product.stock <= 0}
+              className="w-full transition-all duration-300"
+              size="sm"
+            >
+              <ShoppingCart className="w-4 h-4 mr-2" />
+              কার্টে যোগ করুন
+            </Button>
+            
+            {/* View Details Button */}
+            <div className="grid grid-cols-2 gap-2">
+              <Button
+                onClick={handleViewProduct}
+                variant="outline"
+                size="sm"
+                className="w-full"
+              >
+                <Eye className="w-4 h-4 mr-1" />
+                দেখুন
+              </Button>
+              
+              {onCustomize && (
+                <Button
+                  onClick={handleCustomize}
+                  variant="outline"
+                  size="sm"
+                  className="w-full bg-purple-50 border-purple-300 text-purple-600 hover:bg-purple-100"
+                >
+                  <Palette className="w-4 h-4 mr-1" />
+                  কাস্টম
+                </Button>
+              )}
+            </div>
+          </div>
         </CardContent>
-      </Link>
     </Card>
   );
 }
