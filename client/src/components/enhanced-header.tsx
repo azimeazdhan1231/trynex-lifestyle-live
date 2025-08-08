@@ -62,13 +62,13 @@ export default function EnhancedHeader() {
         <div className="container mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
             {/* Logo */}
-            <Link href="/" className="flex items-center gap-2">
-              <div className="w-10 h-10 bg-gradient-to-br from-orange-400 to-red-500 rounded-xl flex items-center justify-center text-white font-bold text-lg">
+            <Link href="/" className="flex items-center gap-2 flex-1 sm:flex-none">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-orange-400 to-red-500 rounded-xl flex items-center justify-center text-white font-bold text-sm sm:text-lg">
                 T
               </div>
-              <div className="hidden sm:block">
-                <h1 className="text-xl font-bold text-gray-800">TryneX Shop</h1>
-                <p className="text-xs text-gray-500">Lifestyle Collection</p>
+              <div className="block">
+                <h1 className="text-base sm:text-xl font-bold text-gray-800">TryneX Shop</h1>
+                <p className="text-xs text-gray-500 hidden sm:block">Lifestyle Collection</p>
               </div>
             </Link>
 
@@ -91,6 +91,18 @@ export default function EnhancedHeader() {
                   খুঁজুন
                 </Button>
               </form>
+            </div>
+
+            {/* Mobile Search Icon */}
+            <div className="flex items-center gap-1 sm:hidden">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsMenuOpen(true)}
+                className="p-2"
+              >
+                <Search className="w-5 h-5" />
+              </Button>
             </div>
 
             {/* Header Actions */}
@@ -156,106 +168,105 @@ export default function EnhancedHeader() {
                     <Menu className="w-5 h-5" />
                   </Button>
                 </SheetTrigger>
-                <SheetContent side="right" className="w-full max-w-xs sm:max-w-sm bg-white border-l border-gray-200 shadow-xl">
-                  <div className="flex flex-col gap-4 sm:gap-6 pt-4 sm:pt-6 h-full overflow-y-auto">
-                    {/* Mobile Search */}
-                    <form onSubmit={handleSearch} className="relative px-1">
-                      <Input
-                        type="text"
-                        placeholder="পণ্য খুঁজুন..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full pl-10 pr-4 h-10 sm:h-11 rounded-xl border-gray-300 focus:border-primary focus:ring-2 focus:ring-primary/20 text-sm sm:text-base"
-                      />
-                      <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-                      <Button
-                        type="submit"
-                        size="sm"
-                        className="absolute right-2 top-1/2 transform -translate-y-1/2 h-7 sm:h-8 px-2 sm:px-3 text-xs sm:text-sm rounded-lg"
-                      >
-                        খুঁজুন
-                      </Button>
-                    </form>
-
-                    {/* Mobile User Actions */}
-                    <div className="bg-gradient-to-r from-primary/10 to-primary/5 rounded-xl p-3 sm:p-4 mx-1">
-                      {user ? (
-                        <div className="flex flex-col gap-2 sm:gap-3">
-                          <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-primary rounded-full flex items-center justify-center text-white font-bold text-sm sm:text-base">
-                              {user.firstName?.charAt(0)}
-                            </div>
-                            <div>
-                              <div className="text-base sm:text-lg font-medium text-gray-800 truncate">
-                                স্বাগতম, {user.firstName}
-                              </div>
-                              <div className="text-xs sm:text-sm text-gray-500">
-                                গ্রাহক অ্যাকাউন্ট
-                              </div>
-                            </div>
-                          </div>
-                          <Button
-                            variant="outline"
-                            onClick={handleLogout}
-                            className="w-full h-9 sm:h-11 rounded-xl border-primary text-primary hover:bg-primary hover:text-white text-sm sm:text-base transition-all duration-200"
-                          >
-                            লগআউট
-                          </Button>
+                <SheetContent side="right" className="w-full max-w-xs sm:max-w-sm bg-white border-l border-gray-200 shadow-xl p-0">
+                  <div className="flex flex-col h-full">
+                    {/* Header */}
+                    <div className="p-4 border-b border-gray-200">
+                      <div className="flex items-center gap-2 mb-4">
+                        <div className="w-8 h-8 bg-gradient-to-br from-orange-400 to-red-500 rounded-lg flex items-center justify-center text-white font-bold text-sm">
+                          T
                         </div>
-                      ) : (
-                        <div className="flex flex-col gap-2 sm:gap-3">
-                          <div className="text-center mb-1 sm:mb-2">
-                            <h3 className="font-semibold text-gray-800 text-sm sm:text-base">আপনার অ্যাকাউন্ট</h3>
-                            <p className="text-xs sm:text-sm text-gray-600">লগইন করুন বা নতুন অ্যাকাউন্ট তৈরি করুন</p>
-                          </div>
-                          <Button
-                            onClick={() => {
-                              setShowLogin(true);
-                              setIsMenuOpen(false);
-                            }}
-                            className="w-full h-9 sm:h-11 rounded-xl bg-primary hover:bg-primary/90 text-sm sm:text-base transition-all duration-200"
-                          >
-                            <User className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
-                            লগইন
-                          </Button>
-                          <Button
-                            variant="outline"
-                            onClick={() => {
-                              setShowRegistration(true);
-                              setIsMenuOpen(false);
-                            }}
-                            className="w-full h-9 sm:h-11 rounded-xl border-primary text-primary hover:bg-primary hover:text-white text-sm sm:text-base transition-all duration-200"
-                          >
-                            রেজিস্টার করুন
-                          </Button>
+                        <div>
+                          <h2 className="font-bold text-gray-800">TryneX Shop</h2>
+                          <p className="text-xs text-gray-500">Lifestyle Collection</p>
                         </div>
-                      )}
+                      </div>
+                      
+                      {/* Mobile Search */}
+                      <form onSubmit={handleSearch} className="relative">
+                        <Input
+                          type="text"
+                          placeholder="পণ্য খুঁজুন..."
+                          value={searchQuery}
+                          onChange={(e) => setSearchQuery(e.target.value)}
+                          className="w-full pl-10 pr-16 h-11 rounded-xl border-gray-300 focus:border-primary focus:ring-2 focus:ring-primary/20"
+                        />
+                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                        <Button
+                          type="submit"
+                          size="sm"
+                          className="absolute right-1 top-1/2 transform -translate-y-1/2 h-9 px-3 text-sm rounded-lg"
+                        >
+                          খুঁজুন
+                        </Button>
+                      </form>
                     </div>
 
-                    {/* Mobile Navigation */}
-                    <nav className="flex flex-col gap-1 flex-1 px-1">
-                      <h3 className="font-semibold text-gray-800 mb-2 sm:mb-3 px-2 text-sm sm:text-base">মেনু</h3>
-                      {navLinks.map((link) => (
-                        <Link
-                          key={link.href}
-                          href={link.href}
-                          className={`flex items-center py-2.5 sm:py-3 px-3 sm:px-4 rounded-xl transition-all duration-200 font-medium text-sm sm:text-base ${
-                            location === link.href
-                              ? 'bg-primary text-white shadow-md'
-                              : 'text-gray-700 hover:bg-gray-100 hover:text-primary active:bg-gray-200'
-                          }`}
-                          onClick={() => setIsMenuOpen(false)}
-                        >
-                          {link.label}
-                        </Link>
-                      ))}
-                    </nav>
-                    
-                    {/* Mobile Menu Footer */}
-                    <div className="mt-auto pt-4 border-t border-gray-200 mx-1">
-                      <div className="text-center">
-                        <p className="text-xs text-gray-500 mb-2">TryneX Shop</p>
-                        <p className="text-xs text-gray-400">Lifestyle Collection</p>
+                    {/* Navigation Links */}
+                    <div className="flex-1 overflow-y-auto">
+                      <nav className="p-4">
+                        <h3 className="text-sm font-semibold text-gray-900 mb-4">মেনু</h3>
+                        <div className="space-y-2">
+                          {navLinks.map((link) => (
+                            <Link key={link.href} href={link.href}>
+                              <Button
+                                variant="ghost"
+                                className={`w-full justify-start h-12 px-4 text-base font-medium rounded-xl hover:bg-primary/10 hover:text-primary transition-all duration-200 ${
+                                  location === link.href 
+                                    ? 'bg-primary text-white hover:bg-primary hover:text-white' 
+                                    : 'text-gray-700'
+                                }`}
+                                onClick={() => {
+                                  setIsMenuOpen(false);
+                                  navigate(link.href);
+                                }}
+                              >
+                                {link.label}
+                              </Button>
+                            </Link>
+                          ))}
+                        </div>
+                      </nav>
+
+                      {/* User Actions in Mobile Menu */}
+                      <div className="mt-6 p-4 bg-gray-50 rounded-xl">
+                        {user ? (
+                          <div className="flex flex-col gap-3">
+                            <div className="text-center">
+                              <p className="font-medium text-gray-800">স্বাগতম, {user.firstName}</p>
+                            </div>
+                            <Button
+                              variant="outline"
+                              onClick={handleLogout}
+                              className="w-full"
+                            >
+                              লগআউট
+                            </Button>
+                          </div>
+                        ) : (
+                          <div className="flex flex-col gap-3">
+                            <Button
+                              onClick={() => {
+                                setShowLogin(true);
+                                setIsMenuOpen(false);
+                              }}
+                              className="w-full"
+                            >
+                              <User className="w-4 h-4 mr-2" />
+                              লগইন
+                            </Button>
+                            <Button
+                              variant="outline"
+                              onClick={() => {
+                                setShowRegistration(true);
+                                setIsMenuOpen(false);
+                              }}
+                              className="w-full"
+                            >
+                              রেজিস্টার করুন
+                            </Button>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
