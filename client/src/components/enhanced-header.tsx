@@ -18,6 +18,7 @@ import { useCart } from '@/hooks/use-cart';
 import { COMPANY_NAME, WHATSAPP_NUMBER } from '@/lib/constants';
 import YoutubeSearchBar from '@/components/search/youtube-search-bar';
 import CartModal from '@/components/cart-modal';
+import SearchBar from '@/components/search-bar';
 
 export default function EnhancedHeader() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -33,7 +34,7 @@ export default function EnhancedHeader() {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 10);
     };
-    
+
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
@@ -78,8 +79,14 @@ export default function EnhancedHeader() {
         initialQuery=""
       />
 
+      {/* Search Modal */}
+      <SearchBar 
+        isOpen={showSearchModal}
+        onClose={() => setShowSearchModal(false)}
+      />
+
       {/* Cart Modal */}
-      <CartModal
+      <CartModal 
         isOpen={showCartModal}
         onClose={() => setShowCartModal(false)}
       />
@@ -243,6 +250,17 @@ export default function EnhancedHeader() {
                   )}
                 </Link>
               ))}
+              {/* Mobile Search Nav Item */}
+              <button 
+                onClick={() => {
+                  setShowSearchModal(true);
+                  setIsMenuOpen(false);
+                }}
+                className="flex items-center gap-3 px-4 py-3 hover:bg-gray-100 rounded-lg transition-colors w-full text-left"
+              >
+                <Search className="w-5 h-5" />
+                <span>খুঁজুন</span>
+              </button>
             </nav>
 
             {/* Mobile Actions */}
@@ -265,7 +283,7 @@ export default function EnhancedHeader() {
                   <span className="font-medium">কল করুন</span>
                 </Button>
               </div>
-              
+
               {/* Quick Contact Info */}
               <div className="text-center pt-4 border-t border-gray-200">
                 <p className="text-sm text-gray-600 mb-2">দ্রুত যোগাযোগ</p>
