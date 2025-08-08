@@ -80,28 +80,28 @@ export default function ProductModal({ product, isOpen, onClose, onAddToCart, on
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="modal-container modal-large">
-        <DialogHeader>
-          <DialogTitle className="text-2xl font-bold text-gray-800">
-            {product.name}
-          </DialogTitle>
-          <DialogDescription className="sr-only">
-            পণ্যের বিস্তারিত তথ্য দেখুন এবং কার্টে যোগ করুন
-          </DialogDescription>
-        </DialogHeader>
-
         <div className="modal-content">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+          <DialogHeader className="mb-6">
+            <DialogTitle className="text-2xl font-bold text-gray-800">
+              {product.name}
+            </DialogTitle>
+            <DialogDescription className="sr-only">
+              পণ্যের বিস্তারিত তথ্য দেখুন এবং কার্টে যোগ করুন
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Product Image */}
-            <div className="aspect-square overflow-hidden rounded-lg border">
+            <div className="aspect-square overflow-hidden rounded-lg border bg-gray-50">
               <img
                 src={product.image_url || "https://images.unsplash.com/photo-1544787219-7f47ccb76574?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"}
                 alt={product.name}
                 className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                loading="lazy"
               />
             </div>
 
             {/* Product Details */}
-            <div className="space-y-4 md:space-y-6">
+            <div className="space-y-6">
               <div>
                 <div className="flex items-center justify-between mb-4">
                   <span className="text-2xl md:text-3xl font-bold text-primary">{formatPrice(product.price)}</span>

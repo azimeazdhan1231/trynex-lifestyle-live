@@ -32,34 +32,24 @@
   animation: pulse-glow 2s ease-in-out infinite;
 }
 
-/* Universal Modal Centering - All Modals */
-[data-radix-popper-content-wrapper] {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  z-index: 9999;
-}
-
-/* Primary Dialog Content */
+/* Complete Modal System Reset and Fix */
 [data-radix-dialog-content] {
-  position: fixed;
-  inset: 0;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  z-index: 10000;
-  width: min(calc(100vw - 32px), 500px);
-  max-height: calc(100vh - 64px);
-  margin: 0;
-  padding: 20px;
-  overflow-y: auto;
-  overflow-x: hidden;
-  border-radius: 12px;
-  background: hsl(var(--background));
-  box-shadow: 0 10px 30px hsl(0 0% 0% / 0.15);
-  box-sizing: border-box;
-  border: 1px solid hsl(var(--border));
+  position: fixed !important;
+  top: 2% !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  z-index: 9999 !important;
+  width: 96vw !important;
+  max-width: 1200px !important;
+  height: 96vh !important;
+  max-height: 96vh !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  border-radius: 12px !important;
+  background: white !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
+  border: 1px solid #e5e7eb !important;
 }
 
 /* Sheet and Drawer Content */
@@ -122,47 +112,67 @@
   transform: scale(1.02);
 }
 
-/* Modal styling - Enhanced for proper display */
+/* Simplified Modal Classes */
 .modal-container {
-  @apply w-[95vw] max-w-6xl max-h-[95vh];
-  @apply mx-auto my-auto;
-  @apply flex flex-col;
-  @apply border-0 shadow-2xl rounded-xl bg-white;
+  width: 100% !important;
+  height: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
   overflow: hidden !important;
+  background: white !important;
 }
 
-/* Ensure modal content scrolls properly */
 .modal-content {
-  @apply overflow-y-auto flex-1 p-6;
-  max-height: calc(95vh - 120px);
+  flex: 1 !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  padding: 24px !important;
+  scrollbar-width: thin !important;
 }
 
-/* Large Modal for Product Details */
-.modal-large {
-  @apply w-[98vw] max-w-7xl max-h-[98vh];
+.modal-large .modal-content {
+  padding: 32px !important;
 }
 
-/* Mobile specific modal adjustments */
+/* Override all existing modal positioning */
+.modal-large [data-radix-dialog-content] {
+  width: 98vw !important;
+  max-width: 1200px !important;
+  max-height: 98vh !important;
+}
+
+/* Mobile optimizations */
 @media (max-width: 768px) {
-  .modal-container {
-    @apply w-[98vw] max-h-[96vh] rounded-lg;
+  [data-radix-dialog-content] {
+    width: 98vw !important;
+    height: 98vh !important;
+    top: 1% !important;
+    max-width: 98vw !important;
+    max-height: 98vh !important;
   }
   
   .modal-content {
-    @apply p-4;
-    max-height: calc(96vh - 100px);
+    padding: 16px !important;
   }
 }
 
-/* Fix dialog positioning */
-[role="dialog"] {
-  position: fixed !important;
-  inset: 0 !important;
-  z-index: 50 !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  padding: 1rem !important;
+/* Ensure scrollable content */
+.modal-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.modal-content::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.modal-content::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}
+
+.modal-content::-webkit-scrollbar-thumb:hover {
+  background: #555;
 }
 
 /* Additional performance optimizations */
