@@ -8,7 +8,7 @@ let productsCache: any[] = [];
 let categoriesCache: any[] = [];
 let lastProductsCacheTime = 0;
 let lastCategoriesCacheTime = 0;
-const CACHE_TTL = 60000; // 1 minute cache
+const CACHE_TTL = 30000; // 30 second cache for faster updates
 
 // Preload products into memory on server start
 async function preloadCache() {
@@ -46,7 +46,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       // Aggressive caching headers for client-side caching
       res.set({
-        'Cache-Control': 'public, max-age=31536000, immutable', // 1 year cache
+        'Cache-Control': 'public, max-age=300, stale-while-revalidate=60', // 5 minute cache with background refresh
         'ETag': `products-v2-${lastProductsCacheTime}`,
         'Last-Modified': new Date(lastProductsCacheTime).toUTCString(),
         'Vary': 'Accept-Encoding',

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -201,11 +201,14 @@ export default function CustomizeModalFixed({ product, isOpen, onClose, onAddToC
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="modal-container w-[95vw] max-w-4xl max-h-[90vh] overflow-y-auto bg-white dark:bg-gray-900 sm:w-full sm:max-w-4xl">
+      <DialogContent className="modal-container">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold text-gray-900 dark:text-white">
             {product?.name || "প্রোডাক্ট"} কাস্টমাইজ করুন
           </DialogTitle>
+          <DialogDescription className="sr-only">
+            পণ্যটি আপনার পছন্দ অনুযায়ী কাস্টমাইজ করুন
+          </DialogDescription>
         </DialogHeader>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

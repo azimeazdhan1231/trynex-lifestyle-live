@@ -32,7 +32,7 @@
   animation: pulse-glow 2s ease-in-out infinite;
 }
 
-/* Perfect Modal Centering - Clean Implementation */
+/* Universal Modal Centering - All Modals */
 [data-radix-popper-content-wrapper] {
   position: fixed;
   top: 50%;
@@ -41,41 +41,102 @@
   z-index: 9999;
 }
 
+/* Primary Dialog Content */
 [data-radix-dialog-content] {
   position: fixed;
+  inset: 0;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
   z-index: 10000;
-  width: calc(100vw - 32px);
-  max-width: 500px;
+  width: min(calc(100vw - 32px), 500px);
   max-height: calc(100vh - 64px);
   margin: 0;
   padding: 20px;
   overflow-y: auto;
   overflow-x: hidden;
   border-radius: 12px;
-  background: white;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+  background: hsl(var(--background));
+  box-shadow: 0 10px 30px hsl(0 0% 0% / 0.15);
   box-sizing: border-box;
+  border: 1px solid hsl(var(--border));
 }
 
+/* Sheet and Drawer Content */
+[data-radix-drawer-content],
+[data-vaul-drawer] {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 10000;
+  width: min(calc(100vw - 32px), 500px);
+  max-height: calc(100vh - 64px);
+  margin: 0;
+  padding: 20px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  border-radius: 12px;
+  background: hsl(var(--background));
+  box-shadow: 0 10px 30px hsl(0 0% 0% / 0.15);
+  box-sizing: border-box;
+  border: 1px solid hsl(var(--border));
+}
+
+/* Mobile Responsive Breakpoints */
 @media (max-width: 768px) {
-  [data-radix-dialog-content] {
+  [data-radix-dialog-content],
+  [data-radix-drawer-content],
+  [data-vaul-drawer] {
     width: calc(100vw - 24px);
-    max-width: calc(100vw - 24px);
     max-height: calc(100vh - 48px);
     padding: 16px;
   }
 }
 
 @media (max-width: 480px) {
-  [data-radix-dialog-content] {
+  [data-radix-dialog-content],
+  [data-radix-drawer-content], 
+  [data-vaul-drawer] {
     width: calc(100vw - 16px);
-    max-width: calc(100vw - 16px);
     max-height: calc(100vh - 32px);
     padding: 12px;
   }
+}
+
+/* Performance Optimizations */
+* {
+  will-change: auto;
+}
+
+.loading-skeleton {
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
+.modal-trigger {
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+
+.modal-trigger:hover {
+  transform: scale(1.02);
+}
+
+/* Additional performance optimizations */
+img[loading="lazy"] {
+  will-change: transform;
+}
+
+.product-card {
+  contain: layout style paint;
+}
+
+/* Critical modal positioning override for all edge cases */
+[data-state="open"][data-radix-dialog-content] {
+  position: fixed !important;
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
 }
 
 /* Enhanced Mobile Modal Optimization */

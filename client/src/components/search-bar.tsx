@@ -5,7 +5,7 @@ import { Search, X, Loader2, ShoppingCart, Bot, Sparkles, Mic, MicOff } from 'lu
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { PRODUCT_CATEGORIES, formatPrice } from '@/lib/constants';
 import { useLocation } from 'wouter';
 import type { Product } from '@shared/schema';
@@ -163,12 +163,15 @@ export default function SearchBar({ isOpen, onClose, onProductSelect }: SearchBa
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="modal-container w-[95vw] max-w-4xl max-h-[90vh] p-0 overflow-hidden sm:w-full sm:max-w-4xl">
+      <DialogContent className="modal-container">
         <DialogHeader className="px-6 py-4 border-b bg-gray-50">
           <DialogTitle className="flex items-center gap-3 text-xl">
             <Search className="w-6 h-6 text-primary" />
             পণ্য খুঁজুন
           </DialogTitle>
+          <DialogDescription className="sr-only">
+            পণ্য খুঁজুন এবং তাৎক্ষণিক ফলাফল দেখুন
+          </DialogDescription>
         </DialogHeader>
 
         {/* Search Input */}

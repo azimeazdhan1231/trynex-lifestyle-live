@@ -1,4 +1,4 @@
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ShoppingCart, MessageCircle, X, Plus, Minus, Palette } from "lucide-react";
@@ -79,11 +79,14 @@ export default function ProductModal({ product, isOpen, onClose, onAddToCart, on
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="modal-container w-[95vw] max-w-2xl max-h-[90vh] overflow-y-auto rounded-lg p-4 sm:p-6 sm:w-full sm:max-w-2xl">
+      <DialogContent className="modal-container">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold text-gray-800">
             {product.name}
           </DialogTitle>
+          <DialogDescription className="sr-only">
+            পণ্যের বিস্তারিত তথ্য দেখুন এবং কার্টে যোগ করুন
+          </DialogDescription>
         </DialogHeader>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">

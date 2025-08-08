@@ -61,7 +61,7 @@ export default function PopupOffer() {
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogContent className="modal-container w-[95vw] max-w-md max-h-[90vh] overflow-y-auto bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 sm:w-full sm:max-w-md">
+      <DialogContent className="modal-container">
         {/* Modal Container */}
         <div className="relative w-full max-w-sm mx-auto animate-in zoom-in-95 duration-300">
           {/* Close Button */}
