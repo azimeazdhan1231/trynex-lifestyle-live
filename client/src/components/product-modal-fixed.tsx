@@ -234,7 +234,7 @@ export default function ProductModal({ product, isOpen, onClose, onAddToCart, on
 
       {/* Image Overlay Modal */}
       <Dialog open={isImageOverlayOpen} onOpenChange={setIsImageOverlayOpen}>
-        <DialogContent className="max-w-4xl w-[95vw] h-[95vh] p-0 bg-black/95 border-0">
+        <DialogContent className="max-w-[95vw] w-[95vw] max-h-[95vh] h-[95vh] p-0 bg-black/95 border-0 overflow-hidden">
           <DialogHeader className="sr-only">
             <DialogTitle>ছবি দেখুন</DialogTitle>
             <DialogDescription>পূর্ণ আকারে পণ্যের ছবি</DialogDescription>
@@ -243,25 +243,29 @@ export default function ProductModal({ product, isOpen, onClose, onAddToCart, on
           {/* Close Button */}
           <button
             onClick={() => setIsImageOverlayOpen(false)}
-            className="absolute top-4 right-4 z-50 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full transition-colors"
+            className="absolute top-4 right-4 z-50 bg-black/70 hover:bg-black/90 text-white p-3 rounded-full transition-all duration-200 shadow-lg"
           >
             <X className="w-6 h-6" />
           </button>
 
-          {/* Full Size Image */}
-          <div className="flex items-center justify-center h-full p-4">
+          {/* Full Size Image Container - Click to close */}
+          <div 
+            className="flex items-center justify-center h-full p-8 cursor-pointer"
+            onClick={() => setIsImageOverlayOpen(false)}
+          >
             <img
-              src={product.image_url || "https://images.unsplash.com/photo-1544787219-7f47ccb76574?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&h=900"}
+              src={product.image_url || "https://images.unsplash.com/photo-1544787219-7f47ccb76574?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=1200"}
               alt={product.name}
-              className="max-w-full max-h-full object-contain rounded-lg"
+              className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
               loading="lazy"
+              onClick={(e) => e.stopPropagation()} // Prevent closing when clicking on image itself
             />
           </div>
 
           {/* Product Name Overlay */}
-          <div className="absolute bottom-4 left-4 right-4 bg-black/70 text-white p-4 rounded-lg">
-            <h3 className="text-lg font-semibold">{product.name}</h3>
-            <p className="text-sm opacity-80">ছবিতে ক্লিক করে বন্ধ করুন অথবা ESC চাপুন</p>
+          <div className="absolute bottom-6 left-6 right-6 bg-black/80 backdrop-blur-sm text-white p-4 rounded-lg border border-white/10">
+            <h3 className="text-xl font-semibold mb-2">{product.name}</h3>
+            <p className="text-sm opacity-90">ছবির বাইরে ক্লিক করুন অথবা ESC চাপুন বন্ধ করতে</p>
           </div>
         </DialogContent>
       </Dialog>
