@@ -74,7 +74,7 @@ export default function AIChatbot({ onProductSelect }: AIChatbotProps) {
       });
 
       const data = await response.json();
-      
+
       const assistantMessage: ChatMessage = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
@@ -181,7 +181,7 @@ export default function AIChatbot({ onProductSelect }: AIChatbotProps) {
                       <span className="text-xs opacity-70">{message.timestamp}</span>
                     </div>
                     <p className="text-sm whitespace-pre-wrap">{message.content}</p>
-                    
+
                     {/* Product results */}
                     {message.products && message.products.length > 0 && (
                       <div className="mt-3 space-y-2">
@@ -216,7 +216,7 @@ export default function AIChatbot({ onProductSelect }: AIChatbotProps) {
                   </div>
                 </div>
               ))}
-              
+
               {isLoading && (
                 <div className="flex justify-start">
                   <div className="bg-white border border-gray-200 rounded-lg p-3 shadow-sm">
@@ -231,7 +231,7 @@ export default function AIChatbot({ onProductSelect }: AIChatbotProps) {
                   </div>
                 </div>
               )}
-              
+
               <div ref={messagesEndRef} />
             </CardContent>
 

@@ -25,7 +25,7 @@ export const trackEvent = (eventName: string, category?: string, label?: string,
       value: value,
     });
   }
-  
+
   // Facebook Pixel tracking
   if (typeof window !== 'undefined' && window.fbq) {
     window.fbq('track', eventName, {
@@ -42,7 +42,7 @@ export const trackPageView = (path: string) => {
       page_path: path,
     });
   }
-  
+
   if (typeof window !== 'undefined' && window.fbq) {
     window.fbq('track', 'PageView');
   }
@@ -75,12 +75,12 @@ export const loadFacebookPixelFromSettings = async () => {
       console.log('No settings available, skipping Facebook Pixel');
       return;
     }
-    
+
     const settings = await response.json();
-    
+
     // Check for Facebook Pixel ID in various possible keys
     const pixelId = settings.facebook_pixel_id || settings.fb_pixel_id || settings.fbPixelId;
-    
+
     if (pixelId && pixelId.trim()) {
       console.log('Loading Facebook Pixel with ID:', pixelId);
       loadFacebookPixel(pixelId.trim());

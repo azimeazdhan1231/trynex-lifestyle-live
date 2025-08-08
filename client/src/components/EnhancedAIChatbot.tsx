@@ -161,7 +161,7 @@ export default function EnhancedAIChatbot({ onProductSelect }: AIChatbotProps) {
         console.warn('AI API failed, using fallback');
         return generateFallbackResponse(userMessage);
       }
-      
+
       const data = await response.json();
       return data.reply || data.fallback || generateFallbackResponse(userMessage);
     } catch (error) {
@@ -172,24 +172,24 @@ export default function EnhancedAIChatbot({ onProductSelect }: AIChatbotProps) {
 
   const generateFallbackResponse = (userMessage: string): string => {
     const message = userMessage.toLowerCase();
-    
+
     if (message.includes('পণ্য') || message.includes('product') || message.includes('আইটেম')) {
       const randomProducts = products.slice(0, 3);
       return `আমাদের জনপ্রিয় পণ্য:\n${randomProducts.map(p => `• ${p.name} - ${formatPrice(Number(p.price))}`).join('\n')}\n\nআরো দেখতে "সব পণ্য" বলুন।`;
     }
-    
+
     if (message.includes('ডেলিভারি') || message.includes('delivery')) {
       return `📦 ডেলিভারি তথ্য:\n• ঢাকায়: ৮০ টাকা (২৪ ঘন্টা)\n• ঢাকার বাইরে: ৮০-১২০ টাকা (২-৩ দিন)\n• বিনামূল্যে রিটার্ন ৭ দিনের মধ্যে`;
     }
-    
+
     if (message.includes('পেমেন্ট') || message.includes('payment')) {
       return `💳 পেমেন্ট পদ্ধতি:\n• বিকাশ/নগদ\n• ক্যাশ অন ডেলিভারি\n• অনলাইন পেমেন্ট\n\nসবগুলো নিরাপদ ও সুবিধাজনক!`;
     }
-    
+
     if (message.includes('যোগাযোগ') || message.includes('contact')) {
       return `📞 যোগাযোগ:\n• হোয়াটসঅ্যাপ: ${WHATSAPP_NUMBER}\n• ২৪/৭ কাস্টমার সাপোর্ট\n• তাৎক্ষণিক সহায়তার জন্য কল করুন`;
     }
-    
+
     return `ধন্যবাদ! আমি ${BUSINESS_DATA.name} এর AI সহায়ক। আপনি চাইলে:\n\n• "পণ্য দেখান" - সব পণ্য দেখতে\n• "ডেলিভারি" - ডেলিভারি তথ্য\n• "পেমেন্ট" - পেমেন্ট পদ্ধতি\n• "যোগাযোগ" - কাস্টমার সাপোর্ট\n\nবলুন, আর আমি সাহায্য করব! 😊`;
   };
 
@@ -209,7 +209,7 @@ export default function EnhancedAIChatbot({ onProductSelect }: AIChatbotProps) {
 
     try {
       const aiReply = await getAIResponse(inputMessage);
-      
+
       const assistantMessage: ChatMessage = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
@@ -218,12 +218,12 @@ export default function EnhancedAIChatbot({ onProductSelect }: AIChatbotProps) {
       };
 
       setMessages(prev => [...prev, assistantMessage]);
-      
+
       // Auto-speak response if not too long
       if (aiReply.length < 200) {
         setTimeout(() => speakMessage(aiReply), 500);
       }
-      
+
     } catch (error) {
       console.error('Chat error:', error);
       // Add error message to chat
