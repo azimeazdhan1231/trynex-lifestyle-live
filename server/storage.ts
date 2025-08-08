@@ -1,6 +1,7 @@
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import { eq, desc, and, gte, lte } from "drizzle-orm";
+import NodeCache from "node-cache";
 import { 
   products, orders, offers, admins, categories, promoCodes, analytics, siteSettings,
   users, userCarts, userOrders, blogs, pages,
@@ -15,8 +16,23 @@ import {
 
 const connectionString = process.env.DATABASE_URL || "postgresql://postgres.lxhhgdqfxmeohayceshb:Amiomito1Amiomito1@aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres";
 
-const client = postgres(connectionString);
+// Optimized connection with pooling
+const client = postgres(connectionString, {
+  max: 10,                    // Maximum connections in pool
+  idle_timeout: 20,           // Close idle connections after 20s
+  connect_timeout: 10,        // Connection timeout 10s
+  transform: {
+    undefined: null           // Transform undefined to null for PostgreSQL
+  }
+});
 const db = drizzle(client);
+
+// Cache layer for performance optimization
+const cache = new NodeCache({ 
+  stdTTL: 300,        // 5 minutes default TTL
+  checkperiod: 60,    // Check for expired keys every 60 seconds
+  useClones: false    // Return references instead of clones for better performance
+});
 
 export interface IStorage {
   // Products
@@ -102,14 +118,33 @@ export interface IStorage {
 
 export class DatabaseStorage implements IStorage {
   async getProducts(): Promise<Product[]> {
+    const cacheKey = 'products_all';
+    const cached = cache.get<Product[]>(cacheKey);
+    if (cached) {
+      console.log('✅ Products served from cache');
+      return cached;
+    }
+
     console.time('Database Query: getProducts');
     const result = await db.select().from(products).orderBy(desc(products.created_at));
     console.timeEnd('Database Query: getProducts');
+    
+    // Cache for 5 minutes
+    cache.set(cacheKey, result, 300);
+    console.log(`✅ Cached ${result.length} products`);
     return result;
   }
 
   async getProductsByCategory(category: string): Promise<Product[]> {
+    const cacheKey = `products_category_${category}`;
+    const cached = cache.get<Product[]>(cacheKey);
+    if (cached) {
+      console.log(`✅ Products for category ${category} served from cache`);
+      return cached;
+    }
+
     const result = await db.select().from(products).where(eq(products.category, category)).orderBy(desc(products.created_at));
+    cache.set(cacheKey, result, 300);
     return result;
   }
 
@@ -120,6 +155,11 @@ export class DatabaseStorage implements IStorage {
 
   async createProduct(product: InsertProduct): Promise<Product> {
     const result = await db.insert(products).values(product).returning();
+    // Clear cache when new product is added
+    cache.del('products_all');
+    if (product.category) {
+      cache.del(`products_category_${product.category}`);
+    }
     return result[0];
   }
 
