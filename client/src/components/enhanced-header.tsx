@@ -25,12 +25,14 @@ export default function EnhancedHeader() {
   const [showRegistration, setShowRegistration] = useState(false);
   const [showLogin, setShowLogin] = useState(false);
   const [user, setUser] = useState<UserData | null>(null);
+  const [isSearchOpen, setIsSearchOpen] = useState(false); // State for the search modal
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
       navigate(`/products?search=${encodeURIComponent(searchQuery.trim())}`);
       setSearchQuery('');
+      setIsSearchOpen(false); // Close search modal after search
     }
   };
 
@@ -98,7 +100,7 @@ export default function EnhancedHeader() {
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => setIsMenuOpen(true)}
+                onClick={() => setIsSearchOpen(true)} // Open search modal
                 className="p-2 touch-button hover:bg-gray-100 rounded-lg transition-all duration-200"
                 data-testid="button-mobile-search"
               >
@@ -188,7 +190,7 @@ export default function EnhancedHeader() {
                           <p className="text-xs text-gray-500">Lifestyle Collection</p>
                         </div>
                       </div>
-                      
+
                       {/* Mobile Search */}
                       <form onSubmit={handleSearch} className="relative">
                         <Input
@@ -303,7 +305,7 @@ export default function EnhancedHeader() {
 
       {/* Modals */}
       <CartModal isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
-      
+
       <UserRegistration
         isOpen={showRegistration}
         onClose={() => setShowRegistration(false)}
@@ -312,7 +314,7 @@ export default function EnhancedHeader() {
           setShowLogin(true);
         }}
       />
-      
+
       <UserLogin
         isOpen={showLogin}
         onClose={() => setShowLogin(false)}
@@ -321,6 +323,12 @@ export default function EnhancedHeader() {
           setShowRegistration(true);
         }}
         onLoginSuccess={handleLoginSuccess}
+      />
+
+      {/* YouTube-style Search Bar Modal */}
+      <SearchBar
+        isOpen={isSearchOpen}
+        onClose={() => setIsSearchOpen(false)}
       />
     </>
   );
