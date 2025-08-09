@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { formatPrice } from "@/lib/constants";
@@ -6,48 +6,22 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
 import { 
   Package, Users, TrendingUp, ShoppingCart, Star, DollarSign, Plus, Pencil, Trash2, Eye,
   BarChart3, Gift, Tag, PlusCircle, Calendar, AlertTriangle, FileText, Settings, 
-  MessageSquare, Award, Palette, Megaphone, ImageIcon, Phone, MapPin, Clock, Download,
-  RefreshCw, Search, Filter, ChevronLeft, ChevronRight, ExternalLink
+  MessageSquare, Award, Palette, Megaphone, RefreshCw, Search, Filter, Phone, MapPin, Clock,
+  CheckCircle, XCircle, X
 } from "lucide-react";
-// Types defined locally to avoid import issues
-interface Product {
-  id: string;
-  name: string;
-  description?: string;
-  price: number;
-  category: string;
-  stock: number;
-  image_url?: string;
-  is_active?: boolean;
-}
-
-interface Order {
-  id: string;
-  tracking_id: string;
-  customer_name: string;
-  phone: string;
-  district: string;
-  thana: string;
-  address?: string;
-  status: string;
-  total: string | number;
-  items: any[];
-  custom_instructions?: string;
-  custom_images?: any[];
-  created_at: string;
-}
 
 const ORDER_STATUSES = {
   pending: "অপেক্ষমান",
@@ -57,826 +31,1165 @@ const ORDER_STATUSES = {
   cancelled: "বাতিল"
 };
 
-// Enhanced Stats Component
-function DashboardStats() {
-  const { data: orders = [] } = useQuery({ queryKey: ["/api/orders"] });
-  const { data: products = [] } = useQuery({ queryKey: ["/api/products"] });
+const PRODUCT_CATEGORIES = [
+  "ইলেকট্রনিক্স", "ফ্যাশন", "বই", "খেলাধুলা", "সৌন্দর্য", "ঘর ও বাগান", 
+  "খাবার ও পানীয়", "পোশাক", "জুতা", "ব্যাগ", "ঘড়ি", "গয়না", "মোবাইল ও ট্যাবলেট"
+];
 
-  const stats = React.useMemo(() => {
-    const totalOrders = orders.length;
-    const totalRevenue = orders.reduce((sum: number, order: any) => {
-      return sum + (parseFloat(order.total) || 0);
-    }, 0);
-    const pendingOrders = orders.filter((order: any) => order.status === 'pending').length;
-    const lowStockProducts = products.filter((product: any) => product.stock < 10).length;
-
-    return {
-      totalOrders,
-      totalRevenue,
-      pendingOrders,
-      lowStockProducts,
-      totalProducts: products.length
-    };
-  }, [orders, products]);
-
-  return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">মোট অর্ডার</CardTitle>
-          <ShoppingCart className="h-4 w-4 text-muted-foreground" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">{stats.totalOrders}</div>
-          <p className="text-xs text-muted-foreground">সর্বমোট অর্ডার সংখ্যা</p>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">মোট আয়</CardTitle>
-          <DollarSign className="h-4 w-4 text-muted-foreground" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">{formatPrice(stats.totalRevenue)}</div>
-          <p className="text-xs text-muted-foreground">সর্বমোট বিক্রয়</p>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">অপেক্ষমান অর্ডার</CardTitle>
-          <Clock className="h-4 w-4 text-muted-foreground" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">{stats.pendingOrders}</div>
-          <p className="text-xs text-muted-foreground">প্রক্রিয়াকরণের জন্য অপেক্ষমান</p>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">কম স্টক</CardTitle>
-          <AlertTriangle className="h-4 w-4 text-muted-foreground" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">{stats.lowStockProducts}</div>
-          <p className="text-xs text-muted-foreground">১০টির কম স্টক</p>
-        </CardContent>
-      </Card>
-    </div>
-  );
-}
-
-// Enhanced Order Details Modal
-function OrderDetailsModal({ isOpen, onClose, order }: any) {
-  const [newStatus, setNewStatus] = useState(order?.status || 'pending');
+// Enhanced Product Form Modal with Perfect Form Handling
+function ProductFormModal({ 
+  isOpen, 
+  onClose, 
+  product, 
+  onSave 
+}: { 
+  isOpen: boolean; 
+  onClose: () => void; 
+  product?: any; 
+  onSave: () => void;
+}) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [isLoading, setIsLoading] = useState(false);
 
-  const updateStatusMutation = useMutation({
-    mutationFn: async ({ orderId, status }: { orderId: string, status: string }) => {
-      console.log(`🔄 Updating order ${orderId} to status: ${status}`);
-      
-      const response = await fetch(`/api/orders/${orderId}/status`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ status })
-      });
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      
-      return await response.json();
-    },
-    onSuccess: (data, variables) => {
-      console.log('✅ Status update successful:', data);
-      toast({
-        title: "সফল!",
-        description: `অর্ডার স্ট্যাটাস "${ORDER_STATUSES[variables.status as keyof typeof ORDER_STATUSES] || variables.status}" এ আপডেট হয়েছে`,
-      });
-      
-      // Optimistic updates
-      queryClient.setQueryData(["/api/orders"], (old: any[]) => {
-        if (!old) return old;
-        return old.map(item => 
-          item.id === variables.orderId 
-            ? { ...item, status: variables.status }
-            : item
-        );
-      });
-      
-      // Refetch after a short delay to ensure consistency
-      setTimeout(() => {
-        queryClient.invalidateQueries({ queryKey: ["/api/orders"] });
-      }, 500);
-      
-      onClose();
-    },
-    onError: (error: any) => {
-      console.error('❌ Status update failed:', error);
-      toast({
-        title: "ত্রুটি!",
-        description: error?.message || "স্ট্যাটাস আপডেট করতে সমস্যা হয়েছে",
-        variant: "destructive",
-      });
+  // Enhanced form with perfect default value handling
+  const form = useForm({
+    defaultValues: {
+      name: "",
+      description: "",
+      price: "",
+      stock: 0,
+      category: "",
+      image_url: "",
+      is_featured: false,
+      is_latest: false,
+      is_best_selling: false
     }
   });
 
-  if (!order) return null;
-
-  // Parse order items safely
-  const orderItems = (() => {
-    try {
-      if (Array.isArray(order.items)) return order.items;
-      if (typeof order.items === 'string') return JSON.parse(order.items);
-      return [];
-    } catch {
-      return [];
+  // Reset form when product changes or modal opens with proper values
+  React.useEffect(() => {
+    if (isOpen) {
+      if (product) {
+        form.reset({
+          name: product.name || "",
+          description: product.description || "",
+          price: product.price?.toString() || "",
+          stock: Number(product.stock) || 0,
+          category: product.category || "",
+          image_url: product.image_url || "",
+          is_featured: Boolean(product.is_featured),
+          is_latest: Boolean(product.is_latest),
+          is_best_selling: Boolean(product.is_best_selling)
+        });
+      } else {
+        form.reset({
+          name: "",
+          description: "",
+          price: "",
+          stock: 0,
+          category: "",
+          image_url: "",
+          is_featured: false,
+          is_latest: false,
+          is_best_selling: false
+        });
+      }
     }
-  })();
+  }, [isOpen, product, form]);
 
-  // Parse custom images safely
-  const customImages = (() => {
+  const onSubmit = async (data: any) => {
     try {
-      if (!order.custom_images) return [];
-      if (Array.isArray(order.custom_images)) return order.custom_images;
-      if (typeof order.custom_images === 'string') return JSON.parse(order.custom_images);
-      return [];
-    } catch {
-      return [];
-    }
-  })();
+      setIsLoading(true);
+      
+      // Validate required fields
+      if (!data.name?.trim()) {
+        toast({ title: "ত্রুটি", description: "পণ্যের নাম প্রয়োজন", variant: "destructive" });
+        return;
+      }
+      if (!data.category?.trim()) {
+        toast({ title: "ত্রুটি", description: "ক্যাটেগরি নির্বাচন করুন", variant: "destructive" });
+        return;
+      }
+      if (!data.price || parseFloat(data.price) < 0) {
+        toast({ title: "ত্রুটি", description: "সঠিক দাম দিন", variant: "destructive" });
+        return;
+      }
 
-  const formatDate = (dateString: string) => {
-    try {
-      const date = new Date(dateString);
-      return date.toLocaleDateString('bn-BD', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-        timeZone: 'Asia/Dhaka'
+      const productData = {
+        ...data,
+        price: parseFloat(data.price),
+        stock: parseInt(data.stock) || 0,
+        name: data.name.trim(),
+        description: data.description?.trim() || "",
+        category: data.category.trim(),
+        image_url: data.image_url?.trim() || ""
+      };
+
+      if (product?.id) {
+        await apiRequest("PUT", `/api/products/${product.id}`, productData);
+        toast({ title: "পণ্য আপডেট সফল", description: "পণ্যের তথ্য সফলভাবে আপডেট হয়েছে।" });
+      } else {
+        await apiRequest("POST", "/api/products", productData);
+        toast({ title: "পণ্য যোগ সফল", description: "নতুন পণ্য সফলভাবে যোগ করা হয়েছে।" });
+      }
+
+      queryClient.invalidateQueries({ queryKey: ["/api/products"] });
+      onSave();
+      onClose();
+      form.reset();
+    } catch (error: any) {
+      console.error("Error saving product:", error);
+      toast({ 
+        title: "ত্রুটি", 
+        description: `পণ্য সেভ করতে সমস্যা হয়েছে: ${error.message || 'অজানা ত্রুটি'}`,
+        variant: "destructive"
       });
-    } catch {
-      return 'তারিখ পাওয়া যায়নি';
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const handleStatusUpdate = () => {
-    if (order.id && newStatus && newStatus !== order.status) {
-      updateStatusMutation.mutate({ 
-        orderId: order.id, 
-        status: newStatus 
-      });
-    }
+  const handleClose = () => {
+    form.reset();
+    onClose();
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
+    <Dialog open={isOpen} onOpenChange={handleClose}>
+      <DialogContent 
+        className="w-[95vw] max-w-3xl max-h-[95vh] overflow-y-auto"
+        data-testid="product-form-modal"
+      >
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Package className="w-5 h-5" />
-            অর্ডার বিস্তারিত - #{order.tracking_id}
+          <DialogTitle className="flex items-center justify-between">
+            {product ? "পণ্য সম্পাদনা" : "নতুন পণ্য যোগ করুন"}
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={handleClose}
+              className="h-6 w-6 p-0"
+            >
+              <X className="h-4 w-4" />
+            </Button>
           </DialogTitle>
           <DialogDescription>
-            অর্ডার তৈরি: {formatDate(order.created_at)}
+            পণ্যের বিস্তারিত তথ্য দিন। সকল প্রয়োজনীয় ক্ষেত্র পূরণ করুন।
           </DialogDescription>
         </DialogHeader>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Customer Information */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Users className="w-4 h-4" />
-                কাস্টমার তথ্য
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="flex items-center gap-2">
-                <Users className="w-4 h-4 text-gray-500" />
-                <span className="font-medium">{order.customer_name}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Phone className="w-4 h-4 text-gray-500" />
-                <span>{order.phone}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <MapPin className="w-4 h-4 text-gray-500" />
-                <span>{order.district}, {order.thana}</span>
-              </div>
-              {order.address && (
-                <div className="text-sm text-gray-600">
-                  <strong>ঠিকানা:</strong> {order.address}
-                </div>
+        
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="name">পণ্যের নাম *</Label>
+              <Input
+                id="name"
+                {...form.register("name", { required: "পণ্যের নাম প্রয়োজন" })}
+                placeholder="পণ্যের নাম লিখুন"
+                data-testid="input-product-name"
+              />
+              {form.formState.errors.name && (
+                <p className="text-red-500 text-sm">{form.formState.errors.name.message}</p>
               )}
-            </CardContent>
-          </Card>
-
-          {/* Order Status */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Settings className="w-4 h-4" />
-                অর্ডার স্ট্যাটাস
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center gap-2">
-                <Badge variant={order.status === 'delivered' ? 'default' : 'secondary'}>
-                  {ORDER_STATUSES[order.status as keyof typeof ORDER_STATUSES] || order.status}
-                </Badge>
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="status-select">স্ট্যাটাস পরিবর্তন করুন</Label>
-                <Select value={newStatus} onValueChange={setNewStatus}>
-                  <SelectTrigger id="status-select">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Object.entries(ORDER_STATUSES).map(([key, value]) => (
-                      <SelectItem key={key} value={key}>{value}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <Button 
-                  onClick={handleStatusUpdate} 
-                  disabled={updateStatusMutation.isPending || newStatus === order.status}
-                  className="w-full"
-                >
-                  {updateStatusMutation.isPending ? (
-                    <>
-                      <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
-                      আপডেট হচ্ছে...
-                    </>
-                  ) : (
-                    "স্ট্যাটাস আপডেট করুন"
-                  )}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Order Items */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Package className="w-4 h-4" />
-              অর্ডার আইটেম
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {orderItems.length > 0 ? (
-                orderItems.map((item: any, index: number) => (
-                  <div key={index} className="flex justify-between items-center p-3 border rounded-lg">
-                    <div>
-                      <h4 className="font-medium">{item.name || item.product_name}</h4>
-                      <p className="text-sm text-gray-600">
-                        পরিমাণ: {item.quantity} × {formatPrice(Number(item.price || item.product_price || 0))}
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-medium">
-                        {formatPrice(Number(item.quantity || 1) * Number(item.price || item.product_price || 0))}
-                      </p>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <p className="text-gray-500">কোন আইটেম পাওয়া যায়নি</p>
-              )}
-              
-              {/* Total */}
-              <div className="border-t pt-4 flex justify-between font-bold text-lg">
-                <span>মোট:</span>
-                <span>{formatPrice(Number(order.total || 0))}</span>
-              </div>
             </div>
-          </CardContent>
-        </Card>
+            
+            <div className="space-y-2">
+              <Label htmlFor="category">ক্যাটেগরি *</Label>
+              <Select 
+                value={form.watch("category")} 
+                onValueChange={(value) => form.setValue("category", value)}
+              >
+                <SelectTrigger data-testid="select-category">
+                  <SelectValue placeholder="ক্যাটেগরি নির্বাচন করুন" />
+                </SelectTrigger>
+                <SelectContent>
+                  {PRODUCT_CATEGORIES.map((cat) => (
+                    <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {form.formState.errors.category && (
+                <p className="text-red-500 text-sm">ক্যাটেগরি নির্বাচন করুন</p>
+              )}
+            </div>
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="description">বিবরণ</Label>
+            <Textarea
+              id="description"
+              {...form.register("description")}
+              rows={3}
+              placeholder="পণ্যের বিস্তারিত বিবরণ"
+              data-testid="textarea-description"
+            />
+          </div>
 
-        {/* Custom Instructions */}
-        {order.custom_instructions && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <MessageSquare className="w-4 h-4" />
-                কাস্টম নির্দেশনা
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm bg-gray-50 p-3 rounded-lg border">
-                {order.custom_instructions}
-              </p>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Custom Images */}
-        {customImages && customImages.length > 0 && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <ImageIcon className="w-4 h-4" />
-                আপলোড করা ছবি ({customImages.length}টি)
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {customImages.map((image: any, index: number) => {
-                  const imageUrl = image?.url || image?.dataUrl || image?.data || image?.src || (typeof image === 'string' ? image : '');
-                  
-                  if (!imageUrl) {
-                    return null;
-                  }
-                  
-                  return (
-                    <div key={index} className="relative group">
-                      <img 
-                        src={imageUrl}
-                        alt={`কাস্টম ছবি ${index + 1}`}
-                        className="w-full h-24 object-cover rounded-lg border cursor-pointer hover:opacity-80 transition-opacity"
-                        onClick={() => window.open(imageUrl, '_blank')}
-                        onError={(e) => {
-                          e.currentTarget.style.display = 'none';
-                        }}
-                      />
-                      <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all rounded-lg flex items-center justify-center">
-                        <ExternalLink className="w-5 h-5 text-white opacity-0 group-hover:opacity-100" />
-                      </div>
-                    </div>
-                  );
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="price">দাম (টাকা) *</Label>
+              <Input
+                id="price"
+                type="number"
+                step="0.01"
+                min="0"
+                {...form.register("price", { 
+                  required: "দাম প্রয়োজন",
+                  min: { value: 0, message: "দাম ০ বা তার বেশি হতে হবে" }
                 })}
-              </div>
-            </CardContent>
-          </Card>
-        )}
+                placeholder="0.00"
+                data-testid="input-price"
+              />
+              {form.formState.errors.price && (
+                <p className="text-red-500 text-sm">{form.formState.errors.price.message}</p>
+              )}
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="stock">স্টক *</Label>
+              <Input
+                id="stock"
+                type="number"
+                min="0"
+                {...form.register("stock", { 
+                  required: "স্টক সংখ্যা প্রয়োজন",
+                  min: { value: 0, message: "স্টক ০ বা তার বেশি হতে হবে" }
+                })}
+                placeholder="0"
+                data-testid="input-stock"
+              />
+              {form.formState.errors.stock && (
+                <p className="text-red-500 text-sm">{form.formState.errors.stock.message}</p>
+              )}
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="image_url">ইমেজ URL</Label>
+            <Input
+              id="image_url"
+              {...form.register("image_url")}
+              placeholder="https://example.com/image.jpg"
+              data-testid="input-image-url"
+            />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="flex items-center space-x-2">
+              <Switch
+                id="is_featured"
+                checked={form.watch("is_featured")}
+                onCheckedChange={(checked) => form.setValue("is_featured", checked)}
+                data-testid="switch-featured"
+              />
+              <Label htmlFor="is_featured">ফিচার্ড পণ্য</Label>
+            </div>
+            
+            <div className="flex items-center space-x-2">
+              <Switch
+                id="is_latest"
+                checked={form.watch("is_latest")}
+                onCheckedChange={(checked) => form.setValue("is_latest", checked)}
+                data-testid="switch-latest"
+              />
+              <Label htmlFor="is_latest">নতুন পণ্য</Label>
+            </div>
+            
+            <div className="flex items-center space-x-2">
+              <Switch
+                id="is_best_selling"
+                checked={form.watch("is_best_selling")}
+                onCheckedChange={(checked) => form.setValue("is_best_selling", checked)}
+                data-testid="switch-best-selling"
+              />
+              <Label htmlFor="is_best_selling">বেস্ট সেলার</Label>
+            </div>
+          </div>
+
+          <DialogFooter className="gap-2">
+            <Button 
+              type="button" 
+              variant="outline" 
+              onClick={handleClose}
+              disabled={isLoading}
+            >
+              বাতিল
+            </Button>
+            <Button type="submit" disabled={isLoading} data-testid="button-save-product">
+              {isLoading ? "সেভ হচ্ছে..." : product ? "আপডেট করুন" : "সংরক্ষণ করুন"}
+            </Button>
+          </DialogFooter>
+        </form>
       </DialogContent>
     </Dialog>
   );
 }
 
-// Enhanced Orders Management
-function OrdersManagement() {
-  const [selectedOrder, setSelectedOrder] = useState<any>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [searchTerm, setSearchTerm] = useState('');
+// Enhanced Products Management with Fixed Filtering
+function ProductsManagement() {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const [selectedProduct, setSelectedProduct] = useState<any>(null);
+  const [isProductModalOpen, setIsProductModalOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("");
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [deleteProductId, setDeleteProductId] = useState<string | null>(null);
 
-  const { data: orders = [], isLoading, error, refetch } = useQuery({ 
-    queryKey: ["/api/orders"],
-    refetchInterval: 30000, // Auto-refresh every 30 seconds
+  const { data: products = [], isLoading, refetch } = useQuery({ 
+    queryKey: ["/api/products"],
+    refetchInterval: 60000,
   });
 
-  const filteredOrders = React.useMemo(() => {
-    return orders.filter((order: any) => {
-      const matchesStatus = statusFilter === 'all' || order.status === statusFilter;
-      const matchesSearch = searchTerm === '' || 
-        order.customer_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        order.phone?.includes(searchTerm) ||
-        order.tracking_id?.toLowerCase().includes(searchTerm.toLowerCase());
-      
-      return matchesStatus && matchesSearch;
+  const filteredProducts = useMemo(() => {
+    if (!Array.isArray(products)) return [];
+    return products.filter((product: any) => {
+      const matchesSearch = !searchQuery || 
+        product.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        product.description?.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesCategory = !categoryFilter || product.category === categoryFilter;
+      return matchesSearch && matchesCategory;
     });
-  }, [orders, statusFilter, searchTerm]);
+  }, [products, searchQuery, categoryFilter]);
 
-  const formatDate = (dateString: string) => {
-    try {
-      const date = new Date(dateString);
-      return date.toLocaleDateString('bn-BD', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-        timeZone: 'Asia/Dhaka'
+  const deleteMutation = useMutation({
+    mutationFn: async (productId: string) => {
+      const response = await apiRequest("DELETE", `/api/products/${productId}`);
+      return response;
+    },
+    onSuccess: () => {
+      toast({ title: "পণ্য মুছে ফেলা হয়েছে", description: "পণ্য সফলভাবে মুছে ফেলা হয়েছে।" });
+      queryClient.invalidateQueries({ queryKey: ["/api/products"] });
+      setDeleteProductId(null);
+    },
+    onError: (error: any) => {
+      toast({ 
+        title: "ত্রুটি", 
+        description: `পণ্য মুছতে সমস্যা হয়েছে: ${error.message}`,
+        variant: "destructive"
       });
-    } catch {
-      return 'N/A';
+    }
+  });
+
+  const handleAddProduct = () => {
+    setSelectedProduct(null);
+    setIsProductModalOpen(true);
+  };
+
+  const handleEditProduct = (product: any) => {
+    setSelectedProduct(product);
+    setIsProductModalOpen(true);
+  };
+
+  const handleDeleteProduct = (productId: string) => {
+    setDeleteProductId(productId);
+  };
+
+  const confirmDelete = () => {
+    if (deleteProductId) {
+      deleteMutation.mutate(deleteProductId);
     }
   };
 
-  const openOrderModal = (order: any) => {
+  const clearFilters = () => {
+    setSearchQuery("");
+    setCategoryFilter("");
+    setIsFilterOpen(false);
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h2 className="text-2xl font-bold">পণ্য ব্যবস্থাপনা</h2>
+          <p className="text-muted-foreground">সব পণ্য দেখুন ও পরিচালনা করুন</p>
+        </div>
+        <Button onClick={handleAddProduct} className="flex items-center gap-2">
+          <Plus className="h-4 w-4" />
+          নতুন পণ্য যোগ করুন
+        </Button>
+      </div>
+
+      {/* Enhanced Search and Filter */}
+      <div className="flex flex-col sm:flex-row gap-4">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="পণ্য খুঁজুন..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-10"
+          />
+        </div>
+        
+        <div className="relative">
+          <Button
+            variant="outline"
+            onClick={() => setIsFilterOpen(!isFilterOpen)}
+            className="flex items-center gap-2"
+          >
+            <Filter className="h-4 w-4" />
+            ফিল্টার
+            {(searchQuery || categoryFilter) && (
+              <Badge variant="secondary" className="ml-2">
+                {(searchQuery ? 1 : 0) + (categoryFilter ? 1 : 0)}
+              </Badge>
+            )}
+          </Button>
+          
+          {isFilterOpen && (
+            <Card className="absolute right-0 top-full mt-2 w-80 z-50 shadow-lg">
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-sm">ফিল্টার অপশন</CardTitle>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setIsFilterOpen(false)}
+                    className="h-6 w-6 p-0"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <Label>ক্যাটেগরি</Label>
+                  <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="সব ক্যাটেগরি" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">সব ক্যাটেগরি</SelectItem>
+                      {PRODUCT_CATEGORIES.map((cat) => (
+                        <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div className="flex gap-2 pt-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={clearFilters}
+                    className="flex-1"
+                  >
+                    ক্লিয়ার করুন
+                  </Button>
+                  <Button
+                    size="sm"
+                    onClick={() => setIsFilterOpen(false)}
+                    className="flex-1"
+                  >
+                    প্রয়োগ করুন
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+        </div>
+        
+        <Button
+          variant="outline"
+          onClick={() => refetch()}
+          className="flex items-center gap-2"
+        >
+          <RefreshCw className="h-4 w-4" />
+          রিফ্রেশ
+        </Button>
+      </div>
+
+      {/* Products Table */}
+      <Card>
+        <CardContent className="p-0">
+          {isLoading ? (
+            <div className="p-8 text-center">
+              <RefreshCw className="h-8 w-8 animate-spin mx-auto mb-4" />
+              <p>পণ্য লোড হচ্ছে...</p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>পণ্য</TableHead>
+                    <TableHead>ক্যাটেগরি</TableHead>
+                    <TableHead>দাম</TableHead>
+                    <TableHead>স্টক</TableHead>
+                    <TableHead>স্ট্যাটাস</TableHead>
+                    <TableHead className="text-right">অ্যাকশন</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredProducts.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={6} className="text-center py-8">
+                        {searchQuery || categoryFilter 
+                          ? "কোন পণ্য খুঁজে পাওয়া যায়নি"
+                          : "কোন পণ্য নেই"
+                        }
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    filteredProducts.map((product: any) => (
+                      <TableRow key={product.id}>
+                        <TableCell>
+                          <div className="flex items-center space-x-3">
+                            {product.image_url && (
+                              <img
+                                src={product.image_url}
+                                alt={product.name}
+                                className="w-12 h-12 object-cover rounded"
+                                onError={(e) => {
+                                  (e.target as HTMLImageElement).style.display = 'none';
+                                }}
+                              />
+                            )}
+                            <div>
+                              <div className="font-medium">{product.name}</div>
+                              <div className="text-sm text-muted-foreground">
+                                ID: {product.id?.slice(0, 8)}...
+                              </div>
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="secondary">{product.category}</Badge>
+                        </TableCell>
+                        <TableCell className="font-medium">
+                          {formatPrice(product.price)}
+                        </TableCell>
+                        <TableCell>
+                          <Badge 
+                            variant={product.stock > 10 ? "default" : product.stock > 0 ? "secondary" : "destructive"}
+                          >
+                            {product.stock} পিস
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex gap-1">
+                            {product.is_featured && <Badge variant="outline">ফিচার্ড</Badge>}
+                            {product.is_latest && <Badge variant="outline">নতুন</Badge>}
+                            {product.is_best_selling && <Badge variant="outline">বেস্ট সেলার</Badge>}
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex items-center justify-end gap-2">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleEditProduct(product)}
+                              data-testid={`button-edit-${product.id}`}
+                            >
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleDeleteProduct(product.id)}
+                              className="text-red-600 hover:text-red-700"
+                              data-testid={`button-delete-${product.id}`}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Product Form Modal */}
+      <ProductFormModal
+        isOpen={isProductModalOpen}
+        onClose={() => setIsProductModalOpen(false)}
+        product={selectedProduct}
+        onSave={() => {
+          refetch();
+          setSelectedProduct(null);
+        }}
+      />
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={!!deleteProductId} onOpenChange={() => setDeleteProductId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>পণ্য মুছে ফেলুন</AlertDialogTitle>
+            <AlertDialogDescription>
+              আপনি কি নিশ্চিত যে এই পণ্যটি মুছে ফেলতে চান? এই কাজটি পূর্বাবস্থায় ফেরানো যাবে না।
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>বাতিল</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDelete}
+              className="bg-red-600 hover:bg-red-700"
+              disabled={deleteMutation.isPending}
+            >
+              {deleteMutation.isPending ? "মুছে ফেলা হচ্ছে..." : "মুছে ফেলুন"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </div>
+  );
+}
+
+// Enhanced Order Details Modal
+function OrderDetailsModal({ 
+  isOpen, 
+  onClose, 
+  order, 
+  onStatusUpdate 
+}: { 
+  isOpen: boolean; 
+  onClose: () => void; 
+  order: any; 
+  onStatusUpdate: () => void; 
+}) {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const [isUpdating, setIsUpdating] = useState(false);
+
+  const updateStatusMutation = useMutation({
+    mutationFn: async ({ orderId, status }: { orderId: string; status: string }) => {
+      const response = await fetch(`/api/orders/${orderId}/status`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status }),
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Failed to update status: ${response.statusText}`);
+      }
+      
+      return await response.json();
+    },
+    onSuccess: () => {
+      toast({ title: "স্ট্যাটাস আপডেট সফল", description: "অর্ডারের স্ট্যাটাস সফলভাবে আপডেট হয়েছে।" });
+      queryClient.invalidateQueries({ queryKey: ["/api/orders"] });
+      if (onStatusUpdate) {
+        onStatusUpdate();
+      }
+    },
+    onError: (error: any) => {
+      toast({ 
+        title: "ত্রুটি", 
+        description: `স্ট্যাটাস আপডেট করতে সমস্যা: ${error.message}`,
+        variant: "destructive"
+      });
+    },
+    onSettled: () => {
+      setIsUpdating(false);
+    }
+  });
+
+  const handleStatusUpdate = (newStatus: string) => {
+    if (order?.id) {
+      setIsUpdating(true);
+      updateStatusMutation.mutate({ orderId: order.id, status: newStatus });
+    }
+  };
+
+  if (!order) return null;
+
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent 
+        className="w-[95vw] max-w-4xl max-h-[95vh] overflow-y-auto"
+        data-testid="order-details-modal"
+      >
+        <DialogHeader>
+          <DialogTitle className="flex items-center justify-between">
+            অর্ডার বিস্তারিত - #{order.id?.slice(0, 8)}
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={onClose}
+              className="h-6 w-6 p-0"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </DialogTitle>
+          <DialogDescription>
+            অর্ডারের সম্পূর্ণ তথ্য ও স্ট্যাটাস আপডেট করুন
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="space-y-6">
+          {/* Order Status Update */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">অর্ডার স্ট্যাটাস</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-wrap gap-2">
+                {Object.entries(ORDER_STATUSES).map(([key, label]) => (
+                  <Button
+                    key={key}
+                    variant={order.status === key ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => handleStatusUpdate(key)}
+                    disabled={isUpdating || updateStatusMutation.isPending}
+                    data-testid={`button-status-${key}`}
+                  >
+                    {label}
+                  </Button>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Customer Information */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">গ্রাহক তথ্য</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-sm font-medium">নাম</Label>
+                  <p className="mt-1">{order.customer_name || "N/A"}</p>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium">ফোন</Label>
+                  <p className="mt-1">{order.customer_phone || "N/A"}</p>
+                </div>
+                <div className="md:col-span-2">
+                  <Label className="text-sm font-medium">ঠিকানা</Label>
+                  <p className="mt-1">{order.delivery_address || "N/A"}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Order Items */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">অর্ডার আইটেম</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {order.items && JSON.parse(order.items).map((item: any, index: number) => (
+                  <div key={index} className="flex items-center justify-between p-3 border rounded">
+                    <div className="flex items-center space-x-3">
+                      {item.image_url && (
+                        <img 
+                          src={item.image_url} 
+                          alt={item.name}
+                          className="w-12 h-12 object-cover rounded"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).style.display = 'none';
+                          }}
+                        />
+                      )}
+                      <div>
+                        <p className="font-medium">{item.name}</p>
+                        <p className="text-sm text-muted-foreground">পরিমাণ: {item.quantity}</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-medium">{formatPrice(item.price * item.quantity)}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {formatPrice(item.price)} x {item.quantity}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Payment & Delivery Info */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">পেমেন্ট তথ্য</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  <div className="flex justify-between">
+                    <span>সাবটোটাল:</span>
+                    <span>{formatPrice((parseFloat(order.total) || 0) - 60)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>ডেলিভারি চার্জ:</span>
+                    <span>{formatPrice(60)}</span>
+                  </div>
+                  <div className="flex justify-between font-bold text-lg border-t pt-2">
+                    <span>মোট:</span>
+                    <span>{formatPrice(order.total)}</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">অর্ডার তথ্য</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  <div>
+                    <Label className="text-sm font-medium">অর্ডার তারিখ</Label>
+                    <p>{new Date(order.created_at).toLocaleString('bn-BD')}</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium">পেমেন্ট পদ্ধতি</Label>
+                    <p>{order.payment_method || "ক্যাশ অন ডেলিভারি"}</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium">বর্তমান স্ট্যাটাস</Label>
+                    <Badge variant="secondary">{ORDER_STATUSES[order.status as keyof typeof ORDER_STATUSES]}</Badge>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose}>
+            বন্ধ করুন
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// Main Enhanced Admin Panel
+export default function AdminPanelEnhanced() {
+  const [activeTab, setActiveTab] = useState("dashboard");
+  const [selectedOrder, setSelectedOrder] = useState<any>(null);
+  const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
+
+  const { data: orders = [], refetch } = useQuery({ 
+    queryKey: ["/api/orders"],
+    refetchInterval: 30000,
+  });
+
+  const { data: products = [] } = useQuery({ 
+    queryKey: ["/api/products"],
+    refetchInterval: 60000,
+  });
+
+  const handleOrderView = (order: any) => {
     setSelectedOrder(order);
-    setIsModalOpen(true);
+    setIsOrderModalOpen(true);
   };
 
   const closeOrderModal = () => {
     setSelectedOrder(null);
-    setIsModalOpen(false);
+    setIsOrderModalOpen(false);
   };
 
-  if (error) {
-    return (
-      <Card>
-        <CardContent className="pt-6">
-          <div className="text-center">
-            <AlertTriangle className="w-12 h-12 mx-auto mb-4 text-red-500" />
-            <h3 className="text-lg font-semibold mb-2">অর্ডার লোড করতে সমস্যা</h3>
-            <p className="text-gray-600 mb-4">অর্ডারের তথ্য লোড করতে সমস্যা হয়েছে</p>
-            <Button onClick={() => refetch()}>
-              <RefreshCw className="w-4 h-4 mr-2" />
-              পুনরায় চেষ্টা করুন
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
+  // Dashboard Stats
+  const stats = useMemo(() => {
+    const orderArray = Array.isArray(orders) ? orders : [];
+    const productArray = Array.isArray(products) ? products : [];
+
+    const totalOrders = orderArray.length;
+    const totalRevenue = orderArray.reduce((sum: number, order: any) => {
+      return sum + (parseFloat(order.total as string) || 0);
+    }, 0);
+
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+    
+    const todayOrders = orderArray.filter((order: any) => {
+      const orderDate = new Date(order.created_at);
+      return orderDate >= todayStart;
+    }).length;
+
+    const pendingOrders = orderArray.filter((order: any) => order.status === 'pending').length;
+    const processingOrders = orderArray.filter((order: any) => order.status === 'processing').length;
+    const deliveredOrders = orderArray.filter((order: any) => order.status === 'delivered').length;
+    const lowStockProducts = productArray.filter((product: any) => product.stock < 10).length;
+    const outOfStockProducts = productArray.filter((product: any) => product.stock === 0).length;
+
+    return {
+      totalOrders,
+      totalRevenue,
+      todayOrders,
+      pendingOrders,
+      processingOrders,
+      deliveredOrders,
+      lowStockProducts,
+      outOfStockProducts,
+      totalProducts: productArray.length
+    };
+  }, [orders, products]);
 
   return (
-    <div className="space-y-6">
-      {/* Filters and Search */}
-      <Card>
-        <CardHeader>
-          <CardTitle>অর্ডার ফিল্টার</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <Label htmlFor="search">অনুসন্ধান</Label>
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-                <Input
-                  id="search"
-                  placeholder="নাম, ফোন বা ট্র্যাকিং ID দিয়ে খুঁজুন..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-            </div>
-            
-            <div>
-              <Label htmlFor="status-filter">স্ট্যাটাস ফিল্টার</Label>
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger id="status-filter">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">সব অর্ডার</SelectItem>
-                  {Object.entries(ORDER_STATUSES).map(([key, value]) => (
-                    <SelectItem key={key} value={key}>{value}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+    <div className="w-full space-y-6 admin-panel">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <TabsList className="grid w-full grid-cols-3 lg:grid-cols-5 mb-8">
+          <TabsTrigger value="dashboard" className="flex items-center gap-2 text-xs sm:text-sm">
+            <BarChart3 className="h-4 w-4" />
+            <span className="hidden sm:inline">ড্যাশবোর্ড</span>
+          </TabsTrigger>
+          <TabsTrigger value="orders" className="flex items-center gap-2 text-xs sm:text-sm">
+            <ShoppingCart className="h-4 w-4" />
+            <span className="hidden sm:inline">অর্ডার</span>
+          </TabsTrigger>
+          <TabsTrigger value="products" className="flex items-center gap-2 text-xs sm:text-sm">
+            <Package className="h-4 w-4" />
+            <span className="hidden sm:inline">পণ্য</span>
+          </TabsTrigger>
+          <TabsTrigger value="analytics" className="flex items-center gap-2 text-xs sm:text-sm">
+            <TrendingUp className="h-4 w-4" />
+            <span className="hidden sm:inline">বিশ্লেষণ</span>
+          </TabsTrigger>
+          <TabsTrigger value="settings" className="flex items-center gap-2 text-xs sm:text-sm">
+            <Settings className="h-4 w-4" />
+            <span className="hidden sm:inline">সেটিংস</span>
+          </TabsTrigger>
+        </TabsList>
 
-            <div className="flex items-end">
-              <Button onClick={() => refetch()} variant="outline" className="w-full">
-                <RefreshCw className="w-4 h-4 mr-2" />
-                রিফ্রেশ
-              </Button>
-            </div>
+        <TabsContent value="dashboard" className="space-y-6">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            <Card className="hover:shadow-md transition-shadow">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">মোট অর্ডার</CardTitle>
+                <ShoppingCart className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{stats.totalOrders}</div>
+                <p className="text-xs text-muted-foreground">সর্বমোট অর্ডার</p>
+              </CardContent>
+            </Card>
+
+            <Card className="hover:shadow-md transition-shadow">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">মোট আয়</CardTitle>
+                <DollarSign className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-lg lg:text-2xl font-bold">{formatPrice(stats.totalRevenue)}</div>
+                <p className="text-xs text-muted-foreground">সর্বমোট বিক্রয়</p>
+              </CardContent>
+            </Card>
+
+            <Card className="hover:shadow-md transition-shadow">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">আজকের অর্ডার</CardTitle>
+                <Clock className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{stats.todayOrders}</div>
+                <p className="text-xs text-muted-foreground">আজকের নতুন অর্ডার</p>
+              </CardContent>
+            </Card>
+
+            <Card className="hover:shadow-md transition-shadow">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">মোট পণ্য</CardTitle>
+                <Package className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{stats.totalProducts}</div>
+                <p className="text-xs text-muted-foreground">স্টকে রয়েছে</p>
+              </CardContent>
+            </Card>
           </div>
-        </CardContent>
-      </Card>
 
-      {/* Orders Table */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center justify-between">
-            <span>অর্ডার তালিকা ({filteredOrders.length}টি)</span>
-            {isLoading && <RefreshCw className="w-4 h-4 animate-spin" />}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>ট্র্যাকিং ID</TableHead>
-                  <TableHead>কাস্টমার</TableHead>
-                  <TableHead>ফোন</TableHead>
-                  <TableHead>মোট</TableHead>
-                  <TableHead>স্ট্যাটাস</TableHead>
-                  <TableHead>তারিখ</TableHead>
-                  <TableHead>অ্যাকশন</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {isLoading ? (
-                  <TableRow>
-                    <TableCell colSpan={7} className="text-center py-8">
-                      <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2" />
-                      অর্ডার লোড হচ্ছে...
-                    </TableCell>
-                  </TableRow>
-                ) : filteredOrders.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={7} className="text-center py-8">
-                      কোন অর্ডার পাওয়া যায়নি
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  filteredOrders.map((order: any) => (
-                    <TableRow key={order.id}>
-                      <TableCell className="font-mono text-sm">
-                        {order.tracking_id}
-                      </TableCell>
-                      <TableCell className="font-medium">
-                        {order.customer_name}
-                      </TableCell>
-                      <TableCell>{order.phone}</TableCell>
-                      <TableCell className="font-semibold">
-                        {formatPrice(Number(order.total || 0))}
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant={
-                          order.status === 'delivered' ? 'default' :
-                          order.status === 'shipped' ? 'secondary' :
-                          order.status === 'processing' ? 'outline' : 'destructive'
-                        }>
-                          {ORDER_STATUSES[order.status as keyof typeof ORDER_STATUSES] || order.status}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>{formatDate(order.created_at)}</TableCell>
-                      <TableCell>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => openOrderModal(order)}
-                        >
-                          <Eye className="w-4 h-4" />
-                        </Button>
-                      </TableCell>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <TrendingUp className="h-5 w-5" />
+                  অর্ডার স্ট্যাটাস
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Clock className="h-4 w-4 text-yellow-500" />
+                      <span className="text-sm">অপেক্ষমান</span>
+                    </div>
+                    <Badge variant="secondary" className="bg-yellow-50 text-yellow-700 border-yellow-200">
+                      {stats.pendingOrders}
+                    </Badge>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Eye className="h-4 w-4 text-blue-500" />
+                      <span className="text-sm">প্রক্রিয়াধীন</span>
+                    </div>
+                    <Badge variant="secondary" className="bg-blue-50 text-blue-700 border-blue-200">
+                      {stats.processingOrders}
+                    </Badge>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <CheckCircle className="h-4 w-4 text-green-500" />
+                      <span className="text-sm">ডেলিভার সম্পন্ন</span>
+                    </div>
+                    <Badge variant="secondary" className="bg-green-50 text-green-700 border-green-200">
+                      {stats.deliveredOrders}
+                    </Badge>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <AlertTriangle className="h-5 w-5" />
+                  স্টক সতর্কতা
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <AlertTriangle className="h-4 w-4 text-orange-500" />
+                      <span className="text-sm">কম স্টক (১০ এর কম)</span>
+                    </div>
+                    <Badge variant="secondary" className="bg-orange-50 text-orange-700 border-orange-200">
+                      {stats.lowStockProducts}
+                    </Badge>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <XCircle className="h-4 w-4 text-red-500" />
+                      <span className="text-sm">স্টক নেই</span>
+                    </div>
+                    <Badge variant="destructive">{stats.outOfStockProducts}</Badge>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="orders" className="space-y-6">
+          <div className="flex justify-between items-center">
+            <div>
+              <h2 className="text-2xl font-bold">অর্ডার ব্যবস্থাপনা</h2>
+              <p className="text-muted-foreground">সব অর্ডার দেখুন ও পরিচালনা করুন</p>
+            </div>
+            <Button onClick={() => refetch()} variant="outline" className="flex items-center gap-2">
+              <RefreshCw className="h-4 w-4" />
+              রিফ্রেশ
+            </Button>
+          </div>
+
+          <Card>
+            <CardContent className="p-0">
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>অর্ডার ID</TableHead>
+                      <TableHead>গ্রাহক</TableHead>
+                      <TableHead>মোট</TableHead>
+                      <TableHead>স্ট্যাটাস</TableHead>
+                      <TableHead>তারিখ</TableHead>
+                      <TableHead className="text-right">অ্যাকশন</TableHead>
                     </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </div>
-        </CardContent>
-      </Card>
+                  </TableHeader>
+                  <TableBody>
+                    {Array.isArray(orders) && orders.map((order: any) => (
+                      <TableRow key={order.id}>
+                        <TableCell className="font-mono">
+                          #{order.id?.slice(0, 8)}
+                        </TableCell>
+                        <TableCell>
+                          <div>
+                            <div className="font-medium">{order.customer_name}</div>
+                            <div className="text-sm text-muted-foreground">{order.customer_phone}</div>
+                          </div>
+                        </TableCell>
+                        <TableCell className="font-medium">
+                          {formatPrice(order.total)}
+                        </TableCell>
+                        <TableCell>
+                          <Badge 
+                            variant={
+                              order.status === 'delivered' ? 'default' :
+                              order.status === 'processing' ? 'secondary' :
+                              order.status === 'shipped' ? 'outline' :
+                              'destructive'
+                            }
+                          >
+                            {ORDER_STATUSES[order.status as keyof typeof ORDER_STATUSES]}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          {new Date(order.created_at).toLocaleDateString('bn-BD')}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleOrderView(order)}
+                            data-testid={`button-view-order-${order.id}`}
+                          >
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="products" className="space-y-6">
+          <ProductsManagement />
+        </TabsContent>
+
+        <TabsContent value="analytics" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>বিশ্লেষণ ও রিপোর্ট</CardTitle>
+              <CardDescription>শীঘ্রই আসছে</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="text-center py-12">
+                <TrendingUp className="w-12 h-12 mx-auto mb-4 text-gray-400" />
+                <p className="text-gray-600">বিস্তারিত বিশ্লেষণ ও রিপোর্ট শীঘ্রই উপলব্ধ হবে</p>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="settings" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>সাইট সেটিংস</CardTitle>
+              <CardDescription>শীঘ্রই আসছে</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="text-center py-12">
+                <Settings className="w-12 h-12 mx-auto mb-4 text-gray-400" />
+                <p className="text-gray-600">সাইট সেটিংস শীঘ্রই উপলব্ধ হবে</p>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
 
       {/* Order Details Modal */}
       <OrderDetailsModal
-        isOpen={isModalOpen}
+        isOpen={isOrderModalOpen}
         onClose={closeOrderModal}
         order={selectedOrder}
+        onStatusUpdate={refetch}
       />
-    </div>
-  );
-}
-
-// Enhanced Products Management
-function ProductsManagement() {
-  const [selectedProduct, setSelectedProduct] = useState<any>(null);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [categoryFilter, setCategoryFilter] = useState<string>('all');
-
-  const { data: products = [], isLoading, error, refetch } = useQuery({ 
-    queryKey: ["/api/products"],
-    refetchInterval: 60000, // Auto-refresh every minute
-  });
-
-  const { data: categories = [] } = useQuery({ queryKey: ["/api/categories"] });
-
-  const filteredProducts = React.useMemo(() => {
-    return products.filter((product: any) => {
-      const matchesCategory = categoryFilter === 'all' || product.category === categoryFilter;
-      const matchesSearch = searchTerm === '' || 
-        product.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        product.description?.toLowerCase().includes(searchTerm.toLowerCase());
-      
-      return matchesCategory && matchesSearch;
-    });
-  }, [products, categoryFilter, searchTerm]);
-
-  if (error) {
-    return (
-      <Card>
-        <CardContent className="pt-6">
-          <div className="text-center">
-            <AlertTriangle className="w-12 h-12 mx-auto mb-4 text-red-500" />
-            <h3 className="text-lg font-semibold mb-2">পণ্য লোড করতে সমস্যা</h3>
-            <p className="text-gray-600 mb-4">পণ্যের তথ্য লোড করতে সমস্যা হয়েছে</p>
-            <Button onClick={() => refetch()}>
-              <RefreshCw className="w-4 h-4 mr-2" />
-              পুনরায় চেষ্টা করুন
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  return (
-    <div className="space-y-6">
-      {/* Filters and Add Button */}
-      <Card>
-        <CardHeader>
-          <CardTitle>পণ্য ব্যবস্থাপনা</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div>
-              <Label htmlFor="product-search">অনুসন্ধান</Label>
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-                <Input
-                  id="product-search"
-                  placeholder="পণ্যের নাম দিয়ে খুঁজুন..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-            </div>
-            
-            <div>
-              <Label htmlFor="category-filter">ক্যাটেগরি ফিল্টার</Label>
-              <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                <SelectTrigger id="category-filter">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">সব ক্যাটেগরি</SelectItem>
-                  {categories.map((category: any) => (
-                    <SelectItem key={category.id} value={category.name}>
-                      {category.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="flex items-end">
-              <Button onClick={() => refetch()} variant="outline" className="w-full">
-                <RefreshCw className="w-4 h-4 mr-2" />
-                রিফ্রেশ
-              </Button>
-            </div>
-
-            <div className="flex items-end">
-              <Button onClick={() => setIsAddModalOpen(true)} className="w-full">
-                <Plus className="w-4 h-4 mr-2" />
-                নতুন পণ্য
-              </Button>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Products Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {isLoading ? (
-          Array.from({ length: 8 }).map((_, index) => (
-            <Card key={index}>
-              <CardContent className="p-4">
-                <div className="animate-pulse">
-                  <div className="w-full h-48 bg-gray-200 rounded-lg mb-4"></div>
-                  <div className="h-4 bg-gray-200 rounded mb-2"></div>
-                  <div className="h-4 bg-gray-200 rounded w-2/3 mb-2"></div>
-                  <div className="h-6 bg-gray-200 rounded w-1/2"></div>
-                </div>
-              </CardContent>
-            </Card>
-          ))
-        ) : filteredProducts.length === 0 ? (
-          <div className="col-span-full text-center py-12">
-            <Package className="w-12 h-12 mx-auto mb-4 text-gray-400" />
-            <h3 className="text-lg font-semibold mb-2">কোন পণ্য পাওয়া যায়নি</h3>
-            <p className="text-gray-600">নতুন পণ্য যোগ করুন বা ফিল্টার পরিবর্তন করুন</p>
-          </div>
-        ) : (
-          filteredProducts.map((product: any) => (
-            <Card key={product.id} className="overflow-hidden">
-              <div className="relative">
-                <img
-                  src={product.image_url || "https://images.unsplash.com/photo-1544787219-7f47ccb76574?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=300"}
-                  alt={product.name}
-                  className="w-full h-48 object-cover"
-                />
-                <Badge 
-                  className="absolute top-2 right-2"
-                  variant={product.stock > 10 ? 'default' : product.stock > 0 ? 'secondary' : 'destructive'}
-                >
-                  স্টক: {product.stock}
-                </Badge>
-              </div>
-              <CardContent className="p-4">
-                <h3 className="font-semibold text-lg mb-2 line-clamp-2">{product.name}</h3>
-                <p className="text-gray-600 text-sm mb-3 line-clamp-2">{product.description}</p>
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-2xl font-bold text-blue-600">
-                    {formatPrice(Number(product.price))}
-                  </span>
-                  <Badge variant="outline">{product.category}</Badge>
-                </div>
-                <div className="flex gap-2">
-                  <Button 
-                    size="sm" 
-                    variant="outline" 
-                    className="flex-1"
-                    onClick={() => {
-                      setSelectedProduct(product);
-                      setIsEditModalOpen(true);
-                    }}
-                  >
-                    <Pencil className="w-4 h-4 mr-1" />
-                    সম্পাদনা
-                  </Button>
-                  <Button size="sm" variant="outline" className="px-3">
-                    <Eye className="w-4 h-4" />
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))
-        )}
-      </div>
-    </div>
-  );
-}
-
-// Main Admin Panel Component
-export default function EnhancedAdminPanel() {
-  const [activeTab, setActiveTab] = useState("dashboard");
-
-  return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="bg-white border-b">
-        <div className="container mx-auto px-4 py-4">
-          <h1 className="text-2xl font-bold text-gray-900">অ্যাডমিন প্যানেল</h1>
-          <p className="text-gray-600">TryneX Shop ব্যবস্থাপনা</p>
-        </div>
-      </div>
-
-      <div className="container mx-auto px-4 py-8">
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="dashboard">ড্যাশবোর্ড</TabsTrigger>
-            <TabsTrigger value="orders">অর্ডার</TabsTrigger>
-            <TabsTrigger value="products">পণ্য</TabsTrigger>
-            <TabsTrigger value="settings">সেটিংস</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="dashboard" className="space-y-8">
-            <DashboardStats />
-            
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              <Card>
-                <CardHeader>
-                  <CardTitle>সাম্প্রতিক অর্ডার</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <OrdersManagement />
-                </CardContent>
-              </Card>
-              
-              <Card>
-                <CardHeader>
-                  <CardTitle>দ্রুত অ্যাকশন</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <Button className="w-full justify-start" onClick={() => setActiveTab("orders")}>
-                    <ShoppingCart className="w-4 h-4 mr-2" />
-                    অর্ডার ব্যবস্থাপনা
-                  </Button>
-                  <Button className="w-full justify-start" onClick={() => setActiveTab("products")}>
-                    <Package className="w-4 h-4 mr-2" />
-                    পণ্য ব্যবস্থাপনা
-                  </Button>
-                  <Button className="w-full justify-start" variant="outline">
-                    <BarChart3 className="w-4 h-4 mr-2" />
-                    রিপোর্ট দেখুন
-                  </Button>
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="orders">
-            <OrdersManagement />
-          </TabsContent>
-
-          <TabsContent value="products">
-            <ProductsManagement />
-          </TabsContent>
-
-          <TabsContent value="settings">
-            <Card>
-              <CardHeader>
-                <CardTitle>সাইট সেটিংস</CardTitle>
-                <CardDescription>আপনার সাইটের মূল সেটিংস পরিবর্তন করুন</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="text-center py-8 text-gray-500">সেটিংস প্যানেল শীঘ্রই আসছে...</p>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
-      </div>
     </div>
   );
 }

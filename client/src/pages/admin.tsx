@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import AdminLogin from "@/components/admin-login";
-import CompleteAdminPanel from "@/components/admin/admin-panel-complete";
+import AdminPanelEnhanced from "@/components/admin/admin-panel-enhanced";
 
 export default function Admin() {
   const [isLoggedIn, setIsLoggedIn] = useState(true); // Temporarily bypass auth check
@@ -53,7 +53,7 @@ export default function Admin() {
         </div>
 
         <div className="w-full">
-          <CompleteAdminPanel />
+          <AdminPanelEnhanced />
         </div>
       </div>
     </div>
