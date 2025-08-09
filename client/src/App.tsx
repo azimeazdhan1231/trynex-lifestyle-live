@@ -13,8 +13,8 @@ import { UltraPerformanceLoader } from './components/ultra-performance-loader';
 
 // Dynamic imports for better code splitting
 const Home = lazy(() => import("./pages/home"));
-const Product = lazy(() => import("./pages/product"));
-const Products = lazy(() => import("./pages/products"));
+const Product = lazy(() => import("./pages/product-enhanced"));
+const Products = lazy(() => import("./pages/products-enhanced"));
 const Contact = lazy(() => import("./pages/contact"));
 const Tracking = lazy(() => import("./pages/tracking"));
 const Admin = lazy(() => import("./pages/admin"));
@@ -37,10 +37,11 @@ const PaymentPolicy = lazy(() => import("./pages/payment-policy"));
 const AuthNew = lazy(() => import("./pages/auth-new"));
 const SearchPage = lazy(() => import("./pages/search"));
 const Categories = lazy(() => import("./pages/categories"));
-const CustomizeProduct = lazy(() => import("./pages/customize-product"));
+const CustomizeProduct = lazy(() => import("./pages/customize-product-enhanced"));
 
 // Performance and Mobile Optimization Components
 const EmergencyFix = lazy(() => import("./components/emergency-fix"));
+const ComprehensiveMobileResponsiveness = lazy(() => import("./components/comprehensive-mobile-responsiveness"));
 // const PerformanceOptimizer = lazy(() => import("./components/PerformanceOptimizer"));
 
 // Loading fallback component
@@ -116,6 +117,7 @@ function App() {
           <div className="font-bengali">
             <Suspense fallback={null}>
               <EmergencyFix />
+              <ComprehensiveMobileResponsiveness />
               {/* <PerformanceOptimizer /> */}
             </Suspense>
             <UltraPerformanceLoader />
