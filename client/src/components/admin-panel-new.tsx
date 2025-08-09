@@ -118,12 +118,13 @@ export default function AdminPanelNew() {
   const [selectedCustomOrder, setSelectedCustomOrder] = useState<any>(null);
   const [customOrderDetailsOpen, setCustomOrderDetailsOpen] = useState(false);
 
-  // Fetch data with controlled polling and proper error handling
+  // Fetch data with NO automatic refetching to prevent infinite loops
   const { data: orders = [], isLoading: ordersLoading, error: ordersError } = useQuery<Order[]>({ 
     queryKey: ["/api/orders"],
-    staleTime: 30000, // 30 seconds
-    refetchInterval: 60000, // 1 minute
+    staleTime: Infinity, // Never consider stale
+    refetchInterval: false, // NO automatic refetching
     refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
     retry: 1
   });
 
@@ -162,9 +163,10 @@ export default function AdminPanelNew() {
   const { data: customOrders = [], isLoading: customOrdersLoading, error: customOrdersError } = useQuery<any[]>({ 
     queryKey: ["/api/custom-orders"],
     staleTime: 60000, // 1 minute
-    refetchInterval: 120000, // 2 minutes
+    refetchInterval: false, // Disable auto refetch completely
     refetchOnWindowFocus: false,
-    retry: 1
+    retry: 1,
+    enabled: false // Disable this query entirely for now
   });
 
   // Handle errors silently
