@@ -1,20 +1,21 @@
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
-import { eq, desc, and, gte, lte } from "drizzle-orm";
+import { eq, desc, and, gte, lte, like, or, sql } from "drizzle-orm";
 import NodeCache from "node-cache";
-import { 
+import {
   products, orders, offers, admins, categories, promoCodes, analytics, siteSettings,
   users, userCarts, userOrders, blogs, pages,
-  type Product, type InsertProduct, type Order, type InsertOrder, 
+  type Product, type InsertProduct, type Order, type InsertOrder,
   type Offer, type InsertOffer, type Admin, type InsertAdmin,
   type Category, type InsertCategory, type PromoCode, type InsertPromoCode,
   type Analytics, type InsertAnalytics, type SiteSettings, type InsertSiteSettings,
   type User, type UpsertUser, type UserCart, type InsertUserCart,
   type UserOrder, type InsertUserOrder, type Blog, type InsertBlog,
-  type Page, type InsertPage
+  type Page, type InsertPage,
+  customOrders // Imported customOrders table
 } from "@shared/schema";
 
-const connectionString = process.env.DATABASE_URL || "postgresql://postgres.lxhhgdqfxmeohayceshb:Amiomito1Amiomito1@aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres";
+const connectionString = process.env.DATABASE_URL || "postgresql://postgres.lxhhgdqdictfhmkbyoev:Fz0R2tN542G09u6W@aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres";
 
 // Optimized connection with pooling
 const client = postgres(connectionString, {
@@ -28,7 +29,7 @@ const client = postgres(connectionString, {
 const db = drizzle(client);
 
 // Cache layer for performance optimization
-const cache = new NodeCache({ 
+const cache = new NodeCache({
   stdTTL: 300,        // 5 minutes default TTL
   checkperiod: 60,    // Check for expired keys every 60 seconds
   useClones: false    // Return references instead of clones for better performance
@@ -114,9 +115,22 @@ export interface IStorage {
   createPage(page: InsertPage): Promise<Page>;
   updatePage(slug: string, updates: Partial<InsertPage>): Promise<Page>;
   deletePage(slug: string): Promise<void>;
+
+  // Custom Orders operations
+  getCustomOrders(): Promise<any[]>;
+  getCustomOrder(id: number): Promise<any | null>;
+  createCustomOrder(orderData: any): Promise<any>;
+  updateCustomOrderStatus(id: number, status: string): Promise<any>;
 }
 
 export class DatabaseStorage implements IStorage {
+  // Inject db instance into the class
+  private db: any;
+
+  constructor() {
+    this.db = db;
+  }
+
   async getProducts(): Promise<Product[]> {
     const cacheKey = 'products_all';
     const cached = cache.get<Product[]>(cacheKey);
@@ -126,9 +140,9 @@ export class DatabaseStorage implements IStorage {
     }
 
     const startTime = Date.now();
-    const result = await db.select().from(products).orderBy(desc(products.created_at));
+    const result = await this.db.select().from(products).orderBy(desc(products.created_at));
     const endTime = Date.now();
-    
+
     // Aggressive caching for 15 minutes
     cache.set(cacheKey, result, 900);
     console.log(`⚡ Products fetched in ${endTime - startTime}ms - ${result.length} items`);
@@ -144,9 +158,9 @@ export class DatabaseStorage implements IStorage {
     }
 
     const startTime = Date.now();
-    const result = await db.select().from(products).where(eq(products.category, category)).orderBy(desc(products.created_at));
+    const result = await this.db.select().from(products).where(eq(products.category, category)).orderBy(desc(products.created_at));
     const endTime = Date.now();
-    
+
     // Aggressive caching for 15 minutes
     cache.set(cacheKey, result, 900);
     console.log(`⚡ Category ${category} products fetched in ${endTime - startTime}ms - ${result.length} items`);
@@ -154,12 +168,12 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getProduct(id: string): Promise<Product | undefined> {
-    const result = await db.select().from(products).where(eq(products.id, id)).limit(1);
+    const result = await this.db.select().from(products).where(eq(products.id, id)).limit(1);
     return result[0];
   }
 
   async createProduct(product: InsertProduct): Promise<Product> {
-    const result = await db.insert(products).values(product).returning();
+    const result = await this.db.insert(products).values(product).returning();
     // Clear cache when new product is added
     cache.del('products_all');
     if (product.category) {
@@ -169,21 +183,21 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateProduct(id: string, product: Partial<InsertProduct>): Promise<Product> {
-    const result = await db.update(products).set(product).where(eq(products.id, id)).returning();
+    const result = await this.db.update(products).set(product).where(eq(products.id, id)).returning();
     return result[0];
   }
 
   async deleteProduct(id: string): Promise<void> {
-    await db.delete(products).where(eq(products.id, id));
+    await this.db.delete(products).where(eq(products.id, id));
   }
 
   async getOrders(): Promise<Order[]> {
-    const result = await db.select().from(orders).orderBy(desc(orders.created_at));
+    const result = await this.db.select().from(orders).orderBy(desc(orders.created_at));
     return result;
   }
 
   async getOrder(trackingId: string): Promise<Order | undefined> {
-    const result = await db.select().from(orders).where(eq(orders.tracking_id, trackingId)).limit(1);
+    const result = await this.db.select().from(orders).where(eq(orders.tracking_id, trackingId)).limit(1);
     const order = result[0];
     if (order) {
       // Ensure items is properly parsed
@@ -208,7 +222,7 @@ export class DatabaseStorage implements IStorage {
 
   async createOrder(order: InsertOrder): Promise<Order> {
     const trackingId = `TRX${Date.now()}${Math.floor(Math.random() * 1000)}`;
-    const result = await db.insert(orders).values({
+    const result = await this.db.insert(orders).values({
       ...order,
       tracking_id: trackingId,
     }).returning();
@@ -216,7 +230,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateOrderStatus(id: string, status: string): Promise<Order> {
-    const result = await db.update(orders).set({ 
+    const result = await this.db.update(orders).set({
       status
     }).where(eq(orders.id, id)).returning();
 
@@ -229,7 +243,7 @@ export class DatabaseStorage implements IStorage {
 
   async clearAllOrders(): Promise<{ clearedCount: number; backupKey: string }> {
     // First, get all orders for backup
-    const allOrders = await db.select().from(orders);
+    const allOrders = await this.db.select().from(orders);
 
     // Create backup table entry (you might want to implement a proper backup system)
     const backupData = {
@@ -239,13 +253,13 @@ export class DatabaseStorage implements IStorage {
     };
 
     // Store backup in site_settings table
-    await db.insert(siteSettings).values(backupData).returning();
+    await this.db.insert(siteSettings).values(backupData).returning();
 
     // Clear all orders
-    const deleteResult = await db.delete(orders).returning();
+    const deleteResult = await this.db.delete(orders).returning();
 
     // Also clear user_orders relationships
-    await db.delete(userOrders).returning();
+    await this.db.delete(userOrders).returning();
 
     return {
       clearedCount: allOrders.length,
@@ -255,73 +269,73 @@ export class DatabaseStorage implements IStorage {
 
   async getActiveOffers(): Promise<Offer[]> {
     const now = new Date();
-    const result = await db.select().from(offers)
+    const result = await this.db.select().from(offers)
       .where(and(eq(offers.active, true), gte(offers.expiry, now)))
       .orderBy(desc(offers.created_at));
     return result;
   }
 
   async getOffers(): Promise<Offer[]> {
-    const result = await db.select().from(offers).orderBy(desc(offers.created_at));
+    const result = await this.db.select().from(offers).orderBy(desc(offers.created_at));
     return result;
   }
 
   async createOffer(offer: InsertOffer): Promise<Offer> {
-    const result = await db.insert(offers).values(offer).returning();
+    const result = await this.db.insert(offers).values(offer).returning();
     return result[0];
   }
 
   async updateOffer(id: string, offer: Partial<InsertOffer>): Promise<Offer> {
-    const result = await db.update(offers).set(offer).where(eq(offers.id, id)).returning();
+    const result = await this.db.update(offers).set(offer).where(eq(offers.id, id)).returning();
     return result[0];
   }
 
   async deleteOffer(id: string): Promise<void> {
-    await db.delete(offers).where(eq(offers.id, id));
+    await this.db.delete(offers).where(eq(offers.id, id));
   }
 
   // Categories
   async getCategories(): Promise<Category[]> {
-    const result = await db.select().from(categories).orderBy(desc(categories.sort_order));
+    const result = await this.db.select().from(categories).orderBy(desc(categories.sort_order));
     return result;
   }
 
   async createCategory(category: InsertCategory): Promise<Category> {
-    const result = await db.insert(categories).values(category).returning();
+    const result = await this.db.insert(categories).values(category).returning();
     return result[0];
   }
 
   async updateCategory(id: string, category: Partial<InsertCategory>): Promise<Category> {
-    const result = await db.update(categories).set(category).where(eq(categories.id, id)).returning();
+    const result = await this.db.update(categories).set(category).where(eq(categories.id, id)).returning();
     return result[0];
   }
 
   async deleteCategory(id: string): Promise<void> {
-    await db.delete(categories).where(eq(categories.id, id));
+    await this.db.delete(categories).where(eq(categories.id, id));
   }
 
   // Promo Codes
   async getPromoCodes(): Promise<PromoCode[]> {
-    const result = await db.select().from(promoCodes).orderBy(desc(promoCodes.created_at));
+    const result = await this.db.select().from(promoCodes).orderBy(desc(promoCodes.created_at));
     return result;
   }
 
   async createPromoCode(promoCode: InsertPromoCode): Promise<PromoCode> {
-    const result = await db.insert(promoCodes).values(promoCode).returning();
+    const result = await this.db.insert(promoCodes).values(promoCode).returning();
     return result[0];
   }
 
   async updatePromoCode(id: string, promoCode: Partial<InsertPromoCode>): Promise<PromoCode> {
-    const result = await db.update(promoCodes).set(promoCode).where(eq(promoCodes.id, id)).returning();
+    const result = await this.db.update(promoCodes).set(promoCode).where(eq(promoCodes.id, id)).returning();
     return result[0];
   }
 
   async deletePromoCode(id: string): Promise<void> {
-    await db.delete(promoCodes).where(eq(promoCodes.id, id));
+    await this.db.delete(promoCodes).where(eq(promoCodes.id, id));
   }
 
   async validatePromoCode(code: string, orderAmount: number): Promise<{ valid: boolean; discount: number; message: string }> {
-    const result = await db.select().from(promoCodes).where(eq(promoCodes.code, code.toUpperCase())).limit(1);
+    const result = await this.db.select().from(promoCodes).where(eq(promoCodes.code, code.toUpperCase())).limit(1);
     const promoCode = result[0];
 
     if (!promoCode) {
@@ -341,10 +355,10 @@ export class DatabaseStorage implements IStorage {
     }
 
     if (orderAmount < Number(promoCode.min_order_amount)) {
-      return { 
-        valid: false, 
-        discount: 0, 
-        message: `সর্বনিম্ন অর্ডার পরিমাণ ৳${promoCode.min_order_amount} হতে হবে` 
+      return {
+        valid: false,
+        discount: 0,
+        message: `সর্বনিম্ন অর্ডার পরিমাণ ৳${promoCode.min_order_amount} হতে হবে`
       };
     }
 
@@ -358,16 +372,16 @@ export class DatabaseStorage implements IStorage {
       discount = Number(promoCode.discount_value);
     }
 
-    return { 
-      valid: true, 
-      discount, 
-      message: `${promoCode.discount_type === "percentage" ? promoCode.discount_value + "%" : "৳" + promoCode.discount_value} ছাড় প্রয়োগ হয়েছে` 
+    return {
+      valid: true,
+      discount,
+      message: `${promoCode.discount_type === "percentage" ? promoCode.discount_value + "%" : "৳" + promoCode.discount_value} ছাড় প্রয়োগ হয়েছে`
     };
   }
 
   // Analytics
   async getAnalytics(eventType?: string, startDate?: string, endDate?: string): Promise<Analytics[]> {
-    let query = db.select().from(analytics);
+    let query = this.db.select().from(analytics);
 
     const conditions = [];
     if (eventType) {
@@ -390,23 +404,23 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createAnalytics(analyticsData: InsertAnalytics): Promise<Analytics> {
-    const result = await db.insert(analytics).values(analyticsData).returning();
+    const result = await this.db.insert(analytics).values(analyticsData).returning();
     return result[0];
   }
 
   // Settings
   async getSettings(): Promise<SiteSettings[]> {
-    const result = await db.select().from(siteSettings).orderBy(desc(siteSettings.updated_at));
+    const result = await this.db.select().from(siteSettings).orderBy(desc(siteSettings.updated_at));
     return result;
   }
 
   async createSetting(setting: InsertSiteSettings): Promise<SiteSettings> {
-    const result = await db.insert(siteSettings).values(setting).returning();
+    const result = await this.db.insert(siteSettings).values(setting).returning();
     return result[0];
   }
 
   async updateSetting(key: string, value: string): Promise<SiteSettings> {
-    const result = await db.update(siteSettings)
+    const result = await this.db.update(siteSettings)
       .set({ value, updated_at: new Date() })
       .where(eq(siteSettings.key, key))
       .returning();
@@ -421,17 +435,17 @@ export class DatabaseStorage implements IStorage {
 
   // User operations (Required for Replit Auth)
   async getUser(id: string): Promise<User | undefined> {
-    const result = await db.select().from(users).where(eq(users.id, id)).limit(1);
+    const result = await this.db.select().from(users).where(eq(users.id, id)).limit(1);
     return result[0];
   }
 
   async getUserByPhone(phone: string): Promise<User | undefined> {
-    const result = await db.select().from(users).where(eq(users.phone, phone)).limit(1);
+    const result = await this.db.select().from(users).where(eq(users.phone, phone)).limit(1);
     return result[0];
   }
 
   async createUser(userData: { phone: string; password: string; firstName: string; lastName: string; address: string; email: string | null; profileImageUrl: string | null }): Promise<User> {
-    const result = await db.insert(users).values({
+    const result = await this.db.insert(users).values({
       phone: userData.phone,
       password: userData.password,
       firstName: userData.firstName,
@@ -444,7 +458,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async upsertUser(userData: UpsertUser): Promise<User> {
-    const result = await db
+    const result = await this.db
       .insert(users)
       .values(userData)
       .onConflictDoUpdate({
@@ -459,13 +473,13 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getUsers(): Promise<User[]> {
-    const result = await db.select().from(users).orderBy(desc(users.createdAt));
+    const result = await this.db.select().from(users).orderBy(desc(users.createdAt));
     return result;
   }
 
   // User Cart operations
   async getUserCart(userId: string): Promise<UserCart | undefined> {
-    const result = await db.select().from(userCarts).where(eq(userCarts.user_id, userId)).limit(1);
+    const result = await this.db.select().from(userCarts).where(eq(userCarts.user_id, userId)).limit(1);
     return result[0];
   }
 
@@ -473,13 +487,13 @@ export class DatabaseStorage implements IStorage {
     const existing = await this.getUserCart(userId);
 
     if (existing) {
-      const result = await db.update(userCarts)
+      const result = await this.db.update(userCarts)
         .set({ items: JSON.stringify(items), updated_at: new Date() })
         .where(eq(userCarts.user_id, userId))
         .returning();
       return result[0];
     } else {
-      const result = await db.insert(userCarts)
+      const result = await this.db.insert(userCarts)
         .values({ user_id: userId, items: JSON.stringify(items) })
         .returning();
       return result[0];
@@ -488,48 +502,58 @@ export class DatabaseStorage implements IStorage {
 
   // User Order operations
   async getUserOrders(userId: string): Promise<Order[]> {
-    const result = await db.select()
-      .from(orders)
-      .where(eq(orders.user_id, userId))
-      .orderBy(desc(orders.created_at));
-    return result;
+    try {
+      const userOrders = await this.db
+        .select()
+        .from(orders)
+        .innerJoin(userOrders, eq(orders.id, userOrders.orderId))
+        .where(eq(userOrders.userId, userId));
+
+      return userOrders.map(row => ({
+        ...row.orders,
+        items: typeof row.orders.items === 'string' ? JSON.parse(row.orders.items) : row.orders.items
+      }));
+    } catch (error) {
+      console.error('Error fetching user orders:', error);
+      return [];
+    }
   }
 
   async linkOrderToUser(orderId: string, userId: string): Promise<void> {
-    await db.update(orders)
+    await this.db.update(orders)
       .set({ user_id: userId })
       .where(eq(orders.id, orderId));
   }
 
   // Admin operations
   async getAdminByEmail(email: string): Promise<Admin | undefined> {
-    const result = await db.select().from(admins).where(eq(admins.email, email)).limit(1);
+    const result = await this.db.select().from(admins).where(eq(admins.email, email)).limit(1);
     return result[0];
   }
 
   async createAdmin(admin: InsertAdmin): Promise<Admin> {
-    const result = await db.insert(admins).values(admin).returning();
+    const result = await this.db.insert(admins).values(admin).returning();
     return result[0];
   }
 
   // Blog operations
   async getBlogs(): Promise<Blog[]> {
-    const result = await db.select().from(blogs).orderBy(desc(blogs.createdAt));
+    const result = await this.db.select().from(blogs).orderBy(desc(blogs.createdAt));
     return result;
   }
 
   async getBlog(id: string): Promise<Blog | undefined> {
-    const result = await db.select().from(blogs).where(eq(blogs.id, parseInt(id))).limit(1);
+    const result = await this.db.select().from(blogs).where(eq(blogs.id, parseInt(id))).limit(1);
     return result[0];
   }
 
   async createBlog(blog: InsertBlog): Promise<Blog> {
-    const result = await db.insert(blogs).values(blog).returning();
+    const result = await this.db.insert(blogs).values(blog).returning();
     return result[0];
   }
 
   async updateBlog(id: string, updates: Partial<InsertBlog>): Promise<Blog> {
-    const result = await db.update(blogs)
+    const result = await this.db.update(blogs)
       .set({ ...updates, updatedAt: new Date() })
       .where(eq(blogs.id, parseInt(id)))
       .returning();
@@ -537,7 +561,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deleteBlog(id: string): Promise<void> {
-    await db.delete(blogs).where(eq(blogs.id, parseInt(id)));
+    await this.db.delete(blogs).where(eq(blogs.id, parseInt(id)));
   }
 
   async incrementBlogViews(id: string): Promise<void> {
@@ -547,22 +571,22 @@ export class DatabaseStorage implements IStorage {
 
   // Pages operations
   async getPages(): Promise<Page[]> {
-    const result = await db.select().from(pages).orderBy(desc(pages.updatedAt));
+    const result = await this.db.select().from(pages).orderBy(desc(pages.updatedAt));
     return result;
   }
 
   async getPage(slug: string): Promise<Page | undefined> {
-    const result = await db.select().from(pages).where(eq(pages.slug, slug)).limit(1);
+    const result = await this.db.select().from(pages).where(eq(pages.slug, slug)).limit(1);
     return result[0];
   }
 
   async createPage(page: InsertPage): Promise<Page> {
-    const result = await db.insert(pages).values(page).returning();
+    const result = await this.db.insert(pages).values(page).returning();
     return result[0];
   }
 
   async updatePage(slug: string, updates: Partial<InsertPage>): Promise<Page> {
-    const result = await db.update(pages)
+    const result = await this.db.update(pages)
       .set({ ...updates, updatedAt: new Date() })
       .where(eq(pages.slug, slug))
       .returning();
@@ -570,7 +594,68 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deletePage(slug: string): Promise<void> {
-    await db.delete(pages).where(eq(pages.slug, slug));
+    await this.db.delete(pages).where(eq(pages.slug, slug));
+  }
+
+  // Custom Orders methods
+  async getCustomOrders(): Promise<any[]> {
+    try {
+      const result = await this.db.select().from(customOrders).orderBy(desc(customOrders.createdAt));
+      return result;
+    } catch (error) {
+      console.error('Error fetching custom orders:', error);
+      return [];
+    }
+  }
+
+  async getCustomOrder(id: number): Promise<any | null> {
+    try {
+      const [result] = await this.db.select().from(customOrders).where(eq(customOrders.id, id));
+      return result || null;
+    } catch (error) {
+      console.error('Error fetching custom order:', error);
+      return null;
+    }
+  }
+
+  async createCustomOrder(orderData: any): Promise<any> {
+    try {
+      const [result] = await this.db.insert(customOrders).values({
+        name: orderData.name,
+        whatsapp: orderData.whatsapp,
+        address: orderData.address,
+        productName: orderData.productName,
+        customization: orderData.customization,
+        quantity: orderData.quantity || 1,
+        totalPrice: orderData.totalPrice.toString(),
+        paymentMethod: orderData.paymentMethod || 'cod',
+        trxId: orderData.trxId || null,
+        paymentScreenshot: orderData.paymentScreenshot || null,
+        status: orderData.status || 'pending',
+        createdAt: new Date(),
+        updatedAt: new Date()
+      }).returning();
+
+      return result;
+    } catch (error) {
+      console.error('Error creating custom order:', error);
+      throw error;
+    }
+  }
+
+  async updateCustomOrderStatus(id: number, status: string): Promise<any> {
+    try {
+      const [result] = await this.db
+        .update(customOrders)
+        .set({ status, updatedAt: new Date() })
+        .where(eq(customOrders.id, id))
+        .returning();
+
+      return result;
+    } catch (error) {
+      console.error('Error updating custom order status:', error);
+      throw error;
+    }
   }
 }
 
