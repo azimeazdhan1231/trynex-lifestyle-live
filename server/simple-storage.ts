@@ -14,13 +14,11 @@ import {
   type UserOrder, type InsertUserOrder, type CustomOrder, type NewCustomOrder
 } from "@shared/schema";
 
-// Set environment variables directly if not found (temporary fix for Replit)
-if (!process.env.DATABASE_URL) {
-  process.env.DATABASE_URL = "postgresql://postgres.lxhhgdqfxmeohayceshb:Amiomito1Amiomito1@aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres";
-}
+// Force Supabase connection to access the 32 products database
+const SUPABASE_DATABASE_URL = "postgresql://postgres.lxhhgdqfxmeohayceshb:Amiomito1Amiomito1@aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres";
 
-// Try to get DATABASE_URL, or construct it from individual PG environment variables
-let connectionString = process.env.DATABASE_URL;
+// Use Supabase database connection directly
+let connectionString = SUPABASE_DATABASE_URL;
 
 if (!connectionString) {
   const { PGHOST, PGPORT, PGUSER, PGPASSWORD, PGDATABASE } = process.env;
