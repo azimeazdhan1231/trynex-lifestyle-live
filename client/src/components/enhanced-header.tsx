@@ -51,6 +51,7 @@ export default function EnhancedHeader() {
     { href: '/', label: 'হোম' },
     { href: '/products', label: 'পণ্যসমূহ' },
     { href: '/categories', label: 'ক্যাটেগরি' },
+    { href: '/custom-order', label: 'কাস্টমাইজ' },
     { href: '/about', label: 'আমাদের সম্পর্কে' },
     { href: '/contact', label: 'যোগাযোগ' },
     { href: '/blog', label: 'ব্লগ' }
