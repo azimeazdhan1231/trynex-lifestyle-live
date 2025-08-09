@@ -1,0 +1,72 @@
+Developer Task List – Website & Admin Panel Full Fix
+1. Database & API Connectivity
+Audit all API endpoints for the admin panel and verify connections to the database.
+
+Fix any missing or broken API routes related to orders, products, promos, and offers.
+
+Ensure all API responses return complete and accurate data (including uploaded files).
+
+2. Custom Order Data Handling
+Check that all customization inputs from the “Customize” button and Customize page are correctly saved in the database (text & file uploads).
+
+Update the admin panel’s Order Details view to dynamically load and display:
+
+Client-entered customization text.
+
+All uploaded images or files.
+
+Fix the “View Order” button to successfully fetch and display all related order data.
+
+3. File & Image Upload
+Ensure that uploaded files are stored securely (local storage or cloud) and linked to the order record.
+
+Enable preview functionality for uploaded images/files in both the admin panel and frontend.
+
+Add validation for file size, format, and type.
+
+4. Order Management Functions
+Enable Order Status Editing in the admin panel (e.g., Pending, Processing, Completed).
+
+Fix all order-related action buttons so they perform the correct API actions.
+
+Display timestamps in Bangladesh Standard Time (BST) across all order views.
+
+5. Product, Promo, and Offer Management
+Fix product editing features to allow full updates to:
+
+Name
+
+Description
+
+Price
+
+Images (single & multiple upload)
+
+Fix promo code and offer management so admins can:
+
+Create new promos/offers
+
+Edit existing promos/offers
+
+Delete promos/offers
+
+Make sure both image/file uploading systems for products work perfectly with previews.
+
+6. Admin Panel UI & UX Improvements
+Make all data loading dynamic without needing manual refresh.
+
+Ensure proper loading states, error messages, and success notifications are shown.
+
+Optimize the admin panel layout for faster navigation and better usability.
+
+7. Full System Synchronization
+Verify that frontend, backend, and database are using consistent API parameters and data formats.
+
+Test all functions A to Z (order placement, custom order submission, product editing, promo creation, order status change, etc.) to confirm error-free operation.
+
+8. Final QA & Testing
+Perform end-to-end testing with real sample orders, including customizations and uploads.
+
+Test across devices (desktop, tablet, mobile).
+
+Fix any bugs or broken workflows found during testing.

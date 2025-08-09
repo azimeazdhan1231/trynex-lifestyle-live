@@ -48,7 +48,9 @@ export default function UnifiedProductCard({
   const handleCustomize = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    setLocation(`/customize/${product.id}`);
+    if (onCustomize) {
+      onCustomize(product);
+    }
   };
 
   const rating = 4.5; // Mock rating - replace with actual rating

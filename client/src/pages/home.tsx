@@ -9,7 +9,7 @@ import UltraSimpleLayout from "@/components/ultra-simple-layout";
 import TrackingSection from "@/components/tracking-section";
 import SimplePopupOffer from "../components/simple-popup-offer";
 import ProductModal from "@/components/product-modal-fixed";
-import CustomizeModalRedesigned from "@/components/customize-modal-redesigned";
+import CustomizeModalEnhanced from "@/components/customize-modal-enhanced";
 import { useToast } from "@/hooks/use-toast";
 import { useCart } from "@/hooks/use-cart";
 import { Link, useLocation } from "wouter";
@@ -737,7 +737,7 @@ export default function Home() {
 
       {/* Customize Modal */}
       {customizeProduct && (
-        <CustomizeModalRedesigned
+        <CustomizeModalEnhanced
           product={customizeProduct}
           isOpen={isCustomizeModalOpen}
           onClose={() => {

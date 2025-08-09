@@ -226,7 +226,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get('/api/custom-orders/:id', async (req, res) => {
     try {
-      const customOrder = await storage.getCustomOrder(parseInt(req.params.id));
+      const customOrder = await storage.getCustomOrder(req.params.id);
       
       if (!customOrder) {
         return res.status(404).json({ message: 'কাস্টম অর্ডার পাওয়া যায়নি' });
@@ -248,20 +248,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const customOrderData = {
         productId: orderData.productId,
-        productName: orderData.productName,
-        productPrice: orderData.productPrice.toString(),
-        quantity: orderData.quantity,
-        selectedSize: orderData.selectedSize,
-        selectedColor: orderData.selectedColor,
-        customImageData: customImagesData,
-        instructions: orderData.instructions || '',
-        totalPrice: orderData.totalPrice.toString(),
         customerName: orderData.customerName,
-        phone: orderData.phone,
-        email: orderData.email || null,
-        address: orderData.address,
-        hasCustomImages: orderData.hasCustomImages || false,
-        imageCount: orderData.imageCount || 0,
+        customerPhone: orderData.phone,
+        customerEmail: orderData.email || null,
+        customerAddress: orderData.address,
+        customizationData: {
+          productName: orderData.productName,
+          productPrice: orderData.productPrice,
+          quantity: orderData.quantity,
+          selectedSize: orderData.selectedSize,
+          selectedColor: orderData.selectedColor,
+          customImages: orderData.customImages || [],
+          instructions: orderData.instructions || '',
+          hasCustomImages: orderData.hasCustomImages || false,
+          imageCount: orderData.imageCount || 0
+        },
+        totalPrice: orderData.totalPrice.toString(),
         status: 'pending'
       };
       

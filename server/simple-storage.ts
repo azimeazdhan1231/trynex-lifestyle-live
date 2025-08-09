@@ -124,9 +124,21 @@ export class SimpleStorage {
     await db.delete(products).where(eq(products.id, id));
   }
 
-  // Orders
+  // Orders (Enhanced with error handling)
   async getOrders(): Promise<Order[]> {
-    return await db.select().from(orders).orderBy(desc(orders.created_at));
+    try {
+      console.log('🔍 Fetching orders from database...');
+      const result = await db.select().from(orders).orderBy(desc(orders.created_at));
+      console.log(`✅ Orders fetched successfully: ${result.length} orders`);
+      return result;
+    } catch (error: any) {
+      console.error('❌ Error fetching orders:', error);
+      console.error('Error details:', {
+        message: error?.message || 'Unknown error',
+        code: error?.code || 'NO_CODE'
+      });
+      return [];
+    }
   }
 
   async getOrder(trackingId: string): Promise<Order | undefined> {
@@ -268,7 +280,7 @@ export class SimpleStorage {
     return await db.select().from(customOrders).orderBy(desc(customOrders.createdAt));
   }
 
-  async getCustomOrder(id: number): Promise<CustomOrder | undefined> {
+  async getCustomOrder(id: string): Promise<CustomOrder | undefined> {
     const result = await db.select().from(customOrders).where(eq(customOrders.id, id)).limit(1);
     return result[0];
   }
@@ -278,7 +290,7 @@ export class SimpleStorage {
     return result[0];
   }
 
-  async updateCustomOrderStatus(id: number, status: string): Promise<CustomOrder> {
+  async updateCustomOrderStatus(id: string, status: string): Promise<CustomOrder> {
     const result = await db.update(customOrders).set({ 
       status, 
       updatedAt: new Date() 
