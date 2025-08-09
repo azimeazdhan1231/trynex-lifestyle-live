@@ -31,6 +31,252 @@ const ORDER_STATUSES = {
   cancelled: "বাতিল"
 };
 
+// Site Settings Panel Component  
+function SiteSettingsPanel() {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const [settings, setSettings] = useState({
+    site_name: "Trynex Lifestyle",
+    site_description: "Bangladesh এর সেরা গিফট এবং লাইফস্টাইল পণ্যের দোকান",
+    contact_email: "support@trynex.com",
+    contact_phone: "+8801XXXXXXXXX",
+    whatsapp_number: "+8801XXXXXXXXX",
+    business_address: "ঢাকা, বাংলাদেশ",
+    delivery_fee_dhaka: 60,
+    delivery_fee_outside: 120,
+    min_order_amount: 200,
+    google_analytics_id: "",
+    facebook_pixel_id: "",
+    maintenance_mode: false,
+    allow_guest_checkout: true
+  });
+  const [isLoading, setIsLoading] = useState(false);
+
+  // Fetch current settings
+  const { data: currentSettings } = useQuery({
+    queryKey: ["/api/settings"]
+  });
+
+  React.useEffect(() => {
+    if (currentSettings) {
+      setSettings(prev => ({ ...prev, ...currentSettings }));
+    }
+  }, [currentSettings]);
+
+  const handleSettingChange = (key: string, value: any) => {
+    setSettings(prev => ({ ...prev, [key]: value }));
+    
+    // Real-time updates for critical settings
+    if (key === 'site_name' && value) {
+      document.title = value;
+    }
+  };
+
+  const saveSettings = async () => {
+    try {
+      setIsLoading(true);
+      await apiRequest("POST", "/api/settings", settings);
+      
+      // Update document title immediately
+      if (settings.site_name) {
+        document.title = settings.site_name;
+      }
+      
+      toast({ 
+        title: "সেটিংস সেভ হয়েছে", 
+        description: "সাইট সেটিংস সফলভাবে আপডেট হয়েছে।" 
+      });
+      
+      // Invalidate queries to refresh data
+      await queryClient.invalidateQueries({ queryKey: ["/api/settings"] });
+    } catch (error: any) {
+      toast({ 
+        title: "ত্রুটি", 
+        description: `সেটিংস সেভ করতে সমস্যা হয়েছে: ${error.message}`,
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Site Information */}
+      <Card>
+        <CardHeader>
+          <CardTitle>সাইট তথ্য</CardTitle>
+          <CardDescription>সাইটের মূল তথ্য আপডেট করুন (রিয়েল-টাইম আপডেট)</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="site_name">সাইটের নাম *</Label>
+              <Input
+                id="site_name"
+                value={settings.site_name}
+                onChange={(e) => handleSettingChange("site_name", e.target.value)}
+                placeholder="সাইটের নাম"
+              />
+              <p className="text-xs text-gray-500 mt-1">পরিবর্তন সঙ্গে সঙ্গে ব্রাউজার টাইটেলে দেখা যাবে</p>
+            </div>
+            <div>
+              <Label htmlFor="contact_email">যোগাযোগ ইমেইল</Label>
+              <Input
+                id="contact_email"
+                value={settings.contact_email}
+                onChange={(e) => handleSettingChange("contact_email", e.target.value)}
+                placeholder="support@example.com"
+              />
+            </div>
+          </div>
+          
+          <div>
+            <Label htmlFor="site_description">সাইটের বিবরণ</Label>
+            <Textarea
+              id="site_description"
+              value={settings.site_description}
+              onChange={(e) => handleSettingChange("site_description", e.target.value)}
+              placeholder="সাইটের বিবরণ লিখুন"
+              rows={3}
+            />
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="contact_phone">যোগাযোগ ফোন</Label>
+              <Input
+                id="contact_phone"
+                value={settings.contact_phone}
+                onChange={(e) => handleSettingChange("contact_phone", e.target.value)}
+                placeholder="+8801XXXXXXXXX"
+              />
+            </div>
+            <div>
+              <Label htmlFor="whatsapp_number">WhatsApp নম্বর</Label>
+              <Input
+                id="whatsapp_number"
+                value={settings.whatsapp_number}
+                onChange={(e) => handleSettingChange("whatsapp_number", e.target.value)}
+                placeholder="+8801XXXXXXXXX"
+              />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Delivery Settings */}
+      <Card>
+        <CardHeader>
+          <CardTitle>ডেলিভারি সেটিংস</CardTitle>
+          <CardDescription>ডেলিভারি চার্জ এবং অর্ডার সেটিংস</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <Label htmlFor="delivery_fee_dhaka">ঢাকার ডেলিভারি চার্জ (৳)</Label>
+              <Input
+                id="delivery_fee_dhaka"
+                type="number"
+                value={settings.delivery_fee_dhaka}
+                onChange={(e) => handleSettingChange("delivery_fee_dhaka", parseInt(e.target.value))}
+              />
+            </div>
+            <div>
+              <Label htmlFor="delivery_fee_outside">ঢাকার বাইরে ডেলিভারি চার্জ (৳)</Label>
+              <Input
+                id="delivery_fee_outside"
+                type="number"
+                value={settings.delivery_fee_outside}
+                onChange={(e) => handleSettingChange("delivery_fee_outside", parseInt(e.target.value))}
+              />
+            </div>
+            <div>
+              <Label htmlFor="min_order_amount">সর্বনিম্ন অর্ডার পরিমাণ (৳)</Label>
+              <Input
+                id="min_order_amount"
+                type="number"
+                value={settings.min_order_amount}
+                onChange={(e) => handleSettingChange("min_order_amount", parseInt(e.target.value))}
+              />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Analytics Settings */}
+      <Card>
+        <CardHeader>
+          <CardTitle>অ্যানালিটিক্স সেটিংস</CardTitle>
+          <CardDescription>Google Analytics এবং Facebook Pixel সেটআপ</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="google_analytics_id">Google Analytics ID</Label>
+              <Input
+                id="google_analytics_id"
+                value={settings.google_analytics_id}
+                onChange={(e) => handleSettingChange("google_analytics_id", e.target.value)}
+                placeholder="G-XXXXXXXXXX"
+              />
+            </div>
+            <div>
+              <Label htmlFor="facebook_pixel_id">Facebook Pixel ID</Label>
+              <Input
+                id="facebook_pixel_id"
+                value={settings.facebook_pixel_id}
+                onChange={(e) => handleSettingChange("facebook_pixel_id", e.target.value)}
+                placeholder="XXXXXXXXXXXXXXX"
+              />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Store Settings */}
+      <Card>
+        <CardHeader>
+          <CardTitle>স্টোর সেটিংস</CardTitle>
+          <CardDescription>স্টোরের ব্যবস্থাপনা এবং কার্যকারিতা</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <Label>মেইনটেন্যান্স মোড</Label>
+                <p className="text-sm text-gray-600">সাইট বন্ধ রাখুন রক্ষণাবেক্ষণের জন্য</p>
+              </div>
+              <Switch
+                checked={settings.maintenance_mode}
+                onCheckedChange={(checked) => handleSettingChange("maintenance_mode", checked)}
+              />
+            </div>
+            
+            <div className="flex items-center justify-between">
+              <div>
+                <Label>গেস্ট চেকআউট</Label>
+                <p className="text-sm text-gray-600">অতিথি ব্যবহারকারীদের অর্ডার করার অনুমতি দিন</p>
+              </div>
+              <Switch
+                checked={settings.allow_guest_checkout}
+                onCheckedChange={(checked) => handleSettingChange("allow_guest_checkout", checked)}
+              />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Save Button */}
+      <div className="flex justify-end">
+        <Button onClick={saveSettings} disabled={isLoading} className="min-w-[120px]">
+          {isLoading ? "সেভ হচ্ছে..." : "সেটিংস সেভ করুন"}
+        </Button>
+      </div>
+    </div>
+  );
+}
+
 
 
 // Fix Descriptions Component
@@ -405,7 +651,7 @@ function ProductsManagement() {
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [categoryFilter, setCategoryFilter] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("all");
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [deleteProductId, setDeleteProductId] = useState<string | null>(null);
 
@@ -420,7 +666,7 @@ function ProductsManagement() {
       const matchesSearch = !searchQuery || 
         product.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         product.description?.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesCategory = !categoryFilter || product.category === categoryFilter;
+      const matchesCategory = !categoryFilter || categoryFilter === "all" || product.category === categoryFilter;
       return matchesSearch && matchesCategory;
     });
   }, [products, searchQuery, categoryFilter]);
@@ -466,7 +712,7 @@ function ProductsManagement() {
 
   const clearFilters = () => {
     setSearchQuery("");
-    setCategoryFilter("");
+    setCategoryFilter("all");
     setIsFilterOpen(false);
   };
 
@@ -1374,18 +1620,7 @@ export default function AdminPanelEnhanced() {
         </TabsContent>
 
         <TabsContent value="settings" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>সাইট সেটিংস</CardTitle>
-              <CardDescription>শীঘ্রই আসছে</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="text-center py-12">
-                <Settings className="w-12 h-12 mx-auto mb-4 text-gray-400" />
-                <p className="text-gray-600">সাইট সেটিংস শীঘ্রই উপলব্ধ হবে</p>
-              </div>
-            </CardContent>
-          </Card>
+          <SiteSettingsPanel />
         </TabsContent>
       </Tabs>
 

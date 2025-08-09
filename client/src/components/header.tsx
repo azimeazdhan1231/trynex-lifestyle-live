@@ -89,13 +89,13 @@ export default function Header({ cartCount, onCartOpen }: HeaderProps) {
                 variant="ghost"
                 size="sm"
                 onClick={() => setIsCartOpen(true)}
-                className="relative p-2 text-gray-700 hover:text-primary transition-all duration-200 hover:bg-primary/10 rounded-lg"
+                className="relative p-2 text-gray-700 hover:text-primary transition-all duration-200 hover:bg-primary/10 rounded-lg min-w-[44px] min-h-[44px] flex items-center justify-center"
                 data-testid="button-cart"
               >
-                <ShoppingCart className="h-6 w-6" />
+                <ShoppingCart className="h-5 w-5" />
                 {cartCount > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-semibold shadow-lg animate-pulse">
-                    {cartCount}
+                  <span className="absolute -top-0.5 -right-0.5 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center font-semibold shadow-lg text-[10px] leading-none">
+                    {cartCount > 99 ? '99+' : cartCount}
                   </span>
                 )}
               </Button>
