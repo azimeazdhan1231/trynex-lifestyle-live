@@ -190,7 +190,7 @@ export default function EnhancedProductsPage() {
 
   return (
     <MobileOptimizedLayout>
-      <div className="pb-safe-area-bottom">
+      <div className="min-h-screen pb-safe-area-bottom">
         <div className="container mx-auto px-4 py-6">
           {/* Page Header */}
           <div className="mb-8">

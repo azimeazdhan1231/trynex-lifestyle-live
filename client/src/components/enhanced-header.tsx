@@ -219,22 +219,22 @@ export default function EnhancedHeader() {
                         <h3 className="text-sm font-semibold text-gray-900 mb-4">মেনু</h3>
                         <div className="space-y-2">
                           {navLinks.map((link) => (
-                            <Link key={link.href} href={link.href}>
-                              <Button
-                                variant="ghost"
-                                className={`w-full justify-start h-12 px-4 text-base font-medium rounded-xl hover:bg-primary/10 hover:text-primary transition-all duration-200 ${
-                                  location === link.href 
-                                    ? 'bg-primary text-white hover:bg-primary hover:text-white' 
-                                    : 'text-gray-700'
-                                }`}
-                                onClick={() => {
-                                  setIsMenuOpen(false);
-                                  navigate(link.href);
-                                }}
-                              >
-                                {link.label}
-                              </Button>
-                            </Link>
+                            <Button
+                              key={link.href}
+                              variant="ghost"
+                              className={`w-full justify-start h-12 px-4 text-base font-medium rounded-xl hover:bg-primary/10 hover:text-primary transition-all duration-200 ${
+                                location === link.href 
+                                  ? 'bg-primary text-white hover:bg-primary hover:text-white' 
+                                  : 'text-gray-700'
+                              }`}
+                              onClick={() => {
+                                setIsMenuOpen(false);
+                                navigate(link.href);
+                              }}
+                              data-testid={`mobile-nav-${link.href.replace('/', '')}`}
+                            >
+                              {link.label}
+                            </Button>
                           ))}
                         </div>
                       </nav>
@@ -258,10 +258,11 @@ export default function EnhancedHeader() {
                           <div className="flex flex-col gap-3">
                             <Button
                               onClick={() => {
-                                setShowLogin(true);
                                 setIsMenuOpen(false);
+                                setTimeout(() => setShowLogin(true), 100);
                               }}
                               className="w-full"
+                              data-testid="mobile-login-button"
                             >
                               <User className="w-4 h-4 mr-2" />
                               লগইন
@@ -269,10 +270,11 @@ export default function EnhancedHeader() {
                             <Button
                               variant="outline"
                               onClick={() => {
-                                setShowRegistration(true);
                                 setIsMenuOpen(false);
+                                setTimeout(() => setShowRegistration(true), 100);
                               }}
                               className="w-full"
+                              data-testid="mobile-register-button"
                             >
                               রেজিস্টার করুন
                             </Button>

@@ -53,12 +53,7 @@ export default function MobileOptimizedLayout({
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <MobileResponsiveFixes />
-      <EnhancedPerformanceOptimizer />
-      <ComprehensiveMobileOptimizer />
-      <UltimateMobileResponsiveness />
       <ResponsiveViewportHandler />
-      <ComprehensiveMobileFixes />
       <EnhancedHeader />
       
       <main className="pt-24 lg:pt-32">
