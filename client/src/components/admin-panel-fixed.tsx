@@ -38,23 +38,32 @@ function OrderDetailsModal({ isOpen, onClose, order, onStatusUpdate }: any) {
 
   const updateStatusMutation = useMutation({
     mutationFn: async ({ orderId, status }: { orderId: string, status: string }) => {
-      return await apiRequest(`/api/orders/${orderId}/status`, {
+      console.log(`🔄 Mutation: Updating order ${orderId} to status: ${status}`);
+      const response = await apiRequest(`/api/orders/${orderId}/status`, {
         method: 'PATCH',
         body: { status }
       });
+      console.log('✅ Mutation response:', response);
+      return response;
     },
-    onSuccess: () => {
+    onSuccess: (data, variables) => {
+      console.log('✅ Status update successful:', data);
       toast({
-        title: "সফল",
-        description: "অর্ডার স্ট্যাটাস আপডেট হয়েছে",
+        title: "সফল!",
+        description: `অর্ডার স্ট্যাটাস "${ORDER_STATUSES[variables.status as keyof typeof ORDER_STATUSES] || variables.status}" এ আপডেট হয়েছে`,
       });
+      
+      // Force refresh data
       queryClient.invalidateQueries({ queryKey: ["/api/orders"] });
+      queryClient.refetchQueries({ queryKey: ["/api/orders"] });
       onStatusUpdate?.();
+      onClose();
     },
-    onError: () => {
+    onError: (error: any) => {
+      console.error('❌ Status update failed:', error);
       toast({
-        title: "ত্রুটি",
-        description: "স্ট্যাটাস আপডেট করতে সমস্যা হয়েছে",
+        title: "ত্রুটি!",
+        description: error?.message || "স্ট্যাটাস আপডেট করতে সমস্যা হয়েছে",
         variant: "destructive",
       });
     }
@@ -122,7 +131,6 @@ function OrderDetailsModal({ isOpen, onClose, order, onStatusUpdate }: any) {
         orderId: order.id, 
         status: newStatus 
       });
-      onClose();
     }
   };
 
@@ -354,7 +362,7 @@ export default function AdminPanelFixed() {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [orderDetailsOpen, setOrderDetailsOpen] = useState(false);
 
-  // Data fetching with proper error handling
+  // Data fetching with proper error handling and real-time updates
   const { 
     data: orders = [], 
     isLoading: ordersLoading, 
@@ -363,7 +371,9 @@ export default function AdminPanelFixed() {
   } = useQuery<Order[]>({ 
     queryKey: ["/api/orders"],
     retry: 3,
-    staleTime: 30000, // 30 seconds
+    staleTime: 10000, // 10 seconds for more frequent updates
+    refetchInterval: 30000, // Auto-refresh every 30 seconds
+    refetchOnWindowFocus: true,
   });
 
   const { 
