@@ -80,7 +80,7 @@ export default function ProductModal({ product, isOpen, onClose, onAddToCart, on
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="w-[95vw] max-w-5xl h-[85vh] max-h-[800px] p-6 overflow-y-auto sm:w-[90vw] md:w-[80vw] lg:w-[75vw] xl:max-w-5xl" aria-describedby="product-description">
+      <DialogContent className="modal-override p-6 overflow-y-auto" aria-describedby="product-description">
         <DialogTitle className="text-2xl font-bold text-gray-800 pr-12 mb-6">
           {product.name} - পণ্যের বিস্তারিত
         </DialogTitle>

@@ -111,30 +111,49 @@
   align-items: stretch;
 }
 
-/* Modal improvements for desktop */
+/* Modal improvements for desktop - Force proper sizing */
+.modal-override,
+[data-radix-dialog-content] {
+  width: 95vw !important;
+  max-width: 500px !important;
+  height: auto !important;
+  max-height: 90vh !important;
+}
+
+/* Tablet responsive */
 @media (min-width: 768px) {
+  .modal-override,
   [data-radix-dialog-content] {
     width: 85vw !important;
-    max-width: 800px !important;
+    max-width: 700px !important;
     height: auto !important;
     max-height: 85vh !important;
   }
-  
-  [data-radix-dialog-content][data-state="open"] {
-    animation: slideUpAndFade 300ms cubic-bezier(0.16, 1, 0.3, 1);
-  }
 }
 
+/* Desktop responsive */
 @media (min-width: 1024px) {
+  .modal-override,
   [data-radix-dialog-content] {
     width: 80vw !important;
-    max-width: 1000px !important;
+    max-width: 900px !important;
   }
 }
 
+/* Large desktop responsive */
 @media (min-width: 1280px) {
+  .modal-override,
   [data-radix-dialog-content] {
-    width: 75vw !important;
+    width: 70vw !important;
+    max-width: 1100px !important;
+  }
+}
+
+/* Extra large desktop */
+@media (min-width: 1536px) {
+  .modal-override,
+  [data-radix-dialog-content] {
+    width: 60vw !important;
     max-width: 1200px !important;
   }
 }
