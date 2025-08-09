@@ -9,6 +9,7 @@ import { useCart } from '@/hooks/use-cart';
 import CartModal from './cart-modal';
 import UserRegistration from './user-registration';
 import UserLogin from './user-login';
+import SearchBar from './search-bar';
 
 interface UserData {
   firstName: string;
