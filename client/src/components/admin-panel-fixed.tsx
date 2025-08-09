@@ -116,11 +116,13 @@ function OrderDetailsModal({ isOpen, onClose, order, onStatusUpdate }: any) {
   };
 
   const handleStatusUpdate = () => {
-    if (order.id && newStatus) {
+    if (order.id && newStatus && newStatus !== order.status) {
+      console.log(`🔄 Updating order ${order.id} from ${order.status} to ${newStatus}`);
       updateStatusMutation.mutate({ 
         orderId: order.id, 
         status: newStatus 
       });
+      onClose();
     }
   };
 
@@ -257,7 +259,7 @@ function OrderDetailsModal({ isOpen, onClose, order, onStatusUpdate }: any) {
         )}
 
         {/* Custom Images */}
-        {customImages.length > 0 && (
+        {customImages && customImages.length > 0 && (
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -267,19 +269,33 @@ function OrderDetailsModal({ isOpen, onClose, order, onStatusUpdate }: any) {
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {customImages.map((image: any, index: number) => (
-                  <div key={index} className="relative group">
-                    <img 
-                      src={typeof image === 'string' ? image : image.url || image.src} 
-                      alt={`Custom Image ${index + 1}`}
-                      className="w-full h-24 object-cover rounded-lg border cursor-pointer hover:opacity-80"
-                      onClick={() => window.open(typeof image === 'string' ? image : image.url || image.src, '_blank')}
-                    />
-                    <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all rounded-lg flex items-center justify-center">
-                      <Eye className="w-5 h-5 text-white opacity-0 group-hover:opacity-100" />
+                {customImages.map((image: any, index: number) => {
+                  // Handle different image data formats
+                  const imageUrl = image?.url || image?.dataUrl || image?.data || image?.src || (typeof image === 'string' ? image : '');
+                  
+                  if (!imageUrl) {
+                    console.warn(`No valid image URL found for image ${index}:`, image);
+                    return null;
+                  }
+                  
+                  return (
+                    <div key={index} className="relative group">
+                      <img 
+                        src={imageUrl}
+                        alt={`কাস্টম ছবি ${index + 1}`}
+                        className="w-full h-24 object-cover rounded-lg border cursor-pointer hover:opacity-80 transition-opacity"
+                        onClick={() => window.open(imageUrl, '_blank')}
+                        onError={(e) => {
+                          console.error(`Failed to load image ${index}:`, imageUrl);
+                          e.currentTarget.style.display = 'none';
+                        }}
+                      />
+                      <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all rounded-lg flex items-center justify-center">
+                        <Eye className="w-5 h-5 text-white opacity-0 group-hover:opacity-100" />
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </CardContent>
           </Card>

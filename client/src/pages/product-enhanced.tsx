@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { useCart } from "@/hooks/use-cart";
 import MobileOptimizedLayout from "@/components/mobile-optimized-layout";
-import CustomizeModal from "@/components/customize-modal";
+import CustomizeModalEnhanced from "@/components/customize-modal-enhanced";
 import { formatPrice, createWhatsAppUrl } from "@/lib/constants";
 import { trackProductView, trackAddToCart } from "@/lib/analytics";
 import type { Product } from "@shared/schema";
@@ -626,7 +626,7 @@ export default function EnhancedProductPage({ params }: ProductPageProps) {
 
         {/* Customize Modal */}
         {product && (
-          <CustomizeModal
+          <CustomizeModalEnhanced
             product={product}
             isOpen={isCustomizeModalOpen}
             onClose={() => setIsCustomizeModalOpen(false)}
@@ -635,6 +635,11 @@ export default function EnhancedProductPage({ params }: ProductPageProps) {
                 id: customProduct.id,
                 name: customProduct.name,
                 price: Number(customProduct.price),
+                customization: customization,
+              });
+              toast({
+                title: "কার্টে যোগ করা হয়েছে!",
+                description: `${customProduct.name} কাস্টমাইজেশন সহ কার্টে যোগ করা হয়েছে`,
               });
               setIsCustomizeModalOpen(false);
             }}
