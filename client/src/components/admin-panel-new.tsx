@@ -118,29 +118,53 @@ export default function AdminPanelNew() {
   const [selectedCustomOrder, setSelectedCustomOrder] = useState<any>(null);
   const [customOrderDetailsOpen, setCustomOrderDetailsOpen] = useState(false);
 
-  // Fetch data with error handling
+  // Fetch data with controlled polling and proper error handling
   const { data: orders = [], isLoading: ordersLoading, error: ordersError } = useQuery<Order[]>({ 
-    queryKey: ["/api/orders"]
+    queryKey: ["/api/orders"],
+    staleTime: 30000, // 30 seconds
+    refetchInterval: 60000, // 1 minute
+    refetchOnWindowFocus: false,
+    retry: 1
   });
 
   const { data: products = [], isLoading: productsLoading, error: productsError } = useQuery<Product[]>({ 
-    queryKey: ["/api/products"]
+    queryKey: ["/api/products"],
+    staleTime: 300000, // 5 minutes
+    refetchInterval: false, // Don't auto-refetch products
+    refetchOnWindowFocus: false,
+    retry: 1
   });
 
   const { data: categories = [], isLoading: categoriesLoading, error: categoriesError } = useQuery<Category[]>({ 
-    queryKey: ["/api/categories"]
+    queryKey: ["/api/categories"],
+    staleTime: 600000, // 10 minutes
+    refetchInterval: false,
+    refetchOnWindowFocus: false,
+    retry: 1
   });
 
   const { data: offers = [], isLoading: offersLoading, error: offersError } = useQuery<any[]>({ 
-    queryKey: ["/api/offers"]
+    queryKey: ["/api/offers"],
+    staleTime: 300000, // 5 minutes
+    refetchInterval: false,
+    refetchOnWindowFocus: false,
+    retry: 1
   });
 
   const { data: promoCodes = [], isLoading: promoLoading, error: promoError } = useQuery<PromoCode[]>({ 
-    queryKey: ["/api/promo-codes"]
+    queryKey: ["/api/promo-codes"],
+    staleTime: 300000, // 5 minutes
+    refetchInterval: false,
+    refetchOnWindowFocus: false,
+    retry: 1
   });
 
   const { data: customOrders = [], isLoading: customOrdersLoading, error: customOrdersError } = useQuery<any[]>({ 
-    queryKey: ["/api/custom-orders"]
+    queryKey: ["/api/custom-orders"],
+    staleTime: 60000, // 1 minute
+    refetchInterval: 120000, // 2 minutes
+    refetchOnWindowFocus: false,
+    retry: 1
   });
 
   // Handle errors silently
