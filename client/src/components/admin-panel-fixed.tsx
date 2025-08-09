@@ -39,10 +39,7 @@ function OrderDetailsModal({ isOpen, onClose, order, onStatusUpdate }: any) {
   const updateStatusMutation = useMutation({
     mutationFn: async ({ orderId, status }: { orderId: string, status: string }) => {
       console.log(`🔄 Mutation: Updating order ${orderId} to status: ${status}`);
-      const response = await apiRequest(`/api/orders/${orderId}/status`, {
-        method: 'PATCH',
-        body: { status }
-      });
+      const response = await apiRequest(`/api/orders/${orderId}/status`, 'PATCH', { status });
       console.log('✅ Mutation response:', response);
       return response;
     },
@@ -411,7 +408,7 @@ export default function AdminPanelFixed() {
 
   const todayOrders = Array.isArray(orders) ? orders.filter((order: Order) => {
     const today = new Date().toDateString();
-    const orderDate = new Date(order.created_at).toDateString();
+    const orderDate = order.created_at ? new Date(order.created_at).toDateString() : '';
     return today === orderDate;
   }).length : 0;
 
@@ -551,7 +548,7 @@ export default function AdminPanelFixed() {
                               </Badge>
                             </TableCell>
                             <TableCell>
-                              {new Date(order.created_at).toLocaleDateString('bn-BD')}
+                              {order.created_at ? new Date(order.created_at).toLocaleDateString('bn-BD') : 'N/A'}
                             </TableCell>
                             <TableCell>
                               <Button 

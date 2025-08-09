@@ -7,7 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { COMPANY_NAME } from "@/lib/constants";
-import CartModal from "@/components/cart-modal";
+import CartModalFixed from "@/components/cart-modal-fixed";
 import SearchBar from "@/components/search-bar";
 import ProductModal from "@/components/product-modal";
 import { useSimpleAuth } from "@/hooks/use-simple-auth";
@@ -245,7 +245,7 @@ export default function Header({ cartCount, onCartOpen }: HeaderProps) {
         </div>
       </header>
 
-      <CartModal isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
+      <CartModalFixed isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
 
       {/* Search Modal */}
       <SearchBar

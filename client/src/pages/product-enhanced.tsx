@@ -86,14 +86,13 @@ export default function EnhancedProductPage({ params }: ProductPageProps) {
       return;
     }
 
-    // Add multiple quantities
-    for (let i = 0; i < quantity; i++) {
-      addToCart({
-        id: product.id,
-        name: product.name || 'Unknown Product',
-        price: Number(product.price) || 0,
-      });
-    }
+    // Add to cart with quantity
+    addToCart({
+      id: product.id,
+      name: product.name || 'Unknown Product',
+      price: Number(product.price) || 0,
+      quantity: quantity,
+    });
 
     trackAddToCart(product.id, product.name || 'Unknown Product', Number(product.price) || 0);
 
@@ -635,6 +634,7 @@ export default function EnhancedProductPage({ params }: ProductPageProps) {
                 id: customProduct.id,
                 name: customProduct.name,
                 price: Number(customProduct.price),
+                quantity: customization.quantity || 1,
                 customization: customization,
               });
               toast({

@@ -7,20 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-// RadioGroup component inline since it's not available
-const RadioGroup = ({ value, onValueChange, children, className }: any) => (
-  <div className={className}>{children}</div>
-);
 
-const RadioGroupItem = ({ value, id }: any) => (
-  <input
-    type="radio"
-    id={id}
-    name="radio-group"
-    value={value}
-    className="mr-2"
-  />
-);
 import { useToast } from "@/hooks/use-toast";
 import { formatPrice } from "@/lib/constants";
 import { apiRequest } from "@/lib/queryClient";
@@ -268,14 +255,11 @@ export default function CustomizeModalDynamic({ product, isOpen, onClose, onAddT
         })))
       };
 
-      const response = await apiRequest('/api/orders', {
-        method: 'POST',
-        body: orderData
-      });
+      const response = await apiRequest('/api/orders', 'POST', orderData);
 
       toast({
         title: "অর্ডার সফল!",
-        description: `আপনার অর্ডার #${response.order.tracking_id} সফলভাবে তৈরি হয়েছে`,
+        description: `আপনার অর্ডার #${response?.order?.tracking_id || 'নতুন'} সফলভাবে তৈরি হয়েছে`,
       });
       onClose();
     } catch (error) {
