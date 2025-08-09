@@ -81,12 +81,14 @@ export default function ProductModal({ product, isOpen, onClose, onAddToCart, on
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="modal-override p-6 overflow-y-auto" aria-describedby="product-description">
-        <DialogTitle className="text-2xl font-bold text-gray-800 pr-12 mb-6">
-          {product.name} - পণ্যের বিস্তারিত
-        </DialogTitle>
-        <DialogDescription id="product-description" className="sr-only">
-          {product.name} এর সম্পূর্ণ তথ্য, দাম ৳{formatPrice(Number(product.price))}, স্টক {product.stock}টি। পণ্যটি কার্টে যোগ করুন বা কাস্টমাইজ করুন।
-        </DialogDescription>
+        <DialogHeader className="pb-4">
+          <DialogTitle className="text-2xl font-bold text-gray-800 pr-12">
+            {product.name} - পণ্যের বিস্তারিত
+          </DialogTitle>
+          <DialogDescription className="text-gray-600 mt-2">
+            {product.name} এর সম্পূর্ণ তথ্য, দাম ৳{formatPrice(Number(product.price))}, স্টক {product.stock}টি। পণ্যটি কার্টে যোগ করুন বা কাস্টমাইজ করুন।
+          </DialogDescription>
+        </DialogHeader>
         <div className="modal-content">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 min-h-[400px]">
             {/* Product Image */}

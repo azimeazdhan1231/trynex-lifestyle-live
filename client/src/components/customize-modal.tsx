@@ -202,34 +202,40 @@ export default function CustomizeModalFixed({ product, isOpen, onClose, onAddToC
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="modal-override p-0 overflow-hidden">
-        <DialogHeader className="px-6 py-4 border-b">
+        <DialogHeader className="px-6 py-4 border-b bg-white sticky top-0 z-10">
           <DialogTitle className="text-xl font-bold text-gray-900 dark:text-white">
             {product?.name || "প্রোডাক্ট"} কাস্টমাইজ করুন
           </DialogTitle>
-        </DialogHeader>
-        <div className="flex-1 overflow-y-auto px-6 py-4">
-          <DialogDescription className="sr-only">
+          <DialogDescription className="text-sm text-gray-600 mt-1">
             পণ্যটি আপনার পছন্দ অনুযায়ী কাস্টমাইজ করুন
           </DialogDescription>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 h-full min-h-[500px]">
+        </DialogHeader>
+        <div className="flex-1 overflow-y-auto px-6 py-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 min-h-[500px]">
           {/* Product Preview */}
-          <div className="space-y-4">
-            <img 
-              src={product.image_url || '/placeholder-product.jpg'} 
-              alt={product.name}
-              className="w-full h-64 object-cover rounded-lg"
-            />
-            <div className="text-center">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{product?.name || "প্রোডাক্ট"}</h3>
-              <p className="text-2xl font-bold text-green-600">
-                {formatPrice(totalPrice)}
-              </p>
+          <div className="space-y-6">
+            <div className="relative">
+              <img 
+                src={product.image_url || '/placeholder-product.jpg'} 
+                alt={product.name}
+                className="w-full h-72 lg:h-80 object-cover rounded-xl shadow-md"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent rounded-xl"></div>
+            </div>
+            <div className="text-center bg-gray-50 dark:bg-gray-800 p-4 rounded-xl">
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">{product?.name || "প্রোডাক্ট"}</h3>
+              <div className="flex items-center justify-center gap-2">
+                <span className="text-sm text-gray-600">মোট দাম:</span>
+                <span className="text-3xl font-bold text-green-600">
+                  {formatPrice(totalPrice)}
+                </span>
+              </div>
+              <p className="text-sm text-gray-500 mt-2">পরিমাণ: {customization.quantity}টি</p>
             </div>
           </div>
 
           {/* Customization Options */}
-          <div className="space-y-4">
+          <div className="space-y-6 lg:overflow-y-auto lg:max-h-[600px] lg:pr-2">
             {/* Size Selection */}
             <div>
               <Label htmlFor="size" className="text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -393,7 +399,7 @@ export default function CustomizeModalFixed({ product, isOpen, onClose, onAddToC
             </div>
 
             {/* Action Buttons */}
-            <div className="flex flex-col sm:flex-row gap-3 pt-4 sticky bottom-0 bg-white dark:bg-gray-800 pb-4">
+            <div className="flex flex-col sm:flex-row gap-3 pt-6 mt-6 border-t bg-white dark:bg-gray-800 sticky bottom-0 pb-4">
               <Button
                 onClick={handleAddToCart}
                 className="flex-1 bg-green-600 hover:bg-green-700 text-white"
