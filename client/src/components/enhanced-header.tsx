@@ -9,7 +9,7 @@ import { useCart } from '@/hooks/use-cart';
 import CartModal from './cart-modal';
 import UserRegistration from './user-registration';
 import UserLogin from './user-login';
-import YoutubeSearchBar from './search/youtube-search-bar';
+import SearchBar from './search-bar';
 
 interface UserData {
   firstName: string;
@@ -26,12 +26,15 @@ export default function EnhancedHeader() {
   const [showRegistration, setShowRegistration] = useState(false);
   const [showLogin, setShowLogin] = useState(false);
   const [user, setUser] = useState<UserData | null>(null);
-  const [isSearchOpen, setIsSearchOpen] = useState(false); // State for the YouTube-style search modal
+  const [isSearchOpen, setIsSearchOpen] = useState(false); // State for the search modal
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    // Open YouTube-style search modal instead of direct navigation
-    setIsSearchOpen(true);
+    if (searchQuery.trim()) {
+      navigate(`/products?search=${encodeURIComponent(searchQuery.trim())}`);
+      setSearchQuery('');
+      setIsSearchOpen(false); // Close search modal after search
+    }
   };
 
   const handleLoginSuccess = (userData: any) => {
@@ -75,24 +78,23 @@ export default function EnhancedHeader() {
 
             {/* Search Bar - Desktop */}
             <div className="hidden lg:block flex-1 max-w-md mx-8">
-              <div className="relative cursor-pointer" onClick={() => setIsSearchOpen(true)}>
+              <form onSubmit={handleSearch} className="relative">
                 <Input
                   type="text"
-                  placeholder="পণ্য খুঁজুন... (YouTube-style search)"
-                  value=""
-                  readOnly
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-full focus:ring-2 focus:ring-orange-500 focus:border-transparent cursor-pointer"
+                  placeholder="পণ্য খুঁজুন..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-full focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                 />
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <Button
-                  type="button"
+                  type="submit"
                   size="sm"
-                  onClick={() => setIsSearchOpen(true)}
                   className="absolute right-1 top-1/2 transform -translate-y-1/2 rounded-full h-8 px-3"
                 >
                   খুঁজুন
                 </Button>
-              </div>
+              </form>
             </div>
 
             {/* Mobile Search Icon */}
@@ -192,24 +194,23 @@ export default function EnhancedHeader() {
                       </div>
 
                       {/* Mobile Search */}
-                      <div className="relative cursor-pointer" onClick={() => setIsSearchOpen(true)}>
+                      <form onSubmit={handleSearch} className="relative">
                         <Input
                           type="text"
-                          placeholder="পণ্য খুঁজুন... (YouTube-style search)"
-                          value=""
-                          readOnly
-                          className="w-full pl-10 pr-16 h-11 rounded-xl border-gray-300 focus:border-primary focus:ring-2 focus:ring-primary/20 cursor-pointer"
+                          placeholder="পণ্য খুঁজুন..."
+                          value={searchQuery}
+                          onChange={(e) => setSearchQuery(e.target.value)}
+                          className="w-full pl-10 pr-16 h-11 rounded-xl border-gray-300 focus:border-primary focus:ring-2 focus:ring-primary/20"
                         />
                         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
                         <Button
-                          type="button"
+                          type="submit"
                           size="sm"
-                          onClick={() => setIsSearchOpen(true)}
                           className="absolute right-1 top-1/2 transform -translate-y-1/2 h-9 px-3 text-sm rounded-lg"
                         >
                           খুঁজুন
                         </Button>
-                      </div>
+                      </form>
                     </div>
 
                     {/* Navigation Links */}
@@ -327,10 +328,9 @@ export default function EnhancedHeader() {
       />
 
       {/* YouTube-style Search Bar Modal */}
-      <YoutubeSearchBar
+      <SearchBar
         isOpen={isSearchOpen}
         onClose={() => setIsSearchOpen(false)}
-        initialQuery=""
       />
     </>
   );

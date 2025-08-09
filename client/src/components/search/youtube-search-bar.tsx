@@ -172,63 +172,46 @@ export default function YoutubeSearchBar({ isOpen, onClose, initialQuery = "" }:
   const executeSearch = (searchQuery: string = query) => {
     if (!searchQuery.trim()) return;
     
-    try {
-      setIsSearching(true);
-      saveToRecentSearches(searchQuery);
-      
-      // Build search URL with advanced parameters
-      const searchParams = new URLSearchParams();
-      searchParams.set('q', searchQuery);
-      searchParams.set('algorithm', 'youtube'); // Use YouTube-style algorithm
-      
-      if (filters.category !== 'all') {
-        searchParams.set('category', filters.category);
-      }
-      if (filters.minPrice) {
-        searchParams.set('min_price', filters.minPrice);
-      }
-      if (filters.maxPrice) {
-        searchParams.set('max_price', filters.maxPrice);
-      }
-      if (filters.sortBy !== 'relevance') {
-        searchParams.set('sort', filters.sortBy);
-      }
-      if (filters.inStock) {
-        searchParams.set('in_stock', 'true');
-      }
-
-      // Navigate to search results with a small delay to prevent race conditions
-      setTimeout(() => {
-        setLocation(`/search?${searchParams.toString()}`);
-        onClose();
-        setIsSearching(false);
-      }, 100);
-    } catch (error) {
-      console.error('Search execution error:', error);
-      setIsSearching(false);
+    setIsSearching(true);
+    saveToRecentSearches(searchQuery);
+    
+    // Build search URL with advanced parameters
+    const searchParams = new URLSearchParams();
+    searchParams.set('q', searchQuery);
+    searchParams.set('algorithm', 'youtube'); // Use YouTube-style algorithm
+    
+    if (filters.category !== 'all') {
+      searchParams.set('category', filters.category);
     }
+    if (filters.minPrice) {
+      searchParams.set('min_price', filters.minPrice);
+    }
+    if (filters.maxPrice) {
+      searchParams.set('max_price', filters.maxPrice);
+    }
+    if (filters.sortBy !== 'relevance') {
+      searchParams.set('sort', filters.sortBy);
+    }
+    if (filters.inStock) {
+      searchParams.set('in_stock', 'true');
+    }
+
+    // Navigate to search results
+    setLocation(`/search?${searchParams.toString()}`);
+    onClose();
+    setIsSearching(false);
   };
 
   // Handle suggestion click
   const handleSuggestionClick = (suggestion: SearchSuggestion) => {
-    try {
-      setQuery(suggestion.query);
-      setShowSuggestions(false);
-      executeSearch(suggestion.query);
-    } catch (error) {
-      console.error('Suggestion click error:', error);
-    }
+    setQuery(suggestion.query);
+    executeSearch(suggestion.query);
   };
 
   // Handle form submit
   const handleSubmit = (e: React.FormEvent) => {
-    try {
-      e.preventDefault();
-      e.stopPropagation();
-      executeSearch();
-    } catch (error) {
-      console.error('Form submit error:', error);
-    }
+    e.preventDefault();
+    executeSearch();
   };
 
   // Clear search

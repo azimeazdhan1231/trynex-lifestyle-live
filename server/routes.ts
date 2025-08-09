@@ -923,7 +923,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const categoryPromises = giftCategories.map(cat => 
         storage.createCategory(cat)
       );
-
+      
       await Promise.all(categoryPromises);
 
       // Update products to match new categories based on keywords
@@ -931,7 +931,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const updatePromises = products.map(product => {
         let newCategory = 'birthday-gifts'; // default
         const name = product.name.toLowerCase();
-
+        
         if (name.includes('men') || name.includes('male') || name.includes('watch') || name.includes('gadget')) {
           newCategory = 'gift-for-him';
         } else if (name.includes('women') || name.includes('female') || name.includes('jewelry') || name.includes('cosmetic')) {
@@ -949,15 +949,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         } else if (name.includes('kid') || name.includes('child') || name.includes('শিশু') || name.includes('বাচ্চা')) {
           newCategory = 'kids-gifts';
         }
-
+        
         if (product.category !== newCategory) {
           return storage.updateProduct(product.id, { category: newCategory });
         }
         return Promise.resolve();
       });
-
+      
       await Promise.all(updatePromises);
-
+      
       // Clear cache to force refresh
       cache.clearAll();
 
