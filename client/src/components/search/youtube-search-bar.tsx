@@ -83,6 +83,12 @@ export default function YoutubeSearchBar({ isOpen, onClose, initialQuery = "" }:
     staleTime: 1000 * 60 * 5, // 5 minutes cache
   });
 
+  // Get product suggestions for auto-complete
+  const { data: products } = useQuery({
+    queryKey: ["/api/products"],
+    staleTime: 1000 * 60 * 10, // 10 minutes cache
+  });
+
   // Debounced search function
   const debouncedSearch = useCallback(
     debounce((searchQuery: string) => {
@@ -108,27 +114,25 @@ export default function YoutubeSearchBar({ isOpen, onClose, initialQuery = "" }:
     
     newSuggestions.push(...matchingRecent);
 
-    // Add trending searches (mock data - replace with real trending data)
-    const trendingQueries = [
-      { query: "কাস্টম মগ", count: 245 },
-      { query: "ব্যক্তিগত টি-শার্ট", count: 189 },
-      { query: "ফটো ফ্রেম গিফট", count: 156 },
-      { query: "বার্থডে গিফট", count: 134 },
-      { query: "কিচেইন", count: 98 }
-    ];
+    // Use real product data for suggestions
+    if (products && Array.isArray(products)) {
+      // Product name matching
+      const matchingProducts = products
+        .filter((product: any) => 
+          product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          product.category?.toLowerCase().includes(searchQuery.toLowerCase())
+        )
+        .slice(0, 4)
+        .map((product: any) => ({
+          query: product.name,
+          type: 'trending' as const,
+          count: product.stock
+        }));
+      
+      newSuggestions.push(...matchingProducts);
+    }
 
-    const matchingTrending = trendingQueries
-      .filter(trending => trending.query.toLowerCase().includes(searchQuery.toLowerCase()))
-      .slice(0, 3)
-      .map(trending => ({
-        query: trending.query,
-        type: 'trending' as const,
-        count: trending.count
-      }));
-    
-    newSuggestions.push(...matchingTrending);
-
-    // Add intelligent auto-complete suggestions
+    // Add intelligent auto-complete suggestions  
     const autoComplete = [
       `${searchQuery} গিফট`,
       `${searchQuery} কাস্টম`,

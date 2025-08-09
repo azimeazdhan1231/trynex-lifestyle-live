@@ -233,3 +233,4 @@ export const insertCustomOrderSchema = createInsertSchema(customOrders).omit({
 
 export type CustomOrder = typeof customOrders.$inferSelect;
 export type InsertCustomOrder = z.infer<typeof insertCustomOrderSchema>;
+export type NewCustomOrder = InsertCustomOrder;

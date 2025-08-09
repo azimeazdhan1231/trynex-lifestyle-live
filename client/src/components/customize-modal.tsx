@@ -201,18 +201,18 @@ export default function CustomizeModalFixed({ product, isOpen, onClose, onAddToC
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="modal-container">
+      <DialogContent className="w-[95vw] max-w-4xl h-[90vh] max-h-[800px] p-0 overflow-hidden">
         <DialogHeader className="px-6 py-4 border-b">
           <DialogTitle className="text-xl font-bold text-gray-900 dark:text-white">
             {product?.name || "প্রোডাক্ট"} কাস্টমাইজ করুন
           </DialogTitle>
         </DialogHeader>
-        <div className="modal-content">
+        <div className="flex-1 overflow-y-auto px-6 py-4">
           <DialogDescription className="sr-only">
             পণ্যটি আপনার পছন্দ অনুযায়ী কাস্টমাইজ করুন
           </DialogDescription>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-full">
           {/* Product Preview */}
           <div className="space-y-4">
             <img 
@@ -393,7 +393,7 @@ export default function CustomizeModalFixed({ product, isOpen, onClose, onAddToC
             </div>
 
             {/* Action Buttons */}
-            <div className="flex flex-col sm:flex-row gap-3 pt-4">
+            <div className="flex flex-col sm:flex-row gap-3 pt-4 sticky bottom-0 bg-white dark:bg-gray-800 pb-4">
               <Button
                 onClick={handleAddToCart}
                 className="flex-1 bg-green-600 hover:bg-green-700 text-white"
