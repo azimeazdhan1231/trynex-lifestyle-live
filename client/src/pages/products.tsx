@@ -159,7 +159,8 @@ export default function ProductsPage() {
         id: product.id,
         name: product.name,
         price: Number(product.price),
-        image: product.image_url || ''
+        image: product.image_url || '',
+        quantity: 1
       });
 
       toast({

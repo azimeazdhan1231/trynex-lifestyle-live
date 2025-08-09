@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
-import { formatPrice } from "@/lib/constants";
+import { formatPrice, PRODUCT_CATEGORIES } from "@/lib/constants";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
@@ -31,10 +31,7 @@ const ORDER_STATUSES = {
   cancelled: "বাতিল"
 };
 
-const PRODUCT_CATEGORIES = [
-  "ইলেকট্রনিক্স", "ফ্যাশন", "বই", "খেলাধুলা", "সৌন্দর্য", "ঘর ও বাগান", 
-  "খাবার ও পানীয়", "পোশাক", "জুতা", "ব্যাগ", "ঘড়ি", "গয়না", "মোবাইল ও ট্যাবলেট"
-];
+
 
 // Fix Descriptions Component
 function FixDescriptionsButton({ onComplete }: { onComplete: () => void }) {
@@ -269,8 +266,8 @@ function ProductFormModal({
                   <SelectValue placeholder="ক্যাটেগরি নির্বাচন করুন" />
                 </SelectTrigger>
                 <SelectContent>
-                  {PRODUCT_CATEGORIES.map((cat) => (
-                    <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                  {PRODUCT_CATEGORIES.filter(cat => cat.id !== 'all').map((cat) => (
+                    <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -532,8 +529,8 @@ function ProductsManagement() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="">সব ক্যাটেগরি</SelectItem>
-                      {PRODUCT_CATEGORIES.map((cat) => (
-                        <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                      {PRODUCT_CATEGORIES.filter(cat => cat.id !== 'all').map((cat) => (
+                        <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
@@ -770,6 +767,60 @@ function OrderDetailsModal({
 
   if (!order) return null;
 
+  // Safe JSON parsing for order items
+  const orderItems = (() => {
+    try {
+      if (Array.isArray(order.items)) return order.items;
+      if (typeof order.items === 'string') return JSON.parse(order.items);
+      return [];
+    } catch (error) {
+      console.error('Error parsing order items:', error);
+      return [];
+    }
+  })();
+
+  // Safe JSON parsing for custom images
+  const customImages = (() => {
+    try {
+      if (!order.custom_images) return [];
+      if (Array.isArray(order.custom_images)) return order.custom_images;
+      if (typeof order.custom_images === 'string') return JSON.parse(order.custom_images);
+      return [];
+    } catch (error) {
+      console.error('Error parsing custom images:', error);
+      return [];
+    }
+  })();
+
+  // Safe JSON parsing for payment info
+  const paymentInfo = (() => {
+    try {
+      if (!order.payment_info) return null;
+      if (typeof order.payment_info === 'object') return order.payment_info;
+      if (typeof order.payment_info === 'string') return JSON.parse(order.payment_info);
+      return null;
+    } catch (error) {
+      console.error('Error parsing payment info:', error);
+      return null;
+    }
+  })();
+
+  const formatDate = (dateString: string) => {
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('bn-BD', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        timeZone: 'Asia/Dhaka'
+      });
+    } catch {
+      return 'তারিখ পাওয়া যায়নি';
+    }
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent 
@@ -778,7 +829,7 @@ function OrderDetailsModal({
       >
         <DialogHeader>
           <DialogTitle className="flex items-center justify-between">
-            অর্ডার বিস্তারিত - #{order.id?.slice(0, 8)}
+            অর্ডার বিস্তারিত - #{order.tracking_id || order.id?.slice(0, 8)}
             <Button 
               variant="ghost" 
               size="sm" 
@@ -789,7 +840,7 @@ function OrderDetailsModal({
             </Button>
           </DialogTitle>
           <DialogDescription>
-            অর্ডারের সম্পূর্ণ তথ্য ও স্ট্যাটাস আপডেট করুন
+            অর্ডারের সম্পূর্ণ তথ্য ও স্ট্যাটাস আপডেট করুন | তৈরি: {formatDate(order.created_at)}
           </DialogDescription>
         </DialogHeader>
 
@@ -830,11 +881,19 @@ function OrderDetailsModal({
                 </div>
                 <div>
                   <Label className="text-sm font-medium">ফোন</Label>
-                  <p className="mt-1">{order.customer_phone || "N/A"}</p>
+                  <p className="mt-1">{order.phone || "N/A"}</p>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium">জেলা</Label>
+                  <p className="mt-1">{order.district || "N/A"}</p>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium">থানা</Label>
+                  <p className="mt-1">{order.thana || "N/A"}</p>
                 </div>
                 <div className="md:col-span-2">
                   <Label className="text-sm font-medium">ঠিকানা</Label>
-                  <p className="mt-1">{order.delivery_address || "N/A"}</p>
+                  <p className="mt-1">{order.address || "N/A"}</p>
                 </div>
               </div>
             </CardContent>
@@ -847,7 +906,7 @@ function OrderDetailsModal({
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                {order.items && JSON.parse(order.items).map((item: any, index: number) => (
+                {orderItems.length > 0 ? orderItems.map((item: any, index: number) => (
                   <div key={index} className="flex items-center justify-between p-3 border rounded">
                     <div className="flex items-center space-x-3">
                       {item.image_url && (
@@ -872,7 +931,9 @@ function OrderDetailsModal({
                       </p>
                     </div>
                   </div>
-                ))}
+                )) : (
+                  <p className="text-center text-gray-500">কোন আইটেম পাওয়া যায়নি</p>
+                )}
               </div>
             </CardContent>
           </Card>
@@ -892,15 +953,16 @@ function OrderDetailsModal({
           )}
 
           {/* Custom Images */}
-          {order.custom_images && JSON.parse(order.custom_images).length > 0 && (
+          {customImages.length > 0 && (
             <Card>
               <CardHeader>
                 <CardTitle className="text-lg">কাস্টম আপলোডেড ফটো</CardTitle>
+                <CardDescription>{customImages.length} টি ছবি আপলোড করা হয়েছে</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                  {JSON.parse(order.custom_images).map((image: any, index: number) => (
-                    <div key={index} className="border rounded-lg overflow-hidden">
+                  {customImages.map((image: any, index: number) => (
+                    <div key={index} className="border rounded-lg overflow-hidden group relative">
                       <img 
                         src={image.url || image} 
                         alt={`Custom upload ${index + 1}`}
@@ -910,9 +972,17 @@ function OrderDetailsModal({
                           window.open(image.url || image, '_blank');
                         }}
                         onError={(e) => {
-                          (e.target as HTMLImageElement).src = '/placeholder-image.jpg';
+                          console.error('Failed to load image:', image.url || image);
+                          (e.target as HTMLImageElement).style.display = 'none';
+                          const parent = (e.target as HTMLImageElement).parentElement;
+                          if (parent) {
+                            parent.innerHTML = '<div class="w-full h-32 bg-gray-100 flex items-center justify-center"><span class="text-gray-500 text-sm">ছবি লোড হয়নি</span></div>';
+                          }
                         }}
                       />
+                      <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all flex items-center justify-center">
+                        <Eye className="w-5 h-5 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                      </div>
                       <div className="p-2">
                         <p className="text-xs text-muted-foreground">
                           আপলোড #{index + 1}
