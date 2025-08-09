@@ -73,6 +73,68 @@
   animation: pulse-glow 2s ease-in-out infinite;
 }
 
+/* Enhanced Modal responsive styles */
+.modal-content {
+  @apply p-3 sm:p-4 md:p-6;
+  max-height: calc(100vh - 60px);
+  overflow-y: auto;
+}
+
+.product-modal-content {
+  @apply max-w-4xl w-full max-h-[90vh] overflow-hidden;
+}
+
+.product-modal-body {
+  @apply overflow-y-auto max-h-[calc(90vh-120px)] p-3 sm:p-4 md:p-6;
+}
+
+.product-modal-grid {
+  @apply grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6;
+  min-height: 400px;
+}
+
+.product-modal-image {
+  @apply w-full h-64 sm:h-80 lg:h-96 object-cover rounded-lg;
+}
+
+.customize-modal-content {
+  @apply max-w-6xl w-full max-h-[95vh] overflow-hidden;
+}
+
+.customize-modal-body {
+  @apply overflow-y-auto max-h-[calc(95vh-120px)] p-3 sm:p-4 md:p-6;
+}
+
+/* Fix modal choppy appearance */
+.modal-override {
+  @apply w-[95vw] sm:w-[90vw] md:w-[85vw] lg:w-[80vw] xl:w-[75vw] 2xl:w-[70vw];
+  @apply max-w-4xl max-h-[90vh] overflow-hidden;
+}
+
+.modal-override .modal-content {
+  @apply overflow-y-auto max-h-[calc(90vh-120px)] p-3 sm:p-4 md:p-6;
+}
+
+/* Enhanced responsive dialog content */
+[data-radix-popper-content-wrapper] {
+  @apply !w-auto !max-w-none;
+}
+
+/* Grid layout fixes */
+.modal-content .grid {
+  @apply grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6;
+  min-height: 300px;
+}
+
+/* Button responsiveness */
+.modal-buttons {
+  @apply flex flex-col sm:flex-row gap-3 pt-4 border-t;
+}
+
+.modal-buttons .flex-1 {
+  @apply w-full sm:w-auto;
+}
+
 /* Enhanced Modal Responsiveness */
 .modal-override {
   /* Mobile-first responsive spacing */
