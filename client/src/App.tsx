@@ -21,8 +21,6 @@ const Admin = lazy(() => import("./pages/admin"));
 const Offers = lazy(() => import("./pages/offers"));
 const Profile = lazy(() => import("./pages/profile"));
 const Orders = lazy(() => import("./pages/orders"));
-const Auth = lazy(() => import("./pages/auth"));
-const PhoneAuth = lazy(() => import("./components/PhoneAuth"));
 const CustomOrderForm = lazy(() => import("./components/CustomOrderForm"));
 const About = lazy(() => import("./pages/about"));
 const BlogPage = lazy(() => import("./pages/blog"));
@@ -30,11 +28,9 @@ const NotFound = lazy(() => import("./pages/not-found"));
 const RefundPolicyDynamic = lazy(() => import("./pages/refund-policy-dynamic"));
 const ReturnPolicy = lazy(() => import("./pages/return-policy"));
 const TermsConditionsDynamic = lazy(() => import("./pages/terms-conditions-dynamic"));
-const Dashboard = lazy(() => import("./pages/dashboard"));
 const Terms = lazy(() => import("./pages/terms"));
 const RefundPolicy = lazy(() => import("./pages/refund-policy"));
 const PaymentPolicy = lazy(() => import("./pages/payment-policy"));
-const AuthNew = lazy(() => import("./pages/auth-new"));
 const SearchPage = lazy(() => import("./pages/search"));
 const Categories = lazy(() => import("./pages/categories"));
 const CustomizeProduct = lazy(() => import("./pages/customize-product-enhanced"));
@@ -70,16 +66,8 @@ function Router() {
         <Route path="/blog" component={BlogPage} />
         <Route path="/admin" component={Admin} />
         <Route path="/tracking" component={Tracking} />
-        <Route path="/profile" component={Profile} />
-        <Route path="/orders" component={Orders} />
-        <Route path="/auth" component={AuthNew} />
-        <Route path="/login" component={AuthNew} />
-        <Route path="/signup" component={AuthNew} />
-        <Route path="/auth-phone" component={PhoneAuth} />
+
         <Route path="/custom-order" component={CustomOrderForm} />
-        <Route path="/auth-old" component={Auth} />
-        <Route path="/dashboard" component={Dashboard} />
-        <Route path="/refund-policy-old" component={RefundPolicyDynamic} />
         <Route path="/return-policy-old" component={ReturnPolicy} />
         <Route path="/terms-conditions-old" component={TermsConditionsDynamic} />
         <Route path="/terms-conditions" component={Terms} />

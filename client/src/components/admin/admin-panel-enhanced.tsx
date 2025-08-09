@@ -877,6 +877,57 @@ function OrderDetailsModal({
             </CardContent>
           </Card>
 
+          {/* Custom Instructions */}
+          {order.custom_instructions && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">কাস্টম নির্দেশনা</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="p-3 bg-gray-50 rounded-lg">
+                  <p className="text-sm">{order.custom_instructions}</p>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Custom Images */}
+          {order.custom_images && JSON.parse(order.custom_images).length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">কাস্টম আপলোডেড ফটো</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                  {JSON.parse(order.custom_images).map((image: any, index: number) => (
+                    <div key={index} className="border rounded-lg overflow-hidden">
+                      <img 
+                        src={image.url || image} 
+                        alt={`Custom upload ${index + 1}`}
+                        className="w-full h-32 object-cover cursor-pointer hover:opacity-80 transition-opacity"
+                        onClick={() => {
+                          // Open image in new tab for full view
+                          window.open(image.url || image, '_blank');
+                        }}
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src = '/placeholder-image.jpg';
+                        }}
+                      />
+                      <div className="p-2">
+                        <p className="text-xs text-muted-foreground">
+                          আপলোড #{index + 1}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <p className="text-sm text-muted-foreground mt-2">
+                  ছবিতে ক্লিক করে বড় আকারে দেখুন
+                </p>
+              </CardContent>
+            </Card>
+          )}
+
           {/* Payment & Delivery Info */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Card>
@@ -909,7 +960,14 @@ function OrderDetailsModal({
                 <div className="space-y-2">
                   <div>
                     <Label className="text-sm font-medium">অর্ডার তারিখ</Label>
-                    <p>{new Date(order.created_at).toLocaleString('bn-BD')}</p>
+                    <p>{new Date(order.created_at).toLocaleString('bn-BD', {
+                      timeZone: 'Asia/Dhaka',
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    })}</p>
                   </div>
                   <div>
                     <Label className="text-sm font-medium">পেমেন্ট পদ্ধতি</Label>
