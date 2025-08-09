@@ -7,6 +7,7 @@ import express from "express"; // Added import
 import bcrypt from "bcryptjs"; // Added import
 import jwt from "jsonwebtoken"; // Added import
 import type { Product, Order, Category, Offer, User, AdminSettings, BlogPost, Page } from "@shared/schema"; // Added import
+import { db, orders, products, categories, customers } from "./db"; // Assuming db setup for custom orders
 
 // High-performance multi-layer cache system
 interface CacheEntry<T> {
@@ -761,17 +762,80 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   });
 
-  // Other endpoints from original code, including order management, auth, admin routes, etc.
-
   // Order management
-  app.post('/api/orders', async (req, res) => {
+  // Order creation endpoint
+  app.post("/api/orders", async (req, res) => {
     try {
       const orderData = req.body;
-      const order = await storage.createOrder(orderData);
-      res.json(order);
+
+      // Generate order ID
+      const orderId = `ORD-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+
+      const newOrder = await db.insert(orders).values({
+        id: orderId,
+        customerName: orderData.customerName,
+        phone: orderData.phone,
+        address: orderData.address,
+        items: JSON.stringify(orderData.items),
+        totalAmount: orderData.totalAmount.toString(),
+        paymentMethod: orderData.paymentMethod || "cod",
+        status: "pending",
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      }).returning();
+
+      res.json({ success: true, order: newOrder[0] });
     } catch (error) {
-      console.error('Failed to create order:', error);
-      res.status(500).json({ error: 'Failed to create order' });
+      console.error("Order creation error:", error);
+      res.status(500).json({ error: "Failed to create order" });
+    }
+  });
+
+  // Custom orders endpoint
+  app.post("/api/custom-orders", async (req, res) => {
+    try {
+      const orderData = req.body;
+
+      // Generate custom order ID
+      const orderId = `CUSTOM-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+
+      const customOrder = await db.insert(orders).values({
+        id: orderId,
+        customerName: orderData.customerName,
+        phone: orderData.phone,
+        email: orderData.email || "",
+        address: orderData.address,
+        items: JSON.stringify([{
+          productId: orderData.productId,
+          productName: orderData.productName,
+          productPrice: orderData.productPrice,
+          quantity: orderData.quantity,
+          customization: {
+            size: orderData.selectedSize,
+            color: orderData.selectedColor,
+            printArea: orderData.selectedPrintArea,
+            customText: orderData.customText,
+            customImages: orderData.customImages,
+            instructions: orderData.instructions,
+            customizationPrice: orderData.customizationPrice
+          }
+        }]),
+        totalAmount: orderData.totalPrice.toString(),
+        paymentMethod: "cod",
+        status: "pending",
+        orderType: "custom",
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      }).returning();
+
+      res.json({ 
+        success: true, 
+        order: customOrder[0],
+        message: "Custom order created successfully"
+      });
+    } catch (error) {
+      console.error("Custom order creation error:", error);
+      res.status(500).json({ error: "Failed to create custom order" });
     }
   });
 
