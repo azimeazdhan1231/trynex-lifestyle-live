@@ -36,6 +36,7 @@ export default function CartModalFixed({ isOpen, onClose }: CartModalProps) {
       console.log('Cart isLoaded:', isLoaded);
       console.log('Cart length:', cart?.length);
       console.log('Cart is array:', Array.isArray(cart));
+      console.log('Cart items:', cart.map(item => ({ id: item.id, name: item.name, quantity: item.quantity })));
     }
   }, [isOpen, cart, isLoaded]);
 

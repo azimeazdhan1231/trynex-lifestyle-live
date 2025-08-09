@@ -197,8 +197,14 @@ function ProductFormModal({
         toast({ title: "পণ্য যোগ সফল", description: "নতুন পণ্য সফলভাবে যোগ করা হয়েছে।" });
       }
 
-      queryClient.invalidateQueries({ queryKey: ["/api/products"] });
-      onSave();
+      // Safely invalidate queries and handle callbacks
+      await queryClient.invalidateQueries({ queryKey: ["/api/products"] });
+      
+      // Call onSave callback if provided
+      if (onSave && typeof onSave === 'function') {
+        onSave();
+      }
+      
       onClose();
       form.reset();
     } catch (error: any) {
@@ -528,7 +534,7 @@ function ProductsManagement() {
                       <SelectValue placeholder="সব ক্যাটেগরি" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">সব ক্যাটেগরি</SelectItem>
+                      <SelectItem value="all">সব ক্যাটেগরি</SelectItem>
                       {PRODUCT_CATEGORIES.filter(cat => cat.id !== 'all').map((cat) => (
                         <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
                       ))}
@@ -676,11 +682,16 @@ function ProductsManagement() {
       {/* Product Form Modal */}
       <ProductFormModal
         isOpen={isProductModalOpen}
-        onClose={() => setIsProductModalOpen(false)}
+        onClose={() => {
+          setIsProductModalOpen(false);
+          setSelectedProduct(null);
+        }}
         product={selectedProduct}
         onSave={() => {
-          refetch();
+          // The ProductFormModal already handles query invalidation
+          // Just reset the state here
           setSelectedProduct(null);
+          setIsProductModalOpen(false);
         }}
       />
 

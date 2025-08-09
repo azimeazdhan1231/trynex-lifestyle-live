@@ -72,38 +72,38 @@ export default function Header({ cartCount, onCartOpen }: HeaderProps) {
             </nav>
 
             {/* Search, Cart and Contact */}
-            <div className="flex items-center space-x-2 sm:space-x-3">
+            <div className="flex items-center space-x-1 sm:space-x-2">
               {/* Search Button */}
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => setIsSearchOpen(true)}
-                className="p-1.5 sm:p-2 text-gray-700 hover:text-primary transition-colors"
+                className="p-2 text-gray-700 hover:text-primary transition-colors"
                 data-testid="button-search"
               >
-                <Search className="h-5 w-5 sm:h-6 sm:w-6" />
+                <Search className="h-5 w-5" />
               </Button>
 
-              {/* Cart Button */}
+              {/* Cart Button - Enhanced */}
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => setIsCartOpen(true)}
-                className="relative p-1.5 sm:p-2 text-gray-700 hover:text-primary transition-colors"
+                className="relative p-2 text-gray-700 hover:text-primary transition-all duration-200 hover:bg-primary/10 rounded-lg"
                 data-testid="button-cart"
               >
-                <ShoppingCart className="h-5 w-5 sm:h-6 sm:w-6" />
+                <ShoppingCart className="h-6 w-6" />
                 {cartCount > 0 && (
-                  <span className="absolute -top-1 -right-1 sm:-top-2 sm:-right-2 bg-secondary text-white text-xs rounded-full h-4 w-4 sm:h-5 sm:w-5 flex items-center justify-center text-[10px] sm:text-xs">
+                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-semibold shadow-lg animate-pulse">
                     {cartCount}
                   </span>
                 )}
               </Button>
 
               {/* Contact Button */}
-              <Button asChild variant="outline" size="sm" className="text-xs sm:text-sm px-2 sm:px-3 hidden md:flex">
+              <Button asChild variant="outline" size="sm" className="text-xs sm:text-sm px-3 py-2 hidden md:flex ml-2">
                 <Link href="/contact">
-                  <Phone className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
+                  <Phone className="mr-2 h-4 w-4" />
                   <span>যোগাযোগ</span>
                 </Link>
               </Button>
