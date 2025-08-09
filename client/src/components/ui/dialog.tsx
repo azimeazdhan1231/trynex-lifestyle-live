@@ -1,4 +1,3 @@
-
 "use client"
 
 import * as React from "react"
@@ -39,31 +38,13 @@ const DialogContent = React.forwardRef<
     <DialogPrimitive.Content
       ref={ref}
       className={cn(
-        // Perfect positioning and sizing for all devices
-        "fixed left-[50%] top-[50%] z-50 translate-x-[-50%] translate-y-[-50%]",
-        // Responsive width and height
-        "w-[95vw] max-w-[95vw] h-auto max-h-[95vh]",
-        "sm:w-[90vw] sm:max-w-[600px]",
-        "md:w-[80vw] md:max-w-[700px]",
-        "lg:w-[70vw] lg:max-w-[800px]",
-        "xl:w-[60vw] xl:max-w-[900px]",
-        "2xl:max-w-[1000px]",
-        // Perfect styling
-        "grid gap-4 border bg-background p-6 shadow-lg rounded-lg",
-        // Smooth animations
-        "duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out",
-        "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
-        "data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
-        "data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%]",
-        "data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%]",
-        // Perfect scrolling
-        "overflow-y-auto overflow-x-hidden",
+        "fixed inset-0 left-[50%] top-[50%] z-50 grid w-[min(calc(100vw-32px),95vw)] sm:w-[min(calc(100vw-32px),85vw)] md:w-[min(calc(100vw-32px),80vw)] lg:w-[min(calc(100vw-32px),75vw)] xl:w-[min(calc(100vw-32px),70vw)] max-w-[1200px] translate-x-[-50%] translate-y-[-50%] gap-4 border bg-background p-6 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] rounded-lg max-h-[calc(100vh-64px)] overflow-y-auto overflow-x-hidden",
         className
       )}
       {...props}
     >
       {children}
-      <DialogPrimitive.Close className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground z-10">
+      <DialogPrimitive.Close className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground">
         <X className="h-4 w-4" />
         <span className="sr-only">Close</span>
       </DialogPrimitive.Close>

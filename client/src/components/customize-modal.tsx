@@ -1,359 +1,480 @@
-
-import { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { X, Upload, Trash2, ShoppingCart } from 'lucide-react';
-import { useCart } from '@/hooks/use-cart';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { cn } from '@/lib/utils';
-
-interface Product {
-  id: string;
-  name: string;
-  price: string | number;
-  image_url?: string;
-  category?: string;
-  description?: string;
-  stock?: number;
-}
+import { useState, useEffect, Component, ErrorInfo } from "react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useToast } from "@/hooks/use-toast";
+import { ShoppingCart, MessageCircle, Upload, X } from "lucide-react";
+import type { Product } from "@shared/schema";
 
 interface CustomizeModalProps {
   product: Product | null;
   isOpen: boolean;
   onClose: () => void;
+  onAddToCart: (product: Product, customization: any) => Promise<void>;
+  productVariant?: string;
 }
 
-const formatPrice = (price: string | number): string => {
-  const numPrice = typeof price === 'string' ? parseFloat(price) : price;
-  return `৳${numPrice.toFixed(0)}`;
+interface CustomizationData {
+  text?: string;
+  images?: File[];
+  options?: Record<string, string>;
+}
+
+interface ProductVariant {
+  id: string;
+  name: string;
+  basePrice: number;
+}
+
+// Error boundary component for the customize modal
+class ErrorBoundary extends Component<{ children: React.ReactNode }, { hasError: boolean; error: Error | null; errorInfo: ErrorInfo | null }> {
+  constructor(props: { children: React.ReactNode }) {
+    super(props);
+    this.state = { hasError: false, error: null, errorInfo: null };
+  }
+
+  static getDerivedStateFromError(error: Error) {
+    // Update state so the next render will show the fallback UI.
+    return { hasError: true, error, errorInfo: null };
+  }
+
+  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+    // You can also log the error to an error reporting service
+    console.error("Caught error in CustomizeModal: ", error, errorInfo);
+    this.setState({ error, errorInfo });
+  }
+
+  render() {
+    if (this.state.hasError) {
+      // You can render any custom fallback UI
+      return (
+        <div className="flex flex-col items-center justify-center p-8 text-center">
+          <h2 className="text-lg font-semibold text-red-600 mb-2">দুঃখিত, একটি ত্রুটি ঘটেছে!</h2>
+          <p className="text-sm text-gray-600 mb-4">
+            {this.state.error?.message || "অজানা ত্রুটি"}
+          </p>
+          <Button onClick={() => window.location.reload()} variant="outline">
+            পুনরায় লোড করুন
+          </Button>
+        </div>
+      );
+    }
+
+    return this.props.children;
+  }
+}
+
+
+const formatPrice = (price: number): string => {
+  return `৳${price.toFixed(0)}`;
 };
 
-export default function CustomizeModal({ product, isOpen, onClose }: CustomizeModalProps) {
-  const [customImages, setCustomImages] = useState<File[]>([]);
-  const [selectedSize, setSelectedSize] = useState('M');
-  const [selectedColor, setSelectedColor] = useState('white');
-  const [isLoading, setIsLoading] = useState(false);
-  const { addToCart } = useCart();
+const createWhatsAppUrl = (message: string): string => {
+  const phoneNumber = "8801700000000"; // Replace with actual WhatsApp number
+  const encodedMessage = encodeURIComponent(message);
+  return `https://wa.me/${phoneNumber}?text=${encodedMessage}`;
+};
 
-  useEffect(() => {
-    if (isOpen && product) {
-      setCustomImages([]);
-      setSelectedSize('M');
-      setSelectedColor('white');
-    }
-  }, [isOpen, product]);
+const CUSTOMIZATION_OPTIONS = {
+  "T-Shirts": {
+    sizes: ["S", "M", "L", "XL", "XXL"],
+    colors: ["সাদা", "কালো", "নেভি", "গ্রে", "লাল", "নীল"],
+    printAreas: ["সামনে", "পিছনে", "উভয় পাশে"]
+  },
+  "Mugs": {
+    sizes: ["৩০০মিলি", "৪৫০মিলি"],
+    colors: ["সাদা", "কালো", "নীল", "লাল"],
+    printAreas: ["সামনে", "পিছনে", "চারপাশে"]
+  },
+  "Water Bottles": {
+    sizes: ["৫০০মিলি", "৭৫০মিলি", "১ লিটার"],
+    colors: ["সাদা", "কালো", "নীল", "সিলভার"],
+    printAreas: ["সামনে", "চারপাশে"]
+  },
+  "Keychains": {
+    sizes: ["স্ট্যান্ডার্ড"],
+    colors: ["সাদা", "কালো", "স্বচ্ছ"],
+    printAreas: ["একপাশে", "দুইপাশে"]
+  }
+};
 
+// Helper function to convert File to base64
+const convertFileToBase64 = (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = error => reject(error);
+  });
+};
+
+export default function CustomizeModalFixed({ product, isOpen, onClose, onAddToCart, productVariant }: CustomizeModalProps) {
+  // ALL HOOKS MUST BE CALLED AT THE TOP LEVEL BEFORE ANY CONDITIONAL RETURNS
+  const [customization, setCustomization] = useState({
+    size: "",
+    color: "",
+    printArea: "",
+    customText: "",
+    customImage: null as File | null,
+    instructions: "",
+    specialInstructions: "",
+    quantity: 1,
+    urgency: "normal",
+    deliveryPreference: "standard",
+    additionalRequests: ""
+  });
+
+  const { toast } = useToast();
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [selectedVariant, setSelectedVariant] = useState<string>("");
+  const [showDirectOrder, setShowDirectOrder] = useState(false);
+
+  // Early return after ALL hooks are called
   if (!product) return null;
 
-  const sizes = [
-    { value: 'XS', label: 'XS', available: true },
-    { value: 'S', label: 'S (ছোট)', available: true },
-    { value: 'M', label: 'M (মাঝারি)', available: true },
-    { value: 'L', label: 'L (বড়)', available: true },
-    { value: 'XL', label: 'XL', available: true },
-    { value: 'XXL', label: 'XXL', available: true }
-  ];
-
-  const colors = [
-    { value: 'white', label: 'সাদা', hex: '#ffffff', available: true },
-    { value: 'black', label: 'কালো', hex: '#000000', available: true },
-    { value: 'red', label: 'লাল', hex: '#ef4444', available: true },
-    { value: 'blue', label: 'নীল', hex: '#3b82f6', available: true },
-    { value: 'green', label: 'সবুজ', hex: '#10b981', available: true },
-  ];
-
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (files) {
-      const newImages = Array.from(files).slice(0, 5 - customImages.length);
-      setCustomImages([...customImages, ...newImages]);
-    }
+  const getProductType = (productName: string | undefined): keyof typeof CUSTOMIZATION_OPTIONS => {
+    if (!productName) return "T-Shirts"; // Default fallback
+    const name = productName.toLowerCase();
+    if (name.includes("t-shirt") || name.includes("tshirt") || name.includes("shirt")) return "T-Shirts";
+    if (name.includes("mug")) return "Mugs";
+    if (name.includes("bottle") || name.includes("tumbler")) return "Water Bottles";
+    if (name.includes("keychain") || name.includes("key")) return "Keychains";
+    return "T-Shirts"; // Default
   };
 
-  const removeImage = (index: number) => {
-    setCustomImages(customImages.filter((_, i) => i !== index));
+  // Support product variants from same page - add null checks
+  const currentProductName = productVariant || product?.name || "";
+  const productType = getProductType(currentProductName);
+  const options = CUSTOMIZATION_OPTIONS[productType];
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) { // 5MB limit
+        toast({
+          title: "ফাইল খুব বড়",
+          description: "দয়া করে ৫MB এর কম সাইজের ছবি আপলোড করুন",
+          variant: "destructive",
+        });
+        return;
+      }
+      setCustomization(prev => ({ ...prev, customImage: file }));
+
+      // Create image preview
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setImagePreview(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   const handleAddToCart = async () => {
-    try {
-      setIsLoading(true);
-      
-      const customizationPrice = customImages.length * 100;
-      const totalPrice = (typeof product.price === 'string' ? parseFloat(product.price) : product.price) + customizationPrice;
-
-      const cartItem = {
-        id: `${product.id}-custom-${Date.now()}`,
-        name: `${product.name} (কাস্টমাইজড)`,
-        price: totalPrice,
-        image_url: product.image_url || '/placeholder.jpg',
-        quantity: 1,
-        customization: {
-          size: selectedSize,
-          color: selectedColor,
-          images: customImages.length,
-          isCustom: true
-        }
-      };
-
-      addToCart(cartItem);
-      
-      setTimeout(() => {
-        onClose();
-      }, 500);
-      
-    } catch (error) {
-      console.error('Error adding customized product to cart:', error);
-    } finally {
-      setIsLoading(false);
+    if (!customization.size || !customization.color) {
+      toast({
+        title: "তথ্য অসম্পূর্ণ",
+        description: "দয়া করে সাইজ এবং রং নির্বাচন করুন",
+        variant: "destructive",
+      });
+      return;
     }
+
+    // Convert File to base64 string for storage
+    let customImageBase64 = null;
+    let customImageName = null;
+
+    if (customization.customImage && customization.customImage instanceof File) {
+      try {
+        customImageBase64 = await convertFileToBase64(customization.customImage);
+        customImageName = customization.customImage.name;
+        console.log('Image converted to base64 successfully');
+      } catch (error) {
+        console.error('Failed to convert image:', error);
+        toast({
+          title: "ছবি আপলোড সমস্যা",
+          description: "ছবি প্রক্রিয়া করতে সমস্যা হয়েছে। আবার চেষ্টা করুন।",
+          variant: "destructive",
+        });
+        return;
+      }
+    }
+
+    const customizationData = {
+      size: customization.size,
+      color: customization.color,
+      printArea: customization.printArea,
+      quantity: customization.quantity,
+      customText: customization.customText?.trim() || "",
+      specialInstructions: customization.specialInstructions?.trim() || "",
+      customImage: customImageBase64, // Store as base64 string
+      customImageName: customImageName,
+      urgency: customization.urgency,
+      deliveryPreference: customization.deliveryPreference,
+      additionalRequests: customization.additionalRequests?.trim() || ""
+    };
+
+    console.log('Sending customization data:', customizationData);
+
+    await onAddToCart(product, customizationData);
+    toast({
+      title: "কাস্টমাইজড পণ্য যোগ করা হয়েছে",
+      description: `${product.name} আপনার পছন্দমতো কাস্টমাইজ করে কার্টে যোগ করা হয়েছে`,
+    });
+    onClose();
   };
 
   const handleWhatsAppOrder = () => {
-    const customizationPrice = customImages.length * 100;
-    const totalPrice = (typeof product.price === 'string' ? parseFloat(product.price) : product.price) + customizationPrice;
-    
-    const message = `আমি একটি কাস্টমাইজড পণ্য অর্ডার করতে চাই:\n\nপণ্যের নাম: ${product.name}\nমূল দাম: ${formatPrice(product.price)}\nসাইজ: ${selectedSize}\nরং: ${colors.find(c => c.value === selectedColor)?.label}\nকাস্টম ছবি: ${customImages.length}টি\nকাস্টমাইজেশন ফি: ${formatPrice(customizationPrice)}\nমোট দাম: ${formatPrice(totalPrice)}\n\nদয়া করে অর্ডারটি কনফার্ম করুন।`;
-    const phoneNumber = '8801521334956';
-    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
-    window.open(whatsappUrl, '_blank');
+    const customDetails = `
+📝 কাস্টমাইজেশন বিবরণ:
+• পণ্য: ${product.name}
+• সাইজ: ${customization.size}
+• রং: ${customization.color}
+• প্রিন্ট এরিয়া: ${customization.printArea}
+• কাস্টম টেক্সট: ${customization.customText || "নেই"}
+• বিশেষ নির্দেশনা: ${customization.specialInstructions || "নেই"}
+• পরিমাণ: ${customization.quantity}
+• মূল্য: ${formatPrice(parseFloat((product?.price || 0).toString()) * customization.quantity)}
+    `;
+
+    window.open(createWhatsAppUrl(customDetails.trim()), '_blank');
   };
+
+  const totalPrice = parseFloat((product?.price || 0).toString()) * customization.quantity;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className={cn(
-        "p-0 gap-0 overflow-hidden",
-        // Perfect responsive sizing  
-        "w-[95vw] max-h-[90vh]",
-        "sm:w-[90vw] sm:max-w-[700px]",
-        "md:w-[85vw] md:max-w-[800px]",
-        "lg:w-[80vw] lg:max-w-[900px]", 
-        "xl:w-[70vw] xl:max-w-[1000px]",
-        "2xl:max-w-[1100px]",
-        // Perfect styling
-        "border-0 shadow-2xl rounded-xl bg-white dark:bg-gray-900"
-      )}>
-        <div className="flex flex-col h-full max-h-[inherit] overflow-hidden">
-          {/* Header */}
-          <DialogHeader className="p-4 sm:p-6 border-b">
-            <div className="flex items-center justify-between">
-              <DialogTitle className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white pr-8">
-                {product.name} কাস্টমাইজ করুন
-              </DialogTitle>
-              <button
-                onClick={onClose}
-                className="absolute right-4 top-4 p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors"
-              >
-                <X className="w-5 h-5" />
-              </button>
+      <DialogContent className="modal-override max-h-[90vh] p-0 flex flex-col [&>button]:hidden">
+        {/* Fixed Header */}
+        <div className="flex items-center justify-between px-6 py-4 border-b bg-white shrink-0">
+          <div>
+            <h2 className="text-xl font-bold text-gray-900">
+              {product?.name || "প্রোডাক্ট"} কাস্টমাইজ করুন
+            </h2>
+            <p className="text-sm text-gray-600 mt-1">
+              পণ্যটি আপনার পছন্দ অনুযায়ী কাস্টমাইজ করুন
+            </p>
+          </div>
+          <button
+            onClick={onClose}
+            className="p-2 hover:bg-gray-100 rounded-full transition-colors shrink-0"
+          >
+            <X className="w-5 h-5 text-gray-500" />
+          </button>
+        </div>
+
+        {/* Scrollable Content */}
+        <div className="flex-1 overflow-y-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 p-6">
+          {/* Product Preview */}
+          <div className="space-y-6">
+            <div className="relative">
+              <img 
+                src={product.image_url || '/placeholder-product.jpg'} 
+                alt={product.name}
+                className="w-full h-72 lg:h-80 object-cover rounded-xl shadow-md"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent rounded-xl"></div>
             </div>
-          </DialogHeader>
-
-          {/* Main Content */}
-          <div className="flex-1 overflow-y-auto">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 p-4 sm:p-6">
-              {/* Left Column - Customization Options */}
-              <div className="space-y-6">
-                {/* Image Upload */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-lg">আপনার ছবি আপলোড করুন</CardTitle>
-                    <p className="text-sm text-gray-600">সর্বোচ্চ ৫টি ছবি (প্রতিটি ছবির জন্য ৳১০০ অতিরিক্ত)</p>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                        {customImages.map((image, index) => (
-                          <div key={index} className="relative group">
-                            <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden">
-                              <img
-                                src={URL.createObjectURL(image)}
-                                alt={`কাস্টম ছবি ${index + 1}`}
-                                className="w-full h-full object-cover"
-                              />
-                            </div>
-                            <Button
-                              size="sm"
-                              variant="destructive"
-                              className="absolute -top-2 -right-2 w-8 h-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                              onClick={() => removeImage(index)}
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
-                          </div>
-                        ))}
-                        
-                        {customImages.length < 5 && (
-                          <label className="aspect-square border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center cursor-pointer hover:border-orange-500 hover:bg-orange-50 transition-colors">
-                            <div className="text-center">
-                              <Upload className="w-8 h-8 mx-auto text-gray-400 mb-2" />
-                              <span className="text-sm text-gray-600">ছবি যোগ করুন</span>
-                            </div>
-                            <input
-                              type="file"
-                              accept="image/*"
-                              multiple
-                              onChange={handleImageUpload}
-                              className="hidden"
-                            />
-                          </label>
-                        )}
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {/* Size Selection */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-lg">সাইজ নির্বাচন করুন</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
-                      {sizes.map((size) => (
-                        <Button
-                          key={size.value}
-                          variant={selectedSize === size.value ? "default" : "outline"}
-                          className={cn(
-                            "h-12 text-sm",
-                            selectedSize === size.value && "bg-orange-600 hover:bg-orange-700",
-                            !size.available && "opacity-50 cursor-not-allowed"
-                          )}
-                          disabled={!size.available}
-                          onClick={() => setSelectedSize(size.value)}
-                        >
-                          {size.label}
-                        </Button>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {/* Color Selection */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-lg">রং নির্বাচন করুন</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid grid-cols-3 sm:grid-cols-5 gap-3">
-                      {colors.map((color) => (
-                        <button
-                          key={color.value}
-                          className={cn(
-                            "p-3 rounded-lg border-2 text-sm transition-all",
-                            selectedColor === color.value 
-                              ? "border-orange-500 bg-orange-50" 
-                              : "border-gray-200 hover:border-gray-300",
-                            !color.available && "opacity-50 cursor-not-allowed"
-                          )}
-                          disabled={!color.available}
-                          onClick={() => setSelectedColor(color.value)}
-                        >
-                          <div 
-                            className="w-8 h-8 rounded-full mx-auto mb-2 border"
-                            style={{ backgroundColor: color.hex }}
-                          />
-                          <span>{color.label}</span>
-                        </button>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
+            <div className="text-center bg-gray-50 dark:bg-gray-800 p-4 rounded-xl">
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">{product?.name || "প্রোডাক্ট"}</h3>
+              <div className="flex items-center justify-center gap-2">
+                <span className="text-sm text-gray-600">মোট দাম:</span>
+                <span className="text-3xl font-bold text-green-600">
+                  {formatPrice(totalPrice)}
+                </span>
               </div>
+              <p className="text-sm text-gray-500 mt-2">পরিমাণ: {customization.quantity}টি</p>
+            </div>
+          </div>
 
-              {/* Right Column - Preview & Summary */}
-              <div className="space-y-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-lg">{product.name}</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="aspect-square bg-gray-100 rounded-lg mb-4 overflow-hidden">
-                      <img
-                        src={product.image_url || '/placeholder.jpg'}
-                        alt={product.name}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <div className="flex justify-between">
-                        <span>মূল দাম:</span>
-                        <span className="font-medium">{formatPrice(Number(product.price))}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>কাস্টমাইজেশন ({customImages.length} ছবি):</span>
-                        <span className="font-medium">{formatPrice(customImages.length * 100)}</span>
-                      </div>
-                      <div className="flex justify-between border-t pt-2 text-lg font-bold">
-                        <span>মোট দাম:</span>
-                        <span className="text-orange-600">
-                          {formatPrice(Number(product.price) + (customImages.length * 100))}
-                        </span>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+          {/* Customization Options */}
+          <div className="space-y-6 lg:overflow-y-auto lg:max-h-[600px] lg:pr-2">
+            {/* Size Selection */}
+            <div>
+              <Label htmlFor="size" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                সাইজ নির্বাচন করুন *
+              </Label>
+              <Select value={customization.size} onValueChange={(value) => 
+                setCustomization(prev => ({ ...prev, size: value }))
+              }>
+                <SelectTrigger>
+                  <SelectValue placeholder="সাইজ নির্বাচন করুন" />
+                </SelectTrigger>
+                <SelectContent>
+                  {options.sizes.map(size => (
+                    <SelectItem key={size} value={size}>{size}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
 
-                {/* Selected Options Summary */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-lg">নির্বাচিত অপশনসমূহ</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    <div className="flex justify-between">
-                      <span>সাইজ:</span>
-                      <Badge variant="outline">{selectedSize}</Badge>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>রং:</span>
-                      <div className="flex items-center gap-2">
-                        <div 
-                          className="w-4 h-4 rounded-full border"
-                          style={{ backgroundColor: colors.find(c => c.value === selectedColor)?.hex }}
-                        />
-                        <span>{colors.find(c => c.value === selectedColor)?.label}</span>
-                      </div>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>কাস্টম ছবি:</span>
-                      <Badge variant="secondary">{customImages.length}টি</Badge>
-                    </div>
-                  </CardContent>
-                </Card>
+            {/* Color Selection */}
+            <div>
+              <Label htmlFor="color" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                রং নির্বাচন করুন *
+              </Label>
+              <Select value={customization.color} onValueChange={(value) => 
+                setCustomization(prev => ({ ...prev, color: value }))
+              }>
+                <SelectTrigger>
+                  <SelectValue placeholder="রং নির্বাচন করুন" />
+                </SelectTrigger>
+                <SelectContent>
+                  {options.colors.map(color => (
+                    <SelectItem key={color} value={color}>{color}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
 
-                {/* Action Buttons */}
-                <div className="space-y-3">
-                  <Button
-                    onClick={handleAddToCart}
-                    disabled={isLoading}
-                    className="w-full bg-orange-600 hover:bg-orange-700 text-white font-medium py-3 px-6 rounded-xl transition-all duration-200 flex items-center justify-center gap-2"
-                  >
-                    <ShoppingCart className="w-5 h-5" />
-                    কার্টে যোগ করুন
-                  </Button>
+            {/* Print Area */}
+            <div>
+              <Label htmlFor="printArea" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                প্রিন্ট এরিয়া
+              </Label>
+              <Select value={customization.printArea} onValueChange={(value) => 
+                setCustomization(prev => ({ ...prev, printArea: value }))
+              }>
+                <SelectTrigger>
+                  <SelectValue placeholder="প্রিন্ট এরিয়া নির্বাচন করুন" />
+                </SelectTrigger>
+                <SelectContent>
+                  {options.printAreas.map(area => (
+                    <SelectItem key={area} value={area}>{area}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
 
-                  <Button
-                    onClick={handleWhatsAppOrder}
-                    className="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-3 px-6 rounded-xl transition-all duration-200"
-                  >
-                    WhatsApp এ অর্ডার করুন
-                  </Button>
-                </div>
+            {/* Custom Text */}
+            <div>
+              <Label htmlFor="customText" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                কাস্টম টেক্সট
+              </Label>
+              <Textarea
+                id="customText"
+                placeholder="আপনার পছন্দের টেক্সট লিখুন..."
+                value={customization.customText}
+                onChange={(e) => setCustomization(prev => ({ ...prev, customText: e.target.value }))}
+                className="resize-none"
+                rows={3}
+              />
+            </div>
 
-                {/* Instructions */}
-                <Card className="border-blue-200 bg-blue-50">
-                  <CardContent className="p-4">
-                    <h4 className="font-semibold text-blue-800 mb-2">নির্দেশনা:</h4>
-                    <ul className="text-sm text-blue-700 space-y-1">
-                      <li>• ছবি স্পষ্ট এবং উচ্চ মানের হতে হবে</li>
-                      <li>• প্রিন্টের মান ছবির গুণমানের উপর নির্ভর করে</li>
-                      <li>• কাস্টমাইজেশনে ২-৩ দিন অতিরিক্ত সময় লাগতে পারে</li>
-                      <li>• কাস্টমাইজড পণ্য রিটার্ন যোগ্য নয়</li>
-                    </ul>
-                  </CardContent>
-                </Card>
+            {/* Image Upload */}
+            <div>
+              <Label htmlFor="image" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                কাস্টম ইমেজ আপলোড
+              </Label>
+              <div className="mt-1 flex items-center space-x-4">
+                <Input
+                  id="image"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  className="hidden"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => document.getElementById('image')?.click()}
+                  className="flex items-center space-x-2"
+                >
+                  <Upload className="w-4 h-4" />
+                  <span>ছবি আপলোড করুন</span>
+                </Button>
+                {imagePreview && (
+                  <div className="relative">
+                    <img src={imagePreview} alt="Preview" className="w-12 h-12 rounded object-cover" />
+                    <Button
+                      size="sm"
+                      variant="destructive"
+                      className="absolute -top-2 -right-2 w-5 h-5 p-0 rounded-full"
+                      onClick={() => {
+                        setImagePreview(null);
+                        setCustomization(prev => ({ ...prev, customImage: null }));
+                      }}
+                    >
+                      <X className="w-3 h-3" />
+                    </Button>
+                  </div>
+                )}
               </div>
             </div>
+
+            {/* Quantity */}
+            <div>
+              <Label htmlFor="quantity" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                পরিমাণ
+              </Label>
+              <div className="flex items-center space-x-2 mt-1">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCustomization(prev => ({ 
+                    ...prev, 
+                    quantity: Math.max(1, prev.quantity - 1) 
+                  }))}
+                >
+                  -
+                </Button>
+                <span className="px-4 py-2 border rounded text-center min-w-[60px]">
+                  {customization.quantity}
+                </span>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCustomization(prev => ({ 
+                    ...prev, 
+                    quantity: prev.quantity + 1 
+                  }))}
+                >
+                  +
+                </Button>
+              </div>
+            </div>
+
+            {/* Special Instructions */}
+            <div>
+              <Label htmlFor="specialInstructions" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                বিশেষ নির্দেশনা
+              </Label>
+              <Textarea
+                id="specialInstructions"
+                placeholder="কোনো বিশেষ নির্দেশনা থাকলে লিখুন..."
+                value={customization.specialInstructions}
+                onChange={(e) => setCustomization(prev => ({ ...prev, specialInstructions: e.target.value }))}
+                className="resize-none"
+                rows={2}
+              />
+            </div>
+          </div>
+          </div>
+        </div>
+
+        {/* Fixed Footer with Action Buttons */}
+        <div className="border-t bg-white p-6 shrink-0">
+          <div className="flex flex-col sm:flex-row gap-3">
+            <Button
+              onClick={handleAddToCart}
+              className="flex-1 bg-green-600 hover:bg-green-700 text-white"
+            >
+              <ShoppingCart className="w-4 h-4 mr-2" />
+              কার্টে যোগ করুন ({formatPrice(totalPrice)})
+            </Button>
+            <Button
+              onClick={handleWhatsAppOrder}
+              variant="outline"
+              className="flex-1 border-green-600 text-green-600 hover:bg-green-50"
+            >
+              <MessageCircle className="w-4 h-4 mr-2" />
+              WhatsApp অর্ডার
+            </Button>
           </div>
         </div>
       </DialogContent>

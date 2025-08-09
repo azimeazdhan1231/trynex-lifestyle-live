@@ -1,4 +1,3 @@
-
 import { ReactNode } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
@@ -21,13 +20,13 @@ export default function ResponsiveModalWrapper({
   fullScreen = false
 }: ResponsiveModalWrapperProps) {
   const maxWidthClass = {
-    sm: 'sm:max-w-sm',
-    md: 'sm:max-w-md',
-    lg: 'sm:max-w-lg md:max-w-xl lg:max-w-2xl',
-    xl: 'sm:max-w-xl md:max-w-2xl lg:max-w-3xl',
-    '2xl': 'sm:max-w-2xl md:max-w-3xl lg:max-w-4xl',
-    '4xl': 'sm:max-w-4xl md:max-w-5xl lg:max-w-6xl',
-    '6xl': 'sm:max-w-6xl md:max-w-7xl'
+    sm: 'max-w-sm',
+    md: 'max-w-md',
+    lg: 'max-w-lg',
+    xl: 'max-w-xl',
+    '2xl': 'max-w-2xl',
+    '4xl': 'max-w-4xl',
+    '6xl': 'max-w-6xl'
   }[maxWidth];
 
   return (
@@ -35,14 +34,12 @@ export default function ResponsiveModalWrapper({
       <DialogContent 
         className={cn(
           "p-0 gap-0 overflow-hidden",
-          // Perfect mobile responsiveness
-          "w-[95vw] max-h-[90vh]",
-          // Perfect desktop responsiveness
-          "sm:w-[90vw] md:w-[85vw] lg:w-[80vw] xl:w-[75vw]",
+          "w-[95vw] max-h-[90vh]", // Mobile responsive
+          "sm:w-full", // Desktop responsive
           maxWidthClass,
-          // Full screen option
-          fullScreen && "w-[98vw] h-[95vh] max-w-none max-h-none sm:w-[95vw] sm:h-[90vh]",
-          // Perfect positioning (handled by DialogContent now)
+          fullScreen && "w-screen h-screen max-w-none max-h-none",
+          // Perfect desktop positioning
+          "fixed left-[50%] top-[50%] translate-x-[-50%] translate-y-[-50%]",
           // Smooth animations
           "animate-in fade-in-0 zoom-in-95 duration-200",
           // Professional styling

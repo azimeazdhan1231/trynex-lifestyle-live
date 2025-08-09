@@ -37,38 +37,30 @@ function OrderDetailsModal({ isOpen, onClose, order, onStatusUpdate }: any) {
   const { toast } = useToast();
 
   const updateStatusMutation = useMutation({
-    mutationFn: async ({ orderId, status }: { orderId: string; status: string }) => {
-      console.log('🔄 Updating order status:', { orderId, status });
-      const response = await fetch(`/api/orders/${orderId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.text();
-        console.error('❌ Status update failed:', errorData);
-        throw new Error(`Failed to update status: ${response.status}`);
-      }
-
-      const result = await response.json();
-      console.log('✅ Status updated successfully:', result);
-      return result;
+    mutationFn: async ({ orderId, status }: { orderId: string, status: string }) => {
+      console.log(`🔄 Mutation: Updating order ${orderId} to status: ${status}`);
+      const response = await apiRequest(`/api/orders/${orderId}/status`, 'PATCH', { status });
+      console.log('✅ Mutation response:', response);
+      return response;
     },
-    onSuccess: () => {
+    onSuccess: (data, variables) => {
+      console.log('✅ Status update successful:', data);
       toast({
         title: "সফল!",
-        description: "অর্ডার স্ট্যাটাস আপডেট হয়েছে",
+        description: `অর্ডার স্ট্যাটাস "${ORDER_STATUSES[variables.status as keyof typeof ORDER_STATUSES] || variables.status}" এ আপডেট হয়েছে`,
       });
-      refetchOrders();
-      setSelectedOrder(null);
-      setOrderDetailsOpen(false);
+      
+      // Force refresh data
+      queryClient.invalidateQueries({ queryKey: ["/api/orders"] });
+      queryClient.refetchQueries({ queryKey: ["/api/orders"] });
+      onStatusUpdate?.();
+      onClose();
     },
-    onError: (error: Error) => {
-      console.error('❌ Status update error:', error);
+    onError: (error: any) => {
+      console.error('❌ Status update failed:', error);
       toast({
         title: "ত্রুটি!",
-        description: `স্ট্যাটাস আপডেট করতে সমস্যা হয়েছে: ${error.message}`,
+        description: error?.message || "স্ট্যাটাস আপডেট করতে সমস্যা হয়েছে",
         variant: "destructive",
       });
     }
@@ -196,7 +188,7 @@ function OrderDetailsModal({ isOpen, onClose, order, onStatusUpdate }: any) {
                   {ORDER_STATUSES[order.status as keyof typeof ORDER_STATUSES] || order.status}
                 </Badge>
               </div>
-
+              
               <div className="space-y-2">
                 <Label htmlFor="status-select">স্ট্যাটাস পরিবর্তন করুন</Label>
                 <Select value={newStatus} onValueChange={setNewStatus}>
@@ -285,12 +277,12 @@ function OrderDetailsModal({ isOpen, onClose, order, onStatusUpdate }: any) {
                 {customImages.map((image: any, index: number) => {
                   // Handle different image data formats
                   const imageUrl = image?.url || image?.dataUrl || image?.data || image?.src || (typeof image === 'string' ? image : '');
-
+                  
                   if (!imageUrl) {
                     console.warn(`No valid image URL found for image ${index}:`, image);
                     return null;
                   }
-
+                  
                   return (
                     <div key={index} className="relative group">
                       <img 

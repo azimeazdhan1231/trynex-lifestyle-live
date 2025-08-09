@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -24,8 +23,7 @@ import {
   Settings,
   CheckCircle,
   Clock,
-  AlertCircle,
-  X
+  AlertCircle
 } from "lucide-react";
 import { formatPrice } from "@/lib/constants";
 import type { Order } from "@shared/schema";
@@ -44,7 +42,6 @@ export default function OrderDetailsEnhanced({
   const [newNote, setNewNote] = useState("");
   const [selectedStatus, setSelectedStatus] = useState(order.status);
   const [showCustomizationDetails, setShowCustomizationDetails] = useState(true);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
 
   const orderItems = typeof order.items === 'string' 
     ? JSON.parse(order.items) 
@@ -91,83 +88,8 @@ export default function OrderDetailsEnhanced({
     }
   };
 
-  const renderCustomImage = (imageData: string, itemName: string) => {
-    if (!imageData) return null;
-    
-    // Handle both base64 and URL formats
-    const isBase64 = imageData.startsWith('data:image/');
-    const imageUrl = isBase64 ? imageData : imageData;
-
-    return (
-      <div className="bg-purple-50 p-3 rounded">
-        <div className="flex items-center gap-2 mb-3">
-          <ImageIcon className="w-4 h-4 text-purple-600" />
-          <span className="font-medium text-purple-800">আপলোড করা ছবি</span>
-        </div>
-        <div className="flex flex-col sm:flex-row items-start gap-4">
-          <div className="relative">
-            <img
-              src={imageUrl}
-              alt="Custom uploaded image"
-              className="w-24 h-24 sm:w-32 sm:h-32 object-cover rounded border cursor-pointer hover:opacity-80 transition-opacity"
-              onClick={() => setImagePreview(imageUrl)}
-              onError={(e) => {
-                console.error('Image load error:', e);
-                (e.target as HTMLImageElement).style.display = 'none';
-              }}
-            />
-          </div>
-          <div className="flex flex-col gap-2">
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => setImagePreview(imageUrl)}
-              className="w-full sm:w-auto"
-            >
-              <Eye className="w-4 h-4 mr-1" />
-              বড় করে দেখুন
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => {
-                const link = document.createElement('a');
-                link.href = imageUrl;
-                link.download = `custom-image-${itemName}-${Date.now()}.jpg`;
-                link.click();
-              }}
-              className="w-full sm:w-auto"
-            >
-              <Download className="w-4 h-4 mr-1" />
-              ডাউনলোড
-            </Button>
-          </div>
-        </div>
-      </div>
-    );
-  };
-
   return (
     <div className="space-y-6">
-      {/* Image Preview Modal */}
-      {imagePreview && (
-        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
-          <div className="relative max-w-4xl max-h-[90vh] w-full">
-            <button
-              onClick={() => setImagePreview(null)}
-              className="absolute top-4 right-4 bg-white rounded-full p-2 hover:bg-gray-100 z-10"
-            >
-              <X className="w-6 h-6" />
-            </button>
-            <img
-              src={imagePreview}
-              alt="Preview"
-              className="w-full h-full object-contain rounded"
-            />
-          </div>
-        </div>
-      )}
-
       {/* Order Header */}
       <Card>
         <CardHeader>
@@ -188,9 +110,9 @@ export default function OrderDetailsEnhanced({
         </CardHeader>
         <CardContent className="space-y-4">
           {/* Status Update */}
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+          <div className="flex items-center gap-4">
             <Select value={selectedStatus} onValueChange={setSelectedStatus}>
-              <SelectTrigger className="w-full sm:w-48">
+              <SelectTrigger className="w-48">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -206,7 +128,6 @@ export default function OrderDetailsEnhanced({
               onClick={handleStatusUpdate}
               disabled={selectedStatus === order.status}
               size="sm"
-              className="w-full sm:w-auto"
             >
               স্ট্যাটাস আপডেট করুন
             </Button>
@@ -304,7 +225,7 @@ export default function OrderDetailsEnhanced({
           <div className="space-y-6">
             {orderItems.map((item: any, index: number) => (
               <div key={index} className="border rounded-lg p-4">
-                <div className="flex flex-col sm:flex-row gap-4">
+                <div className="flex gap-4">
                   {/* Product Image */}
                   <div className="w-20 h-20 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
                     <img
@@ -317,7 +238,7 @@ export default function OrderDetailsEnhanced({
                   {/* Product Info */}
                   <div className="flex-1">
                     <h4 className="font-semibold text-lg">{item.product_name || item.name}</h4>
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 mt-2">
+                    <div className="flex items-center gap-4 mt-2">
                       <span className="text-sm text-gray-600">পরিমাণ: {item.quantity}</span>
                       <span className="text-sm text-gray-600">দাম: {formatPrice(item.price)}</span>
                       <span className="font-semibold">মোট: {formatPrice(item.price * item.quantity)}</span>
@@ -345,7 +266,7 @@ export default function OrderDetailsEnhanced({
                     {showCustomizationDetails && (
                       <div className="space-y-3">
                         {/* Basic Customization */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
                           {item.customization.size && (
                             <div>
                               <span className="text-gray-600">সাইজ:</span>
@@ -421,9 +342,43 @@ export default function OrderDetailsEnhanced({
                         )}
 
                         {/* Custom Image */}
-                        {item.customization.customImage && renderCustomImage(
-                          item.customization.customImage,
-                          item.product_name || item.name
+                        {item.customization.customImage && (
+                          <div className="bg-purple-50 p-3 rounded">
+                            <div className="flex items-center gap-2 mb-3">
+                              <ImageIcon className="w-4 h-4 text-purple-600" />
+                              <span className="font-medium text-purple-800">আপলোড করা ছবি</span>
+                            </div>
+                            <div className="flex items-center gap-4">
+                              <img
+                                src={item.customization.customImage}
+                                alt="Custom uploaded image"
+                                className="w-24 h-24 object-cover rounded border"
+                              />
+                              <div className="flex gap-2">
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => window.open(item.customization.customImage, '_blank')}
+                                >
+                                  <Eye className="w-4 h-4 mr-1" />
+                                  দেখুন
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => {
+                                    const link = document.createElement('a');
+                                    link.href = item.customization.customImage;
+                                    link.download = `custom-image-${item.product_name}-${Date.now()}.jpg`;
+                                    link.click();
+                                  }}
+                                >
+                                  <Download className="w-4 h-4 mr-1" />
+                                  ডাউনলোড
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
                         )}
                       </div>
                     )}
