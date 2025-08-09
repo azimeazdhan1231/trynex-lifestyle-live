@@ -80,7 +80,7 @@ export default function ProductModal({ product, isOpen, onClose, onAddToCart, on
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="modal-override p-6 overflow-y-auto" aria-describedby="product-description">
+      <DialogContent className="modal-override p-3 sm:p-4 md:p-6 overflow-y-auto" aria-describedby="product-description">
         <DialogHeader className="pb-4">
           <DialogTitle className="text-2xl font-bold text-gray-800 pr-12">
             {product.name} - পণ্যের বিস্তারিত
@@ -90,7 +90,7 @@ export default function ProductModal({ product, isOpen, onClose, onAddToCart, on
           </DialogDescription>
         </DialogHeader>
         <div className="modal-content">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 min-h-[400px]">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 md:gap-8 min-h-[300px] sm:min-h-[400px]">
             {/* Product Image */}
             <div className="relative aspect-square overflow-hidden rounded-lg border bg-gray-50 cursor-pointer group">
               <img
@@ -169,7 +169,7 @@ export default function ProductModal({ product, isOpen, onClose, onAddToCart, on
               )}
 
               {/* Action Buttons */}
-              <div className="space-y-3 pt-6">
+              <div className="modal-buttons pt-6">
                 {/* First Row - Add to Cart and WhatsApp Order */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <Button

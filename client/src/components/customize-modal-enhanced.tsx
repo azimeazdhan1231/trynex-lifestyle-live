@@ -80,20 +80,36 @@ export default function CustomizeModalEnhanced({ product, isOpen, onClose, onAdd
     const files = e.target.files;
     if (!files) return;
 
-    Array.from(files).forEach((file) => {
+    // Check if total files exceed 10
+    if (customImages.length + files.length > 10) {
+      toast({
+        title: "সর্বোচ্চ ১০টি ছবি",
+        description: "একবারে সর্বোচ্চ ১০টি ছবি আপলোড করা যাবে",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    let processedCount = 0;
+    const totalFiles = files.length;
+
+    Array.from(files).forEach((file, index) => {
+      // Enhanced file validation
       if (file.size > 5 * 1024 * 1024) {
         toast({
           title: "ফাইল খুব বড়",
-          description: "৫MB এর কম সাইজের ছবি আপলোড করুন",
+          description: `${file.name} - ৫MB এর কম সাইজের ছবি আপলোড করুন`,
           variant: "destructive",
         });
         return;
       }
 
-      if (!file.type.startsWith('image/')) {
+      // More comprehensive image type checking
+      const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
+      if (!allowedTypes.includes(file.type.toLowerCase())) {
         toast({
-          title: "অবৈধ ফাইল",
-          description: "শুধুমাত্র ছবি আপলোড করুন",
+          title: "অবৈধ ফাইল টাইপ",
+          description: `${file.name} - শুধুমাত্র JPEG, PNG, WebP, GIF ছবি আপলোড করুন`,
           variant: "destructive",
         });
         return;
@@ -101,14 +117,52 @@ export default function CustomizeModalEnhanced({ product, isOpen, onClose, onAdd
 
       const reader = new FileReader();
       reader.onload = (e) => {
-        const newImage: CustomImageFile = {
-          id: Date.now() + Math.random().toString(36).substr(2, 9),
-          file,
-          preview: e.target?.result as string,
-          name: file.name
-        };
-        setCustomImages(prev => [...prev, newImage]);
+        try {
+          const result = e.target?.result as string;
+          if (!result) {
+            console.error('Failed to read file:', file.name);
+            return;
+          }
+
+          const newImage: CustomImageFile = {
+            id: `${Date.now()}_${index}_${Math.random().toString(36).substr(2, 9)}`,
+            file,
+            preview: result,
+            name: file.name
+          };
+          
+          setCustomImages(prev => {
+            const updated = [...prev, newImage];
+            console.log(`📁 Image uploaded: ${file.name} (${Math.round(file.size / 1024)}KB)`);
+            return updated;
+          });
+
+          processedCount++;
+          if (processedCount === totalFiles) {
+            toast({
+              title: "ছবি আপলোড সম্পন্ন",
+              description: `${totalFiles}টি ছবি সফলভাবে আপলোড হয়েছে`,
+            });
+          }
+        } catch (error) {
+          console.error('Error processing image:', error);
+          toast({
+            title: "ছবি প্রক্রিয়া করতে সমস্যা",
+            description: `${file.name} আপলোড করতে সমস্যা হয়েছে`,
+            variant: "destructive",
+          });
+        }
       };
+
+      reader.onerror = () => {
+        console.error('FileReader error for:', file.name);
+        toast({
+          title: "ফাইল পড়তে সমস্যা",
+          description: `${file.name} পড়তে সমস্যা হয়েছে`,
+          variant: "destructive",
+        });
+      };
+
       reader.readAsDataURL(file);
     });
 
@@ -265,7 +319,7 @@ ${customImages.length > 0 ? `🖼️ কাস্টম ছবি: ${customImage
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[95vh] overflow-y-auto">
+      <DialogContent className="max-w-6xl max-h-[95vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <ShoppingCart className="w-5 h-5" />
@@ -276,7 +330,7 @@ ${customImages.length > 0 ? `🖼️ কাস্টম ছবি: ${customImage
           </DialogDescription>
         </DialogHeader>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="form-grid">
           {/* Left Column - Product Info */}
           <div className="space-y-4">
             <Card>
@@ -421,10 +475,10 @@ ${customImages.length > 0 ? `🖼️ কাস্টম ছবি: ${customImage
               <CardContent className="space-y-4">
                 <div>
                   <Label htmlFor="image-upload" className="cursor-pointer">
-                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors">
-                      <Camera className="w-8 h-8 mx-auto mb-2 text-gray-400" />
-                      <p className="text-sm text-gray-600">ছবি আপলোড করতে ক্লিক করুন</p>
-                      <p className="text-xs text-gray-500 mt-1">সর্বোচ্চ ৫MB, একাধিক ছবি নির্বাচন করা যাবে</p>
+                    <div className="image-upload-area border-2 border-dashed border-gray-300 rounded-lg text-center hover:border-gray-400 transition-colors">
+                      <Camera className="w-6 h-6 sm:w-8 sm:h-8 mx-auto mb-2 text-gray-400" />
+                      <p className="text-xs sm:text-sm text-gray-600">ছবি আপলোড করতে ক্লিক করুন</p>
+                      <p className="text-xs text-gray-500 mt-1">সর্বোচ্চ ৫MB, সর্বোচ্চ ১০টি ছবি</p>
                     </div>
                   </Label>
                   <Input
@@ -440,7 +494,7 @@ ${customImages.length > 0 ? `🖼️ কাস্টম ছবি: ${customImage
                 {customImages.length > 0 && (
                   <div className="space-y-2">
                     <p className="text-sm font-medium">আপলোড করা ছবি ({customImages.length}):</p>
-                    <div className="grid grid-cols-3 gap-2">
+                    <div className="image-preview-grid">
                       {customImages.map((image) => (
                         <div key={image.id} className="relative group">
                           <img

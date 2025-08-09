@@ -73,6 +73,52 @@
   animation: pulse-glow 2s ease-in-out infinite;
 }
 
+/* Enhanced Modal Responsiveness */
+.modal-override {
+  /* Mobile-first responsive spacing */
+  @apply w-[calc(100vw-16px)] sm:w-[calc(100vw-32px)] md:w-[calc(100vw-48px)] lg:w-[calc(100vw-64px)];
+  @apply max-w-[95vw] sm:max-w-[90vw] md:max-w-[85vw] lg:max-w-[80vw] xl:max-w-[75vw] 2xl:max-w-[70vw];
+  @apply max-h-[95vh] sm:max-h-[90vh] md:max-h-[85vh];
+  @apply overflow-y-auto overflow-x-hidden;
+}
+
+/* Modal content responsive grid */
+.modal-content {
+  @apply space-y-4 sm:space-y-6 md:space-y-8;
+}
+
+.modal-content .grid {
+  @apply grid-cols-1 lg:grid-cols-2;
+  @apply gap-4 sm:gap-6 md:gap-8;
+}
+
+/* Responsive button layouts */
+.modal-buttons {
+  @apply flex flex-col sm:flex-row gap-3 sm:gap-4;
+}
+
+.modal-buttons .flex-1 {
+  @apply w-full sm:w-auto;
+}
+
+/* Image upload area responsiveness */
+.image-upload-area {
+  @apply p-4 sm:p-6 md:p-8;
+}
+
+.image-preview-grid {
+  @apply grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 sm:gap-3 md:gap-4;
+}
+
+/* Form responsiveness */
+.form-grid {
+  @apply grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6;
+}
+
+.form-section {
+  @apply space-y-3 sm:space-y-4 md:space-y-6;
+}
+
 /* Scrollbar hide for carousel */
 .scrollbar-hide {
   -ms-overflow-style: none;

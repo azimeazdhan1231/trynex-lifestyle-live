@@ -38,7 +38,7 @@ const DialogContent = React.forwardRef<
     <DialogPrimitive.Content
       ref={ref}
       className={cn(
-        "fixed inset-0 left-[50%] top-[50%] z-50 grid w-[min(calc(100vw-32px),95vw)] sm:w-[min(calc(100vw-32px),85vw)] md:w-[min(calc(100vw-32px),80vw)] lg:w-[min(calc(100vw-32px),75vw)] xl:w-[min(calc(100vw-32px),70vw)] max-w-[1200px] translate-x-[-50%] translate-y-[-50%] gap-4 border bg-background p-6 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] rounded-lg max-h-[calc(100vh-64px)] overflow-y-auto overflow-x-hidden",
+        "fixed inset-0 left-[50%] top-[50%] z-50 grid w-[calc(100vw-16px)] sm:w-[calc(100vw-32px)] md:w-[min(calc(100vw-48px),90vw)] lg:w-[min(calc(100vw-64px),85vw)] xl:w-[min(calc(100vw-80px),80vw)] 2xl:w-[min(calc(100vw-96px),75vw)] max-w-[1400px] translate-x-[-50%] translate-y-[-50%] gap-4 border bg-background p-3 sm:p-4 md:p-6 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] rounded-lg max-h-[calc(100vh-32px)] sm:max-h-[calc(100vh-48px)] md:max-h-[calc(100vh-64px)] overflow-y-auto overflow-x-hidden",
         className
       )}
       {...props}

@@ -285,7 +285,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.patch('/api/custom-orders/:id/status', async (req, res) => {
     try {
       const { status } = req.body;
-      const customOrder = await storage.updateCustomOrderStatus(parseInt(req.params.id), status);
+      const customOrder = await storage.updateCustomOrderStatus(req.params.id, status);
       
       console.log(`✅ Custom order #${req.params.id} status updated to: ${status}`);
       

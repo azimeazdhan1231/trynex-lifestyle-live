@@ -39,9 +39,19 @@ function OrderDetailsModal({ isOpen, onClose, order, onStatusUpdate }: any) {
   const updateStatusMutation = useMutation({
     mutationFn: async ({ orderId, status }: { orderId: string, status: string }) => {
       console.log(`🔄 Mutation: Updating order ${orderId} to status: ${status}`);
-      const response = await apiRequest(`/api/orders/${orderId}/status`, 'PATCH', { status });
-      console.log('✅ Mutation response:', response);
-      return response;
+      const response = await fetch(`/api/orders/${orderId}/status`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ status })
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      return await response.json();
     },
     onSuccess: (data, variables) => {
       console.log('✅ Status update successful:', data);
@@ -133,7 +143,7 @@ function OrderDetailsModal({ isOpen, onClose, order, onStatusUpdate }: any) {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-7xl max-h-[95vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Package className="w-5 h-5" />
