@@ -201,7 +201,7 @@ export default function CustomizeModalFixed({ product, isOpen, onClose, onAddToC
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="w-[95vw] max-w-4xl h-[90vh] max-h-[800px] p-0 overflow-hidden">
+      <DialogContent className="w-[95vw] max-w-6xl h-[90vh] max-h-[900px] p-0 overflow-hidden sm:w-[90vw] md:w-[85vw] lg:w-[80vw] xl:max-w-6xl">
         <DialogHeader className="px-6 py-4 border-b">
           <DialogTitle className="text-xl font-bold text-gray-900 dark:text-white">
             {product?.name || "প্রোডাক্ট"} কাস্টমাইজ করুন
@@ -212,7 +212,7 @@ export default function CustomizeModalFixed({ product, isOpen, onClose, onAddToC
             পণ্যটি আপনার পছন্দ অনুযায়ী কাস্টমাইজ করুন
           </DialogDescription>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-full">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 h-full min-h-[500px]">
           {/* Product Preview */}
           <div className="space-y-4">
             <img 

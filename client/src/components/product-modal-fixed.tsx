@@ -80,7 +80,7 @@ export default function ProductModal({ product, isOpen, onClose, onAddToCart, on
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="modal-container modal-large" aria-describedby="product-description">
+      <DialogContent className="w-[95vw] max-w-5xl h-[85vh] max-h-[800px] p-6 overflow-y-auto sm:w-[90vw] md:w-[80vw] lg:w-[75vw] xl:max-w-5xl" aria-describedby="product-description">
         <DialogTitle className="text-2xl font-bold text-gray-800 pr-12 mb-6">
           {product.name} - পণ্যের বিস্তারিত
         </DialogTitle>
@@ -88,7 +88,7 @@ export default function ProductModal({ product, isOpen, onClose, onAddToCart, on
           {product.name} এর সম্পূর্ণ তথ্য, দাম ৳{formatPrice(Number(product.price))}, স্টক {product.stock}টি। পণ্যটি কার্টে যোগ করুন বা কাস্টমাইজ করুন।
         </DialogDescription>
         <div className="modal-content">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 min-h-[400px]">
             {/* Product Image */}
             <div className="relative aspect-square overflow-hidden rounded-lg border bg-gray-50 cursor-pointer group">
               <img
