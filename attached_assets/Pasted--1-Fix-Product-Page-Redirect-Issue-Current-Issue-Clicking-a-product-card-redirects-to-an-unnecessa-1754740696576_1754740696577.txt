@@ -1,0 +1,108 @@
+
+1. Fix Product Page Redirect Issue
+Current Issue: Clicking a product card redirects to an unnecessary page.
+
+Required Fix:
+
+Replace the redirect action with a modal popup that shows the full product details.
+
+Modal should load dynamically via AJAX/fetch without page reload.
+
+Modal must include all existing features: images, description, customization options, price, and purchase buttons.
+
+2. Enhance Customization Features
+Make the customization form fully dynamic and automated:
+
+Color Picker: Allow customers to select colors; selected color should be shown in live preview and saved in order data.
+
+Image Upload:
+
+Allow customers to upload an image (PNG, JPG, JPEG, max size limit).
+
+Uploaded image should preview instantly in the customization modal.
+
+Send uploaded image to backend along with order.
+
+Admin Panel Display:
+
+Show customization instructions, selected colors, and uploaded images in Order Details.
+
+Provide “Download Image” button in admin order view.
+
+3. Add “Direct Order Now” Button
+On product details/customization view:
+
+Keep existing “Add to Cart” button.
+
+Add a new “Direct Order Now” button.
+
+Direct Order Now Flow:
+
+Opens a modal/form requesting customer details (name, phone number, address).
+
+Displays a 100৳ advance payment confirmation step (bKash/Nagad details + transaction ID input).
+
+On submit, validate fields and store the order instantly in database.
+
+Send order confirmation to admin and show success message to customer.
+
+4. Improve Search Function
+Implement a smart, YouTube-style search system:
+
+Real-time suggestions as user types.
+
+Partial matches, spelling tolerance, and relevance ranking.
+
+Search across product names, descriptions, and categories.
+
+Make search mobile-friendly and fast (debounce API calls).
+
+5. Standardize Customization Button Functionality
+Ensure both customization buttons:
+
+Product Page “Customize” button
+
+Customization Page “Customize” button
+
+Have identical functionality and allow ordering with both “Add to Cart” and “Direct Order Now” options.
+
+6. Fix Cart Modal Layout for Desktop
+On desktop, the cart modal layout is broken/misaligned.
+
+Fix:
+
+Redesign cart modal for large screens so it’s centered, proportionate, and aesthetically consistent.
+
+Ensure no horizontal scroll or cut-off content.
+
+Apply same responsive fixes to all other modals (product view, customization, checkout).
+
+7. Ensure Full Responsiveness & Touch Support
+Test and optimize the entire site for:
+
+Mobile (touch gestures, smooth scrolling, easy button tap areas).
+
+Tablet.
+
+Desktop.
+
+Eliminate all touch unresponsiveness issues.
+
+Ensure all modals and forms are usable with one hand on mobile.
+
+8. CSS & UI/UX Professional Enhancement
+Apply modern CSS styling to:
+
+Modals.
+
+Buttons (hover states, active states).
+
+Forms.
+
+Product cards.
+
+Ensure consistent spacing, fonts, and colors across all pages.
+
+Add smooth animations for modal open/close and button clicks.
+
+Keep website visually appealing, user-friendly, and professional.

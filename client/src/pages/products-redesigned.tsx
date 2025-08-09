@@ -15,7 +15,10 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import OrderNowModal from "@/components/order-now-modal";
+import EnhancedCartModal from "@/components/enhanced-cart-modal";
+import EnhancedCustomizationModal from "@/components/enhanced-customization-modal";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import MobileOptimizedLayout from "@/components/mobile-optimized-layout";
 import { useCart } from "@/hooks/use-cart";
@@ -63,6 +66,8 @@ function EnhancedProductCard({ product }: { product: Product }) {
   const [isFavorite, setIsFavorite] = useState(false);
   const [imageError, setImageError] = useState(false);
   const [isQuickViewOpen, setIsQuickViewOpen] = useState(false);
+  const [isOrderNowOpen, setIsOrderNowOpen] = useState(false);
+  const [isCustomizeOpen, setIsCustomizeOpen] = useState(false);
   const { addToCart } = useCart();
   const { toast } = useToast();
 
@@ -75,7 +80,7 @@ function EnhancedProductCard({ product }: { product: Product }) {
     e.stopPropagation();
     
     trackProductView(product.id, product.name || 'Unknown Product', product.category || 'uncategorized');
-    setLocation(`/product/${product.id}`);
+    setIsQuickViewOpen(true);
   };
 
   const handleQuickView = (e: React.MouseEvent) => {
@@ -117,7 +122,7 @@ function EnhancedProductCard({ product }: { product: Product }) {
   const handleCustomize = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    setLocation(`/customize/${product.id}`);
+    setIsCustomizeOpen(true);
   };
 
   const toggleFavorite = (e: React.MouseEvent) => {
@@ -320,19 +325,34 @@ function EnhancedProductCard({ product }: { product: Product }) {
                   </Badge>
                 </div>
 
-                <div className="flex gap-3">
-                  <Button
-                    className="flex-1 bg-orange-500 hover:bg-orange-600"
-                    onClick={handleAddToCart}
-                    disabled={isOutOfStock}
-                  >
-                    <ShoppingCart className="w-4 h-4 mr-2" />
-                    কার্টে যোগ করুন
-                  </Button>
+                <div className="grid grid-cols-1 gap-3">
+                  <div className="flex gap-3">
+                    <Button
+                      className="flex-1 bg-orange-500 hover:bg-orange-600"
+                      onClick={handleAddToCart}
+                      disabled={isOutOfStock}
+                    >
+                      <ShoppingCart className="w-4 h-4 mr-2" />
+                      কার্টে যোগ করুন
+                    </Button>
+                    
+                    <Button
+                      className="flex-1 bg-green-600 hover:bg-green-700 text-white"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setIsOrderNowOpen(true);
+                      }}
+                      disabled={isOutOfStock}
+                    >
+                      <Zap className="w-4 h-4 mr-2" />
+                      অর্ডার করুন
+                    </Button>
+                  </div>
                   
                   <Button
                     variant="outline"
-                    className="flex-1 border-orange-500 text-orange-600 hover:bg-orange-50"
+                    className="w-full border-orange-500 text-orange-600 hover:bg-orange-50"
                     onClick={handleCustomize}
                   >
                     <Sparkles className="w-4 h-4 mr-2" />
@@ -362,6 +382,20 @@ function EnhancedProductCard({ product }: { product: Product }) {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Order Now Modal */}
+      <OrderNowModal
+        isOpen={isOrderNowOpen}
+        onClose={() => setIsOrderNowOpen(false)}
+        product={product}
+      />
+
+      {/* Enhanced Customization Modal */}
+      <EnhancedCustomizationModal
+        isOpen={isCustomizeOpen}
+        onClose={() => setIsCustomizeOpen(false)}
+        product={product}
+      />
     </>
   );
 }

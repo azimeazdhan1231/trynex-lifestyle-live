@@ -89,25 +89,54 @@ export default function EnhancedSearchSystem({
     const newSuggestions: SearchSuggestion[] = [];
     const searchTerm = searchQuery.toLowerCase();
 
-    // 1. Exact product matches (highest priority)
-    const exactProductMatches = products
-      .filter(product => {
+    // 1. Smart product matching with relevance scoring (YouTube-like algorithm)
+    const productMatches = products
+      .map(product => {
         const name = (product.name || '').toLowerCase();
         const description = (product.description || '').toLowerCase();
         const category = (product.category || '').toLowerCase();
         
-        return name.includes(searchTerm) || 
-               description.includes(searchTerm) || 
-               category.includes(searchTerm);
+        let score = 0;
+        
+        // Exact name match gets highest score
+        if (name === searchTerm) score += 100;
+        // Name starts with search term
+        else if (name.startsWith(searchTerm)) score += 80;
+        // Name contains search term
+        else if (name.includes(searchTerm)) score += 60;
+        
+        // Category match
+        if (category.includes(searchTerm)) score += 40;
+        
+        // Description match
+        if (description.includes(searchTerm)) score += 20;
+        
+        // Partial word matching
+        const searchWords = searchTerm.split(' ');
+        const nameWords = name.split(' ');
+        const matchingWords = searchWords.filter(word => 
+          nameWords.some(nameWord => nameWord.includes(word) || word.includes(nameWord))
+        );
+        score += matchingWords.length * 10;
+        
+        // Featured products get bonus
+        if (product.is_featured) score += 15;
+        
+        // In stock products get bonus
+        if (Number(product.stock) > 0) score += 10;
+        
+        return { product, score };
       })
+      .filter(({ score }) => score > 0)
+      .sort((a, b) => b.score - a.score)
       .slice(0, 4)
-      .map(product => ({
+      .map(({ product }) => ({
         query: product.name || '',
         type: 'product' as const,
         product
       }));
 
-    newSuggestions.push(...exactProductMatches);
+    newSuggestions.push(...productMatches);
 
     // 2. Category suggestions
     const categoryMatches = categories

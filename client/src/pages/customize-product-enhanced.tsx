@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useLocation, useRoute } from "wouter";
-import { ArrowLeft, Upload, Palette, Type, Heart, ShoppingCart, Star } from "lucide-react";
+import { ArrowLeft, Upload, Palette, Type, Heart, ShoppingCart, Star, Zap } from "lucide-react";
+import OrderNowModal from "@/components/order-now-modal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -38,6 +39,7 @@ export default function CustomizeProductEnhanced() {
   
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string>('');
+  const [isOrderNowOpen, setIsOrderNowOpen] = useState(false);
   
   const { addToCart } = useCart();
   const { toast } = useToast();
@@ -357,18 +359,28 @@ export default function CustomizeProductEnhanced() {
               </Card>
 
               {/* Action Buttons */}
-              <div className="flex flex-col sm:flex-row gap-3">
-                <Button
-                  className="flex-1 bg-orange-500 hover:bg-orange-600 text-white"
-                  onClick={handleAddToCart}
-                >
-                  <ShoppingCart className="w-4 h-4 mr-2" />
-                  কার্টে যোগ করুন
-                </Button>
+              <div className="grid grid-cols-1 gap-3">
+                <div className="flex gap-3">
+                  <Button
+                    className="flex-1 bg-orange-500 hover:bg-orange-600 text-white"
+                    onClick={handleAddToCart}
+                  >
+                    <ShoppingCart className="w-4 h-4 mr-2" />
+                    কার্টে যোগ করুন
+                  </Button>
+                  
+                  <Button
+                    className="flex-1 bg-green-600 hover:bg-green-700 text-white"
+                    onClick={() => setIsOrderNowOpen(true)}
+                  >
+                    <Zap className="w-4 h-4 mr-2" />
+                    অর্ডার করুন
+                  </Button>
+                </div>
                 
                 <Button
                   variant="outline"
-                  className="flex-1 border-orange-500 text-orange-600 hover:bg-orange-50"
+                  className="w-full border-orange-500 text-orange-600 hover:bg-orange-50"
                   onClick={() => setLocation('/contact')}
                 >
                   <Heart className="w-4 h-4 mr-2" />
@@ -378,6 +390,14 @@ export default function CustomizeProductEnhanced() {
             </div>
           </div>
         </div>
+
+        {/* Order Now Modal */}
+        <OrderNowModal
+          isOpen={isOrderNowOpen}
+          onClose={() => setIsOrderNowOpen(false)}
+          product={product}
+          customization={customization}
+        />
       </div>
     </MobileOptimizedLayout>
   );
