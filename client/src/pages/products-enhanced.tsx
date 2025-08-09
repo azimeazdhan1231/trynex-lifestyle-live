@@ -29,7 +29,7 @@ interface FilterState {
 
 const INITIAL_FILTERS: FilterState = {
   search: '',
-  category: '',
+  category: 'all',
   minPrice: 0,
   maxPrice: 10000,
   inStock: false,
@@ -72,7 +72,7 @@ export default function EnhancedProductsPage() {
   useEffect(() => {
     let count = 0;
     if (filters.search) count++;
-    if (filters.category) count++;
+    if (filters.category && filters.category !== 'all') count++;
     if (filters.minPrice > 0 || filters.maxPrice < 10000) count++;
     if (filters.inStock) count++;
     if (filters.featured) count++;
@@ -94,7 +94,7 @@ export default function EnhancedProductsPage() {
     }
 
     // Category filter
-    if (filters.category) {
+    if (filters.category && filters.category !== 'all') {
       result = result.filter(product => product.category === filters.category);
     }
 
@@ -264,7 +264,7 @@ export default function EnhancedProductsPage() {
                           <SelectValue placeholder="সব ক্যাটেগরি" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="">সব ক্যাটেগরি</SelectItem>
+                          <SelectItem value="all">সব ক্যাটেগরি</SelectItem>
                           {categories.map((category) => (
                             <SelectItem key={category.name} value={category.name}>
                               {category.name}
@@ -341,7 +341,7 @@ export default function EnhancedProductsPage() {
                     variant={filters.category === category.name ? "default" : "outline"}
                     size="sm"
                     onClick={() => updateFilter('category', 
-                      filters.category === category.name ? '' : category.name
+                      filters.category === category.name ? 'all' : category.name
                     )}
                     className="flex-shrink-0 text-sm"
                   >
@@ -412,13 +412,13 @@ export default function EnhancedProductsPage() {
                   </Badge>
                 )}
 
-                {filters.category && (
+                {filters.category && filters.category !== 'all' && (
                   <Badge variant="secondary" className="flex items-center gap-1">
                     {filters.category}
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => updateFilter('category', '')}
+                      onClick={() => updateFilter('category', 'all')}
                       className="p-0 h-auto ml-1"
                     >
                       <X className="w-3 h-3" />
