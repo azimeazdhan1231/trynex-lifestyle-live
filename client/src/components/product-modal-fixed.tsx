@@ -50,9 +50,17 @@ export default function ProductModal({ product, isOpen, onClose, onAddToCart, on
       return;
     }
 
-    for (let i = 0; i < quantity; i++) {
-      onAddToCart(product);
-    }
+    // Create cart item with proper structure
+    const cartItem = {
+      id: product.id,
+      name: product.name,
+      price: typeof product.price === 'string' ? parseFloat(product.price) : product.price,
+      image_url: product.image_url,
+      image: product.image_url,
+      quantity: quantity
+    };
+
+    onAddToCart(cartItem);
 
     // Track add to cart event
     const price = typeof product.price === 'string' ? parseFloat(product.price) : product.price;

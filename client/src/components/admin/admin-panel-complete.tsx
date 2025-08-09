@@ -20,6 +20,7 @@ import {
   Plus, Pencil, Trash2, Search, Filter, Settings, Tag, Gift, Megaphone, BarChart3,
   ImageIcon, ExternalLink, Phone, MapPin, MessageSquare, Upload, X
 } from "lucide-react";
+import ProductsManagementSimple from "@/components/admin/products-management-simple";
 
 const ORDER_STATUSES = {
   pending: "অপেক্ষমান",
@@ -584,9 +585,15 @@ function ProductsManagement() {
   const { data: products = [], isLoading, error, refetch } = useQuery({ 
     queryKey: ["/api/products"],
     refetchInterval: 60000,
+    retry: 3,
+    staleTime: 30000,
   });
 
-  const { data: categories = [] } = useQuery({ queryKey: ["/api/categories"] });
+  const { data: categories = [] } = useQuery({ 
+    queryKey: ["/api/categories"],
+    retry: 3,
+    staleTime: 30000,
+  });
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -849,7 +856,7 @@ export default function CompleteAdminPanel() {
           </TabsContent>
 
           <TabsContent value="products">
-            <ProductsManagement />
+            <ProductsManagementSimple />
           </TabsContent>
 
           <TabsContent value="categories">

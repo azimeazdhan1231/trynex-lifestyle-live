@@ -492,6 +492,9 @@ export default function Home() {
       id: product.id,
       name: product.name,
       price: Number(product.price),
+      image_url: product.image_url,
+      image: product.image_url,
+      quantity: 1
     });
 
     trackAddToCart(product.id, product.name, Number(product.price));
@@ -519,6 +522,9 @@ export default function Home() {
       id: product.id,
       name: product.name,
       price: Number(product.price),
+      image_url: product.image_url,
+      image: product.image_url,
+      quantity: 1,
       customization: customization,
     });
 

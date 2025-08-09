@@ -49,8 +49,8 @@ export function useCart(): UseCartReturn {
         localStorage.setItem('trynex_cart', JSON.stringify(cart)); // Changed from 'cart' to 'trynex_cart' to match original
         console.log('useCart returning:', { // Keeping original console log for return data
           cart,
-          totalItems: cart.reduce((sum, item) => sum + item.quantity, 0),
-          totalPrice: cart.reduce((sum, item) => sum + (item.price * item.quantity), 0)
+          totalItems: cart.reduce((sum, item) => sum + (item.quantity || 0), 0),
+          totalPrice: cart.reduce((sum, item) => sum + ((item.price || 0) * (item.quantity || 0)), 0)
         });
       } catch (error) {
         console.error('Error saving cart:', error); // Keeping error log message
@@ -66,11 +66,11 @@ export function useCart(): UseCartReturn {
       if (existingItemIndex > -1) {
         // Update existing item quantity
         const updatedCart = [...prevCart];
-        updatedCart[existingItemIndex].quantity += newItem.quantity;
+        updatedCart[existingItemIndex].quantity = (updatedCart[existingItemIndex].quantity || 0) + (newItem.quantity || 1);
         return updatedCart;
       } else {
-        // Add new item
-        return [...prevCart, newItem];
+        // Add new item with proper quantity
+        return [...prevCart, { ...newItem, quantity: newItem.quantity || 1 }];
       }
     });
   };
@@ -96,8 +96,8 @@ export function useCart(): UseCartReturn {
     setCart([]);
   };
 
-  const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
-  const totalPrice = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  const totalItems = cart.reduce((sum, item) => sum + (item.quantity || 0), 0);
+  const totalPrice = cart.reduce((sum, item) => sum + ((item.price || 0) * (item.quantity || 0)), 0);
 
   return {
     cart,
