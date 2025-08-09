@@ -33,8 +33,11 @@ export default function CartModalFixed({ isOpen, onClose }: CartModalProps) {
     if (isOpen) {
       setRefreshKey(prev => prev + 1);
       console.log('CartModal opened, current cart:', cart);
+      console.log('Cart isLoaded:', isLoaded);
+      console.log('Cart length:', cart?.length);
+      console.log('Cart is array:', Array.isArray(cart));
     }
-  }, [isOpen, cart]);
+  }, [isOpen, cart, isLoaded]);
 
   // Show loading state until cart is loaded
   if (!isLoaded) {
@@ -79,7 +82,7 @@ export default function CartModalFixed({ isOpen, onClose }: CartModalProps) {
           </DialogHeader>
           
           <div className="flex-1 overflow-y-auto px-3 sm:px-4 lg:px-6 py-3 sm:py-4">
-            {!cart || !Array.isArray(cart) || cart.length === 0 ? (
+            {(!cart || !Array.isArray(cart) || cart.length === 0) ? (
               <div className="text-center py-12">
                 <ShoppingCart className="w-16 h-16 text-gray-300 mx-auto mb-4" />
                 <p className="text-gray-500 text-lg mb-4">আপনার কার্ট খালি</p>

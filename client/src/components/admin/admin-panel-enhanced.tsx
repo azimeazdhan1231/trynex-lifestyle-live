@@ -742,9 +742,6 @@ function OrderDetailsModal({
     onSuccess: () => {
       toast({ title: "স্ট্যাটাস আপডেট সফল", description: "অর্ডারের স্ট্যাটাস সফলভাবে আপডেট হয়েছে।" });
       queryClient.invalidateQueries({ queryKey: ["/api/orders"] });
-      if (onStatusUpdate) {
-        onStatusUpdate();
-      }
     },
     onError: (error: any) => {
       toast({ 

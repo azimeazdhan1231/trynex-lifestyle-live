@@ -152,8 +152,20 @@ export default function Header({ cartCount, onCartOpen }: HeaderProps) {
                       ))}
                     </nav>
                     
-                    {/* Contact section in mobile menu */}
-                    <div className="border-t pt-4 mt-6">
+                    {/* Login/Register and Contact section in mobile menu */}
+                    <div className="border-t pt-4 mt-6 space-y-3">
+                      <div className="grid grid-cols-2 gap-2">
+                        <Button asChild variant="outline" size="sm">
+                          <Link href="/login" onClick={() => setIsMobileMenuOpen(false)}>
+                            লগইন
+                          </Link>
+                        </Button>
+                        <Button asChild variant="default" size="sm">
+                          <Link href="/register" onClick={() => setIsMobileMenuOpen(false)}>
+                            রেজিস্টার
+                          </Link>
+                        </Button>
+                      </div>
                       <Button asChild variant="outline" className="w-full">
                         <Link href="/contact" onClick={() => setIsMobileMenuOpen(false)}>
                           <Phone className="mr-2 h-4 w-4" />

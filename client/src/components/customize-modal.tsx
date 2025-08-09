@@ -246,7 +246,7 @@ export default function CustomizeModalFixed({ product, isOpen, onClose, onAddToC
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="modal-override max-h-[90vh] p-0 flex flex-col [&>button]:hidden">
+      <DialogContent className="w-[95vw] max-w-4xl max-h-[95vh] p-0 flex flex-col [&>button]:hidden">
         {/* Fixed Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b bg-white shrink-0">
           <div>
@@ -459,18 +459,29 @@ export default function CustomizeModalFixed({ product, isOpen, onClose, onAddToC
 
         {/* Fixed Footer with Action Buttons */}
         <div className="border-t bg-white p-6 shrink-0">
-          <div className="flex flex-col sm:flex-row gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <Button
               onClick={handleAddToCart}
-              className="flex-1 bg-green-600 hover:bg-green-700 text-white"
+              className="bg-green-600 hover:bg-green-700 text-white"
             >
               <ShoppingCart className="w-4 h-4 mr-2" />
-              কার্টে যোগ করুন ({formatPrice(totalPrice)})
+              কার্টে যোগ করুন
+            </Button>
+            <Button
+              onClick={() => {
+                handleAddToCart().then(() => {
+                  // Navigate to checkout after adding to cart
+                  window.location.href = '/checkout';
+                });
+              }}
+              className="bg-blue-600 hover:bg-blue-700 text-white"
+            >
+              সরাসরি অর্ডার ({formatPrice(totalPrice)})
             </Button>
             <Button
               onClick={handleWhatsAppOrder}
               variant="outline"
-              className="flex-1 border-green-600 text-green-600 hover:bg-green-50"
+              className="border-green-600 text-green-600 hover:bg-green-50"
             >
               <MessageCircle className="w-4 h-4 mr-2" />
               WhatsApp অর্ডার
