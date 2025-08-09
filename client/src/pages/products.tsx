@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import React, { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -27,7 +27,7 @@ const PRODUCT_CATEGORIES = [
   { id: "stationery", name: "স্টেশনারি" },
   { id: "prints", name: "প্রিন্ট" },
   { id: "decorations", name: "সাজসজ্জা" },
-];
+].filter(category => category.id && category.name); // Filter out any empty values
 
 // Sort options
 const SORT_OPTIONS = [
@@ -67,6 +67,16 @@ export default function ProductsPage() {
   const [displayLimit, setDisplayLimit] = useState(20); // Start with 20 products
   // Remove local cart state - use global cart hook instead
   const { addToCart: globalAddToCart, cart: globalCart } = useCart();
+
+  // Ensure valid initial states to prevent Select errors
+  React.useEffect(() => {
+    if (!selectedCategory || selectedCategory.trim() === "") {
+      setSelectedCategory("all");
+    }
+    if (!sortOption || sortOption.trim() === "") {
+      setSortOption("newest");
+    }
+  }, [selectedCategory, sortOption]);
 
   // Fetch products with enhanced performance optimization
   const { data: products = [], isLoading, error, refetch } = useQuery<Product[]>({
@@ -192,6 +202,19 @@ export default function ProductsPage() {
     }
   };
 
+  // Safe handlers for Select components
+  const handleCategoryChange = (value: string) => {
+    if (value && value.trim()) {
+      setSelectedCategory(value);
+    }
+  };
+
+  const handleSortChange = (value: string) => {
+    if (value && value.trim()) {
+      setSortOption(value);
+    }
+  };
+
   // Load more products
   const handleLoadMore = () => {
     setDisplayLimit(prev => prev + 20);
@@ -248,13 +271,13 @@ export default function ProductsPage() {
             </div>
 
             {/* Category Filter - Mobile Optimized */}
-            <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+            <Select value={selectedCategory} onValueChange={handleCategoryChange}>
               <SelectTrigger className="h-12 border-2 rounded-xl text-base">
                 <Filter className="w-5 h-5 mr-2" />
                 <SelectValue placeholder="বিভাগ নির্বাচন করুন" />
               </SelectTrigger>
               <SelectContent className="max-h-60">
-                {PRODUCT_CATEGORIES.map((category) => (
+                {PRODUCT_CATEGORIES.filter(category => category.id && category.id.trim() && category.name).map((category) => (
                   <SelectItem key={category.id} value={category.id} className="text-base py-3">
                     {category.name}
                   </SelectItem>
@@ -263,13 +286,13 @@ export default function ProductsPage() {
             </Select>
 
             {/* Sort - Mobile Optimized */}
-            <Select value={sortOption} onValueChange={setSortOption}>
+            <Select value={sortOption} onValueChange={handleSortChange}>
               <SelectTrigger className="h-12 border-2 rounded-xl text-base">
                 <Grid3X3 className="w-5 h-5 mr-2" />
                 <SelectValue placeholder="সাজান" />
               </SelectTrigger>
               <SelectContent className="max-h-60">
-                {SORT_OPTIONS.map((option) => (
+                {SORT_OPTIONS.filter(option => option.value && option.value.trim() && option.label).map((option) => (
                   <SelectItem key={option.value} value={option.value} className="text-base py-3">
                     {option.label}
                   </SelectItem>
