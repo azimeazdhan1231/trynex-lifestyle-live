@@ -47,6 +47,12 @@ export default function EnhancedHeader() {
     setUser(null);
   };
 
+  // Handle mobile navigation click
+  const handleNavigationClick = (href: string) => {
+    navigate(href);
+    setIsMenuOpen(false); // Close mobile menu after navigation
+  };
+
   const navLinks = [
     { href: '/', label: 'হোম' },
     { href: '/products', label: 'পণ্যসমূহ' },
@@ -227,10 +233,7 @@ export default function EnhancedHeader() {
                                   ? 'bg-primary text-white hover:bg-primary hover:text-white' 
                                   : 'text-gray-700'
                               }`}
-                              onClick={() => {
-                                setIsMenuOpen(false);
-                                navigate(link.href);
-                              }}
+                              onClick={() => handleNavigationClick(link.href)}
                               data-testid={`mobile-nav-${link.href.replace('/', '')}`}
                             >
                               {link.label}

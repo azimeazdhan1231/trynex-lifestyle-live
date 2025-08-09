@@ -3,12 +3,6 @@ import { Button } from '@/components/ui/button';
 import { ArrowUp } from 'lucide-react';
 import EnhancedHeader from './enhanced-header';
 import EnhancedFooter from './enhanced-footer';
-import MobileResponsiveFixes from './mobile-responsive-fixes';
-import EnhancedPerformanceOptimizer from './enhanced-performance-optimizer';
-import ComprehensiveMobileOptimizer from './comprehensive-mobile-optimizer';
-import UltimateMobileResponsiveness from './ultimate-mobile-responsiveness';
-import ResponsiveViewportHandler from './responsive-viewport-handler';
-import ComprehensiveMobileFixes from './comprehensive-mobile-fixes';
 
 interface MobileOptimizedLayoutProps {
   children: React.ReactNode;
@@ -52,8 +46,7 @@ export default function MobileOptimizedLayout({
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <ResponsiveViewportHandler />
+    <div className="min-h-screen bg-gray-50 prevent-overflow">
       <EnhancedHeader />
       
       <main className="pt-24 lg:pt-32">
@@ -78,34 +71,7 @@ export default function MobileOptimizedLayout({
         </Button>
       )}
 
-      {/* Mobile-specific viewport meta optimization */}
-      {isMobile && (
-        <style dangerouslySetInnerHTML={{
-          __html: `
-            @media (max-width: 1024px) {
-              html {
-                -webkit-text-size-adjust: 100%;
-                -webkit-tap-highlight-color: transparent;
-              }
-              
-              body {
-                -webkit-font-smoothing: antialiased;
-                -moz-osx-font-smoothing: grayscale;
-                touch-action: manipulation;
-              }
-              
-              input, textarea, select {
-                font-size: 16px !important;
-              }
-              
-              .container {
-                padding-left: 1rem !important;
-                padding-right: 1rem !important;
-              }
-            }
-          `
-        }} />
-      )}
+
     </div>
   );
 }

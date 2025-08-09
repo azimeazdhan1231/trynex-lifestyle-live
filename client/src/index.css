@@ -111,21 +111,6 @@
   align-items: stretch;
 }
 
-/* Mobile-specific grid fixes */
-@media (max-width: 768px) {
-  .product-grid {
-    grid-template-columns: repeat(2, 1fr) !important;
-    gap: 0.75rem !important;
-  }
-}
-
-@media (max-width: 480px) {
-  .product-grid {
-    grid-template-columns: repeat(2, 1fr) !important;
-    gap: 0.5rem !important;
-  }
-}
-
 /* Professional hover effects */
 .hover-lift {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -161,30 +146,7 @@
   left: 100%;
 }
 
-/* Responsive breakpoints improvements */
-@media (max-width: 640px) {
-  .product-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 0.75rem;
-  }
-  
-  /* Fix mobile cards */
-  .card {
-    min-height: auto;
-  }
-  
-  /* Fix mobile container padding */
-  .container {
-    padding-left: 1rem !important;
-    padding-right: 1rem !important;
-  }
-}
-
-@media (min-width: 641px) and (max-width: 768px) {
-  .product-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
+/* All mobile fixes now handled by ConsolidatedMobileFix component */
 
 @media (min-width: 769px) and (max-width: 1024px) {
   .product-grid {
