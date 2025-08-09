@@ -1220,5 +1220,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   }, 60000); 
   */
 
+  // Fix product descriptions endpoint (allows any user for now since it's a data fix)
+  app.post('/api/admin/fix-descriptions', async (req, res) => {
+    try {
+      const { fixProductDescriptions } = await import('./fix-descriptions');
+      const result = await fixProductDescriptions();
+      res.json(result);
+    } catch (error) {
+      console.error('Error fixing product descriptions:', error);
+      res.status(500).json({ error: 'Failed to fix descriptions' });
+    }
+  });
+
   return createServer(app);
 }

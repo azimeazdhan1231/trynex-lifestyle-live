@@ -36,6 +36,54 @@ const PRODUCT_CATEGORIES = [
   "খাবার ও পানীয়", "পোশাক", "জুতা", "ব্যাগ", "ঘড়ি", "গয়না", "মোবাইল ও ট্যাবলেট"
 ];
 
+// Fix Descriptions Component
+function FixDescriptionsButton({ onComplete }: { onComplete: () => void }) {
+  const { toast } = useToast();
+  const [isFixing, setIsFixing] = useState(false);
+
+  const fixDescriptions = async () => {
+    setIsFixing(true);
+    try {
+      const response = await fetch('/api/admin/fix-descriptions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      
+      if (!response.ok) {
+        throw new Error('Fix failed');
+      }
+      
+      const result = await response.json();
+      toast({ 
+        title: "বিবরণ আপডেট সফল", 
+        description: `${result.updated} টি পণ্যের বিবরণ আপডেট হয়েছে` 
+      });
+      
+      onComplete();
+    } catch (error) {
+      toast({ 
+        title: "ত্রুটি", 
+        description: "বিবরণ আপডেট করতে সমস্যা হয়েছে",
+        variant: "destructive"
+      });
+    } finally {
+      setIsFixing(false);
+    }
+  };
+
+  return (
+    <Button
+      onClick={fixDescriptions}
+      disabled={isFixing}
+      variant="outline"
+      className="flex items-center gap-2"
+    >
+      <FileText className="h-4 w-4" />
+      {isFixing ? "আপডেট হচ্ছে..." : "বিবরণ ফিক্স করুন"}
+    </Button>
+  );
+}
+
 // Enhanced Product Form Modal with Perfect Form Handling
 function ProductFormModal({ 
   isOpen, 
@@ -71,9 +119,15 @@ function ProductFormModal({
   React.useEffect(() => {
     if (isOpen) {
       if (product) {
+        console.log("🔍 ProductFormModal: Loading product data:", product);
+        
+        // Handle description properly - it might be null or undefined
+        const description = product.description || "";
+        console.log("📝 Description being loaded:", description);
+        
         form.reset({
           name: product.name || "",
-          description: product.description || "",
+          description: description,
           price: product.price?.toString() || "",
           stock: Number(product.stock) || 0,
           category: product.category || "",
@@ -82,10 +136,22 @@ function ProductFormModal({
           is_latest: Boolean(product.is_latest),
           is_best_selling: Boolean(product.is_best_selling)
         });
+        
+        console.log("✅ Form reset with values:", form.getValues());
       } else {
+        // Default template for new products with standard delivery info
+        const defaultDescription = `পণ্যের বিবরণ:
+এই পণ্যটি একটি উচ্চমানের পণ্য যা আপনার প্রত্যাশা পূরণ করবে। আমাদের সকল পণ্য যত্নসহকারে নির্বাচিত এবং মান নিয়ন্ত্রিত।
+
+ডেলিভারি তথ্য:
+• ঢাকায় ডেলিভারি চার্জ: ৮০ টাকা
+• ঢাকার বাইরে: ৮০-১৩০ টাকা
+• ডেলিভারি সময়: ২-৩ কার্যদিবস
+• অগ্রিম পেমেন্ট প্রয়োজন`;
+
         form.reset({
           name: "",
-          description: "",
+          description: defaultDescription,
           price: "",
           stock: 0,
           category: "",
@@ -215,14 +281,18 @@ function ProductFormModal({
           </div>
           
           <div className="space-y-2">
-            <Label htmlFor="description">বিবরণ</Label>
+            <Label htmlFor="description">পণ্যের বিবরণ ও ডেলিভারি তথ্য</Label>
             <Textarea
               id="description"
               {...form.register("description")}
-              rows={3}
-              placeholder="পণ্যের বিস্তারিত বিবরণ"
+              rows={8}
+              placeholder="পণ্যের বিস্তারিত বিবরণ ও ডেলিভারি তথ্য লিখুন..."
               data-testid="textarea-description"
+              className="min-h-[200px]"
             />
+            <p className="text-xs text-muted-foreground">
+              বিবরণ, বৈশিষ্ট্য, ডেলিভারি চার্জ ও সময় অন্তর্ভুক্ত করুন
+            </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
