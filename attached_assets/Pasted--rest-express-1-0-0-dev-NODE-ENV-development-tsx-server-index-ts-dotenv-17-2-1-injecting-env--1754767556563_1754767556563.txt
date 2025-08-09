@@ -1,0 +1,47 @@
+
+> rest-express@1.0.0 dev
+> NODE_ENV=development tsx server/index.ts
+
+[dotenv@17.2.1] injecting env (0) from .env -- tip: 📡 observe env with Radar: https://dotenvx.com/radar
+[dotenv@17.2.1] injecting env (0) from .env -- tip: 🛠️  run anywhere with `dotenvx run -- yourcommand`
+Re-optimizing dependencies because lockfile has changed
+7:15:12 PM [express] serving on port 5000
+🔍 Executing optimized products query...
+🔍 Executing optimized products query...
+7:15:23 PM [express] GET /api/settings 200 in 1899ms :: {}
+7:15:25 PM [express] GET /api/offers 304 in 66ms :: [{"id":"9d178692-4147-4309-a2c5-0bb5fc8df53b","t…
+✅ Products query completed in 9489ms - 32 items
+✅ Products query completed in 9489ms - 32 items returned (32 total)
+7:15:31 PM [express] GET /api/products 200 in 9842ms :: [{"id":"f7bff648-e0bc-49c5-abb9-3e569145b6f7…
+🔍 Executing optimized products query...
+🔍 Executing optimized products query...
+7:15:54 PM [express] GET /api/settings 200 in 1672ms :: {}
+7:15:54 PM [express] GET /api/categories 304 in 1283ms :: [{"id":"4ef2597f-f04c-4c0b-ac0e-5dd1062ea2…
+✅ Products query completed in 9672ms - 32 items
+✅ Products query completed in 9674ms - 32 items returned (32 total)
+7:16:02 PM [express] GET /api/products 200 in 9848ms :: [{"id":"f7bff648-e0bc-49c5-abb9-3e569145b6f7…
+7:25:43 PM [vite] hmr update /src/components/ui/dialog.tsx, /src/index.css?v=NYKR42R8bBEHXU4OLf7AY
+7:25:43 PM [vite] page reload src/components/responsive-modal-wrapper.tsx
+7:25:43 PM [vite] hmr update /src/index.css?v=NYKR42R8bBEHXU4OLf7AY
+7:25:46 PM [vite] hmr update /src/components/product-modal-fixed.tsx, /src/index.css?v=NYKR42R8bBEHXU4OLf7AY
+7:25:48 PM [vite] Internal server error: [postcss] /home/runner/workspace/client/src/index.css:76:5: The `bg-primary/20` class does not exist. If `bg-primary/20` is a custom class, make sure it is defined within a `@layer` directive.
+  Plugin: vite:css
+  File: /home/runner/workspace/client/src/index.css:76:4
+  74 |    /* Enhanced text selection */
+  75 |    ::selection {
+  76 |      @apply bg-primary/20 text-primary;
+     |      ^
+  77 |    }
+  78 |  
+      at Input.error (/home/runner/workspace/node_modules/postcss/lib/input.js:135:16)
+      at AtRule.error (/home/runner/workspace/node_modules/postcss/lib/node.js:146:32)
+      at processApply (/home/runner/workspace/node_modules/tailwindcss/lib/lib/expandApplyAtRules.js:380:29)
+      at /home/runner/workspace/node_modules/tailwindcss/lib/lib/expandApplyAtRules.js:551:9
+      at /home/runner/workspace/node_modules/tailwindcss/lib/processTailwindFeatures.js:55:50
+      at async plugins (/home/runner/workspace/node_modules/tailwindcss/lib/plugin.js:38:17)
+      at async LazyResult.runAsync (/home/runner/workspace/node_modules/postcss/lib/lazy-result.js:293:11)
+      at async compileCSS (/home/runner/workspace/node_modules/vite/dist/node/chunks/dep-C6uTJdX2.js:36898:21)
+      at async TransformPluginContext.transform (/home/runner/workspace/node_modules/vite/dist/node/chunks/dep-C6uTJdX2.js:36171:11)
+      at async PluginContainer.transform (/home/runner/workspace/node_modules/vite/dist/node/chunks/dep-C6uTJdX2.js:49099:18)
+      at async loadAndTransform (/home/runner/workspace/node_modules/vite/dist/node/chunks/dep-C6uTJdX2.js:51977:27)
+      at async viteTransformMiddleware (/home/runner/workspace/node_modules/vite/dist/node/chunks/dep-C6uTJdX2.js:62105:24)
