@@ -246,7 +246,7 @@ export default function CustomizeModalFixed({ product, isOpen, onClose, onAddToC
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="modal-override max-h-[90vh] p-0 flex flex-col [&>button]:hidden">
+      <DialogContent className="modal-override-large p-0 flex flex-col [&>button]:hidden">
         {/* Fixed Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b bg-white shrink-0">
           <div>
@@ -266,8 +266,8 @@ export default function CustomizeModalFixed({ product, isOpen, onClose, onAddToC
         </div>
 
         {/* Scrollable Content */}
-        <div className="flex-1 overflow-y-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 p-6">
+        <div className="modal-scrollable">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 p-4 sm:p-6">
           {/* Product Preview */}
           <div className="space-y-6">
             <div className="relative">
@@ -458,7 +458,7 @@ export default function CustomizeModalFixed({ product, isOpen, onClose, onAddToC
         </div>
 
         {/* Fixed Footer with Action Buttons */}
-        <div className="border-t bg-white p-6 shrink-0">
+        <div className="modal-footer-fixed border-t bg-white p-4 sm:p-6 shrink-0">
           <div className="flex flex-col sm:flex-row gap-3">
             <Button
               onClick={handleAddToCart}

@@ -163,16 +163,29 @@ router.put('/:id', async (req, res) => {
     const { id } = req.params;
     const updateData = req.body;
     
+    console.log('🔄 Updating order:', id, 'with data:', updateData);
+    
     const existingOrder = await storage.getOrderById(id);
     if (!existingOrder) {
+      console.error('❌ Order not found:', id);
       return res.status(404).json({ error: 'Order not found' });
     }
     
+    // Add timestamp for status updates
+    if (updateData.status) {
+      updateData.updated_at = new Date().toISOString();
+    }
+    
     const updatedOrder = await storage.updateOrder(id, updateData);
+    console.log('✅ Order updated successfully:', updatedOrder);
+    
     res.json(updatedOrder);
   } catch (error) {
-    console.error('Error updating order:', error);
-    res.status(500).json({ error: 'Failed to update order' });
+    console.error('❌ Error updating order:', error);
+    res.status(500).json({ 
+      error: 'Failed to update order',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    });
   }
 });
 

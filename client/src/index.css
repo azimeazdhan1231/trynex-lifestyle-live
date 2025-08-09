@@ -224,24 +224,24 @@
     padding-left: 1rem;
     padding-right: 1rem;
   }
-  
+
   .text-4xl {
     font-size: 1.875rem;
   }
-  
+
   .text-3xl {
     font-size: 1.5rem;
   }
-  
+
   .text-2xl {
     font-size: 1.25rem;
   }
-  
+
   .py-20 {
     padding-top: 3rem;
     padding-bottom: 3rem;
   }
-  
+
   .py-16 {
     padding-top: 2.5rem;
     padding-bottom: 2.5rem;
@@ -254,7 +254,7 @@
     min-height: 44px;
     min-width: 44px;
   }
-  
+
   .btn-sm {
     min-height: 40px;
     padding: 0.5rem 1rem;
@@ -324,20 +324,20 @@ a:focus-visible {
   .hero-section {
     padding: 2rem 1rem;
   }
-  
+
   .product-card {
     margin-bottom: 1rem;
   }
-  
+
   .container {
     padding-left: 0.75rem;
     padding-right: 0.75rem;
   }
-  
+
   .text-responsive {
     font-size: clamp(0.875rem, 4vw, 1.125rem);
   }
-  
+
   .btn-responsive {
     padding: 0.75rem 1.5rem;
     font-size: 0.875rem;
@@ -403,7 +403,7 @@ a:focus-visible {
   .card {
     border: 2px solid #000;
   }
-  
+
   .btn {
     border: 2px solid #000;
   }
@@ -544,24 +544,24 @@ a:focus-visible {
     -webkit-overflow-scrolling: touch;
     scroll-behavior: smooth;
   }
-  
+
   .mobile-optimized .container {
     padding-left: 1rem;
     padding-right: 1rem;
   }
-  
+
   .mobile-nav-item {
     padding: 1rem;
     border-bottom: 1px solid #f3f4f6;
     transition: all 0.2s ease;
     touch-action: manipulation;
   }
-  
+
   .mobile-nav-item:active {
     background-color: #f9fafb;
     transform: scale(0.98);
   }
-  
+
   .mobile-nav-item:last-child {
     border-bottom: none;
   }
@@ -712,13 +712,13 @@ input, textarea, select {
     min-height: 44px;
     min-width: 44px;
   }
-  
+
   .btn-mobile {
     padding: 0.875rem 1.5rem;
     font-size: 1rem;
     min-height: 48px;
   }
-  
+
   .input-mobile {
     padding: 1rem;
     font-size: 16px; /* Prevents zoom on iOS */
@@ -1680,7 +1680,7 @@ img[loading="lazy"] {
     grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
     gap: 1rem;
   }
-  
+
   .product-card-image {
     height: 150px;
   }
@@ -1773,4 +1773,81 @@ img[loading="lazy"] {
 /* Smooth scrolling for carousel */
 .scroll-smooth {
   scroll-behavior: smooth;
+}
+
+/* Modal override styles */
+.modal-override {
+  position: fixed !important;
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
+  width: 95vw !important;
+  max-width: 800px !important;
+  max-height: 95vh !important;
+  overflow: hidden !important;
+  z-index: 50 !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+/* Responsive modal adjustments */
+@media (max-width: 640px) {
+  .modal-override {
+    width: 100vw !important;
+    height: 100vh !important;
+    max-height: 100vh !important;
+    top: 0 !important;
+    left: 0 !important;
+    transform: none !important;
+    border-radius: 0 !important;
+  }
+}
+
+@media (min-width: 641px) and (max-width: 1024px) {
+  .modal-override {
+    width: 90vw !important;
+    max-height: 90vh !important;
+  }
+}
+
+/* Large modal for admin panels */
+.modal-override-large {
+  position: fixed !important;
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
+  width: 95vw !important;
+  max-width: 1200px !important;
+  max-height: 95vh !important;
+  overflow: hidden !important;
+  z-index: 50 !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+@media (max-width: 640px) {
+  .modal-override-large {
+    width: 100vw !important;
+    height: 100vh !important;
+    max-height: 100vh !important;
+    top: 0 !important;
+    left: 0 !important;
+    transform: none !important;
+    border-radius: 0 !important;
+  }
+}
+
+/* Scrollable content within modals */
+.modal-scrollable {
+  flex: 1 !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+}
+
+/* Fixed modal header/footer */
+.modal-header-fixed,
+.modal-footer-fixed {
+  flex-shrink: 0 !important;
+  background: white !important;
+  z-index: 10 !important;
 }

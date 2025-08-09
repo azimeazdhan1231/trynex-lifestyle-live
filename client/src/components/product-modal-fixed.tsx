@@ -1,11 +1,10 @@
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+
+import { useState, useEffect } from "react";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ShoppingCart, MessageCircle, X, Plus, Minus, Palette, Expand } from "lucide-react";
-import { useState, useEffect } from "react";
-import { formatPrice, createWhatsAppUrl } from "@/lib/constants";
 import { useToast } from "@/hooks/use-toast";
-import { trackProductView, trackAddToCart } from "@/lib/analytics";
+import { ShoppingCart, MessageCircle, Settings, X, Star, Truck, Shield, RefreshCw } from "lucide-react";
 import type { Product } from "@shared/schema";
 
 interface ProductModalProps {
@@ -13,264 +12,286 @@ interface ProductModalProps {
   isOpen: boolean;
   onClose: () => void;
   onAddToCart: (product: Product) => void;
-  onCustomize?: (product: Product) => void;
+  onCustomize: (product: Product) => void;
 }
 
-export default function ProductModal({ product, isOpen, onClose, onAddToCart, onCustomize }: ProductModalProps) {
-  const [quantity, setQuantity] = useState(1);
-  const [isImageOverlayOpen, setIsImageOverlayOpen] = useState(false);
+const formatPrice = (price: string | number): string => {
+  const numPrice = typeof price === 'string' ? parseFloat(price) : price;
+  return `৳${numPrice.toFixed(0)}`;
+};
+
+const createWhatsAppUrl = (message: string): string => {
+  const phoneNumber = "8801700000000"; // Replace with actual WhatsApp number
+  const encodedMessage = encodeURIComponent(message);
+  return `https://wa.me/${phoneNumber}?text=${encodedMessage}`;
+};
+
+export default function ProductModalFixed({ product, isOpen, onClose, onAddToCart, onCustomize }: ProductModalProps) {
   const { toast } = useToast();
+  const [imageLoading, setImageLoading] = useState(true);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
-  // Debug logging
-  console.log("🔍 ProductModal: Received props:", { product: product?.name, isOpen });
-
-  if (!product) {
-    console.log("❌ ProductModal: No product provided, returning null");
-    return null;
-  }
-
-  console.log("✅ ProductModal: Rendering with product:", product.name, "isOpen:", isOpen);
-  console.log("✅ ProductModal: Product details:", product);
-
-  // Track product view when modal opens
+  // Reset image index when product changes
   useEffect(() => {
-    if (isOpen && product) {
-      console.log("📈 Tracking product view:", product.name);
-      trackProductView(product.id, product.name, product.category || "uncategorized");
-    }
-  }, [isOpen, product]);
+    setCurrentImageIndex(0);
+    setImageLoading(true);
+  }, [product?.id]);
+
+  if (!product) return null;
 
   const handleAddToCart = () => {
-    if (product.stock === 0) {
-      toast({
-        title: "স্টক নেই",
-        description: "এই পণ্যটি currently স্টকে নেই",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    for (let i = 0; i < quantity; i++) {
-      onAddToCart(product);
-    }
-
-    // Track add to cart event
-    const price = typeof product.price === 'string' ? parseFloat(product.price) : product.price;
-    trackAddToCart(product.id, product.name, price * quantity);
-
+    onAddToCart(product);
     toast({
       title: "কার্টে যোগ করা হয়েছে",
-      description: `${product.name} (${quantity}টি) কার্টে যোগ করা হয়েছে`,
+      description: `${product.name} আপনার কার্টে যোগ করা হয়েছে`,
     });
+  };
+
+  const handleCustomize = () => {
     onClose();
+    onCustomize(product);
   };
 
   const handleWhatsAppOrder = () => {
-    const price = typeof product.price === 'string' ? parseFloat(product.price) : product.price;
-    const totalPrice = price * quantity;
-    const message = `আমি ${product.name} কিনতে চাই। দাম ${formatPrice(price)} x ${quantity} = ${formatPrice(totalPrice)}`;
+    const message = `আমি এই পণ্যটি অর্ডার করতে চাই:\n\n📦 পণ্য: ${product.name}\n💰 দাম: ${formatPrice(product.price)}\n\nদয়া করে অর্ডার কনফার্ম করুন।`;
     window.open(createWhatsAppUrl(message), '_blank');
   };
 
-  const handleQuantityChange = (newQuantity: number) => {
-    if (newQuantity >= 1 && newQuantity <= product.stock) {
-      setQuantity(newQuantity);
+  // Get product images (main + additional)
+  const productImages = [product.image_url];
+  if (product.additional_images) {
+    try {
+      const additionalImages = typeof product.additional_images === 'string' 
+        ? JSON.parse(product.additional_images) 
+        : product.additional_images;
+      if (Array.isArray(additionalImages)) {
+        productImages.push(...additionalImages);
+      }
+    } catch (e) {
+      console.error('Error parsing additional images:', e);
     }
+  }
+
+  const nextImage = () => {
+    setCurrentImageIndex((prev) => (prev + 1) % productImages.length);
+    setImageLoading(true);
+  };
+
+  const prevImage = () => {
+    setCurrentImageIndex((prev) => (prev - 1 + productImages.length) % productImages.length);
+    setImageLoading(true);
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="modal-override p-6 overflow-y-auto" aria-describedby="product-description">
-        <DialogHeader className="pb-4">
-          <DialogTitle className="text-2xl font-bold text-gray-800 pr-12">
-            {product.name} - পণ্যের বিস্তারিত
-          </DialogTitle>
-          <DialogDescription className="text-gray-600 mt-2">
-            {product.name} এর সম্পূর্ণ তথ্য, দাম ৳{formatPrice(Number(product.price))}, স্টক {product.stock}টি। পণ্যটি কার্টে যোগ করুন বা কাস্টমাইজ করুন।
-          </DialogDescription>
-        </DialogHeader>
-        <div className="modal-content">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 min-h-[400px]">
-            {/* Product Image */}
-            <div className="relative aspect-square overflow-hidden rounded-lg border bg-gray-50 cursor-pointer group">
-              <img
-                src={product.image_url || "https://images.unsplash.com/photo-1544787219-7f47ccb76574?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"}
-                alt={product.name}
-                className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-                loading="lazy"
-                onClick={() => setIsImageOverlayOpen(true)}
-              />
-              {/* Expand Icon Overlay */}
-              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300 flex items-center justify-center">
-                <div className="bg-white/90 p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  <Expand className="w-5 h-5 text-gray-700" />
-                </div>
+      <DialogContent className="modal-override max-w-4xl w-[95vw] max-h-[95vh] p-0 flex flex-col [&>button]:hidden overflow-hidden">
+        {/* Fixed Header */}
+        <div className="flex items-center justify-between px-4 sm:px-6 py-4 border-b bg-white shrink-0">
+          <div className="flex-1 min-w-0">
+            <h2 className="text-lg sm:text-xl font-bold text-gray-900 truncate">
+              {product.name}
+            </h2>
+            <div className="flex items-center gap-2 mt-1">
+              {product.is_featured && (
+                <Badge variant="secondary" className="text-xs">
+                  <Star className="w-3 h-3 mr-1" />
+                  ফিচার্ড
+                </Badge>
+              )}
+              {product.is_latest && (
+                <Badge variant="outline" className="text-xs">নতুন</Badge>
+              )}
+              {product.is_best_selling && (
+                <Badge variant="default" className="text-xs">বেস্ট সেলার</Badge>
+              )}
+            </div>
+          </div>
+          <button
+            onClick={onClose}
+            className="p-2 hover:bg-gray-100 rounded-full transition-colors shrink-0 ml-2"
+          >
+            <X className="w-5 h-5 text-gray-500" />
+          </button>
+        </div>
+
+        {/* Scrollable Content */}
+        <div className="flex-1 overflow-y-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 p-4 sm:p-6">
+            {/* Product Images */}
+            <div className="space-y-4">
+              {/* Main Image */}
+              <div className="relative aspect-square bg-gray-100 rounded-xl overflow-hidden">
+                {imageLoading && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
+                    <RefreshCw className="w-8 h-8 animate-spin text-gray-400" />
+                  </div>
+                )}
+                <img
+                  src={productImages[currentImageIndex] || '/placeholder.jpg'}
+                  alt={product.name}
+                  className={`w-full h-full object-cover transition-opacity duration-300 ${
+                    imageLoading ? 'opacity-0' : 'opacity-100'
+                  }`}
+                  onLoad={() => setImageLoading(false)}
+                  onError={(e) => {
+                    setImageLoading(false);
+                    (e.target as HTMLImageElement).src = '/placeholder.jpg';
+                  }}
+                />
+                
+                {/* Image Navigation */}
+                {productImages.length > 1 && (
+                  <>
+                    <button
+                      onClick={prevImage}
+                      className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-black bg-opacity-50 text-white rounded-full flex items-center justify-center hover:bg-opacity-70 transition-opacity"
+                    >
+                      ‹
+                    </button>
+                    <button
+                      onClick={nextImage}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-black bg-opacity-50 text-white rounded-full flex items-center justify-center hover:bg-opacity-70 transition-opacity"
+                    >
+                      ›
+                    </button>
+                    
+                    {/* Image Dots */}
+                    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+                      {productImages.map((_, index) => (
+                        <button
+                          key={index}
+                          onClick={() => {
+                            setCurrentImageIndex(index);
+                            setImageLoading(true);
+                          }}
+                          className={`w-2 h-2 rounded-full transition-colors ${
+                            index === currentImageIndex ? 'bg-white' : 'bg-white bg-opacity-50'
+                          }`}
+                        />
+                      ))}
+                    </div>
+                  </>
+                )}
               </div>
+
+              {/* Thumbnail Images */}
+              {productImages.length > 1 && (
+                <div className="flex gap-2 overflow-x-auto pb-2">
+                  {productImages.map((img, index) => (
+                    <button
+                      key={index}
+                      onClick={() => {
+                        setCurrentImageIndex(index);
+                        setImageLoading(true);
+                      }}
+                      className={`flex-shrink-0 w-16 h-16 sm:w-20 sm:h-20 rounded-lg overflow-hidden border-2 transition-colors ${
+                        index === currentImageIndex ? 'border-primary' : 'border-gray-200'
+                      }`}
+                    >
+                      <img
+                        src={img}
+                        alt={`${product.name} ${index + 1}`}
+                        className="w-full h-full object-cover"
+                      />
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Product Details */}
             <div className="space-y-6">
-              <div>
-                <div className="flex items-center justify-between mb-4">
-                  <span className="text-2xl md:text-3xl font-bold text-primary">{formatPrice(product.price)}</span>
-                  <Badge variant={product.stock > 0 ? "secondary" : "destructive"}>
-                    স্টক: {product.stock}
-                  </Badge>
+              {/* Price Section */}
+              <div className="bg-gradient-to-r from-green-50 to-blue-50 p-4 sm:p-6 rounded-xl">
+                <div className="text-center">
+                  <span className="text-sm text-gray-600">দাম</span>
+                  <div className="text-3xl sm:text-4xl font-bold text-green-600 mt-1">
+                    {formatPrice(product.price)}
+                  </div>
+                  <p className="text-sm text-gray-500 mt-1">ফ্রি ডেলিভারি সহ</p>
                 </div>
-
-                <p className="text-gray-600 mb-4">
-                  বিভাগ: <span className="font-medium">{product.category}</span>
-                </p>
               </div>
 
-              {/* Quantity Selector */}
-              {product.stock > 0 && (
-                <div className="space-y-3">
-                  <label className="text-sm font-medium text-gray-700">পরিমাণ:</label>
-                  <div className="flex items-center space-x-3">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => handleQuantityChange(quantity - 1)}
-                      disabled={quantity <= 1}
-                      className="w-10 h-10 p-0"
-                    >
-                      <Minus className="w-4 h-4" />
-                    </Button>
-                    <span className="text-lg font-semibold min-w-[3rem] text-center">
-                      {quantity}
-                    </span>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => handleQuantityChange(quantity + 1)}
-                      disabled={quantity >= product.stock}
-                      className="w-10 h-10 p-0"
-                    >
-                      <Plus className="w-4 h-4" />
-                    </Button>
-                  </div>
-                  <p className="text-sm text-gray-500">
-                    সর্বোচ্চ {product.stock}টি উপলব্ধ
+              {/* Product Info */}
+              <div className="space-y-4">
+                <div>
+                  <h3 className="font-semibold text-gray-900 mb-2">বিবরণ</h3>
+                  <p className="text-gray-600 text-sm leading-relaxed">
+                    {product.description || "এই পণ্যটি উচ্চ মানের উপাদান দিয়ে তৈরি এবং দীর্ঘস্থায়ী। আমাদের এই পণ্যটি আপনার প্রয়োজন মেটাতে সক্ষম।"}
                   </p>
                 </div>
-              )}
 
-              {/* Total Price */}
-              {quantity > 1 && (
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <div className="flex justify-between items-center">
-                    <span className="text-lg font-medium">মোট দাম:</span>
-                    <span className="text-2xl font-bold text-primary">
-                      {formatPrice(parseFloat(product.price.toString()) * quantity)}
+                {/* Additional Product Details */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+                  <div className="flex items-center gap-2">
+                    <span className="text-gray-600">ক্যাটেগরি:</span>
+                    <Badge variant="outline" className="text-xs">
+                      {product.category || "সাধারণ"}
+                    </Badge>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-gray-600">স্টক:</span>
+                    <span className={`font-medium ${product.stock > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                      {product.stock > 0 ? `${product.stock} টি পাওয়া যাচ্ছে` : 'স্টক নেই'}
                     </span>
                   </div>
                 </div>
-              )}
 
-              {/* Action Buttons */}
-              <div className="space-y-3 pt-6">
-                {/* First Row - Add to Cart and WhatsApp Order */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <Button
-                    onClick={handleAddToCart}
-                    variant="outline"
-                    className="w-full border-2 border-blue-500 text-blue-600 hover:bg-blue-50"
-                    size="lg"
-                    disabled={product.stock === 0}
-                  >
-                    <ShoppingCart className="w-5 h-5 mr-2" />
-                    কার্টে যোগ করুন
-                  </Button>
-                  <Button
-                    onClick={handleWhatsAppOrder}
-                    className="w-full bg-green-500 hover:bg-green-600 text-white"
-                    size="lg"
-                  >
-                    <MessageCircle className="w-5 h-5 mr-2" />
-                    WhatsApp অর্ডার
-                  </Button>
+                {/* Features */}
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3 text-sm text-gray-600">
+                    <Truck className="w-4 h-4 text-green-600" />
+                    <span>ফ্রি হোম ডেলিভারি</span>
+                  </div>
+                  <div className="flex items-center gap-3 text-sm text-gray-600">
+                    <Shield className="w-4 h-4 text-blue-600" />
+                    <span>৭ দিনের রিটার্ন গ্যারান্টি</span>
+                  </div>
+                  <div className="flex items-center gap-3 text-sm text-gray-600">
+                    <MessageCircle className="w-4 h-4 text-purple-600" />
+                    <span>২৪/৭ কাস্টমার সাপোর্ট</span>
+                  </div>
                 </div>
-
-                {/* Second Row - Customize Button */}
-                <div className="w-full">
-                  <Button
-                    onClick={() => {
-                      onClose();
-                      if (onCustomize) onCustomize(product);
-                    }}
-                    className="w-full bg-purple-500 text-white hover:bg-purple-600"
-                    size="lg"
-                    disabled={!onCustomize}
-                  >
-                    <Palette className="w-5 h-5 mr-2" />
-                    কাস্টমাইজ করুন
-                  </Button>
-                </div>
-              </div>
-
-              {/* Product Description */}
-              <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-                <h4 className="font-semibold text-blue-900 mb-2">পণ্যের বিবরণ:</h4>
-                <p className="text-sm text-blue-800">
-                  {product.description || `${product.name} একটি উচ্চমানের পণ্য যা আপনার প্রত্যাশা পূরণ করবে। আমাদের সকল পণ্য যত্নসহকারে নির্বাচিত এবং মান নিয়ন্ত্রিত।`}
-                </p>
-              </div>
-
-              {/* Delivery Info */}
-              <div className="bg-orange-50 p-4 rounded-lg border border-orange-200">
-                <h4 className="font-semibold text-orange-900 mb-2">ডেলিভারি তথ্য:</h4>
-                <ul className="text-sm text-orange-800 space-y-1">
-                  <li>• ঢাকায় ডেলিভারি চার্জ: ৮০ টাকা</li>
-                  <li>• ঢাকার বাইরে: ৮০-১৩০ টাকা</li>
-                  <li>• ডেলিভারি সময়: ২-৩ কার্যদিবস</li>
-                  <li>• অগ্রিম পেমেন্ট প্রয়োজন</li>
-                </ul>
               </div>
             </div>
           </div>
         </div>
+
+        {/* Fixed Footer with Action Buttons */}
+        <div className="border-t bg-white p-4 sm:p-6 shrink-0">
+          <div className="flex flex-col gap-3">
+            {/* Primary Actions */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <Button
+                onClick={handleAddToCart}
+                className="bg-green-600 hover:bg-green-700 text-white h-12"
+                disabled={product.stock <= 0}
+              >
+                <ShoppingCart className="w-4 h-4 mr-2" />
+                কার্টে যোগ করুন
+              </Button>
+              <Button
+                onClick={handleCustomize}
+                variant="outline"
+                className="border-blue-600 text-blue-600 hover:bg-blue-50 h-12"
+              >
+                <Settings className="w-4 h-4 mr-2" />
+                কাস্টমাইজ করুন
+              </Button>
+            </div>
+
+            {/* Secondary Action */}
+            <Button
+              onClick={handleWhatsAppOrder}
+              variant="outline"
+              className="border-green-600 text-green-600 hover:bg-green-50 h-12 w-full"
+            >
+              <MessageCircle className="w-4 h-4 mr-2" />
+              WhatsApp এ অর্ডার করুন
+            </Button>
+          </div>
+        </div>
       </DialogContent>
-
-      {/* Image Overlay Modal */}
-      <Dialog open={isImageOverlayOpen} onOpenChange={setIsImageOverlayOpen}>
-        <DialogContent className="max-w-[95vw] w-[95vw] max-h-[95vh] h-[95vh] p-0 bg-black/95 border-0 overflow-hidden">
-          <DialogTitle className="sr-only">
-            {product.name} - সম্পূর্ণ ছবি
-          </DialogTitle>
-          <DialogDescription className="sr-only">
-            {product.name} এর সম্পূর্ণ আকারের ছবি দেখুন। বন্ধ করতে ESC চাপুন বা ছবির বাইরে ক্লিক করুন।
-          </DialogDescription>
-          
-          {/* Close Button */}
-          <button
-            onClick={() => setIsImageOverlayOpen(false)}
-            className="absolute top-4 right-4 z-50 bg-black/70 hover:bg-black/90 text-white p-3 rounded-full transition-all duration-200 shadow-lg"
-          >
-            <X className="w-6 h-6" />
-          </button>
-
-          {/* Full Size Image Container - Click to close */}
-          <div 
-            className="flex items-center justify-center h-full p-8 cursor-pointer"
-            onClick={() => setIsImageOverlayOpen(false)}
-          >
-            <img
-              src={product.image_url || "https://images.unsplash.com/photo-1544787219-7f47ccb76574?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&h=1200"}
-              alt={product.name}
-              className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
-              loading="lazy"
-              onClick={(e) => e.stopPropagation()} // Prevent closing when clicking on image itself
-            />
-          </div>
-
-          {/* Product Name Overlay */}
-          <div className="absolute bottom-6 left-6 right-6 bg-black/80 backdrop-blur-sm text-white p-4 rounded-lg border border-white/10">
-            <h3 className="text-xl font-semibold mb-2">{product.name}</h3>
-            <p className="text-sm opacity-90">ছবির বাইরে ক্লিক করুন অথবা ESC চাপুন বন্ধ করতে</p>
-          </div>
-        </DialogContent>
-      </Dialog>
     </Dialog>
   );
 }
