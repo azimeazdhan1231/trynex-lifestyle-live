@@ -18,7 +18,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/co
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import OrderNowModal from "@/components/order-now-modal";
 import EnhancedCartModal from "@/components/enhanced-cart-modal";
-import EnhancedCustomizationModal from "@/components/enhanced-customization-modal";
+import CustomizeModalRedesigned from "@/components/customize-modal-redesigned";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import MobileOptimizedLayout from "@/components/mobile-optimized-layout";
 import { useCart } from "@/hooks/use-cart";
@@ -391,10 +391,27 @@ function EnhancedProductCard({ product }: { product: Product }) {
       />
 
       {/* Enhanced Customization Modal */}
-      <EnhancedCustomizationModal
+      <CustomizeModalRedesigned
         isOpen={isCustomizeOpen}
         onClose={() => setIsCustomizeOpen(false)}
         product={product}
+        onAddToCart={async (product, customization) => {
+          // Handle adding customized product to cart
+          addToCart({
+            id: product.id,
+            name: product.name || 'Unknown Product',
+            price: parseFloat((product.price || 0).toString()),
+            image: product.image_url || '',
+            quantity: customization.quantity,
+            customization: customization
+          });
+          
+          toast({
+            title: "কাস্টমাইজ পণ্য কার্টে যোগ করা হয়েছে!",
+            description: `${product.name} সফলভাবে কাস্টমাইজ করে কার্টে যোগ করা হয়েছে`,
+            duration: 3000,
+          });
+        }}
       />
     </>
   );

@@ -10,7 +10,7 @@ import { useCart } from "@/hooks/use-cart";
 import MobileOptimizedLayout from "@/components/mobile-optimized-layout";
 import UnifiedProductCard from "@/components/unified-product-card";
 import ProductModal from "@/components/product-modal";
-import CustomizeModal from "@/components/customize-modal";
+import CustomizeModalRedesigned from "@/components/customize-modal-redesigned";
 import MobileSearchDrawer from "@/components/mobile-search-drawer";
 import { ProgressiveLoader, PerformanceErrorBoundary, PerformanceMonitor } from "@/components/enhanced-loading-system";
 import type { Product } from "@shared/schema";
@@ -159,7 +159,7 @@ export default function ProductsPage() {
         id: product.id,
         name: product.name,
         price: Number(product.price),
-        image_url: product.image_url
+        image: product.image_url || ''
       });
 
       toast({
@@ -184,8 +184,9 @@ export default function ProductsPage() {
         id: product.id,
         name: product.name,
         price: Number(product.price),
-        image_url: product.image_url
-      }, customization);
+        image: product.image_url || '',
+        quantity: 1
+      });
       
       toast({
         title: "কাস্টম অর্ডার যোগ করা হয়েছে",
@@ -419,15 +420,17 @@ export default function ProductsPage() {
       )}
 
       {/* Customize Modal */}
-      <CustomizeModal
-        isOpen={isCustomizeModalOpen}
-        onClose={() => {
-          setIsCustomizeModalOpen(false);
-          setSelectedProduct(null);
-        }}
-        product={selectedProduct}
-        onAddToCart={handleAddToCartWithCustomization}
-      />
+      {selectedProduct && (
+        <CustomizeModalRedesigned
+          isOpen={isCustomizeModalOpen}
+          onClose={() => {
+            setIsCustomizeModalOpen(false);
+            setSelectedProduct(null);
+          }}
+          product={selectedProduct}
+          onAddToCart={handleAddToCartWithCustomization}
+        />
+      )}
     </MobileOptimizedLayout>
   );
 }
