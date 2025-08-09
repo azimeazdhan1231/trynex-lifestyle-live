@@ -30,6 +30,8 @@ export const orders = pgTable("orders", {
   status: text("status").default("pending"),
   items: jsonb("items").notNull(),
   total: numeric("total").notNull(),
+  custom_instructions: text("custom_instructions"), // Custom instructions from customize page
+  custom_images: jsonb("custom_images"), // Array of uploaded image URLs
   created_at: timestamp("created_at").defaultNow(),
 });
 
