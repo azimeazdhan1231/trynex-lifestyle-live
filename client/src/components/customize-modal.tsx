@@ -201,17 +201,25 @@ export default function CustomizeModalFixed({ product, isOpen, onClose, onAddToC
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="modal-override p-0 overflow-hidden">
-        <DialogHeader className="px-6 py-4 border-b bg-white sticky top-0 z-10">
-          <DialogTitle className="text-xl font-bold text-gray-900 dark:text-white">
-            {product?.name || "প্রোডাক্ট"} কাস্টমাইজ করুন
-          </DialogTitle>
-          <DialogDescription className="text-sm text-gray-600 mt-1">
-            পণ্যটি আপনার পছন্দ অনুযায়ী কাস্টমাইজ করুন
-          </DialogDescription>
-        </DialogHeader>
-        <div className="flex-1 overflow-y-auto px-6 py-6">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 min-h-[500px]">
+      <DialogContent className="modal-override p-0 overflow-hidden [&>button]:hidden">
+        <div className="flex items-center justify-between px-6 py-4 border-b bg-white sticky top-0 z-10">
+          <div>
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+              {product?.name || "প্রোডাক্ট"} কাস্টমাইজ করুন
+            </h2>
+            <p className="text-sm text-gray-600 mt-1">
+              পণ্যটি আপনার পছন্দ অনুযায়ী কাস্টমাইজ করুন
+            </p>
+          </div>
+          <button
+            onClick={onClose}
+            className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+          >
+            <X className="w-5 h-5 text-gray-500" />
+          </button>
+        </div>
+        <div className="flex-1 overflow-y-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 p-6 min-h-[500px]">
           {/* Product Preview */}
           <div className="space-y-6">
             <div className="relative">
@@ -399,7 +407,7 @@ export default function CustomizeModalFixed({ product, isOpen, onClose, onAddToC
             </div>
 
             {/* Action Buttons */}
-            <div className="flex flex-col sm:flex-row gap-3 pt-6 mt-6 border-t bg-white dark:bg-gray-800 sticky bottom-0 pb-4">
+            <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-gray-200">
               <Button
                 onClick={handleAddToCart}
                 className="flex-1 bg-green-600 hover:bg-green-700 text-white"
@@ -417,7 +425,7 @@ export default function CustomizeModalFixed({ product, isOpen, onClose, onAddToC
               </Button>
             </div>
           </div>
-        </div>
+          </div>
         </div>
       </DialogContent>
     </Dialog>
