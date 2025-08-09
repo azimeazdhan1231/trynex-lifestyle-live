@@ -495,18 +495,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // AI Chat endpoint
   app.post('/api/ai/chat', async (req, res) => {
     try {
-      // AI Chat functionality temporarily disabled
-      // const { generateAIResponse } = await import("./ai-chat");
-      const { message, conversationHistory } = req.body;
+      const { message, conversationHistory, businessData, products, chatHistory } = req.body;
 
       if (!message || typeof message !== 'string') {
         return res.status(400).json({ error: 'বার্তা প্রয়োজন' });
       }
 
-      // Temporarily return a fallback response
-      res.json({ 
-        response: "দুঃখিত, AI চ্যাট বর্তমানে সাময়িকভাবে বন্ধ। পরে আবার চেষ্টা করুন বা হোয়াটসঅ্যাপে যোগাযোগ করুন।" 
-      });
+      // Input validation and sanitization
+      const sanitizedMessage = message.trim().substring(0, 1000); // Limit message length
+      
+      try {
+        const { generateAIResponse } = await import("./ai-chat");
+        const response = await generateAIResponse(sanitizedMessage, conversationHistory || [], businessData, products, chatHistory || []);
+        
+        res.json({ reply: response });
+      } catch (aiError) {
+        console.error('AI Service Error:', aiError);
+        // Fallback response
+        res.json({ 
+          reply: "দুঃখিত, AI সেবা এখন উপলব্ধ নেই। আমাদের প্রোডাক্ট দেখুন অথবা হোয়াটসঅ্যাপে (+8801648534981) যোগাযোগ করুন।",
+          fallback: true
+        });
+      }
     } catch (error) {
       console.error('AI Chat Error:', error);
       res.status(500).json({ 

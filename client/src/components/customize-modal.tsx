@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, Component, ErrorInfo } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,11 +17,56 @@ interface CustomizeModalProps {
   productVariant?: string;
 }
 
+interface CustomizationData {
+  text?: string;
+  images?: File[];
+  options?: Record<string, string>;
+}
+
 interface ProductVariant {
   id: string;
   name: string;
   basePrice: number;
 }
+
+// Error boundary component for the customize modal
+class ErrorBoundary extends Component<{ children: React.ReactNode }, { hasError: boolean; error: Error | null; errorInfo: ErrorInfo | null }> {
+  constructor(props: { children: React.ReactNode }) {
+    super(props);
+    this.state = { hasError: false, error: null, errorInfo: null };
+  }
+
+  static getDerivedStateFromError(error: Error) {
+    // Update state so the next render will show the fallback UI.
+    return { hasError: true, error, errorInfo: null };
+  }
+
+  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+    // You can also log the error to an error reporting service
+    console.error("Caught error in CustomizeModal: ", error, errorInfo);
+    this.setState({ error, errorInfo });
+  }
+
+  render() {
+    if (this.state.hasError) {
+      // You can render any custom fallback UI
+      return (
+        <div className="flex flex-col items-center justify-center p-8 text-center">
+          <h2 className="text-lg font-semibold text-red-600 mb-2">দুঃখিত, একটি ত্রুটি ঘটেছে!</h2>
+          <p className="text-sm text-gray-600 mb-4">
+            {this.state.error?.message || "অজানা ত্রুটি"}
+          </p>
+          <Button onClick={() => window.location.reload()} variant="outline">
+            পুনরায় লোড করুন
+          </Button>
+        </div>
+      );
+    }
+
+    return this.props.children;
+  }
+}
+
 
 const formatPrice = (price: number): string => {
   return `৳${price.toFixed(0)}`;
@@ -117,7 +162,7 @@ export default function CustomizeModalFixed({ product, isOpen, onClose, onAddToC
         return;
       }
       setCustomization(prev => ({ ...prev, customImage: file }));
-      
+
       // Create image preview
       const reader = new FileReader();
       reader.onload = (e) => {

@@ -4,10 +4,48 @@ dotenv.config();
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./simple-server";
 import { setupVite, serveStatic, log } from "./vite";
+import cors from "cors";
 
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+
+// Security headers
+app.use((req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('X-XSS-Protection', '1; mode=block');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  next();
+});
+
+// Rate limiting for AI endpoints
+const aiRequestMap = new Map();
+app.use('/api/ai', (req, res, next) => {
+  const clientIp = req.ip || req.connection.remoteAddress || 'unknown';
+  const now = Date.now();
+  const windowMs = 60 * 1000; // 1 minute
+  const maxRequests = 10; // 10 requests per minute
+
+  if (!aiRequestMap.has(clientIp)) {
+    aiRequestMap.set(clientIp, []);
+  }
+
+  const requests = aiRequestMap.get(clientIp);
+  const recentRequests = requests.filter((time: number) => now - time < windowMs);
+
+  if (recentRequests.length >= maxRequests) {
+    return res.status(429).json({ error: 'অনেক বেশি অনুরোধ। একটু পর আবার চেষ্টা করুন।' });
+  }
+
+  recentRequests.push(now);
+  aiRequestMap.set(clientIp, recentRequests);
+  next();
+});
+
+app.use(cors());
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 app.use((req, res, next) => {
   const start = Date.now();

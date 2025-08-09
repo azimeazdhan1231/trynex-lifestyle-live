@@ -146,14 +146,26 @@ export default function EnhancedAIChatbot({ onProductSelect }: AIChatbotProps) {
 
   const getAIResponse = async (userMessage: string): Promise<string> => {
     try {
-      const response = await fetch('/api/ai-chat', {
+      // Input validation and sanitization
+      const sanitizedMessage = userMessage.trim().substring(0, 1000);
+      if (!sanitizedMessage) {
+        return generateFallbackResponse('empty message');
+      }
+
+      const response = await fetch('/api/ai/chat', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
         body: JSON.stringify({
-          message: userMessage,
+          message: sanitizedMessage,
           businessData: BUSINESS_DATA,
-          products: products.slice(0, 20), // Send sample products
-          chatHistory: messages.slice(-6)
+          products: products?.slice(0, 20) || [], // Send sample products
+          chatHistory: messages.slice(-6).map(msg => ({
+            role: msg.role,
+            content: msg.content.substring(0, 500) // Limit history content
+          }))
         })
       });
 
@@ -163,7 +175,13 @@ export default function EnhancedAIChatbot({ onProductSelect }: AIChatbotProps) {
       }
 
       const data = await response.json();
-      return data.reply || data.fallback || generateFallbackResponse(userMessage);
+      
+      // Validate response
+      if (data.reply && typeof data.reply === 'string') {
+        return data.reply;
+      }
+      
+      return generateFallbackResponse(userMessage);
     } catch (error) {
       console.error('AI Chat Error:', error);
       return generateFallbackResponse(userMessage);

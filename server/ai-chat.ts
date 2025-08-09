@@ -17,6 +17,12 @@ interface ChatRequest {
 export async function getAIChatResponse(req: ChatRequest): Promise<string> {
   const { message, businessData, products, chatHistory } = req;
 
+  // Validate environment
+  if (!process.env.OPENAI_API_KEY) {
+    console.warn('OpenAI API key not configured');
+    throw new Error('AI service not configured');
+  }
+
   // Build comprehensive context for the AI
   const systemPrompt = `আপনি Trynex Lifestyle এর একজন অভিজ্ঞ ই-কমার্স সহায়ক এবং বাংলাদেশি সংস্কৃতি সম্পর্কে সম্পূর্ণ জ্ঞানী।
 
@@ -97,7 +103,7 @@ ${products.map(p => `${p.id}: ${p.name} - ${p.price}৳ (${p.category}) - ${p.de
 
     const result = JSON.parse(response.choices[0].message.content || '{"ids": []}');
     const recommendedIds = result.ids || result.products || [];
-    
+
     return products.filter(p => recommendedIds.includes(p.id));
   } catch (error) {
     console.error('AI Recommendation Error:', error);
