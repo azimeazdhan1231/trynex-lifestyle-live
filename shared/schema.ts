@@ -212,65 +212,17 @@ export type InsertUserOrder = z.infer<typeof insertUserOrderSchema>;
 
 // Custom Orders table
 export const customOrders = pgTable('custom_orders', {
-  id: serial('id').primaryKey(),
-  productId: varchar('product_id', { length: 255 }).notNull(),
-  productName: varchar('product_name', { length: 255 }).notNull(),
-  productPrice: decimal('product_price', { precision: 10, scale: 2 }).notNull(),
-  quantity: integer('quantity').notNull().default(1),
-  selectedSize: varchar('selected_size', { length: 10 }),
-  selectedColor: varchar('selected_color', { length: 50 }),
-  customImageData: text('custom_image_data'), // JSON array of uploaded images
-  instructions: text('instructions'),
-  totalPrice: decimal('total_price', { precision: 10, scale: 2 }).notNull(),
-  customerName: varchar('customer_name', { length: 255 }).notNull(),
-  phone: varchar('phone', { length: 20 }).notNull(),
-  email: varchar('email', { length: 255 }),
-  address: text('address').notNull(),
-  hasCustomImages: boolean('has_custom_images').notNull().default(false),
-  imageCount: integer('image_count').notNull().default(0),
-  status: varchar('status', { length: 20 }).notNull().default('pending'),
-  createdAt: timestamp('created_at').defaultNow().notNull(),
-  updatedAt: timestamp('updated_at').defaultNow().notNull(),
-});
-
-export const blogs = pgTable('blogs', {
-  id: serial('id').primaryKey(),
-  title: varchar('title', { length: 255 }).notNull(),
-  content: text('content').notNull(),
-  excerpt: text('excerpt').notNull(),
-  author: varchar('author', { length: 100 }).notNull(),
-  status: varchar('status', { length: 20 }).notNull().default('draft'),
-  isFeatured: boolean('is_featured').notNull().default(false),
-  tags: varchar('tags', { length: 255 }),
-  metaTitle: varchar('meta_title', { length: 255 }),
-  metaDescription: text('meta_description'),
-  createdAt: timestamp('created_at').defaultNow().notNull(),
-  updatedAt: timestamp('updated_at').defaultNow().notNull(),
-});
-
-export const pages = pgTable('pages', {
-  id: serial('id').primaryKey(),
-  title: varchar('title', { length: 255 }).notNull(),
-  slug: varchar('slug', { length: 255 }).notNull().unique(),
-  content: text('content').notNull(),
-  metaTitle: varchar('meta_title', { length: 255 }),
-  metaDescription: text('meta_description'),
-  isActive: boolean('is_active').notNull().default(true),
-  createdAt: timestamp('created_at').defaultNow().notNull(),
-  updatedAt: timestamp('updated_at').defaultNow().notNull(),
-});
-
-// Blog and Page schemas (after table definitions)
-export const insertBlogSchema = createInsertSchema(blogs).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-});
-
-export const insertPageSchema = createInsertSchema(pages).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
+  id: uuid('id').primaryKey().default(sql`gen_random_uuid()`),
+  productId: uuid('product_id').notNull().references(() => products.id),
+  customerName: text('customer_name').notNull(),
+  customerPhone: text('customer_phone').notNull(), 
+  customerEmail: text('customer_email'),
+  customerAddress: text('customer_address'),
+  customizationData: jsonb('customization_data'),
+  totalPrice: numeric('total_price').notNull(),
+  status: text('status').default('pending'),
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow(),
 });
 
 export const insertCustomOrderSchema = createInsertSchema(customOrders).omit({
@@ -280,11 +232,4 @@ export const insertCustomOrderSchema = createInsertSchema(customOrders).omit({
 });
 
 export type CustomOrder = typeof customOrders.$inferSelect;
-export type NewCustomOrder = typeof customOrders.$inferInsert;
 export type InsertCustomOrder = z.infer<typeof insertCustomOrderSchema>;
-export type Blog = typeof blogs.$inferSelect;
-export type NewBlog = typeof blogs.$inferInsert;
-export type InsertBlog = z.infer<typeof insertBlogSchema>;
-export type Page = typeof pages.$inferSelect;
-export type NewPage = typeof pages.$inferInsert;
-export type InsertPage = z.infer<typeof insertPageSchema>;

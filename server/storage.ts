@@ -4,15 +4,13 @@ import { eq, desc, and, gte, lte, like, or, sql } from "drizzle-orm";
 import NodeCache from "node-cache";
 import {
   products, orders, offers, admins, categories, promoCodes, analytics, siteSettings,
-  users, userCarts, userOrders, blogs, pages,
+  users, userCarts, userOrders, customOrders,
   type Product, type InsertProduct, type Order, type InsertOrder,
   type Offer, type InsertOffer, type Admin, type InsertAdmin,
   type Category, type InsertCategory, type PromoCode, type InsertPromoCode,
   type Analytics, type InsertAnalytics, type SiteSettings, type InsertSiteSettings,
   type User, type UpsertUser, type UserCart, type InsertUserCart,
-  type UserOrder, type InsertUserOrder, type Blog, type InsertBlog,
-  type Page, type InsertPage,
-  customOrders // Imported customOrders table
+  type UserOrder, type InsertUserOrder, type CustomOrder, type InsertCustomOrder
 } from "@shared/schema";
 
 const connectionString = process.env.DATABASE_URL || "postgresql://postgres.lxhhgdqdictfhmkbyoev:Fz0R2tN542G09u6W@aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres";
@@ -101,26 +99,26 @@ export interface IStorage {
   getUserOrders(userId: string): Promise<Order[]>;
   linkOrderToUser(orderId: string, userId: string): Promise<void>;
 
-  // Blog operations
-  getBlogs(): Promise<Blog[]>;
-  getBlog(id: string): Promise<Blog | undefined>;
-  createBlog(blog: InsertBlog): Promise<Blog>;
-  updateBlog(id: string, updates: Partial<InsertBlog>): Promise<Blog>;
-  deleteBlog(id: string): Promise<void>;
-  incrementBlogViews(id: string): Promise<void>;
+  // Blog operations - removed due to missing imports
+  // getBlogs(): Promise<Blog[]>;
+  // getBlog(id: string): Promise<Blog | undefined>;
+  // createBlog(blog: InsertBlog): Promise<Blog>;
+  // updateBlog(id: string, updates: Partial<InsertBlog>): Promise<Blog>;
+  // deleteBlog(id: string): Promise<void>;
+  // incrementBlogViews(id: string): Promise<void>;
 
-  // Pages operations
-  getPages(): Promise<Page[]>;
-  getPage(slug: string): Promise<Page | undefined>;
-  createPage(page: InsertPage): Promise<Page>;
-  updatePage(slug: string, updates: Partial<InsertPage>): Promise<Page>;
-  deletePage(slug: string): Promise<void>;
+  // Pages operations - removed due to missing imports  
+  // getPages(): Promise<Page[]>;
+  // getPage(slug: string): Promise<Page | undefined>;
+  // createPage(page: InsertPage): Promise<Page>;
+  // updatePage(slug: string, updates: Partial<InsertPage>): Promise<Page>;
+  // deletePage(slug: string): Promise<void>;
 
   // Custom Orders operations
-  getCustomOrders(): Promise<any[]>;
-  getCustomOrder(id: number): Promise<any | null>;
-  createCustomOrder(orderData: any): Promise<any>;
-  updateCustomOrderStatus(id: number, status: string): Promise<any>;
+  getCustomOrders(): Promise<CustomOrder[]>;
+  getCustomOrder(id: string): Promise<CustomOrder | null>;
+  createCustomOrder(orderData: InsertCustomOrder): Promise<CustomOrder>;
+  updateCustomOrderStatus(id: string, status: string): Promise<CustomOrder>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -503,15 +501,15 @@ export class DatabaseStorage implements IStorage {
   // User Order operations
   async getUserOrders(userId: string): Promise<Order[]> {
     try {
-      const userOrders = await this.db
+      const result = await this.db
         .select()
         .from(orders)
-        .innerJoin(userOrders, eq(orders.id, userOrders.orderId))
-        .where(eq(userOrders.userId, userId));
+        .where(eq(orders.user_id, userId))
+        .orderBy(desc(orders.created_at));
 
-      return userOrders.map(row => ({
-        ...row.orders,
-        items: typeof row.orders.items === 'string' ? JSON.parse(row.orders.items) : row.orders.items
+      return result.map(row => ({
+        ...row,
+        items: typeof row.items === 'string' ? JSON.parse(row.items) : row.items
       }));
     } catch (error) {
       console.error('Error fetching user orders:', error);
@@ -525,6 +523,50 @@ export class DatabaseStorage implements IStorage {
       .where(eq(orders.id, orderId));
   }
 
+  // Custom Orders operations
+  async getCustomOrders(): Promise<CustomOrder[]> {
+    try {
+      const result = await this.db.select().from(customOrders).orderBy(desc(customOrders.createdAt));
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching custom orders:', error);
+      throw error;
+    }
+  }
+
+  async getCustomOrder(id: string): Promise<CustomOrder | null> {
+    try {
+      const result = await this.db.select().from(customOrders).where(eq(customOrders.id, id)).limit(1);
+      return result[0] || null;
+    } catch (error) {
+      console.error('❌ Error fetching custom order:', error);
+      return null;
+    }
+  }
+
+  async createCustomOrder(orderData: InsertCustomOrder): Promise<CustomOrder> {
+    try {
+      const result = await this.db.insert(customOrders).values(orderData).returning();
+      return result[0];
+    } catch (error) {
+      console.error('❌ Error creating custom order:', error);
+      throw error;
+    }
+  }
+
+  async updateCustomOrderStatus(id: string, status: string): Promise<CustomOrder> {
+    try {
+      const result = await this.db.update(customOrders)
+        .set({ status, updatedAt: new Date() })
+        .where(eq(customOrders.id, id))
+        .returning();
+      return result[0];
+    } catch (error) {
+      console.error('❌ Error updating custom order status:', error);
+      throw error;
+    }
+  }
+
   // Admin operations
   async getAdminByEmail(email: string): Promise<Admin | undefined> {
     const result = await this.db.select().from(admins).where(eq(admins.email, email)).limit(1);
@@ -536,127 +578,7 @@ export class DatabaseStorage implements IStorage {
     return result[0];
   }
 
-  // Blog operations
-  async getBlogs(): Promise<Blog[]> {
-    const result = await this.db.select().from(blogs).orderBy(desc(blogs.createdAt));
-    return result;
-  }
 
-  async getBlog(id: string): Promise<Blog | undefined> {
-    const result = await this.db.select().from(blogs).where(eq(blogs.id, parseInt(id))).limit(1);
-    return result[0];
-  }
-
-  async createBlog(blog: InsertBlog): Promise<Blog> {
-    const result = await this.db.insert(blogs).values(blog).returning();
-    return result[0];
-  }
-
-  async updateBlog(id: string, updates: Partial<InsertBlog>): Promise<Blog> {
-    const result = await this.db.update(blogs)
-      .set({ ...updates, updatedAt: new Date() })
-      .where(eq(blogs.id, parseInt(id)))
-      .returning();
-    return result[0];
-  }
-
-  async deleteBlog(id: string): Promise<void> {
-    await this.db.delete(blogs).where(eq(blogs.id, parseInt(id)));
-  }
-
-  async incrementBlogViews(id: string): Promise<void> {
-    // Note: Views column doesn't exist in current schema, removing this functionality
-    console.log(`Blog view increment requested for ID: ${id}`);
-  }
-
-  // Pages operations
-  async getPages(): Promise<Page[]> {
-    const result = await this.db.select().from(pages).orderBy(desc(pages.updatedAt));
-    return result;
-  }
-
-  async getPage(slug: string): Promise<Page | undefined> {
-    const result = await this.db.select().from(pages).where(eq(pages.slug, slug)).limit(1);
-    return result[0];
-  }
-
-  async createPage(page: InsertPage): Promise<Page> {
-    const result = await this.db.insert(pages).values(page).returning();
-    return result[0];
-  }
-
-  async updatePage(slug: string, updates: Partial<InsertPage>): Promise<Page> {
-    const result = await this.db.update(pages)
-      .set({ ...updates, updatedAt: new Date() })
-      .where(eq(pages.slug, slug))
-      .returning();
-    return result[0];
-  }
-
-  async deletePage(slug: string): Promise<void> {
-    await this.db.delete(pages).where(eq(pages.slug, slug));
-  }
-
-  // Custom Orders methods
-  async getCustomOrders(): Promise<any[]> {
-    try {
-      const result = await this.db.select().from(customOrders).orderBy(desc(customOrders.createdAt));
-      return result;
-    } catch (error) {
-      console.error('Error fetching custom orders:', error);
-      return [];
-    }
-  }
-
-  async getCustomOrder(id: number): Promise<any | null> {
-    try {
-      const [result] = await this.db.select().from(customOrders).where(eq(customOrders.id, id));
-      return result || null;
-    } catch (error) {
-      console.error('Error fetching custom order:', error);
-      return null;
-    }
-  }
-
-  async createCustomOrder(orderData: any): Promise<any> {
-    try {
-      const [result] = await this.db.insert(customOrders).values({
-        name: orderData.name,
-        whatsapp: orderData.whatsapp,
-        address: orderData.address,
-        productName: orderData.productName,
-        customization: orderData.customization,
-        quantity: orderData.quantity || 1,
-        totalPrice: orderData.totalPrice.toString(),
-        paymentMethod: orderData.paymentMethod || 'cod',
-        trxId: orderData.trxId || null,
-        paymentScreenshot: orderData.paymentScreenshot || null,
-        status: orderData.status || 'pending',
-        createdAt: new Date(),
-        updatedAt: new Date()
-      }).returning();
-
-      return result;
-    } catch (error) {
-      console.error('Error creating custom order:', error);
-      throw error;
-    }
-  }
-
-  async updateCustomOrderStatus(id: number, status: string): Promise<any> {
-    try {
-      const [result] = await this.db
-        .update(customOrders)
-        .set({ status, updatedAt: new Date() })
-        .where(eq(customOrders.id, id))
-        .returning();
-
-      return result;
-    } catch (error) {
-      console.error('Error updating custom order status:', error);
-      throw error;
-    }
-  }
 }
 
 export const storage = new DatabaseStorage();

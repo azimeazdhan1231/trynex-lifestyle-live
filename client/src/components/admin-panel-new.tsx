@@ -16,7 +16,21 @@ import PagesManagement from "@/components/admin/pages-management";
 import EnhancedSettings from "@/components/admin/enhanced-settings";
 import UserManagement from "@/components/admin/user-management";
 import AnalyticsDashboard from "@/components/admin/analytics-dashboard";
-import { formatPrice, PRODUCT_CATEGORIES } from "@/lib/constants";
+import { formatPrice } from "@/lib/constants";
+
+// Gift-focused categories for the new system
+const GIFT_CATEGORIES = [
+  { value: 'gift-for-him', label: 'তার জন্য উপহার', englishLabel: 'Gift for Him' },
+  { value: 'gift-for-her', label: 'তাঁর জন্য উপহার', englishLabel: 'Gift for Her' },
+  { value: 'gift-for-couple', label: 'কাপলদের জন্য উপহার', englishLabel: 'Gift for Couple' },
+  { value: 'for-mother', label: 'মায়ের জন্য', englishLabel: 'For Mother' },
+  { value: 'for-father', label: 'বাবার জন্য', englishLabel: 'For Father' },
+  { value: 'birthday-gifts', label: 'জন্মদিনের উপহার', englishLabel: 'Birthday Gifts' },
+  { value: 'anniversary-gifts', label: 'বার্ষিকীর উপহার', englishLabel: 'Anniversary Gifts' },
+  { value: 'wedding-gifts', label: 'বিয়ের উপহার', englishLabel: 'Wedding Gifts' },
+  { value: 'festival-gifts', label: 'উৎসবের উপহার', englishLabel: 'Festival Gifts' },
+  { value: 'kids-gifts', label: 'শিশুদের উপহার', englishLabel: 'Kids Gifts' }
+];
 
 // Order status matching tracking page
 const ORDER_STATUSES = {
@@ -536,6 +550,42 @@ export default function AdminPanelNew() {
     updateCustomOrderMutation.mutate({ id: orderId, status });
   };
 
+  // Setup Gift Categories
+  const handleSetupGiftCategories = async () => {
+    if (confirm('এটি সব পুরনো ক্যাটাগরি মুছে দিয়ে গিফট ক্যাটাগরি সেটআপ করবে। এগিয়ে যেতে চান?')) {
+      try {
+        const response = await fetch('/api/setup-gift-categories', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+          toast({
+            title: "✅ সফল!",
+            description: "গিফট ক্যাটাগরি সেটআপ সম্পূর্ণ হয়েছে",
+          });
+          
+          // Refresh categories and products
+          queryClient.invalidateQueries({ queryKey: ["/api/categories"] });
+          queryClient.invalidateQueries({ queryKey: ["/api/products"] });
+        } else {
+          throw new Error(result.error || 'Unknown error');
+        }
+      } catch (error) {
+        console.error('Setup error:', error);
+        toast({
+          title: "❌ ত্রুটি",
+          description: "গিফট ক্যাটাগরি সেটআপ করতে পারিনি",
+          variant: "destructive"
+        });
+      }
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 p-2 sm:p-4">
       {/* Header */}
@@ -921,8 +971,8 @@ export default function AdminPanelNew() {
                             <SelectValue placeholder="ক্যাটাগরি নির্বাচন করুন" />
                           </SelectTrigger>
                           <SelectContent>
-                            {PRODUCT_CATEGORIES.map((cat: any) => (
-                              <SelectItem key={cat.id || cat.value} value={cat.id || cat.value}>{cat.name || cat.label}</SelectItem>
+                            {GIFT_CATEGORIES.map((cat) => (
+                              <SelectItem key={cat.value} value={cat.value}>{cat.label}</SelectItem>
                             ))}
                           </SelectContent>
                         </Select>
@@ -1089,13 +1139,23 @@ export default function AdminPanelNew() {
                   <Tag className="w-5 h-5" />
                   ক্যাটাগরি ম্যানেজমেন্ট ({Array.isArray(categories) ? categories.length : 0} টি)
                 </CardTitle>
-                <Dialog open={isCategoryDialogOpen} onOpenChange={setIsCategoryDialogOpen}>
-                  <DialogTrigger asChild>
-                    <Button onClick={() => { setEditingCategory(null); resetCategoryForm(); }}>
-                      <Plus className="w-4 h-4 mr-2" />
-                      নতুন ক্যাটাগরি
-                    </Button>
-                  </DialogTrigger>
+                <div className="flex gap-2 flex-wrap">
+                  <Button 
+                    onClick={handleSetupGiftCategories}
+                    variant="default" 
+                    size="sm"
+                    className="bg-green-600 hover:bg-green-700"
+                  >
+                    <Gift className="w-4 h-4 mr-2" />
+                    গিফট ক্যাটাগরি সেটআপ
+                  </Button>
+                  <Dialog open={isCategoryDialogOpen} onOpenChange={setIsCategoryDialogOpen}>
+                    <DialogTrigger asChild>
+                      <Button onClick={() => { setEditingCategory(null); resetCategoryForm(); }}>
+                        <Plus className="w-4 h-4 mr-2" />
+                        নতুন ক্যাটাগরি
+                      </Button>
+                    </DialogTrigger>
                   <DialogContent className="max-w-md mx-auto">
                     <DialogHeader>
                       <DialogTitle>{editingCategory ? 'ক্যাটাগরি সম্পাদনা' : 'নতুন ক্যাটাগরি যোগ'}</DialogTitle>
@@ -1175,6 +1235,7 @@ export default function AdminPanelNew() {
                     </div>
                   </DialogContent>
                 </Dialog>
+                </div>
               </div>
             </CardHeader>
             <CardContent>

@@ -903,6 +903,71 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Setup Gift Categories API
+  app.post('/api/setup-gift-categories', async (req, res) => {
+    try {
+      const giftCategories = [
+        { name: 'gift-for-him', name_bengali: 'তার জন্য উপহার', description: 'Perfect gifts for men - watches, accessories, gadgets and more', sort_order: 1 },
+        { name: 'gift-for-her', name_bengali: 'তাঁর জন্য উপহার', description: 'Beautiful gifts for women - jewelry, cosmetics, fashion accessories', sort_order: 2 },
+        { name: 'gift-for-couple', name_bengali: 'কাপলদের জন্য উপহার', description: 'Romantic gifts for couples - matching items, couple accessories', sort_order: 3 },
+        { name: 'for-mother', name_bengali: 'মায়ের জন্য', description: 'Special gifts for mothers - traditional and modern items', sort_order: 4 },
+        { name: 'for-father', name_bengali: 'বাবার জন্য', description: 'Thoughtful gifts for fathers - practical and sentimental items', sort_order: 5 },
+        { name: 'birthday-gifts', name_bengali: 'জন্মদিনের উপহার', description: 'Perfect birthday gifts for all ages and preferences', sort_order: 6 },
+        { name: 'anniversary-gifts', name_bengali: 'বার্ষিকীর উপহার', description: 'Memorable anniversary gifts to celebrate love and togetherness', sort_order: 7 },
+        { name: 'wedding-gifts', name_bengali: 'বিয়ের উপহার', description: 'Beautiful wedding gifts for the special couple', sort_order: 8 },
+        { name: 'festival-gifts', name_bengali: 'উৎসবের উপহার', description: 'Festive gifts for Eid, Durga Puja, and other celebrations', sort_order: 9 },
+        { name: 'kids-gifts', name_bengali: 'শিশুদের উপহার', description: 'Fun and educational gifts for children of all ages', sort_order: 10 }
+      ];
+
+      // Delete existing categories and create new ones
+      const categoryPromises = giftCategories.map(cat => 
+        storage.createCategory(cat)
+      );
+      
+      await Promise.all(categoryPromises);
+
+      // Update products to match new categories based on keywords
+      const products = await storage.getProducts();
+      const updatePromises = products.map(product => {
+        let newCategory = 'birthday-gifts'; // default
+        const name = product.name.toLowerCase();
+        
+        if (name.includes('men') || name.includes('male') || name.includes('watch') || name.includes('gadget')) {
+          newCategory = 'gift-for-him';
+        } else if (name.includes('women') || name.includes('female') || name.includes('jewelry') || name.includes('cosmetic')) {
+          newCategory = 'gift-for-her';
+        } else if (name.includes('birthday') || name.includes('জন্মদিন')) {
+          newCategory = 'birthday-gifts';
+        } else if (name.includes('anniversary') || name.includes('বার্ষিকী')) {
+          newCategory = 'anniversary-gifts';
+        } else if (name.includes('wedding') || name.includes('বিয়ে')) {
+          newCategory = 'wedding-gifts';
+        } else if (name.includes('mother') || name.includes('mom') || name.includes('মা')) {
+          newCategory = 'for-mother';
+        } else if (name.includes('father') || name.includes('dad') || name.includes('বাবা')) {
+          newCategory = 'for-father';
+        } else if (name.includes('kid') || name.includes('child') || name.includes('শিশু') || name.includes('বাচ্চা')) {
+          newCategory = 'kids-gifts';
+        }
+        
+        if (product.category !== newCategory) {
+          return storage.updateProduct(product.id, { category: newCategory });
+        }
+        return Promise.resolve();
+      });
+      
+      await Promise.all(updatePromises);
+      
+      // Clear cache to force refresh
+      cache.clearAll();
+
+      res.json({ success: true, message: 'Gift categories setup completed', categories: giftCategories });
+    } catch (error) {
+      console.error('Error setting up gift categories:', error);
+      res.status(500).json({ error: 'Failed to setup gift categories' });
+    }
+  });
+
   // Authentication middleware
   const authenticateAdmin = (req: express.Request, res: express.Response, next: express.NextFunction) => {
     const token = req.headers.authorization?.replace('Bearer ', '');
