@@ -15,7 +15,14 @@ interface CartModalProps {
 
 export default function CartModalFixed({ isOpen, onClose }: CartModalProps) {
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
-  const { cart, updateQuantity, removeFromCart, totalItems, totalPrice, clearCart, isLoaded } = useCart();
+  const { cart, updateQuantity, removeFromCart, totalItems, totalPrice, clearCart, isLoaded, refreshCart } = useCart();
+
+  // Force cart refresh when modal opens
+  useEffect(() => {
+    if (isOpen && isLoaded) {
+      refreshCart();
+    }
+  }, [isOpen, isLoaded, refreshCart]);
 
   // Local cart state for immediate display
   const [localCart, setLocalCart] = useState(cart);

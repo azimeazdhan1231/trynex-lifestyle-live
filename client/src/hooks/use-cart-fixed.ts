@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 export interface CartItem {
   id: string;
@@ -19,21 +19,27 @@ interface UseCartReturn {
   totalItems: number;
   totalPrice: number;
   isLoaded: boolean;
+  refreshCart: () => void;
 }
 
 const CART_STORAGE_KEY = 'trynex_cart';
+
+// Global cart state for instant updates across components
+let globalCartState: CartItem[] = [];
+let globalCartListeners: Array<(cart: CartItem[]) => void> = [];
 
 export function useCart(): UseCartReturn {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
 
-  // Load cart from localStorage on mount
+  // Load cart from localStorage on mount and setup global listeners
   useEffect(() => {
     try {
       const savedCart = localStorage.getItem(CART_STORAGE_KEY);
       if (savedCart) {
         const parsedCart = JSON.parse(savedCart);
         if (Array.isArray(parsedCart)) {
+          globalCartState = parsedCart;
           setCart(parsedCart);
         } else {
           localStorage.removeItem(CART_STORAGE_KEY);
@@ -44,21 +50,37 @@ export function useCart(): UseCartReturn {
     } finally {
       setIsLoaded(true);
     }
+
+    // Subscribe to global cart changes
+    const listener = (newCart: CartItem[]) => {
+      setCart([...newCart]);
+    };
+    globalCartListeners.push(listener);
+
+    // Cleanup listener on unmount
+    return () => {
+      globalCartListeners = globalCartListeners.filter(l => l !== listener);
+    };
   }, []);
 
-  // Save cart to localStorage whenever it changes (but only after initial load)
-  useEffect(() => {
-    if (isLoaded && cart.length >= 0) {
-      try {
-        localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
-      } catch (error) {
-        console.error('Error saving cart to localStorage:', error);
-      }
-    }
-  }, [cart, isLoaded]);
+  // No longer needed - global state handles localStorage automatically
 
-  const addToCart = (newItem: CartItem) => {
-    setCart(prevCart => {
+  const updateGlobalCart = useCallback((updater: (cart: CartItem[]) => CartItem[]) => {
+    globalCartState = updater(globalCartState);
+    
+    // Save to localStorage immediately
+    try {
+      localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(globalCartState));
+    } catch (error) {
+      console.error('Error saving cart to localStorage:', error);
+    }
+    
+    // Notify all listeners
+    globalCartListeners.forEach(listener => listener(globalCartState));
+  }, []);
+
+  const addToCart = useCallback((newItem: CartItem) => {
+    updateGlobalCart(prevCart => {
       const existingItemIndex = prevCart.findIndex(item => 
         item.id === newItem.id && 
         JSON.stringify(item.customization) === JSON.stringify(newItem.customization)
@@ -85,28 +107,43 @@ export function useCart(): UseCartReturn {
 
       return updatedCart;
     });
-  };
+  }, [updateGlobalCart]);
 
-  const removeFromCart = (id: string) => {
-    setCart(prevCart => prevCart.filter(item => item.id !== id));
-  };
+  const removeFromCart = useCallback((id: string) => {
+    updateGlobalCart(prevCart => prevCart.filter(item => item.id !== id));
+  }, [updateGlobalCart]);
 
-  const updateQuantity = (id: string, quantity: number) => {
+  const updateQuantity = useCallback((id: string, quantity: number) => {
     if (quantity <= 0) {
       removeFromCart(id);
       return;
     }
 
-    setCart(prevCart => {
+    updateGlobalCart(prevCart => {
       return prevCart.map(item =>
         item.id === id ? { ...item, quantity: Math.max(1, quantity) } : item
       );
     });
-  };
+  }, [updateGlobalCart, removeFromCart]);
 
-  const clearCart = () => {
-    setCart([]);
-  };
+  const clearCart = useCallback(() => {
+    updateGlobalCart(() => []);
+  }, [updateGlobalCart]);
+
+  const refreshCart = useCallback(() => {
+    try {
+      const savedCart = localStorage.getItem(CART_STORAGE_KEY);
+      if (savedCart) {
+        const parsedCart = JSON.parse(savedCart);
+        if (Array.isArray(parsedCart)) {
+          globalCartState = parsedCart;
+          setCart([...parsedCart]);
+        }
+      }
+    } catch (error) {
+      console.error('Error refreshing cart:', error);
+    }
+  }, []);
 
   // Calculate totals with proper error handling
   const totalItems = cart.reduce((sum, item) => {
@@ -133,6 +170,7 @@ export function useCart(): UseCartReturn {
     clearCart,
     totalItems,
     totalPrice,
-    isLoaded
+    isLoaded,
+    refreshCart
   };
 }

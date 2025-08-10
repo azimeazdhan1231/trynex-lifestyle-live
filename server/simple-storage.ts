@@ -153,7 +153,7 @@ export class SimpleStorage {
     }
   }
 
-  async updateProduct(id: string, updates: Partial<Omit<Product, 'id' | 'created_at'>>): Promise<Product | null> {
+  async updateProduct(id: string, updates: Partial<Product>): Promise<Product | null> {
     try {
       // Validate and sanitize data
       const validatedUpdates: any = {};
@@ -170,14 +170,17 @@ export class SimpleStorage {
       }
 
       if (updates.price !== undefined) {
-        validatedUpdates.price = String(updates.price);
-        if (!validatedUpdates.price || validatedUpdates.price === '0') {
-          throw new Error('Valid price is required');
+        validatedUpdates.price = Number(updates.price);
+        if (isNaN(validatedUpdates.price)) {
+          throw new Error('Invalid price value - must be a number');
         }
       }
 
       if (updates.stock !== undefined) {
-        validatedUpdates.stock = Number(updates.stock) || 0;
+        validatedUpdates.stock = Number(updates.stock);
+        if (isNaN(validatedUpdates.stock)) {
+          throw new Error('Invalid stock value - must be a number');
+        }
       }
 
       if (updates.category !== undefined) {

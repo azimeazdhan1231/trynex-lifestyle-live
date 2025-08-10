@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
@@ -37,7 +36,7 @@ function ProductForm({ product, onClose, isEdit = false }: any) {
   const queryClient = useQueryClient();
   const [imagePreview, setImagePreview] = useState(product?.image_url || '');
   const [additionalImages, setAdditionalImages] = useState<string[]>(product?.additional_images || []);
-  
+
   const { data: categories = [], isLoading: categoriesLoading, error: categoriesError } = useQuery({ 
     queryKey: ["/api/categories"],
     retry: 2,
@@ -91,7 +90,7 @@ function ProductForm({ product, onClose, isEdit = false }: any) {
   const createProductMutation = useMutation({
     mutationFn: async (data: ProductFormData) => {
       console.log('Creating product with data:', data);
-      
+
       // Convert data to match server expectations
       const productData = {
         name: data.name.trim(),
@@ -106,7 +105,7 @@ function ProductForm({ product, onClose, isEdit = false }: any) {
         is_latest: Boolean(data.is_latest),
         is_best_selling: Boolean(data.is_best_selling)
       };
-      
+
       const response = await fetch('/api/products', {
         method: 'POST',
         headers: { 
@@ -118,29 +117,29 @@ function ProductForm({ product, onClose, isEdit = false }: any) {
         },
         body: JSON.stringify(productData)
       });
-      
+
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
       }
-      
+
       return response.json();
     },
     onSuccess: async (newProduct) => {
       console.log('✅ Product created successfully:', newProduct);
-      
+
       toast({
         title: "সফল!",
         description: "নতুন পণ্য যোগ করা হয়েছে",
       });
-      
+
       // Clear all caches and refetch
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ["/api/products"] }),
         queryClient.refetchQueries({ queryKey: ["/api/products"] }),
         queryClient.removeQueries({ queryKey: ["/api/products"] }),
       ]);
-      
+
       onClose();
     },
     onError: (error: any) => {
@@ -156,7 +155,7 @@ function ProductForm({ product, onClose, isEdit = false }: any) {
   const updateProductMutation = useMutation({
     mutationFn: async (data: ProductFormData) => {
       console.log('Updating product with data:', data);
-      
+
       // Convert data to match server expectations
       const productData = {
         name: data.name.trim(),
@@ -171,9 +170,9 @@ function ProductForm({ product, onClose, isEdit = false }: any) {
         is_latest: Boolean(data.is_latest),
         is_best_selling: Boolean(data.is_best_selling)
       };
-      
+
       console.log('Processed product data:', productData);
-      
+
       const response = await fetch(`/api/products/${product.id}`, {
         method: 'PATCH',
         headers: { 
@@ -186,30 +185,30 @@ function ProductForm({ product, onClose, isEdit = false }: any) {
         },
         body: JSON.stringify(productData)
       });
-      
+
       if (!response.ok) {
         const errorData = await response.json();
         console.error('Update API error:', errorData);
         throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
       }
-      
+
       return response.json();
     },
     onSuccess: async (updatedProduct) => {
       console.log('✅ Product updated successfully:', updatedProduct);
-      
+
       toast({
         title: "সফল!",
         description: "পণ্য আপডেট করা হয়েছে",
       });
-      
+
       // Clear all caches and refetch
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ["/api/products"] }),
         queryClient.refetchQueries({ queryKey: ["/api/products"] }),
         queryClient.removeQueries({ queryKey: ["/api/products"] }),
       ]);
-      
+
       onClose();
     },
     onError: (error: any) => {
@@ -224,16 +223,16 @@ function ProductForm({ product, onClose, isEdit = false }: any) {
 
   const onSubmit = (data: ProductFormData) => {
     console.log('Form submitted with data:', data);
-    
+
     // Convert data to match server expectations - price as string, stock as number
     const processedData = {
       ...data,
       price: data.price.toString(), // Server expects string
       stock: parseInt(data.stock.toString(), 10) || 0, // Server expects number
     };
-    
+
     console.log('Processed data for server:', processedData);
-    
+
     if (isEdit) {
       updateProductMutation.mutate(processedData);
     } else {
@@ -419,7 +418,7 @@ function ProductForm({ product, onClose, isEdit = false }: any) {
                 যোগ করুন
               </Button>
             </div>
-            
+
             <div className="space-y-2">
               {additionalImages.map((url, index) => (
                 <div key={index} className="flex gap-2">
@@ -500,7 +499,7 @@ export default function ProductManagement() {
   const deleteProductMutation = useMutation({
     mutationFn: async (productId: string) => {
       console.log('Deleting product:', productId);
-      
+
       const response = await fetch(`/api/products/${productId}`, {
         method: 'DELETE',
         headers: {
@@ -510,28 +509,28 @@ export default function ProductManagement() {
           'X-Cache-Bust': Date.now().toString()
         }
       });
-      
+
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
       }
-      
+
       return response.json();
     },
     onSuccess: async (result) => {
       console.log('✅ Product deleted successfully:', result);
-      
+
       toast({
         title: "সফল!",
         description: "পণ্য মুছে ফেলা হয়েছে",
       });
-      
+
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ["/api/products"] }),
         queryClient.refetchQueries({ queryKey: ["/api/products"] }),
         queryClient.removeQueries({ queryKey: ["/api/products"] }),
       ]);
-      
+
       await refetch();
     },
     onError: (error: any) => {
@@ -546,7 +545,7 @@ export default function ProductManagement() {
 
   const openEditModal = async (product: any) => {
     console.log('Opening edit modal for product:', product);
-    
+
     try {
       const response = await fetch(`/api/products/${product.id}`, {
         headers: {
@@ -554,7 +553,7 @@ export default function ProductManagement() {
           'Pragma': 'no-cache'
         }
       });
-      
+
       if (response.ok) {
         const freshProduct = await response.json();
         console.log('✅ Fetched fresh product data:', freshProduct);
@@ -566,32 +565,32 @@ export default function ProductManagement() {
       console.error('Failed to fetch fresh product data:', error);
       setSelectedProduct(product);
     }
-    
+
     setIsEditModalOpen(true);
   };
 
   const closeEditModal = async () => {
     setSelectedProduct(null);
     setIsEditModalOpen(false);
-    
+
     await queryClient.invalidateQueries({ queryKey: ["/api/products"] });
     await refetch();
   };
 
   const closeAddModal = async () => {
     setIsAddModalOpen(false);
-    
+
     await queryClient.invalidateQueries({ queryKey: ["/api/products"] });
     await refetch();
   };
 
   const handleRefresh = async () => {
     console.log('Manual refresh triggered');
-    
+
     queryClient.removeQueries({ queryKey: ["/api/products"] });
     await queryClient.invalidateQueries({ queryKey: ["/api/products"] });
     await refetch();
-    
+
     toast({
       title: "রিফ্রেশ সম্পন্ন!",
       description: "পণ্যের তালিকা আপডেট করা হয়েছে",
@@ -724,7 +723,7 @@ export default function ProductManagement() {
                           >
                             <Pencil className="w-4 h-4" />
                           </Button>
-                          
+
                           <AlertDialog>
                             <AlertDialogTrigger asChild>
                               <Button size="sm" variant="destructive">

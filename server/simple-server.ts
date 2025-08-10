@@ -1,4 +1,3 @@
-
 import express from 'express';
 import { storage } from './simple-storage';
 import { setupAuthRoutes } from './auth-routes';
@@ -27,48 +26,49 @@ export async function registerRoutes(app: express.Express) {
     }
   });
 
-  app.post('/api/products', async (req, res) => {
+  // Create product
+  app.post("/api/products", async (req, res) => {
     try {
-      console.log('🔄 Creating new product with data:', req.body);
-
-      const { name, description, price, stock, category, image_url, is_featured, is_latest, is_best_selling } = req.body;
-
-      // Validate required fields
-      if (!name || !category || price === undefined || price === null) {
-        return res.status(400).json({ 
-          success: false, 
-          error: 'Missing required fields',
-          details: 'Name, category, and price are required' 
-        });
-      }
+      const productData = req.body;
+      console.log('Creating product:', productData);
 
       // Validate and convert data types
-      const productData = {
-        name: String(name).trim(),
-        description: String(description || '').trim(),
-        price: String(price), // Keep price as string for database
-        stock: parseInt(String(stock)) || 0, // Ensure stock is number
-        category: String(category).trim(),
-        image_url: String(image_url || '').trim(),
-        is_featured: Boolean(is_featured),
-        is_latest: Boolean(is_latest),
-        is_best_selling: Boolean(is_best_selling)
-      };
+      if (productData.stock !== undefined) {
+        productData.stock = parseInt(productData.stock, 10);
+        if (isNaN(productData.stock)) {
+          return res.status(400).json({
+            success: false,
+            error: "Invalid stock value",
+            details: "Stock must be a valid number"
+          });
+        }
+      }
 
-      console.log('✅ Validated data:', productData);
+      if (productData.price !== undefined) {
+        productData.price = parseFloat(productData.price);
+        if (isNaN(productData.price)) {
+          return res.status(400).json({
+            success: false,
+            error: "Invalid price value",
+            details: "Price must be a valid number"
+          });
+        }
+      }
 
-      const product = await storage.createProduct(productData);
-
-      console.log('✅ Product created successfully:', product);
+      const newProduct = await storage.createProduct(productData);
 
       res.status(201).json({
         success: true,
-        product,
-        message: 'পণ্য সফলভাবে তৈরি হয়েছে'
+        product: newProduct,
+        message: "পণ্য সফলভাবে তৈরি হয়েছে"
       });
     } catch (error) {
-      console.error('Error creating product:', error);
-      res.status(500).json({ success: false, error: 'Failed to create product' });
+      console.error("Create product error:", error);
+      res.status(500).json({
+        success: false,
+        error: "পণ্য তৈরি করতে সমস্যা হয়েছে",
+        details: error.message
+      });
     }
   });
 
@@ -81,10 +81,10 @@ export async function registerRoutes(app: express.Express) {
 
       // Validate required fields
       if (!name || !category || price === undefined || price === null) {
-        return res.status(400).json({ 
-          success: false, 
+        return res.status(400).json({
+          success: false,
           error: 'Missing required fields',
-          details: 'Name, category, and price are required' 
+          details: 'Name, category, and price are required'
         });
       }
 
@@ -122,53 +122,51 @@ export async function registerRoutes(app: express.Express) {
     }
   });
 
-  app.patch('/api/products/:id', async (req, res) => {
+  // Update product
+  app.patch("/api/products/:id", async (req, res) => {
     try {
       const { id } = req.params;
-      console.log(`🔄 Updating product ${id} with data:`, req.body);
+      const updates = req.body;
 
-      const { name, description, price, stock, category, image_url, is_featured, is_latest, is_best_selling } = req.body;
+      console.log('Product mutation:', req.method, req.url, updates);
 
-      // Validate required fields
-      if (!name || !category || price === undefined || price === null) {
-        return res.status(400).json({ 
-          success: false, 
-          error: 'Missing required fields',
-          details: 'Name, category, and price are required' 
-        });
+      // Ensure proper data types
+      if (updates.stock !== undefined) {
+        updates.stock = parseInt(updates.stock, 10);
+        if (isNaN(updates.stock)) {
+          return res.status(400).json({
+            success: false,
+            error: "Invalid stock value",
+            details: "Stock must be a valid number"
+          });
+        }
       }
 
-      // Validate and convert data types
-      const productData = {
-        name: String(name).trim(),
-        description: String(description || '').trim(),
-        price: String(price), // Keep price as string for database
-        stock: parseInt(String(stock)) || 0, // Ensure stock is number
-        category: String(category).trim(),
-        image_url: String(image_url || '').trim(),
-        is_featured: Boolean(is_featured),
-        is_latest: Boolean(is_latest),
-        is_best_selling: Boolean(is_best_selling)
-      };
-
-      console.log('✅ Validated data:', productData);
-
-      const product = await storage.updateProduct(id, productData);
-
-      if (!product) {
-        return res.status(404).json({ success: false, error: 'Product not found' });
+      if (updates.price !== undefined) {
+        updates.price = parseFloat(updates.price);
+        if (isNaN(updates.price)) {
+          return res.status(400).json({
+            success: false,
+            error: "Invalid price value",
+            details: "Price must be a valid number"
+          });
+        }
       }
 
-      console.log('✅ Product updated successfully:', product);
+      const updatedProduct = await storage.updateProduct(id, updates);
 
       res.json({
         success: true,
-        product,
-        message: 'পণ্য সফলভাবে আপডেট হয়েছে'
+        product: updatedProduct,
+        message: "পণ্য সফলভাবে আপডেট হয়েছে"
       });
     } catch (error) {
-      console.error('Error updating product:', error);
-      res.status(500).json({ success: false, error: 'Failed to update product' });
+      console.error("Update product error:", error);
+      res.status(500).json({
+        success: false,
+        error: "পণ্য আপডেট করতে সমস্যা হয়েছে",
+        details: error.message
+      });
     }
   });
 
@@ -216,9 +214,9 @@ export async function registerRoutes(app: express.Express) {
 
       // Validate required fields
       if (!customer_name || !phone || !district || !address || !items || !total) {
-        return res.status(400).json({ 
-          success: false, 
-          error: 'Missing required fields' 
+        return res.status(400).json({
+          success: false,
+          error: 'Missing required fields'
         });
       }
 
@@ -348,8 +346,8 @@ export async function registerRoutes(app: express.Express) {
 
   // Health check endpoint
   app.get('/api/health', (req, res) => {
-    res.json({ 
-      status: 'ok', 
+    res.json({
+      status: 'ok',
       timestamp: new Date().toISOString(),
       database: 'connected',
       message: 'Server is running properly'
@@ -359,8 +357,8 @@ export async function registerRoutes(app: express.Express) {
   // Error handling middleware
   app.use((err: any, req: any, res: any, next: any) => {
     console.error('Unhandled error:', err);
-    res.status(500).json({ 
-      success: false, 
+    res.status(500).json({
+      success: false,
       error: 'Internal server error',
       message: 'সার্ভার এরর। আবার চেষ্টা করুন।'
     });
