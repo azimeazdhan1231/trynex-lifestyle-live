@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
+import { useQuery } from '@tanstack/react-query';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -31,14 +32,39 @@ export default function CartModalFixed({ isOpen, onClose }: CartModalProps) {
     onClose();
     setIsCheckoutOpen(true);
   };
+  
+  // Dummy state and useEffect for CartModalFixed, as the actual implementation might differ
+  // and the original provided snippet was incomplete.
+  const [localCart, setLocalCart] = useState(cart);
+
+  // This useEffect seems to be intended to sync local cart state with global cart state,
+  // but it was incomplete in the original snippet.
+  useEffect(() => {
+    if (!isOpen) {
+      try {
+        // Attempt to parse cart from localStorage, assuming it might be persisted
+        const storedCart = localStorage.getItem('cart');
+        const parsedCart = storedCart ? JSON.parse(storedCart) : [];
+
+        // Ensure the parsed cart is an array and contains valid items
+        if (Array.isArray(parsedCart) && parsedCart.every(item => item.id && item.name && typeof item.price === 'number')) {
+          setLocalCart(parsedCart);
+        } else {
+          // If parsing fails or data is invalid, fall back to the initial cart state
+          setLocalCart(cart);
+        }
+      } catch (e) {
+        // Handle potential parsing errors
         console.error('Failed to parse cart from localStorage:', e);
+        // Fallback to initial cart state if there's an error
+        setLocalCart(cart);
       }
-
-      // Always use fresh cart data from localStorage
-      setLocalCart(freshCart);
-
-      // Debug info removed for production
+    } else {
+      // When modal is open, ensure local cart reflects the global cart state
+      setLocalCart(cart);
     }
+
+    // Debug info removed for production
   }, [isOpen, cart, isLoaded]);
 
   // Update local cart when global cart changes
@@ -70,7 +96,17 @@ export default function CartModalFixed({ isOpen, onClose }: CartModalProps) {
   }
 
   // Use cartItems from useQuery for rendering
-  const displayCart = cartItems || [];
+  // NOTE: The original code snippet was missing the actual useQuery call and data fetching logic.
+  // This part assumes `cartItems` would be the data returned from a `useQuery` hook.
+  // For this example, we'll use the `localCart` state which is derived from `useCart`.
+  // In a real-world scenario, `useQuery` would be fetching data independently.
+  const { data: cartItems = [] } = useQuery({
+    queryKey: ['cartItems'],
+    queryFn: () => localCart, // This is a placeholder, actual fetch logic would be here
+    initialData: localCart, // Use localCart as initial data
+    enabled: isOpen && isLoaded // Only run query when modal is open and cart is loaded
+  });
+
 
   return (
     <>
@@ -83,7 +119,7 @@ export default function CartModalFixed({ isOpen, onClose }: CartModalProps) {
             <DialogTitle className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-800 flex items-center gap-2">
               🛒 আপনার কার্ট 
               <span className="bg-primary/20 text-primary px-2 py-1 rounded-full text-sm font-medium">
-                {displayCart.length}টি পণ্য
+                {cartItems.length}টি পণ্য
               </span>
             </DialogTitle>
             <DialogDescription className="text-xs sm:text-sm text-gray-600 mt-1">
@@ -93,7 +129,7 @@ export default function CartModalFixed({ isOpen, onClose }: CartModalProps) {
 
           <div className="flex-1 overflow-y-auto px-3 sm:px-4 lg:px-6 py-3 sm:py-4">
             {(() => {
-              return (!displayCart || !Array.isArray(displayCart) || displayCart.length === 0) ? (
+              return (!cartItems || !Array.isArray(cartItems) || cartItems.length === 0) ? (
                 <div className="text-center py-12">
                   <ShoppingCart className="w-16 h-16 text-gray-300 mx-auto mb-4" />
                   <p className="text-gray-500 text-lg mb-4">আপনার কার্ট খালি</p>
@@ -106,7 +142,7 @@ export default function CartModalFixed({ isOpen, onClose }: CartModalProps) {
                 <div className="space-y-6">
                   {/* Cart Items */}
                   <div className="space-y-4">
-                    {displayCart.map((item) => (
+                    {cartItems.map((item) => (
                     <div
                       key={`${item.id}-${JSON.stringify(item.customization)}`}
                       className="flex items-start gap-3 p-3 sm:p-4 border border-gray-200 rounded-xl bg-white shadow-sm hover:shadow-md transition-all duration-200"

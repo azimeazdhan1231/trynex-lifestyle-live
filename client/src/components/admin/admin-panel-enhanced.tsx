@@ -432,26 +432,65 @@ function ProductFormModal({
       }
 
       const productData = {
-        ...data,
-        price: parseFloat(data.price),
-        stock: parseInt(data.stock) || 0,
         name: data.name.trim(),
         description: data.description?.trim() || "",
+        price: parseFloat(data.price),
+        stock: parseInt(data.stock) || 0,
         category: data.category.trim(),
-        image_url: data.image_url?.trim() || ""
+        image_url: data.image_url?.trim() || "",
+        is_featured: Boolean(data.is_featured),
+        is_latest: Boolean(data.is_latest),
+        is_best_selling: Boolean(data.is_best_selling)
       };
 
+      console.log(`${product?.id ? 'Updating' : 'Creating'} product:`, productData);
+
+      let response;
       if (product?.id) {
-        await apiRequest("PUT", `/api/products/${product.id}`, productData);
-        toast({ title: "পণ্য আপডেট সফল", description: "পণ্যের তথ্য সফলভাবে আপডেট হয়েছে।" });
+        // Use PATCH for updates to match the server endpoint
+        response = await fetch(`/api/products/${product.id}`, {
+          method: 'PATCH',
+          headers: { 
+            'Content-Type': 'application/json',
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache',
+            'Expires': '0',
+            'X-Cache-Bust': Date.now().toString()
+          },
+          body: JSON.stringify(productData)
+        });
       } else {
-        await apiRequest("POST", "/api/products", productData);
-        toast({ title: "পণ্য যোগ সফল", description: "নতুন পণ্য সফলভাবে যোগ করা হয়েছে।" });
+        // Use POST for creation
+        response = await fetch('/api/products', {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json',
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache',
+            'Expires': '0',
+            'X-Cache-Bust': Date.now().toString()
+          },
+          body: JSON.stringify(productData)
+        });
       }
 
-      // Safely invalidate queries and handle callbacks
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || errorData.message || `HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+      console.log(`✅ Product ${product?.id ? 'updated' : 'created'} successfully:`, result);
+
+      toast({ 
+        title: product?.id ? "পণ্য আপডেট সফল" : "পণ্য যোগ সফল", 
+        description: product?.id ? "পণ্যের তথ্য সফলভাবে আপডেট হয়েছে।" : "নতুন পণ্য সফলভাবে যোগ করা হয়েছে।"
+      });
+
+      // Aggressively invalidate queries and force refresh
+      await queryClient.removeQueries({ queryKey: ["/api/products"] });
       await queryClient.invalidateQueries({ queryKey: ["/api/products"] });
-      await queryClient.invalidateQueries({ queryKey: ["products-ultra-fast"] });
+      await queryClient.refetchQueries({ queryKey: ["/api/products"] });
       
       // Clear localStorage cache
       try {

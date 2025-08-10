@@ -1340,11 +1340,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
         'Expires': '0'
       });
       
-      // For updates, we make all fields optional
-      const updateSchema = insertProductSchema.partial();
-      const validatedData = updateSchema.parse(req.body);
+      // Validate the product exists first
+      const existingProduct = await storage.getProduct(id);
+      if (!existingProduct) {
+        return res.status(404).json({
+          success: false,
+          error: 'Product not found'
+        });
+      }
       
-      // Clear cache
+      // Sanitize and validate update data
+      const updateData: any = {};
+      if (req.body.name !== undefined) updateData.name = String(req.body.name).trim();
+      if (req.body.description !== undefined) updateData.description = String(req.body.description || '').trim();
+      if (req.body.price !== undefined) updateData.price = parseFloat(req.body.price) || 0;
+      if (req.body.stock !== undefined) updateData.stock = parseInt(req.body.stock) || 0;
+      if (req.body.category !== undefined) updateData.category = String(req.body.category).trim();
+      if (req.body.image_url !== undefined) updateData.image_url = String(req.body.image_url || '').trim();
+      if (req.body.is_featured !== undefined) updateData.is_featured = Boolean(req.body.is_featured);
+      if (req.body.is_latest !== undefined) updateData.is_latest = Boolean(req.body.is_latest);
+      if (req.body.is_best_selling !== undefined) updateData.is_best_selling = Boolean(req.body.is_best_selling);
+      
+      console.log('Sanitized update data:', updateData);
+      
+      // Clear cache before update
       performanceCache.clearCache();
       productCache.data = null;
       productCache.timestamp = 0;
@@ -1356,7 +1375,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         cacheService.clearAllCache();
       }
       
-      const updatedProduct = await storage.updateProduct(id, validatedData);
+      const updatedProduct = await storage.updateProduct(id, updateData);
+      
+      if (!updatedProduct) {
+        return res.status(500).json({
+          success: false,
+          error: 'Failed to update product in database'
+        });
+      }
+      
       console.log('✅ Product updated successfully:', updatedProduct);
       
       // Ensure JSON response
@@ -1366,7 +1393,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         message: 'পণ্য সফলভাবে আপডেট হয়েছে',
         timestamp: new Date().toISOString()
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('❌ Failed to update product:', error);
       
       // Set JSON headers for error response too
@@ -1375,18 +1402,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         'Access-Control-Allow-Origin': '*'
       });
       
-      if (error.name === 'ZodError') {
-        return res.status(400).json({ 
-          success: false,
-          error: 'Invalid product data', 
-          details: error.errors 
-        });
-      }
-      
       return res.status(500).json({ 
         success: false,
         error: 'Failed to update product',
-        message: error.message 
+        message: error.message || 'Unknown error occurred'
       });
     }
   });
