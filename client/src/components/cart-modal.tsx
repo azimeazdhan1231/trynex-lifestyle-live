@@ -1,4 +1,4 @@
-import CartModalFixed from "@/components/cart-modal-fixed";
+import CartModalBulletproof from "@/components/cart-modal-bulletproof";
 
 interface CartModalProps {
   isOpen: boolean;
@@ -6,5 +6,5 @@ interface CartModalProps {
 }
 
 export default function CartModal({ isOpen, onClose }: CartModalProps) {
-  return <CartModalFixed isOpen={isOpen} onClose={onClose} />;
+  return <CartModalBulletproof isOpen={isOpen} onClose={onClose} />;
 }

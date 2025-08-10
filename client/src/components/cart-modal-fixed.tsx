@@ -5,9 +5,8 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { ShoppingCart, Plus, Minus, Trash2, X } from "lucide-react";
 import { formatPrice } from "@/lib/constants";
-import { useCart } from "@/hooks/use-cart";
+import { useCart } from "@/hooks/use-cart-bulletproof";
 import CheckoutModal from "@/components/checkout-modal";
-import { useQuery } from '@tanstack/react-query';
 
 interface CartModalProps {
   isOpen: boolean;
@@ -18,61 +17,20 @@ export default function CartModalFixed({ isOpen, onClose }: CartModalProps) {
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const { cart, updateQuantity, removeFromCart, totalItems, totalPrice, clearCart, isLoaded, refreshCart } = useCart();
 
-  // Fetch cart data using react-query for real-time updates
-  const { data: cartItems, isLoading, refetch } = useQuery({
-    queryKey: ['cart'],
-    queryFn: async () => {
-      const response = await fetch('/api/cart');
-      if (!response.ok) throw new Error('Failed to fetch cart');
-      return response.json();
-    },
-    refetchOnWindowFocus: true,
-    refetchOnMount: true,
-    staleTime: 0, // Always refetch when component mounts
-  });
-
-  // Listen for cart updates from other tabs/windows
-  useEffect(() => {
-    const handleStorageChange = () => {
-      refetch();
-    };
-
-    window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
-  }, [refetch]);
-
   // Force cart refresh when modal opens
   useEffect(() => {
-    if (isOpen && isLoaded) {
+    if (isOpen) {
       refreshCart();
     }
-  }, [isOpen, isLoaded, refreshCart]);
-
-  // Local cart state for immediate display
-  const [localCart, setLocalCart] = useState(cart);
-  const [refreshKey, setRefreshKey] = useState(0);
+  }, [isOpen, refreshCart]);
 
   const handleCheckout = () => {
-    const currentCart = localCart.length > 0 ? localCart : cart;
-    if (currentCart.length === 0) {
+    if (cart.length === 0) {
       return;
     }
     onClose();
     setIsCheckoutOpen(true);
   };
-
-  // Force cart state sync when modal opens or cart changes
-  useEffect(() => {
-    if (isOpen) {
-      setRefreshKey(prev => prev + 1);
-      // Force re-read from localStorage when modal opens
-      const savedCart = localStorage.getItem('trynex_cart');
-      let freshCart = [];
-      try {
-        if (savedCart) {
-          freshCart = JSON.JSON.parse(savedCart);
-        }
-      } catch (e) {
         console.error('Failed to parse cart from localStorage:', e);
       }
 

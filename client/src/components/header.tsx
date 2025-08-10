@@ -4,7 +4,7 @@ import { Search, ShoppingCart, Menu, X, Phone } from "lucide-react";
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { COMPANY_NAME } from "@/lib/constants";
-import CartModalFixed from "@/components/cart-modal-fixed";
+import CartModalBulletproof from "@/components/cart-modal-bulletproof";
 import SearchBar from "@/components/search-bar";
 import ProductModal from "@/components/product-modal";
 import type { Product } from "@shared/schema";
@@ -181,7 +181,7 @@ export default function Header({ cartCount, onCartOpen }: HeaderProps) {
         </div>
       </header>
 
-      <CartModalFixed isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
+      <CartModalBulletproof isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
 
       {/* Search Modal */}
       <SearchBar

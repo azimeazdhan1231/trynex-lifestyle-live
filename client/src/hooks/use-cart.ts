@@ -1,1 +1,1 @@
-export { useCart } from './use-cart-fixed';
+export { useCart } from './use-cart-bulletproof';
