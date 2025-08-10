@@ -48,80 +48,39 @@ function ProductForm({ product, onClose, isEdit = false }: any) {
 
   const { data: categories = [] } = useQuery({ queryKey: ["/api/categories"] });
 
-  // Don't use defaultValues - we'll set them manually after getting fresh data
-  const { register, handleSubmit, formState: { errors }, setValue, watch, reset } = useForm<ProductFormData>();
+  const { register, handleSubmit, formState: { errors }, setValue, watch, reset } = useForm<ProductFormData>({
+    defaultValues: {
+      name: product?.name || '',
+      description: product?.description || '',
+      price: product?.price || 0,
+      category: product?.category || '',
+      stock: product?.stock || 0,
+      image_url: product?.image_url || '',
+      is_active: product?.is_active ?? true,
+      is_featured: product?.is_featured ?? false,
+      is_latest: product?.is_latest ?? false,
+      is_best_selling: product?.is_best_selling ?? false,
+    }
+  });
 
-  // Force fresh data loading every time
+  // Reset form when product data changes
   React.useEffect(() => {
-    if (product && isEdit) {
-      // For edit mode, fetch completely fresh data from API
-      const fetchFreshData = async () => {
-        try {
-          console.log('🔄 Fetching completely fresh product data for form...');
-          const response = await fetch(`/api/products/${product.id}?t=${Date.now()}`, {
-            headers: {
-              'Cache-Control': 'no-cache',
-              'Pragma': 'no-cache'
-            }
-          });
-          
-          if (response.ok) {
-            const freshProduct = await response.json();
-            console.log('✅ Got fresh product data:', freshProduct);
-            
-            // Reset form with fresh data
-            reset({
-              name: freshProduct.name || '',
-              description: freshProduct.description || '',
-              price: Number(freshProduct.price) || 0,
-              category: freshProduct.category || '',
-              stock: Number(freshProduct.stock) || 0,
-              image_url: freshProduct.image_url || '',
-              is_active: freshProduct.is_active ?? true,
-              is_featured: freshProduct.is_featured ?? false,
-              is_latest: freshProduct.is_latest ?? false,
-              is_best_selling: freshProduct.is_best_selling ?? false,
-            });
-            
-            // Also update local state for image preview
-            setImagePreview(freshProduct.image_url || '');
-            setAdditionalImages(freshProduct.additional_images || []);
-          }
-        } catch (error) {
-          console.error('Failed to fetch fresh product data:', error);
-          // Fallback to passed product data
-          reset({
-            name: product.name || '',
-            description: product.description || '',
-            price: Number(product.price) || 0,
-            category: product.category || '',
-            stock: Number(product.stock) || 0,
-            image_url: product.image_url || '',
-            is_active: product.is_active ?? true,
-            is_featured: product.is_featured ?? false,
-            is_latest: product.is_latest ?? false,
-            is_best_selling: product.is_best_selling ?? false,
-          });
-        }
-      };
-      
-      fetchFreshData();
-    } else if (!isEdit) {
-      // For new products, just reset to empty
+    if (product) {
+      console.log('🔄 Resetting form with updated product data:', product);
       reset({
-        name: '',
-        description: '',
-        price: 0,
-        category: '',
-        stock: 0,
-        image_url: '',
-        is_active: true,
-        is_featured: false,
-        is_latest: false,
-        is_best_selling: false,
+        name: product.name || '',
+        description: product.description || '',
+        price: Number(product.price) || 0,
+        category: product.category || '',
+        stock: Number(product.stock) || 0,
+        image_url: product.image_url || '',
+        is_active: product.is_active ?? true,
+        is_featured: product.is_featured ?? false,
+        is_latest: product.is_latest ?? false,
+        is_best_selling: product.is_best_selling ?? false,
       });
     }
-  }, [product, isEdit, reset]);
+  }, [product, reset]);
 
   // Force cache invalidation helper
   const invalidateAllCaches = async () => {
@@ -218,8 +177,13 @@ function ProductForm({ product, onClose, isEdit = false }: any) {
       // Force complete cache refresh
       await invalidateAllCaches();
       
-      // Close modal immediately - don't update selectedProduct
-      onClose();
+      // Update the selected product with fresh data
+      setSelectedProduct(updatedProduct);
+      
+      // Close modal to show updated list
+      setTimeout(() => {
+        onClose();
+      }, 500); // Small delay to let user see the success
     },
     onError: (error: any) => {
       console.error('Update product error:', error);
@@ -470,8 +434,6 @@ export default function ProductManagement() {
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [categoryFilter, setCategoryFilter] = useState<string>('all');
 
   const { data: products = [], isLoading, error, refetch } = useQuery({ 
     queryKey: ["/api/products"],
@@ -528,52 +490,35 @@ export default function ProductManagement() {
     }
   });
 
-  const filteredProducts = React.useMemo(() => {
-    return products.filter((product: any) => {
-      const matchesCategory = categoryFilter === 'all' || product.category === categoryFilter;
-      const matchesSearch = searchTerm === '' || 
-        product.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        product.description?.toLowerCase().includes(searchTerm.toLowerCase());
-      
-      return matchesCategory && matchesSearch;
-    });
-  }, [products, categoryFilter, searchTerm]);
+  
 
   const openEditModal = async (product: any) => {
-    console.log('🚀 Opening edit modal for product:', product.id);
+    console.log('Opening edit modal for product:', product);
     
-    // Always fetch the absolute freshest data from database
+    // Fetch fresh product data before opening modal
     try {
-      const response = await fetch(`/api/products/${product.id}?fresh=${Date.now()}`, {
+      const response = await fetch(`/api/products/${product.id}`, {
         headers: {
-          'Cache-Control': 'no-cache, no-store, must-revalidate',
-          'Pragma': 'no-cache',
-          'Expires': '0'
+          'Cache-Control': 'no-cache',
+          'Pragma': 'no-cache'
         }
       });
       
       if (response.ok) {
         const freshProduct = await response.json();
-        console.log('✅ Got FRESH product data for modal:', freshProduct);
+        console.log('✅ Fetched fresh product data:', freshProduct);
         setSelectedProduct(freshProduct);
-        setIsEditModalOpen(true);
       } else {
-        console.error('Failed to fetch fresh product data');
-        // Don't open modal if we can't get fresh data
-        toast({
-          title: "ত্রুটি!",
-          description: "পণ্যের তথ্য লোড করতে পারিনি",
-          variant: "destructive",
-        });
+        // Fallback to cached data
+        setSelectedProduct(product);
       }
     } catch (error) {
-      console.error('Error fetching fresh product data:', error);
-      toast({
-        title: "ত্রুটি!",
-        description: "পণ্যের তথ্য লোড করতে পারিনি",
-        variant: "destructive",
-      });
+      console.error('Failed to fetch fresh product data:', error);
+      // Fallback to cached data
+      setSelectedProduct(product);
     }
+    
+    setIsEditModalOpen(true);
   };
 
   const closeEditModal = async () => {
@@ -629,67 +574,33 @@ export default function ProductManagement() {
 
   return (
     <div className="space-y-6">
-      {/* Filters and Add Button */}
+      {/* Header with Add Button */}
       <Card>
         <CardHeader>
-          <CardTitle>পণ্য ব্যবস্থাপনা</CardTitle>
-          <CardDescription>আপনার সব পণ্য এক জায়গায় দেখুন ও পরিচালনা করুন</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div>
-              <Label htmlFor="product-search">অনুসন্ধান</Label>
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-                <Input
-                  id="product-search"
-                  placeholder="পণ্যের নাম দিয়ে খুঁজুন..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
+              <CardTitle>পণ্য ব্যবস্থাপনা</CardTitle>
+              <CardDescription>আপনার সব পণ্য এক জায়গায় দেখুন ও পরিচালনা করুন</CardDescription>
             </div>
-            
-            <div>
-              <Label htmlFor="category-filter">ক্যাটেগরি ফিল্টার</Label>
-              <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                <SelectTrigger id="category-filter">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">সব ক্যাটেগরি</SelectItem>
-                  {categories.map((category: any) => (
-                    <SelectItem key={category.id} value={category.name}>
-                      {category.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="flex items-end">
-              <Button onClick={handleRefresh} variant="outline" className="w-full">
+            <div className="flex gap-2">
+              <Button onClick={handleRefresh} variant="outline">
                 <RefreshCw className="w-4 h-4 mr-2" />
                 রিফ্রেশ
               </Button>
-            </div>
-
-            <div className="flex items-end">
-              <Button onClick={() => setIsAddModalOpen(true)} className="w-full">
+              <Button onClick={() => setIsAddModalOpen(true)}>
                 <Plus className="w-4 h-4 mr-2" />
                 নতুন পণ্য
               </Button>
             </div>
           </div>
-        </CardContent>
+        </CardHeader>
       </Card>
 
       {/* Products Table */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
-            <span>পণ্য তালিকা ({filteredProducts.length}টি)</span>
+            <span>পণ্য তালিকা ({products.length}টি)</span>
             {isLoading && <RefreshCw className="w-4 h-4 animate-spin" />}
           </CardTitle>
         </CardHeader>
@@ -715,14 +626,14 @@ export default function ProductManagement() {
                       পণ্য লোড হচ্ছে...
                     </TableCell>
                   </TableRow>
-                ) : filteredProducts.length === 0 ? (
+                ) : products.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={7} className="text-center py-8">
                       কোন পণ্য পাওয়া যায়নি
                     </TableCell>
                   </TableRow>
                 ) : (
-                  filteredProducts.map((product: any) => (
+                  products.map((product: any) => (
                     <TableRow key={product.id}>
                       <TableCell>
                         <img
