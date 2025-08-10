@@ -190,9 +190,9 @@ export default function CustomizeModalFixed({ product, isOpen, onClose, onAddToC
       try {
         customImageBase64 = await convertFileToBase64(customization.customImage);
         customImageName = customization.customImage.name;
-        console.log('Image converted to base64 successfully');
+        // Image converted to base64 successfully
       } catch (error) {
-        console.error('Failed to convert image:', error);
+        // Failed to convert image
         toast({
           title: "ছবি আপলোড সমস্যা",
           description: "ছবি প্রক্রিয়া করতে সমস্যা হয়েছে। আবার চেষ্টা করুন।",
@@ -216,7 +216,7 @@ export default function CustomizeModalFixed({ product, isOpen, onClose, onAddToC
       additionalRequests: customization.additionalRequests?.trim() || ""
     };
 
-    console.log('Sending customization data:', customizationData);
+    // Sending customization data
 
     await onAddToCart(product, customizationData);
     toast({
@@ -247,6 +247,10 @@ export default function CustomizeModalFixed({ product, isOpen, onClose, onAddToC
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="w-[95vw] max-w-4xl max-h-[95vh] p-0 flex flex-col [&>button]:hidden">
+        <DialogHeader className="sr-only">
+          <DialogTitle>{product?.name || "প্রোডাক্ট"} কাস্টমাইজ করুন</DialogTitle>
+          <DialogDescription>পণ্যটি আপনার পছন্দ অনুযায়ী কাস্টমাইজ করুন</DialogDescription>
+        </DialogHeader>
         {/* Fixed Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b bg-white shrink-0">
           <div>

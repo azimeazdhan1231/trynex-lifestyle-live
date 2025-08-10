@@ -79,7 +79,7 @@ export default function CheckoutModal({ isOpen, onClose, cart, onOrderComplete }
         const result = await response.json();
         return result;
       } catch (error) {
-        console.error('Order submission error:', error);
+        // Order submission error
         throw error;
       }
     },
@@ -96,8 +96,8 @@ export default function CheckoutModal({ isOpen, onClose, cart, onOrderComplete }
         
         // Create order object for success modal
         const orderForModal = {
-          id: orderResponse.order_id,
-          tracking_id: orderResponse.tracking_id,
+          id: orderResponse.order_id || '',
+          tracking_id: orderResponse.tracking_id || '',
           total: totalPrice.toString(),
           items: cart,
           customer_name: formData.customer_name,
@@ -106,7 +106,12 @@ export default function CheckoutModal({ isOpen, onClose, cart, onOrderComplete }
           thana: formData.thana,
           address: formData.address,
           status: 'pending',
-          created_at: new Date().toISOString()
+          created_at: new Date().toISOString(),
+          user_id: null,
+          payment_info: {},
+          custom_instructions: null,
+          custom_images: null,
+          delivery_fee: deliveryFee
         };
         
         setCompletedOrder(orderForModal);
@@ -134,7 +139,7 @@ export default function CheckoutModal({ isOpen, onClose, cart, onOrderComplete }
       }
     },
     onError: (error: any) => {
-      console.error('Order creation error:', error);
+      // Order creation error
       toast({
         title: "অর্ডার ব্যর্থ",
         description: "অর্ডার প্রক্রিয়ায় সমস্যা হয়েছে। আবার চেষ্টা করুন।",
@@ -193,7 +198,7 @@ export default function CheckoutModal({ isOpen, onClose, cart, onOrderComplete }
             customImageName: item.customization.customImageName || item.customization.customImage?.name || 'custom-image.jpg'
           };
         } catch (error) {
-          console.error('Error processing custom image:', error);
+          // Error processing custom image
           // Keep other customization data even if image fails
           processedItem.customization = {
             ...item.customization,
@@ -221,7 +226,7 @@ export default function CheckoutModal({ isOpen, onClose, cart, onOrderComplete }
       payment_info: paymentInfo,
     };
 
-    console.log('Submitting order with processed items:', orderData);
+    // Submitting order with processed items
     createOrderMutation.mutate(orderData);
   };
 

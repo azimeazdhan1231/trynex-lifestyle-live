@@ -1246,7 +1246,7 @@ function OrderDetailsModal({
                           window.open(image.url || image, '_blank');
                         }}
                         onError={(e) => {
-                          console.error('Failed to load image:', image.url || image);
+                          // Failed to load image
                           (e.target as HTMLImageElement).style.display = 'none';
                           const parent = (e.target as HTMLImageElement).parentElement;
                           if (parent) {

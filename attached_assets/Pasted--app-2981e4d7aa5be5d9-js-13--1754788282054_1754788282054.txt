@@ -1,0 +1,172 @@
+_app-2981e4d7aa5be5d9.js:13 
+      /////////////////////
+   ///////////////////////////
+  ////////@@@@@@@//////////////
+  ////////@@@@@@@//////////////
+  ////////@@@@@@@//////////////        Curious and driven?
+  ///////////////@@@@@@@///////        Work with us!
+  ///////////////@@@@@@@///////
+  ///////////////@@@@@@@///////        https://join.replit.com/hack.with.us
+  ////////@@@@@@@//////////////
+  ////////@@@@@@@//////////////
+  ////////@@@@@@#//////////////
+   ///////////////////////////
+      /////////////////////
+      
+_app-2981e4d7aa5be5d9.js:13 [LaunchDarkly] LaunchDarkly client initialized
+trynex-lifestyle-shop:1 Banner not shown: beforeinstallpromptevent.preventDefault() called. The page must call beforeinstallpromptevent.prompt() to show the banner.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Unrecognized feature: 'ambient-light-sensor'.
+Unrecognized feature: 'ambient-light-sensor'.
+Unrecognized feature: 'ambient-light-sensor'.
+Unrecognized feature: 'ambient-light-sensor'.
+Unrecognized feature: 'ambient-light-sensor'.
+framework-fc3d6289511ec16b.js:1 Unrecognized feature: 'ambient-light-sensor'.
+_ @ framework-fc3d6289511ec16b.js:1
+b9201c27-0c5f-4e9d-9896-005c133ec4ee-00-f4u2zesb3fux.pike.replit.dev/__replco/workspace_iframe.html?initialPath=%2F&id=%3Ar26%3A:32 Unrecognized feature: 'ambient-light-sensor'.
+workspace_iframe.html?initialPath=%2F&id=%3Ar6t%3A:32 Unrecognized feature: 'ambient-light-sensor'.
+b9201c27-0c5f-4e9d-9896-005c133ec4ee-00-f4u2zesb3fux.pike.replit.dev/__replco/workspace_iframe.html?initialPath=%2F&id=%3Ar9v%3A:32 Unrecognized feature: 'ambient-light-sensor'.
+workspace_iframe.html?initialPath=%2F&id=%3Arbf%3A:32 Unrecognized feature: 'ambient-light-sensor'.
+Unrecognized feature: 'battery'.
+Unrecognized feature: 'battery'.
+Unrecognized feature: 'battery'.
+Unrecognized feature: 'battery'.
+Unrecognized feature: 'battery'.
+Unrecognized feature: 'execution-while-not-rendered'.
+Unrecognized feature: 'execution-while-not-rendered'.
+Unrecognized feature: 'execution-while-not-rendered'.
+Unrecognized feature: 'execution-while-not-rendered'.
+Unrecognized feature: 'execution-while-not-rendered'.
+Unrecognized feature: 'execution-while-out-of-viewport'.
+Unrecognized feature: 'execution-while-out-of-viewport'.
+Unrecognized feature: 'execution-while-out-of-viewport'.
+Unrecognized feature: 'execution-while-out-of-viewport'.
+Unrecognized feature: 'execution-while-out-of-viewport'.
+Unrecognized feature: 'layout-animations'.
+Unrecognized feature: 'layout-animations'.
+Unrecognized feature: 'layout-animations'.
+Unrecognized feature: 'layout-animations'.
+Unrecognized feature: 'layout-animations'.
+framework-fc3d6289511ec16b.js:1 Unrecognized feature: 'layout-animations'.
+_ @ framework-fc3d6289511ec16b.js:1
+b9201c27-0c5f-4e9d-9896-005c133ec4ee-00-f4u2zesb3fux.pike.replit.dev/__replco/workspace_iframe.html?initialPath=%2F&id=%3Ar26%3A:32 Unrecognized feature: 'layout-animations'.
+workspace_iframe.html?initialPath=%2F&id=%3Ar6t%3A:32 Unrecognized feature: 'layout-animations'.
+b9201c27-0c5f-4e9d-9896-005c133ec4ee-00-f4u2zesb3fux.pike.replit.dev/__replco/workspace_iframe.html?initialPath=%2F&id=%3Ar9v%3A:32 Unrecognized feature: 'layout-animations'.
+workspace_iframe.html?initialPath=%2F&id=%3Arbf%3A:32 Unrecognized feature: 'layout-animations'.
+Unrecognized feature: 'legacy-image-formats'.
+Unrecognized feature: 'legacy-image-formats'.
+Unrecognized feature: 'legacy-image-formats'.
+Unrecognized feature: 'legacy-image-formats'.
+Unrecognized feature: 'legacy-image-formats'.
+Unrecognized feature: 'navigation-override'.
+Unrecognized feature: 'navigation-override'.
+Unrecognized feature: 'navigation-override'.
+Unrecognized feature: 'navigation-override'.
+Unrecognized feature: 'navigation-override'.
+Unrecognized feature: 'oversized-images'.
+Unrecognized feature: 'oversized-images'.
+Unrecognized feature: 'oversized-images'.
+Unrecognized feature: 'oversized-images'.
+Unrecognized feature: 'oversized-images'.
+framework-fc3d6289511ec16b.js:1 Unrecognized feature: 'oversized-images'.
+_ @ framework-fc3d6289511ec16b.js:1
+b9201c27-0c5f-4e9d-9896-005c133ec4ee-00-f4u2zesb3fux.pike.replit.dev/__replco/workspace_iframe.html?initialPath=%2F&id=%3Ar26%3A:32 Unrecognized feature: 'oversized-images'.
+workspace_iframe.html?initialPath=%2F&id=%3Ar6t%3A:32 Unrecognized feature: 'oversized-images'.
+b9201c27-0c5f-4e9d-9896-005c133ec4ee-00-f4u2zesb3fux.pike.replit.dev/__replco/workspace_iframe.html?initialPath=%2F&id=%3Ar9v%3A:32 Unrecognized feature: 'oversized-images'.
+workspace_iframe.html?initialPath=%2F&id=%3Arbf%3A:32 Unrecognized feature: 'oversized-images'.
+Unrecognized feature: 'publickey-credentials'.
+Unrecognized feature: 'publickey-credentials'.
+Unrecognized feature: 'publickey-credentials'.
+Unrecognized feature: 'publickey-credentials'.
+Unrecognized feature: 'publickey-credentials'.
+Unrecognized feature: 'speaker-selection'.
+Unrecognized feature: 'speaker-selection'.
+Unrecognized feature: 'speaker-selection'.
+Unrecognized feature: 'speaker-selection'.
+Unrecognized feature: 'speaker-selection'.
+Unrecognized feature: 'unoptimized-images'.
+Unrecognized feature: 'unoptimized-images'.
+Unrecognized feature: 'unoptimized-images'.
+Unrecognized feature: 'unoptimized-images'.
+Unrecognized feature: 'unoptimized-images'.
+framework-fc3d6289511ec16b.js:1 Unrecognized feature: 'unoptimized-images'.
+_ @ framework-fc3d6289511ec16b.js:1
+b9201c27-0c5f-4e9d-9896-005c133ec4ee-00-f4u2zesb3fux.pike.replit.dev/__replco/workspace_iframe.html?initialPath=%2F&id=%3Ar26%3A:32 Unrecognized feature: 'unoptimized-images'.
+workspace_iframe.html?initialPath=%2F&id=%3Ar6t%3A:32 Unrecognized feature: 'unoptimized-images'.
+b9201c27-0c5f-4e9d-9896-005c133ec4ee-00-f4u2zesb3fux.pike.replit.dev/__replco/workspace_iframe.html?initialPath=%2F&id=%3Ar9v%3A:32 Unrecognized feature: 'unoptimized-images'.
+workspace_iframe.html?initialPath=%2F&id=%3Arbf%3A:32 Unrecognized feature: 'unoptimized-images'.
+Unrecognized feature: 'unsized-media'.
+Unrecognized feature: 'unsized-media'.
+Unrecognized feature: 'unsized-media'.
+Unrecognized feature: 'unsized-media'.
+Unrecognized feature: 'unsized-media'.
+framework-fc3d6289511ec16b.js:1 Unrecognized feature: 'pointer-lock'.
+_ @ framework-fc3d6289511ec16b.js:1
+Allow attribute will take precedence over 'allowfullscreen'.
+Allow attribute will take precedence over 'allowfullscreen'.
+Allow attribute will take precedence over 'allowfullscreen'.
+Allow attribute will take precedence over 'allowfullscreen'.
+Allow attribute will take precedence over 'allowfullscreen'.
+Allow attribute will take precedence over 'allowpaymentrequest'.
+Allow attribute will take precedence over 'allowpaymentrequest'.
+Allow attribute will take precedence over 'allowpaymentrequest'.
+Allow attribute will take precedence over 'allowpaymentrequest'.
+Allow attribute will take precedence over 'allowpaymentrequest'.
+eruda.js:2 🚀 Ultra Performance Mode: ACTIVATED
+eruda.js:2 🚀 4G detected: Maximum performance mode
+eruda.js:2 🚀 Categories preloaded successfully
+eruda.js:2 🚀 Settings preloaded successfully
+eruda.js:2 No Facebook Pixel ID found in settings
+eruda.js:2 🚀 Products preloaded successfully
+eruda.js:2 🚀 All critical resources preloaded
+eruda.js:2 🚀 Ultra Performance Mode: COMPLETE
+eruda.js:2 No Facebook Pixel ID found in settings
+eruda.js:2 No Facebook Pixel ID found in settings
+eruda.js:2 [vite] server connection lost. Polling for restart...
+eruda.js:2 🚀 Ultra Performance Mode: ACTIVATED
+eruda.js:2 🚀 4G detected: Maximum performance mode
+eruda.js:2 🚀 Categories preloaded successfully
+eruda.js:2 🚀 Products preloaded successfully
+eruda.js:2 🚀 Settings preloaded successfully
+eruda.js:2 🚀 All critical resources preloaded
+eruda.js:2 No Facebook Pixel ID found in settings
+eruda.js:2 🚀 Ultra Performance Mode: COMPLETE
+eruda.js:2 🚀 Home page initialized
+eruda.js:2 🚀 Home: handleProductView called, opening product modal: কাস্টম টি-শার্ট টি ( প্রিমিয়াম কটন) 
+eruda.js:2 Cart updated: {items: 1, total: 95000}
+eruda.js:2 🚀 4G detected: Maximum performance mode
+eruda.js:2 🚀 Categories preloaded successfully
+eruda.js:2 🚀 Products preloaded successfully
+eruda.js:2 🚀 4G detected: Maximum performance mode
+eruda.js:2 🚀 Categories preloaded successfully
+eruda.js:2 🚀 Settings preloaded successfully
+eruda.js:2 🚀 All critical resources preloaded
+eruda.js:2 🚀 Settings preloaded successfully
+eruda.js:2 🚀 All critical resources preloaded
+eruda.js:2 🚀 Ultra Performance Mode: COMPLETE
+eruda.js:2 🚀 Ultra Performance Mode: COMPLETE
+eruda.js:2 🚀 4G detected: Maximum performance mode
+eruda.js:2 🚀 Settings preloaded successfully
+eruda.js:2 🚀 All critical resources preloaded
+eruda.js:2 🚀 Ultra Performance Mode: COMPLETE
+eruda.js:2 🚀 4G detected: Maximum performance mode
+eruda.js:2 🚀 All critical resources preloaded
+eruda.js:2 🚀 Ultra Performance Mode: COMPLETE
+eruda.js:2 🚀 All critical resources preloaded
+eruda.js:2 🚀 Ultra Performance Mode: COMPLETE
+eruda.js:2 🚀 Ultra Performance Mode: COMPLETE
+eruda.js:2 🚀 Ultra Performance Mode: COMPLETE
+eruda.js:2 Cart updated: {items: 1, total: 95000}
+eruda.js:2 🚀 Home page initialized
+eruda.js:2 Cart updated: {items: 1, total: 95000}
+eruda.js:2 🚀 Home page initialized
+eruda.js:2 [vite] server connection lost. Polling for restart...
+b9201c27-0c5f-4e9d-9896-005c133ec4ee-00-f4u2zesb3fux.pike.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2 [vite] server connection lost. Polling for restart...

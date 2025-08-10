@@ -48,12 +48,7 @@ export default function CartModalFixed({ isOpen, onClose }: CartModalProps) {
       // Always use fresh cart data from localStorage
       setLocalCart(freshCart);
       
-      console.log('CartModal opened, current cart:', cart);
-      console.log('Fresh cart from localStorage:', freshCart);
-      console.log('Using local cart:', freshCart);
-      console.log('Cart isLoaded:', isLoaded);
-      console.log('Cart length:', cart?.length);
-      console.log('Fresh cart length:', freshCart?.length);
+      // Debug info removed for production
     }
   }, [isOpen, cart, isLoaded]);
 
