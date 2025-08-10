@@ -218,8 +218,6 @@ export default function CheckoutModal({ isOpen, onClose, cart, onOrderComplete }
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  import UnifiedModalBase from "./unified-modal-base";
-
   return (
     <UnifiedModalBase
       isOpen={isOpen}
