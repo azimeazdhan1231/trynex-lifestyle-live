@@ -1,29 +1,37 @@
 #!/bin/bash
 
-# Trynex Lifestyle - Simplified Build Script for Cloudflare Pages
+# Trynex Lifestyle - Optimized Build Script for Cloudflare Pages
 
 echo "🚀 Starting Trynex Lifestyle build process..."
 
-# Install dependencies
-echo "📦 Installing dependencies..."
-npm install
+# Set production environment
+export NODE_ENV=production
+export CI=true
 
-# Build the client (frontend)
+# Install dependencies with cache
+echo "📦 Installing dependencies..."
+npm ci --no-optional --prefer-offline
+
+# Build the client only (frontend)
 echo "📦 Building client with Vite..."
-npx vite build
+npm run build:static || npx vite build --mode production
 
 echo "✅ Build completed successfully!"
-echo "📂 Static files: dist/public"
+echo "📂 Static files ready in: dist/public"
 
 # Verify build outputs
-if [ -d "dist/public" ]; then
+if [ -d "dist/public" ] && [ -f "dist/public/index.html" ]; then
     echo "✅ Build artifacts verified!"
-    ls -la dist/public/
-    echo "🔧 Functions are pre-built and ready in functions/api/"
-    ls -la functions/api/
+    echo "📄 Main files:"
+    ls -la dist/public/*.html || echo "No HTML files found"
+    ls -la dist/public/assets/*.js | head -5 || echo "No JS files found"
+    echo "🔧 Cloudflare Functions ready in: functions/"
+    ls -la functions/ || echo "No functions directory"
 else
     echo "❌ Build verification failed!"
     echo "Contents of dist:"
-    ls -la dist/ || echo "dist/ does not exist"
+    ls -la dist/ || echo "dist/ directory missing"
+    echo "Contents of root:"
+    ls -la . | head -20
     exit 1
 fi

@@ -2,11 +2,13 @@
 {
   "production_branch": "main",
   "build": {
-    "command": "npm install && npx vite build",
+    "command": "npm ci --no-optional && npm run build:static",
     "destination": "dist/public",
     "root_dir": ".",
     "environment_variables": {
-      "NODE_VERSION": "20"
+      "NODE_VERSION": "20",
+      "NODE_ENV": "production",
+      "CI": "true"
     }
   },
   "functions": {
