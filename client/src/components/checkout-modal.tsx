@@ -70,47 +70,31 @@ export default function CheckoutModal({ isOpen, onClose, cart, onOrderComplete }
 
   const createOrderMutation = useMutation({
     mutationFn: async (orderData: any) => {
-      try {
-        const response = await apiRequest("POST", "/api/orders", orderData);
-        if (!response.ok) {
-          const errorData = await response.text();
-          throw new Error(`Order creation failed: ${errorData}`);
-        }
-        const result = await response.json();
-        return result;
-      } catch (error) {
-        // Order submission error
-        throw error;
+      console.log('API Request: POST /api/orders', { body: orderData });
+      const response = await apiRequest("POST", "/api/orders", orderData);
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Order API Error:', errorText);
+        throw new Error(`Order creation failed: ${response.status} ${errorText}`);
       }
+      const result = await response.json();
+      console.log('Order response:', result);
+      return result;
     },
     onSuccess: (orderResponse: any) => {
       console.log('Order response:', orderResponse);
       
-      if (orderResponse && orderResponse.success) {
+      // The API returns the order object directly, not wrapped in a success field
+      if (orderResponse && orderResponse.id && orderResponse.tracking_id) {
         // Track successful purchase
-        if (orderResponse.tracking_id) {
-          trackPurchase(Number(totalPrice), orderResponse.tracking_id);
-        }
+        trackPurchase(Number(totalPrice), orderResponse.tracking_id);
 
         queryClient.invalidateQueries({ queryKey: ["/api/orders"] });
         
-        // Create order object for success modal
+        // Use the actual order response for success modal
         const orderForModal = {
-          id: orderResponse.order_id || '',
-          tracking_id: orderResponse.tracking_id || '',
-          total: totalPrice.toString(),
+          ...orderResponse,
           items: cart,
-          customer_name: formData.customer_name,
-          phone: formData.phone,
-          district: formData.district,
-          thana: formData.thana,
-          address: formData.address,
-          status: 'pending',
-          created_at: new Date().toISOString(),
-          user_id: null,
-          payment_info: {},
-          custom_instructions: null,
-          custom_images: null,
           delivery_fee: deliveryFee
         };
         
