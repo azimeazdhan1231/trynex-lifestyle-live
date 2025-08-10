@@ -1,0 +1,100 @@
+_app-2981e4d7aa5be5d9.js:13 
+      /////////////////////
+   ///////////////////////////
+  ////////@@@@@@@//////////////
+  ////////@@@@@@@//////////////
+  ////////@@@@@@@//////////////        Curious and driven?
+  ///////////////@@@@@@@///////        Work with us!
+  ///////////////@@@@@@@///////
+  ///////////////@@@@@@@///////        https://join.replit.com/hack.with.us
+  ////////@@@@@@@//////////////
+  ////////@@@@@@@//////////////
+  ////////@@@@@@#//////////////
+   ///////////////////////////
+      /////////////////////
+      
+_app-2981e4d7aa5be5d9.js:13 [LaunchDarkly] LaunchDarkly client initialized
+trynex-lifestyle-shop:1 Banner not shown: beforeinstallpromptevent.preventDefault() called. The page must call beforeinstallpromptevent.prompt() to show the banner.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+framework-fc3d6289511ec16b.js:1 Unrecognized feature: 'ambient-light-sensor'.
+_ @ framework-fc3d6289511ec16b.js:1
+framework-fc3d6289511ec16b.js:1 Unrecognized feature: 'battery'.
+_ @ framework-fc3d6289511ec16b.js:1
+framework-fc3d6289511ec16b.js:1 Unrecognized feature: 'execution-while-not-rendered'.
+_ @ framework-fc3d6289511ec16b.js:1
+framework-fc3d6289511ec16b.js:1 Unrecognized feature: 'execution-while-out-of-viewport'.
+_ @ framework-fc3d6289511ec16b.js:1
+framework-fc3d6289511ec16b.js:1 Unrecognized feature: 'layout-animations'.
+_ @ framework-fc3d6289511ec16b.js:1
+framework-fc3d6289511ec16b.js:1 Unrecognized feature: 'legacy-image-formats'.
+_ @ framework-fc3d6289511ec16b.js:1
+framework-fc3d6289511ec16b.js:1 Unrecognized feature: 'navigation-override'.
+_ @ framework-fc3d6289511ec16b.js:1
+framework-fc3d6289511ec16b.js:1 Unrecognized feature: 'oversized-images'.
+_ @ framework-fc3d6289511ec16b.js:1
+framework-fc3d6289511ec16b.js:1 Unrecognized feature: 'publickey-credentials'.
+_ @ framework-fc3d6289511ec16b.js:1
+framework-fc3d6289511ec16b.js:1 Unrecognized feature: 'speaker-selection'.
+_ @ framework-fc3d6289511ec16b.js:1
+framework-fc3d6289511ec16b.js:1 Unrecognized feature: 'unoptimized-images'.
+_ @ framework-fc3d6289511ec16b.js:1
+framework-fc3d6289511ec16b.js:1 Unrecognized feature: 'unsized-media'.
+_ @ framework-fc3d6289511ec16b.js:1
+framework-fc3d6289511ec16b.js:1 Unrecognized feature: 'pointer-lock'.
+_ @ framework-fc3d6289511ec16b.js:1
+framework-fc3d6289511ec16b.js:1 Allow attribute will take precedence over 'allowfullscreen'.
+_ @ framework-fc3d6289511ec16b.js:1
+framework-fc3d6289511ec16b.js:1 Allow attribute will take precedence over 'allowpaymentrequest'.
+_ @ framework-fc3d6289511ec16b.js:1
+b9201c27-0c5f-4e9d-9896-005c133ec4ee-00-f4u2zesb3fux.pike.replit.dev/__replco/workspace_iframe.html?initialPath=%2F&id=%3Ar26%3A:32 Unrecognized feature: 'ambient-light-sensor'.
+b9201c27-0c5f-4e9d-9896-005c133ec4ee-00-f4u2zesb3fux.pike.replit.dev/__replco/workspace_iframe.html?initialPath=%2F&id=%3Ar26%3A:32 Unrecognized feature: 'battery'.
+b9201c27-0c5f-4e9d-9896-005c133ec4ee-00-f4u2zesb3fux.pike.replit.dev/__replco/workspace_iframe.html?initialPath=%2F&id=%3Ar26%3A:32 Unrecognized feature: 'execution-while-not-rendered'.
+b9201c27-0c5f-4e9d-9896-005c133ec4ee-00-f4u2zesb3fux.pike.replit.dev/__replco/workspace_iframe.html?initialPath=%2F&id=%3Ar26%3A:32 Unrecognized feature: 'execution-while-out-of-viewport'.
+b9201c27-0c5f-4e9d-9896-005c133ec4ee-00-f4u2zesb3fux.pike.replit.dev/__replco/workspace_iframe.html?initialPath=%2F&id=%3Ar26%3A:32 Unrecognized feature: 'layout-animations'.
+b9201c27-0c5f-4e9d-9896-005c133ec4ee-00-f4u2zesb3fux.pike.replit.dev/__replco/workspace_iframe.html?initialPath=%2F&id=%3Ar26%3A:32 Unrecognized feature: 'legacy-image-formats'.
+b9201c27-0c5f-4e9d-9896-005c133ec4ee-00-f4u2zesb3fux.pike.replit.dev/__replco/workspace_iframe.html?initialPath=%2F&id=%3Ar26%3A:32 Unrecognized feature: 'navigation-override'.
+b9201c27-0c5f-4e9d-9896-005c133ec4ee-00-f4u2zesb3fux.pike.replit.dev/__replco/workspace_iframe.html?initialPath=%2F&id=%3Ar26%3A:32 Unrecognized feature: 'oversized-images'.
+b9201c27-0c5f-4e9d-9896-005c133ec4ee-00-f4u2zesb3fux.pike.replit.dev/__replco/workspace_iframe.html?initialPath=%2F&id=%3Ar26%3A:32 Unrecognized feature: 'publickey-credentials'.
+b9201c27-0c5f-4e9d-9896-005c133ec4ee-00-f4u2zesb3fux.pike.replit.dev/__replco/workspace_iframe.html?initialPath=%2F&id=%3Ar26%3A:32 Unrecognized feature: 'speaker-selection'.
+b9201c27-0c5f-4e9d-9896-005c133ec4ee-00-f4u2zesb3fux.pike.replit.dev/__replco/workspace_iframe.html?initialPath=%2F&id=%3Ar26%3A:32 Unrecognized feature: 'unoptimized-images'.
+b9201c27-0c5f-4e9d-9896-005c133ec4ee-00-f4u2zesb3fux.pike.replit.dev/__replco/workspace_iframe.html?initialPath=%2F&id=%3Ar26%3A:32 Unrecognized feature: 'unsized-media'.
+b9201c27-0c5f-4e9d-9896-005c133ec4ee-00-f4u2zesb3fux.pike.replit.dev/__replco/workspace_iframe.html?initialPath=%2F&id=%3Ar26%3A:32 Allow attribute will take precedence over 'allowfullscreen'.
+b9201c27-0c5f-4e9d-9896-005c133ec4ee-00-f4u2zesb3fux.pike.replit.dev/__replco/workspace_iframe.html?initialPath=%2F&id=%3Ar26%3A:32 Allow attribute will take precedence over 'allowpaymentrequest'.
+eruda.js:2 🚀 Ultra Performance Mode: ACTIVATED
+eruda.js:2 🚀 4G detected: Maximum performance mode
+eruda.js:2 🚀 Categories preloaded successfully
+eruda.js:2 🚀 Settings preloaded successfully
+eruda.js:2 No Facebook Pixel ID found in settings
+eruda.js:2 🚀 Products preloaded successfully
+eruda.js:2 🚀 All critical resources preloaded
+eruda.js:2 🚀 Ultra Performance Mode: COMPLETE
+eruda.js:2 No Facebook Pixel ID found in settings
+eruda.js:2 No Facebook Pixel ID found in settings
+eruda.js:2 [vite] server connection lost. Polling for restart...
+workspace_iframe.html?initialPath=%2F&id=%3Ar6t%3A:32 Unrecognized feature: 'ambient-light-sensor'.
+workspace_iframe.html?initialPath=%2F&id=%3Ar6t%3A:32 Unrecognized feature: 'battery'.
+workspace_iframe.html?initialPath=%2F&id=%3Ar6t%3A:32 Unrecognized feature: 'execution-while-not-rendered'.
+workspace_iframe.html?initialPath=%2F&id=%3Ar6t%3A:32 Unrecognized feature: 'execution-while-out-of-viewport'.
+workspace_iframe.html?initialPath=%2F&id=%3Ar6t%3A:32 Unrecognized feature: 'layout-animations'.
+workspace_iframe.html?initialPath=%2F&id=%3Ar6t%3A:32 Unrecognized feature: 'legacy-image-formats'.
+workspace_iframe.html?initialPath=%2F&id=%3Ar6t%3A:32 Unrecognized feature: 'navigation-override'.
+workspace_iframe.html?initialPath=%2F&id=%3Ar6t%3A:32 Unrecognized feature: 'oversized-images'.
+workspace_iframe.html?initialPath=%2F&id=%3Ar6t%3A:32 Unrecognized feature: 'publickey-credentials'.
+workspace_iframe.html?initialPath=%2F&id=%3Ar6t%3A:32 Unrecognized feature: 'speaker-selection'.
+workspace_iframe.html?initialPath=%2F&id=%3Ar6t%3A:32 Unrecognized feature: 'unoptimized-images'.
+workspace_iframe.html?initialPath=%2F&id=%3Ar6t%3A:32 Unrecognized feature: 'unsized-media'.
+workspace_iframe.html?initialPath=%2F&id=%3Ar6t%3A:32 Allow attribute will take precedence over 'allowfullscreen'.
+workspace_iframe.html?initialPath=%2F&id=%3Ar6t%3A:32 Allow attribute will take precedence over 'allowpaymentrequest'.
+Console.js:61 🚀 Ultra Performance Mode: ACTIVATED
+Console.js:61 🚀 4G detected: Maximum performance mode
+Console.js:61 🚀 Categories preloaded successfully
+Console.js:61 🚀 Products preloaded successfully
+Console.js:61 🚀 Settings preloaded successfully
+Console.js:61 🚀 All critical resources preloaded
+Console.js:61 No Facebook Pixel ID found in settings
+Console.js:61 🚀 Ultra Performance Mode: COMPLETE
+Console.js:61 🚀 Home page initialized

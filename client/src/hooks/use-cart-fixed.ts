@@ -120,14 +120,9 @@ export function useCart(): UseCartReturn {
     return sum + (price * quantity);
   }, 0);
 
-  // Only log cart state changes in development
+  // Cart state tracking silently
   useEffect(() => {
-    if (isLoaded && process.env.NODE_ENV === 'development') {
-      // Minimal logging only for significant changes
-      if (cart.length > 0) {
-        console.log('Cart updated:', { items: cart.length, total: totalPrice });
-      }
-    }
+    // Cart updates handled silently
   }, [cart.length, totalPrice, isLoaded]);
 
   return {

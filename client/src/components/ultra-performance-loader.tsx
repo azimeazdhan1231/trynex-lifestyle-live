@@ -9,9 +9,7 @@ export function UltraPerformanceLoader() {
 
   useEffect(() => {
     const optimizeEverything = async () => {
-      if (process.env.NODE_ENV === 'development') {
-        console.log('🚀 Ultra Performance Mode: ACTIVATED');
-      }
+      // Ultra Performance Mode activated silently
       
       // 1. Immediate DOM optimizations
       document.documentElement.style.willChange = 'transform';
@@ -48,27 +46,21 @@ export function UltraPerformanceLoader() {
           .then(res => res.json())
           .then(data => {
             queryClient.setQueryData(['products'], data);
-            if (process.env.NODE_ENV === 'development') {
-              console.log('🚀 Products preloaded successfully');
-            }
+            // Products preloaded successfully
           }),
         
         fetch('/api/categories', { headers: { 'Cache-Control': 'max-age=60' } })
           .then(res => res.json())
           .then(data => {
             queryClient.setQueryData(['categories'], data);
-            if (process.env.NODE_ENV === 'development') {
-              console.log('🚀 Categories preloaded successfully');
-            }
+            // Categories preloaded successfully
           }),
         
         fetch('/api/settings')
           .then(res => res.json())
           .then(data => {
             queryClient.setQueryData(['settings'], data);
-            if (process.env.NODE_ENV === 'development') {
-              console.log('🚀 Settings preloaded successfully');
-            }
+            // Settings preloaded successfully
           })
       ];
       
@@ -91,9 +83,7 @@ export function UltraPerformanceLoader() {
         const connection = (navigator as any).connection;
         if (connection?.effectiveType === '4g') {
           // High-speed connection: preload everything
-          if (process.env.NODE_ENV === 'development') {
-            console.log('🚀 4G detected: Maximum performance mode');
-          }
+          // 4G detected: Maximum performance mode
         }
       }
       
@@ -103,13 +93,9 @@ export function UltraPerformanceLoader() {
           Promise.all(preloadPromises),
           new Promise(resolve => setTimeout(resolve, 2000)) // 2s timeout
         ]);
-        if (process.env.NODE_ENV === 'development') {
-          console.log('🚀 All critical resources preloaded');
-        }
+        // All critical resources preloaded
       } catch (error) {
-        if (process.env.NODE_ENV === 'development') {
-          console.warn('⚠️ Some preloads failed, continuing anyway:', error);
-        }
+        // Some preloads failed, continuing anyway
       }
       
       // 7. Force immediate repaint
@@ -117,9 +103,7 @@ export function UltraPerformanceLoader() {
       requestAnimationFrame(() => {
         document.documentElement.style.transform = '';
         setIsOptimizing(false);
-        if (process.env.NODE_ENV === 'development') {
-          console.log('🚀 Ultra Performance Mode: COMPLETE');
-        }
+        // Ultra Performance Mode: COMPLETE
       });
     };
     

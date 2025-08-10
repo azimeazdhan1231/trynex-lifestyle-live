@@ -85,9 +85,7 @@ export const loadFacebookPixelFromSettings = async () => {
       console.log('Loading Facebook Pixel with ID:', pixelId);
       loadFacebookPixel(pixelId.trim());
     } else {
-      if (process.env.NODE_ENV === 'development') {
-        console.log('No Facebook Pixel ID found in settings');
-      }
+      // No Facebook Pixel ID found in settings
     }
   } catch (error) {
     if (error instanceof DOMException && error.name === 'AbortError') {

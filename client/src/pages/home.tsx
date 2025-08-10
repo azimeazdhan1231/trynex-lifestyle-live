@@ -371,9 +371,7 @@ export default function Home() {
 
   // Simple initialization - run only once
   useEffect(() => {
-    if (process.env.NODE_ENV === 'development') {
-      console.log('🚀 Home page initialized');
-    }
+    // Home page initialized
   }, []); // Empty dependency array to run only once
 
   // Load active offers - disabled to prevent popup issues
@@ -507,9 +505,7 @@ export default function Home() {
   };
 
   const handleProductView = (product: Product) => {
-    if (process.env.NODE_ENV === 'development') {
-      console.log("🚀 Home: handleProductView called, opening product modal:", product.name);
-    }
+    // Product view called
     setSelectedProduct(product);
     setIsModalOpen(true);
     trackProductView(product.id, product.name, product.category || 'uncategorized');
