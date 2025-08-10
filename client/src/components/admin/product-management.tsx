@@ -92,12 +92,12 @@ function ProductForm({ product, onClose, isEdit = false }: any) {
     mutationFn: async (data: ProductFormData) => {
       console.log('Creating product with data:', data);
       
-      // Convert data to match server expectations (strings for validation)
+      // Convert data to match server expectations
       const productData = {
         name: data.name.trim(),
         description: data.description?.trim() || '',
-        price: data.price.toString(), // Keep as string for server validation
-        stock: data.stock.toString(), // Keep as string for server validation
+        price: data.price.toString(), // Server expects string
+        stock: typeof data.stock === 'number' ? data.stock : parseInt(data.stock.toString(), 10) || 0, // Server expects number
         category: data.category,
         image_url: data.image_url.trim(),
         additional_images: additionalImages.filter(Boolean),
@@ -157,12 +157,12 @@ function ProductForm({ product, onClose, isEdit = false }: any) {
     mutationFn: async (data: ProductFormData) => {
       console.log('Updating product with data:', data);
       
-      // Convert data to match server expectations (strings for validation)
+      // Convert data to match server expectations
       const productData = {
         name: data.name.trim(),
         description: data.description?.trim() || '',
-        price: data.price.toString(), // Keep as string for server validation
-        stock: data.stock.toString(), // Keep as string for server validation  
+        price: data.price.toString(), // Server expects string
+        stock: typeof data.stock === 'number' ? data.stock : parseInt(data.stock.toString(), 10) || 0, // Server expects number
         category: data.category,
         image_url: data.image_url.trim(),
         additional_images: additionalImages.filter(Boolean),
@@ -225,12 +225,14 @@ function ProductForm({ product, onClose, isEdit = false }: any) {
   const onSubmit = (data: ProductFormData) => {
     console.log('Form submitted with data:', data);
     
-    // Convert data to match server expectations
+    // Convert data to match server expectations - price as string, stock as number
     const processedData = {
       ...data,
-      price: data.price.toString(), // Convert to string for server
-      stock: parseInt(data.stock.toString(), 10) || 0, // Convert to number for server
+      price: data.price.toString(), // Server expects string
+      stock: parseInt(data.stock.toString(), 10) || 0, // Server expects number
     };
+    
+    console.log('Processed data for server:', processedData);
     
     if (isEdit) {
       updateProductMutation.mutate(processedData);

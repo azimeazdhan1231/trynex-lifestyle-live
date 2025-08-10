@@ -104,7 +104,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       console.log('✅ Processed data for validation:', processedData);
 
-      // Convert data to match server expectations
+      // Convert data to match server expectations - price as string, stock as number
       const productData = {
         name: processedData.name.trim(),
         description: processedData.description?.trim() || '',
@@ -186,8 +186,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const productData = {
         name: processedData.name?.trim(),
         description: processedData.description?.trim(),
-        price: typeof processedData.price === 'string' || typeof processedData.price === 'undefined' ? processedData.price : processedData.price.toString(),
-        stock: typeof processedData.stock === 'number' || typeof processedData.stock === 'undefined' ? processedData.stock : parseInt(processedData.stock.toString(), 10) || 0,
+        price: typeof processedData.price === 'string' ? processedData.price : processedData.price?.toString(),
+        stock: typeof processedData.stock === 'number' ? processedData.stock : (typeof processedData.stock === 'string' ? parseInt(processedData.stock, 10) : undefined),
         category: processedData.category,
         image_url: processedData.image_url?.trim(),
         additional_images: processedData.additional_images ? processedData.additional_images.filter(Boolean) : undefined,
