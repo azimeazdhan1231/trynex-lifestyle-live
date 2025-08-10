@@ -7,6 +7,7 @@ import express from "express"; // Added import
 import bcrypt from "bcryptjs"; // Added import
 import jwt from "jsonwebtoken"; // Added import
 import type { Product, Order, Category, Offer, User, CustomOrder } from "@shared/schema";
+import { insertProductSchema } from "@shared/schema";
 // Removed non-existent imports
 
 // High-performance multi-layer cache system
@@ -1109,6 +1110,79 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Failed to delete category:', error);
       res.status(500).json({ error: 'Failed to delete category' });
+    }
+  });
+
+  // Product management endpoints
+  app.post('/api/products', async (req, res) => {
+    try {
+      console.log('Creating product with data:', req.body);
+      
+      // Validate request data
+      const validatedData = insertProductSchema.parse(req.body);
+      
+      // Clear cache when product is created
+      performanceCache.clearCache();
+      productCache.data = null;
+      productCache.timestamp = 0;
+      
+      const product = await storage.createProduct(validatedData);
+      console.log('✅ Product created successfully:', product.id);
+      
+      res.status(201).json(product);
+    } catch (error) {
+      console.error('❌ Failed to create product:', error);
+      if (error.name === 'ZodError') {
+        return res.status(400).json({ error: 'Invalid product data', details: error.errors });
+      }
+      res.status(500).json({ error: 'Failed to create product' });
+    }
+  });
+
+  app.patch('/api/products/:id', async (req, res) => {
+    try {
+      const { id } = req.params;
+      console.log(`Updating product ${id} with data:`, req.body);
+      
+      // For updates, we make all fields optional
+      const updateSchema = insertProductSchema.partial();
+      const validatedData = updateSchema.parse(req.body);
+      
+      // Clear cache when product is updated
+      performanceCache.clearCache();
+      productCache.data = null;
+      productCache.timestamp = 0;
+      
+      const updatedProduct = await storage.updateProduct(id, validatedData);
+      console.log('✅ Product updated successfully:', updatedProduct.id);
+      
+      res.json(updatedProduct);
+    } catch (error) {
+      console.error('❌ Failed to update product:', error);
+      if (error.name === 'ZodError') {
+        return res.status(400).json({ error: 'Invalid product data', details: error.errors });
+      }
+      res.status(500).json({ error: 'Failed to update product' });
+    }
+  });
+
+  app.delete('/api/products/:id', async (req, res) => {
+    try {
+      const { id } = req.params;
+      console.log(`Deleting product ${id}`);
+      
+      // Clear cache when product is deleted
+      performanceCache.clearCache();
+      productCache.data = null;
+      productCache.timestamp = 0;
+      
+      await storage.deleteProduct(id);
+      console.log('✅ Product deleted successfully:', id);
+      
+      res.json({ success: true });
+    } catch (error) {
+      console.error('❌ Failed to delete product:', error);
+      res.status(500).json({ error: 'Failed to delete product' });
     }
   });
 
