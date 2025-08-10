@@ -362,11 +362,15 @@ function ProductFormModal({
   React.useEffect(() => {
     if (isOpen) {
       if (product) {
-        console.log("🔍 ProductFormModal: Loading product data:", product);
+        if (process.env.NODE_ENV === 'development') {
+          console.log("🔍 ProductFormModal: Loading product data:", product);
+        }
         
         // Handle description properly - it might be null or undefined
         const description = product.description || "";
-        console.log("📝 Description being loaded:", description);
+        if (process.env.NODE_ENV === 'development') {
+          console.log("📝 Description being loaded:", description);
+        }
         
         form.reset({
           name: product.name || "",
@@ -380,7 +384,9 @@ function ProductFormModal({
           is_best_selling: Boolean(product.is_best_selling)
         });
         
-        console.log("✅ Form reset with values:", form.getValues());
+        if (process.env.NODE_ENV === 'development') {
+          console.log("✅ Form reset with values:", form.getValues());
+        }
       } else {
         // Default template for new products with standard delivery info
         const defaultDescription = `পণ্যের বিবরণ:
@@ -453,7 +459,9 @@ function ProductFormModal({
           key.includes('products-cache') || key.includes('products-ultra-fast')
         );
         cacheKeys.forEach(key => localStorage.removeItem(key));
-        console.log('✅ Cleared product cache after save');
+        if (process.env.NODE_ENV === 'development') {
+          console.log('✅ Cleared product cache after save');
+        }
       } catch (e) {
         console.warn('Failed to clear localStorage cache:', e);
       }

@@ -64,7 +64,9 @@ export class SimpleStorage {
   // Products (Ultra-optimized for blazing fast loading)
   async getProducts(): Promise<Product[]> {
     try {
-      console.log('🔍 Executing optimized products query...');
+      if (process.env.NODE_ENV === 'development') {
+        console.log('🔍 Executing optimized products query...');
+      }
       const start = Date.now();
       
       // Ultra-optimized query with strategic field selection and indexing
@@ -84,8 +86,10 @@ export class SimpleStorage {
         .orderBy(desc(products.is_featured), desc(products.is_latest), desc(products.created_at))
         .limit(100); // Limit to prevent massive queries
       
-      const duration = Date.now() - start;
-      console.log(`✅ Products query completed in ${duration}ms - ${result.length} items`);
+      if (process.env.NODE_ENV === 'development') {
+        const duration = Date.now() - start;
+        console.log(`✅ Products query completed in ${duration}ms - ${result.length} items`);
+      }
       
       return result;
     } catch (error: any) {

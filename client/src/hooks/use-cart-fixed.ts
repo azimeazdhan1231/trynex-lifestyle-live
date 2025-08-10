@@ -34,15 +34,12 @@ export function useCart(): UseCartReturn {
       if (savedCart) {
         const parsedCart = JSON.parse(savedCart);
         if (Array.isArray(parsedCart)) {
-          console.log('Cart loaded from localStorage:', parsedCart);
           setCart(parsedCart);
         } else {
-          console.warn('Invalid cart data in localStorage, clearing...');
           localStorage.removeItem(CART_STORAGE_KEY);
         }
       }
     } catch (error) {
-      console.error('Failed to parse cart from localStorage:', error);
       localStorage.removeItem(CART_STORAGE_KEY);
     } finally {
       setIsLoaded(true);
@@ -51,10 +48,9 @@ export function useCart(): UseCartReturn {
 
   // Save cart to localStorage whenever it changes (but only after initial load)
   useEffect(() => {
-    if (isLoaded) {
+    if (isLoaded && cart.length >= 0) {
       try {
         localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
-        console.log('Cart saved to localStorage:', cart);
       } catch (error) {
         console.error('Error saving cart to localStorage:', error);
       }
@@ -62,8 +58,6 @@ export function useCart(): UseCartReturn {
   }, [cart, isLoaded]);
 
   const addToCart = (newItem: CartItem) => {
-    console.log('Adding item to cart:', newItem);
-    
     setCart(prevCart => {
       const existingItemIndex = prevCart.findIndex(item => 
         item.id === newItem.id && 
@@ -78,7 +72,6 @@ export function useCart(): UseCartReturn {
           ...updatedCart[existingItemIndex],
           quantity: (updatedCart[existingItemIndex].quantity || 0) + (newItem.quantity || 1)
         };
-        console.log('Updated existing item quantity');
       } else {
         // Add new item with proper quantity and data
         const itemToAdd: CartItem = {
@@ -88,42 +81,30 @@ export function useCart(): UseCartReturn {
           image_url: newItem.image_url || newItem.image
         };
         updatedCart = [...prevCart, itemToAdd];
-        console.log('Added new item to cart');
       }
 
-      console.log('Cart after addition:', updatedCart);
       return updatedCart;
     });
   };
 
   const removeFromCart = (id: string) => {
-    console.log('Removing item from cart:', id);
-    setCart(prevCart => {
-      const updatedCart = prevCart.filter(item => item.id !== id);
-      console.log('Cart after removal:', updatedCart);
-      return updatedCart;
-    });
+    setCart(prevCart => prevCart.filter(item => item.id !== id));
   };
 
   const updateQuantity = (id: string, quantity: number) => {
-    console.log('Updating quantity for item:', id, 'to:', quantity);
-    
     if (quantity <= 0) {
       removeFromCart(id);
       return;
     }
 
     setCart(prevCart => {
-      const updatedCart = prevCart.map(item =>
+      return prevCart.map(item =>
         item.id === id ? { ...item, quantity: Math.max(1, quantity) } : item
       );
-      console.log('Cart after quantity update:', updatedCart);
-      return updatedCart;
     });
   };
 
   const clearCart = () => {
-    console.log('Clearing cart');
     setCart([]);
   };
 
@@ -139,22 +120,15 @@ export function useCart(): UseCartReturn {
     return sum + (price * quantity);
   }, 0);
 
-  // Log cart state for debugging
+  // Only log cart state changes in development
   useEffect(() => {
-    if (isLoaded) {
-      console.log('useCart state:', {
-        cartItemsCount: cart.length,
-        totalItems,
-        totalPrice,
-        cart: cart.map(item => ({ 
-          id: item.id, 
-          name: item.name, 
-          quantity: item.quantity,
-          price: item.price 
-        }))
-      });
+    if (isLoaded && process.env.NODE_ENV === 'development') {
+      // Minimal logging only for significant changes
+      if (cart.length > 0) {
+        console.log('Cart updated:', { items: cart.length, total: totalPrice });
+      }
     }
-  }, [cart, totalItems, totalPrice, isLoaded]);
+  }, [cart.length, totalPrice, isLoaded]);
 
   return {
     cart,

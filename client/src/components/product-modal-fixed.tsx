@@ -21,21 +21,13 @@ export default function ProductModal({ product, isOpen, onClose, onAddToCart, on
   const [isImageOverlayOpen, setIsImageOverlayOpen] = useState(false);
   const { toast } = useToast();
 
-  // Debug logging
-  console.log("🔍 ProductModal: Received props:", { product: product?.name, isOpen });
-
   if (!product) {
-    console.log("❌ ProductModal: No product provided, returning null");
     return null;
   }
-
-  console.log("✅ ProductModal: Rendering with product:", product.name, "isOpen:", isOpen);
-  console.log("✅ ProductModal: Product details:", product);
 
   // Track product view when modal opens
   useEffect(() => {
     if (isOpen && product) {
-      console.log("📈 Tracking product view:", product.name);
       trackProductView(product.id, product.name, product.category || "uncategorized");
     }
   }, [isOpen, product]);
@@ -50,17 +42,8 @@ export default function ProductModal({ product, isOpen, onClose, onAddToCart, on
       return;
     }
 
-    // Create cart item with proper structure
-    const cartItem = {
-      id: product.id,
-      name: product.name,
-      price: typeof product.price === 'string' ? parseFloat(product.price) : product.price,
-      image_url: product.image_url,
-      image: product.image_url,
-      quantity: quantity
-    };
-
-    onAddToCart(cartItem);
+    // Call the parent's add to cart handler with the product
+    onAddToCart(product);
 
     // Track add to cart event
     const price = typeof product.price === 'string' ? parseFloat(product.price) : product.price;

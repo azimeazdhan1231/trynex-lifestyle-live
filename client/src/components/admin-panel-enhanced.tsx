@@ -189,7 +189,9 @@ export default function AdminPanelEnhanced() {
           key.includes('products-cache') || key.includes('products-ultra-fast')
         );
         cacheKeys.forEach(key => localStorage.removeItem(key));
-        console.log('✅ Cleared product cache after create');
+        if (process.env.NODE_ENV === 'development') {
+          console.log('✅ Cleared product cache after create');
+        }
       } catch (e) {
         console.warn('Failed to clear localStorage cache:', e);
       }
@@ -219,7 +221,9 @@ export default function AdminPanelEnhanced() {
           key.includes('products-cache') || key.includes('products-ultra-fast')
         );
         cacheKeys.forEach(key => localStorage.removeItem(key));
-        console.log('✅ Cleared product cache after update');
+        if (process.env.NODE_ENV === 'development') {
+          console.log('✅ Cleared product cache after update');
+        }
       } catch (e) {
         console.warn('Failed to clear localStorage cache:', e);
       }
@@ -250,7 +254,9 @@ export default function AdminPanelEnhanced() {
           key.includes('products-cache') || key.includes('products-ultra-fast')
         );
         cacheKeys.forEach(key => localStorage.removeItem(key));
-        console.log('✅ Cleared product cache after delete');
+        if (process.env.NODE_ENV === 'development') {
+          console.log('✅ Cleared product cache after delete');
+        }
       } catch (e) {
         console.warn('Failed to clear localStorage cache:', e);
       }
@@ -1596,7 +1602,7 @@ export default function AdminPanelEnhanced() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {selectedOrder.items && Array.isArray(selectedOrder.items) && (selectedOrder.items as any[]).map((item: any, index: number) => (
+                      {selectedOrder.items && Array.isArray(selectedOrder.items) && (selectedOrder.items as Array<{name?: string, quantity?: number, price?: number}>).map((item, index: number) => (
                         <TableRow key={index}>
                           <TableCell>{item.name || 'N/A'}</TableCell>
                           <TableCell>{item.quantity || 1}</TableCell>

@@ -83,7 +83,9 @@ export function UltraPerformanceLoader() {
         const connection = (navigator as any).connection;
         if (connection?.effectiveType === '4g') {
           // High-speed connection: preload everything
-          console.log('🚀 4G detected: Maximum performance mode');
+          if (process.env.NODE_ENV === 'development') {
+            console.log('🚀 4G detected: Maximum performance mode');
+          }
         }
       }
       
@@ -93,9 +95,13 @@ export function UltraPerformanceLoader() {
           Promise.all(preloadPromises),
           new Promise(resolve => setTimeout(resolve, 2000)) // 2s timeout
         ]);
-        console.log('🚀 All critical resources preloaded');
+        if (process.env.NODE_ENV === 'development') {
+          console.log('🚀 All critical resources preloaded');
+        }
       } catch (error) {
-        console.warn('⚠️ Some preloads failed, continuing anyway:', error);
+        if (process.env.NODE_ENV === 'development') {
+          console.warn('⚠️ Some preloads failed, continuing anyway:', error);
+        }
       }
       
       // 7. Force immediate repaint
@@ -103,7 +109,9 @@ export function UltraPerformanceLoader() {
       requestAnimationFrame(() => {
         document.documentElement.style.transform = '';
         setIsOptimizing(false);
-        console.log('🚀 Ultra Performance Mode: COMPLETE');
+        if (process.env.NODE_ENV === 'development') {
+          console.log('🚀 Ultra Performance Mode: COMPLETE');
+        }
       });
     };
     

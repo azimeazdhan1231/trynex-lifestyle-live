@@ -371,7 +371,9 @@ export default function Home() {
 
   // Simple initialization - run only once
   useEffect(() => {
-    console.log('🚀 Home page initialized');
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🚀 Home page initialized');
+    }
   }, []); // Empty dependency array to run only once
 
   // Load active offers - disabled to prevent popup issues
@@ -492,8 +494,7 @@ export default function Home() {
       id: product.id,
       name: product.name,
       price: Number(product.price),
-      image_url: product.image_url,
-      image: product.image_url,
+      image_url: product.image_url || undefined,
       quantity: 1
     });
 
@@ -506,7 +507,9 @@ export default function Home() {
   };
 
   const handleProductView = (product: Product) => {
-    console.log("🚀 Home: handleProductView called, opening product modal:", product.name);
+    if (process.env.NODE_ENV === 'development') {
+      console.log("🚀 Home: handleProductView called, opening product modal:", product.name);
+    }
     setSelectedProduct(product);
     setIsModalOpen(true);
     trackProductView(product.id, product.name, product.category || 'uncategorized');
@@ -522,8 +525,7 @@ export default function Home() {
       id: product.id,
       name: product.name,
       price: Number(product.price),
-      image_url: product.image_url,
-      image: product.image_url,
+      image_url: product.image_url || undefined,
       quantity: 1,
       customization: customization,
     });
