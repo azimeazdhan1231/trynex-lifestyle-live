@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useQuery } from '@tanstack/react-query';
+import { useQuery } from "@tanstack/react-query";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -95,17 +95,8 @@ export default function CartModalFixed({ isOpen, onClose }: CartModalProps) {
     );
   }
 
-  // Use cartItems from useQuery for rendering
-  // NOTE: The original code snippet was missing the actual useQuery call and data fetching logic.
-  // This part assumes `cartItems` would be the data returned from a `useQuery` hook.
-  // For this example, we'll use the `localCart` state which is derived from `useCart`.
-  // In a real-world scenario, `useQuery` would be fetching data independently.
-  const { data: cartItems = [] } = useQuery({
-    queryKey: ['cartItems'],
-    queryFn: () => localCart, // This is a placeholder, actual fetch logic would be here
-    initialData: localCart, // Use localCart as initial data
-    enabled: isOpen && isLoaded // Only run query when modal is open and cart is loaded
-  });
+  // Use localCart directly since it's already synced with the global cart state
+  const cartItems = localCart;
 
 
   return (
