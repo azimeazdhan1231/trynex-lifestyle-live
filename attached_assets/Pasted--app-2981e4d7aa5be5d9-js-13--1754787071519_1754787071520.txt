@@ -1,0 +1,493 @@
+_app-2981e4d7aa5be5d9.js:13 
+      /////////////////////
+   ///////////////////////////
+  ////////@@@@@@@//////////////
+  ////////@@@@@@@//////////////
+  ////////@@@@@@@//////////////        Curious and driven?
+  ///////////////@@@@@@@///////        Work with us!
+  ///////////////@@@@@@@///////
+  ///////////////@@@@@@@///////        https://join.replit.com/hack.with.us
+  ////////@@@@@@@//////////////
+  ////////@@@@@@@//////////////
+  ////////@@@@@@#//////////////
+   ///////////////////////////
+      /////////////////////
+      
+_app-2981e4d7aa5be5d9.js:13 [LaunchDarkly] LaunchDarkly client initialized
+/@cibim22748/trynex-lifestyle-live?v=1:1 Banner not shown: beforeinstallpromptevent.preventDefault() called. The page must call beforeinstallpromptevent.prompt() to show the banner.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+framework-fc3d6289511ec16b.js:1 Unrecognized feature: 'ambient-light-sensor'.
+_ @ framework-fc3d6289511ec16b.js:1
+framework-fc3d6289511ec16b.js:1 Unrecognized feature: 'battery'.
+_ @ framework-fc3d6289511ec16b.js:1
+framework-fc3d6289511ec16b.js:1 Unrecognized feature: 'execution-while-not-rendered'.
+_ @ framework-fc3d6289511ec16b.js:1
+framework-fc3d6289511ec16b.js:1 Unrecognized feature: 'execution-while-out-of-viewport'.
+_ @ framework-fc3d6289511ec16b.js:1
+framework-fc3d6289511ec16b.js:1 Unrecognized feature: 'layout-animations'.
+_ @ framework-fc3d6289511ec16b.js:1
+framework-fc3d6289511ec16b.js:1 Unrecognized feature: 'legacy-image-formats'.
+_ @ framework-fc3d6289511ec16b.js:1
+framework-fc3d6289511ec16b.js:1 Unrecognized feature: 'navigation-override'.
+_ @ framework-fc3d6289511ec16b.js:1
+framework-fc3d6289511ec16b.js:1 Unrecognized feature: 'oversized-images'.
+_ @ framework-fc3d6289511ec16b.js:1
+framework-fc3d6289511ec16b.js:1 Unrecognized feature: 'publickey-credentials'.
+_ @ framework-fc3d6289511ec16b.js:1
+framework-fc3d6289511ec16b.js:1 Unrecognized feature: 'speaker-selection'.
+_ @ framework-fc3d6289511ec16b.js:1
+framework-fc3d6289511ec16b.js:1 Unrecognized feature: 'unoptimized-images'.
+_ @ framework-fc3d6289511ec16b.js:1
+framework-fc3d6289511ec16b.js:1 Unrecognized feature: 'unsized-media'.
+_ @ framework-fc3d6289511ec16b.js:1
+framework-fc3d6289511ec16b.js:1 Unrecognized feature: 'pointer-lock'.
+_ @ framework-fc3d6289511ec16b.js:1
+framework-fc3d6289511ec16b.js:1 Allow attribute will take precedence over 'allowfullscreen'.
+_ @ framework-fc3d6289511ec16b.js:1
+framework-fc3d6289511ec16b.js:1 Allow attribute will take precedence over 'allowpaymentrequest'.
+_ @ framework-fc3d6289511ec16b.js:1
+attached_assets/image_1754785353929.png:1  Failed to load resource: the server responded with a status of 404 ()
+attached_assets/image_1754786586740.png:1  Failed to load resource: the server responded with a status of 404 ()
+workspace_iframe.html?initialPath=%2F&id=%3Aric%3A:32 Unrecognized feature: 'ambient-light-sensor'.
+workspace_iframe.html?initialPath=%2F&id=%3Aric%3A:32 Unrecognized feature: 'battery'.
+workspace_iframe.html?initialPath=%2F&id=%3Aric%3A:32 Unrecognized feature: 'execution-while-not-rendered'.
+workspace_iframe.html?initialPath=%2F&id=%3Aric%3A:32 Unrecognized feature: 'execution-while-out-of-viewport'.
+workspace_iframe.html?initialPath=%2F&id=%3Aric%3A:32 Unrecognized feature: 'layout-animations'.
+workspace_iframe.html?initialPath=%2F&id=%3Aric%3A:32 Unrecognized feature: 'legacy-image-formats'.
+workspace_iframe.html?initialPath=%2F&id=%3Aric%3A:32 Unrecognized feature: 'navigation-override'.
+workspace_iframe.html?initialPath=%2F&id=%3Aric%3A:32 Unrecognized feature: 'oversized-images'.
+workspace_iframe.html?initialPath=%2F&id=%3Aric%3A:32 Unrecognized feature: 'publickey-credentials'.
+workspace_iframe.html?initialPath=%2F&id=%3Aric%3A:32 Unrecognized feature: 'speaker-selection'.
+workspace_iframe.html?initialPath=%2F&id=%3Aric%3A:32 Unrecognized feature: 'unoptimized-images'.
+workspace_iframe.html?initialPath=%2F&id=%3Aric%3A:32 Unrecognized feature: 'unsized-media'.
+workspace_iframe.html?initialPath=%2F&id=%3Aric%3A:32 Allow attribute will take precedence over 'allowfullscreen'.
+workspace_iframe.html?initialPath=%2F&id=%3Aric%3A:32 Allow attribute will take precedence over 'allowpaymentrequest'.
+Console.js:61 Testing cart functionality: Cart should now persist items properly
+Console.js:61 🚀 Ultra Performance Mode: ACTIVATED
+Console.js:61 🚀 4G detected: Maximum performance mode
+Console.js:61 🚀 Categories preloaded successfully
+Console.js:61 🚀 Settings preloaded successfully
+Console.js:61 No Facebook Pixel ID found in settings
+Console.js:61 🚀 Products preloaded successfully
+Console.js:61 🚀 All critical resources preloaded
+Console.js:61 🚀 Ultra Performance Mode: COMPLETE
+Console.js:61 Cart loaded from localStorage: Array(2)
+Console.js:61 Cart loaded from localStorage: Array(2)
+Console.js:61 Cart loaded from localStorage: Array(2)
+Console.js:61 🚀 Home page initialized
+Console.js:61 Cart saved to localStorage: Array(2)
+Console.js:61 useCart state: Object
+Console.js:61 Cart saved to localStorage: Array(2)
+Console.js:61 useCart state: Object
+Console.js:61 Cart saved to localStorage: Array(2)
+Console.js:61 useCart state: Object
+Console.js:61 Cart loaded from localStorage: Array(2)
+Console.js:61 Cart loaded from localStorage: Array(2)
+Console.js:61 Cart loaded from localStorage: Array(2)
+Console.js:61 Cart loaded from localStorage: Array(2)
+Console.js:61 Cart loaded from localStorage: Array(2)
+Console.js:61 Cart loaded from localStorage: Array(2)
+Console.js:61 Cart loaded from localStorage: Array(2)
+Console.js:61 Cart loaded from localStorage: Array(2)
+Console.js:61 Cart loaded from localStorage: Array(2)
+Console.js:61 Cart loaded from localStorage: Array(2)
+Console.js:61 Cart loaded from localStorage: Array(2)
+Console.js:61 Cart loaded from localStorage: Array(2)
+Console.js:61 Cart loaded from localStorage: Array(2)
+Console.js:61 Cart loaded from localStorage: Array(2)
+Console.js:61 Cart loaded from localStorage: Array(2)
+Console.js:61 Cart loaded from localStorage: Array(2)
+Console.js:61 Cart loaded from localStorage: Array(2)
+Console.js:61 Cart loaded from localStorage: Array(2)
+Console.js:61 Cart loaded from localStorage: Array(2)
+Console.js:61 Cart loaded from localStorage: Array(2)
+Console.js:61 Cart loaded from localStorage: Array(2)
+Console.js:61 Cart loaded from localStorage: Array(2)
+Console.js:61 Cart loaded from localStorage: Array(2)
+Console.js:61 Cart loaded from localStorage: Array(2)
+Console.js:61 Cart loaded from localStorage: Array(2)
+Console.js:61 Cart loaded from localStorage: Array(2)
+Console.js:61 Cart loaded from localStorage: Array(2)
+Console.js:61 Cart loaded from localStorage: Array(2)
+Console.js:61 Cart loaded from localStorage: Array(2)
+Console.js:61 Cart loaded from localStorage: Array(2)
+Console.js:61 Cart loaded from localStorage: Array(2)
+Console.js:61 Cart loaded from localStorage: Array(2)
+Console.js:61 Cart loaded from localStorage: Array(2)
+Console.js:61 Cart saved to localStorage: Array(2)
+Console.js:61 useCart state: Object
+Console.js:61 Cart saved to localStorage: Array(2)
+Console.js:61 useCart state: Object
+Console.js:61 Cart saved to localStorage: Array(2)
+Console.js:61 useCart state: Object
+Console.js:61 Cart saved to localStorage: Array(2)
+Console.js:61 useCart state: Object
+Console.js:61 Cart saved to localStorage: Array(2)
+Console.js:61 useCart state: Object
+Console.js:61 Cart saved to localStorage: Array(2)
+Console.js:61 useCart state: Object
+Console.js:61 Cart saved to localStorage: Array(2)
+Console.js:61 useCart state: Object
+Console.js:61 Cart saved to localStorage: Array(2)
+Console.js:61 useCart state: Object
+Console.js:61 Cart saved to localStorage: Array(2)
+Console.js:61 useCart state: Object
+Console.js:61 Cart saved to localStorage: Array(2)
+Console.js:61 useCart state: Object
+Console.js:61 Cart saved to localStorage: Array(2)
+Console.js:61 useCart state: Object
+Console.js:61 Cart saved to localStorage: Array(2)
+Console.js:61 useCart state: Object
+Console.js:61 Cart saved to localStorage: Array(2)
+Console.js:61 useCart state: Object
+Console.js:61 Cart saved to localStorage: Array(2)
+Console.js:61 useCart state: Object
+Console.js:61 Cart saved to localStorage: Array(2)
+Console.js:61 useCart state: Object
+Console.js:61 Cart saved to localStorage: Array(2)
+Console.js:61 useCart state: Object
+Console.js:61 Cart saved to localStorage: Array(2)
+Console.js:61 useCart state: Object
+Console.js:61 Cart saved to localStorage: Array(2)
+Console.js:61 useCart state: Object
+Console.js:61 Cart saved to localStorage: Array(2)
+Console.js:61 useCart state: Object
+Console.js:61 Cart saved to localStorage: Array(2)
+Console.js:61 useCart state: Object
+Console.js:61 Cart saved to localStorage: Array(2)
+Console.js:61 useCart state: Object
+Console.js:61 Cart saved to localStorage: Array(2)
+Console.js:61 useCart state: Object
+Console.js:61 Cart saved to localStorage: Array(2)
+Console.js:61 useCart state: Object
+Console.js:61 Cart saved to localStorage: Array(2)
+Console.js:61 useCart state: Object
+Console.js:61 Cart saved to localStorage: Array(2)
+Console.js:61 useCart state: Object
+Console.js:61 Cart saved to localStorage: Array(2)
+Console.js:61 useCart state: Object
+Console.js:61 Cart saved to localStorage: Array(2)
+Console.js:61 useCart state: Object
+Console.js:61 Cart saved to localStorage: Array(2)
+Console.js:61 useCart state: Object
+Console.js:61 Cart saved to localStorage: Array(2)
+Console.js:61 useCart state: Object
+Console.js:61 Cart saved to localStorage: Array(2)
+Console.js:61 useCart state: Object
+Console.js:61 Cart saved to localStorage: Array(2)
+Console.js:61 useCart state: Object
+Console.js:61 Cart saved to localStorage: Array(2)
+Console.js:61 useCart state: Object
+Console.js:61 Cart saved to localStorage: Array(2)
+Console.js:61 useCart state: Object
+Console.js:61 CartModal opened, current cart: Array(2)
+Console.js:61 Fresh cart from localStorage: Array(2)
+Console.js:61 Using local cart: Array(2)
+Console.js:61 Cart isLoaded: true
+Console.js:61 Cart length: 2
+Console.js:61 Fresh cart length: 2
+Console.js:61 Cart loaded from localStorage: Array(2)
+Console.js:61 Cart loaded from localStorage: Array(2)
+Console.js:61 Cart loaded from localStorage: Array(2)
+Console.js:61 🚀 Home page initialized
+Console.js:61 Cart saved to localStorage: Array(2)
+Console.js:61 useCart state: Object
+Console.js:61 Cart saved to localStorage: Array(2)
+Console.js:61 useCart state: Object
+Console.js:61 Cart saved to localStorage: Array(2)
+Console.js:61 useCart state: Object
+_app-2981e4d7aa5be5d9.js:13 WARN: A component changed from uncontrolled to controlled.
+(anonymous) @ _app-2981e4d7aa5be5d9.js:13
+(anonymous) @ _app-2981e4d7aa5be5d9.js:40
+oO @ framework-fc3d6289511ec16b.js:1
+uB @ framework-fc3d6289511ec16b.js:1
+u_ @ framework-fc3d6289511ec16b.js:1
+r6 @ framework-fc3d6289511ec16b.js:1
+(anonymous) @ framework-fc3d6289511ec16b.js:1
+uO @ framework-fc3d6289511ec16b.js:1
+uS @ framework-fc3d6289511ec16b.js:1
+C @ framework-fc3d6289511ec16b.js:1
+z @ framework-fc3d6289511ec16b.js:1
+_app-2981e4d7aa5be5d9.js:13 WARN: A component changed from controlled to uncontrolled.
+(anonymous) @ _app-2981e4d7aa5be5d9.js:13
+(anonymous) @ _app-2981e4d7aa5be5d9.js:40
+oO @ framework-fc3d6289511ec16b.js:1
+uB @ framework-fc3d6289511ec16b.js:1
+(anonymous) @ framework-fc3d6289511ec16b.js:1
+C @ framework-fc3d6289511ec16b.js:1
+z @ framework-fc3d6289511ec16b.js:1
+_app-2981e4d7aa5be5d9.js:13 WARN: A component changed from uncontrolled to controlled.
+(anonymous) @ _app-2981e4d7aa5be5d9.js:13
+(anonymous) @ _app-2981e4d7aa5be5d9.js:40
+oO @ framework-fc3d6289511ec16b.js:1
+uB @ framework-fc3d6289511ec16b.js:1
+u_ @ framework-fc3d6289511ec16b.js:1
+r6 @ framework-fc3d6289511ec16b.js:1
+(anonymous) @ framework-fc3d6289511ec16b.js:1
+uO @ framework-fc3d6289511ec16b.js:1
+uS @ framework-fc3d6289511ec16b.js:1
+C @ framework-fc3d6289511ec16b.js:1
+z @ framework-fc3d6289511ec16b.js:1
+Console.js:61 `DialogContent` requires a `DialogTitle` for the component to be accessible for screen reader users.
+
+If you want to hide the `DialogTitle`, you can wrap it with our VisuallyHidden component.
+
+For more information, see https://radix-ui.com/primitives/docs/components/dialog
+Mt.forEach.n.<computed> @ Console.js:61
+(anonymous) @ chunk-27WOANAR.js?v=b68f1d26:326
+commitHookEffectListMount @ chunk-RPCDYKBN.js?v=b68f1d26:16915
+commitPassiveMountOnFiber @ chunk-RPCDYKBN.js?v=b68f1d26:18156
+commitPassiveMountEffects_complete @ chunk-RPCDYKBN.js?v=b68f1d26:18129
+commitPassiveMountEffects_begin @ chunk-RPCDYKBN.js?v=b68f1d26:18119
+commitPassiveMountEffects @ chunk-RPCDYKBN.js?v=b68f1d26:18109
+flushPassiveEffectsImpl @ chunk-RPCDYKBN.js?v=b68f1d26:19490
+flushPassiveEffects @ chunk-RPCDYKBN.js?v=b68f1d26:19447
+commitRootImpl @ chunk-RPCDYKBN.js?v=b68f1d26:19416
+commitRoot @ chunk-RPCDYKBN.js?v=b68f1d26:19277
+performSyncWorkOnRoot @ chunk-RPCDYKBN.js?v=b68f1d26:18895
+flushSyncCallbacks @ chunk-RPCDYKBN.js?v=b68f1d26:9119
+(anonymous) @ chunk-RPCDYKBN.js?v=b68f1d26:18627
+Console.js:61 Warning: Missing `Description` or `aria-describedby={undefined}` for {DialogContent}.
+Mt.forEach.n.<computed> @ Console.js:61
+(anonymous) @ chunk-27WOANAR.js?v=b68f1d26:340
+commitHookEffectListMount @ chunk-RPCDYKBN.js?v=b68f1d26:16915
+commitPassiveMountOnFiber @ chunk-RPCDYKBN.js?v=b68f1d26:18156
+commitPassiveMountEffects_complete @ chunk-RPCDYKBN.js?v=b68f1d26:18129
+commitPassiveMountEffects_begin @ chunk-RPCDYKBN.js?v=b68f1d26:18119
+commitPassiveMountEffects @ chunk-RPCDYKBN.js?v=b68f1d26:18109
+flushPassiveEffectsImpl @ chunk-RPCDYKBN.js?v=b68f1d26:19490
+flushPassiveEffects @ chunk-RPCDYKBN.js?v=b68f1d26:19447
+commitRootImpl @ chunk-RPCDYKBN.js?v=b68f1d26:19416
+commitRoot @ chunk-RPCDYKBN.js?v=b68f1d26:19277
+performSyncWorkOnRoot @ chunk-RPCDYKBN.js?v=b68f1d26:18895
+flushSyncCallbacks @ chunk-RPCDYKBN.js?v=b68f1d26:9119
+(anonymous) @ chunk-RPCDYKBN.js?v=b68f1d26:18627
+Console.js:61 Cart loaded from localStorage: Array(2)
+Console.js:61 Cart loaded from localStorage: Array(2)
+Console.js:61 Cart loaded from localStorage: Array(2)
+Console.js:61 Cart loaded from localStorage: Array(2)
+Console.js:61 Cart loaded from localStorage: Array(2)
+Console.js:61 Cart loaded from localStorage: Array(2)
+Console.js:61 Cart loaded from localStorage: Array(2)
+Console.js:61 Cart loaded from localStorage: Array(2)
+Console.js:61 Cart loaded from localStorage: Array(2)
+Console.js:61 Cart loaded from localStorage: Array(2)
+Console.js:61 Cart loaded from localStorage: Array(2)
+Console.js:61 Cart loaded from localStorage: Array(2)
+Console.js:61 Cart loaded from localStorage: Array(2)
+Console.js:61 Cart loaded from localStorage: Array(2)
+Console.js:61 Cart loaded from localStorage: Array(2)
+Console.js:61 Cart loaded from localStorage: Array(2)
+Console.js:61 Cart loaded from localStorage: Array(2)
+Console.js:61 Cart loaded from localStorage: Array(2)
+Console.js:61 Cart loaded from localStorage: Array(2)
+Console.js:61 Cart loaded from localStorage: Array(2)
+Console.js:61 Cart loaded from localStorage: Array(2)
+Console.js:61 Cart loaded from localStorage: Array(2)
+Console.js:61 Cart loaded from localStorage: Array(2)
+Console.js:61 Cart loaded from localStorage: Array(2)
+Console.js:61 Cart loaded from localStorage: Array(2)
+Console.js:61 Cart loaded from localStorage: Array(2)
+Console.js:61 Cart loaded from localStorage: Array(2)
+Console.js:61 Cart loaded from localStorage: Array(2)
+Console.js:61 Cart loaded from localStorage: Array(2)
+Console.js:61 Cart loaded from localStorage: Array(2)
+Console.js:61 Cart loaded from localStorage: Array(2)
+Console.js:61 Cart loaded from localStorage: Array(2)
+Console.js:61 Cart loaded from localStorage: Array(2)
+Console.js:61 Cart saved to localStorage: Array(2)
+Console.js:61 useCart state: Object
+Console.js:61 Cart saved to localStorage: Array(2)
+Console.js:61 useCart state: Object
+Console.js:61 Cart saved to localStorage: Array(2)
+Console.js:61 useCart state: Object
+Console.js:61 Cart saved to localStorage: Array(2)
+Console.js:61 useCart state: Object
+Console.js:61 Cart saved to localStorage: Array(2)
+Console.js:61 useCart state: Object
+Console.js:61 Cart saved to localStorage: Array(2)
+Console.js:61 useCart state: Object
+Console.js:61 Cart saved to localStorage: Array(2)
+Console.js:61 useCart state: Object
+Console.js:61 Cart saved to localStorage: Array(2)
+Console.js:61 useCart state: Object
+Console.js:61 Cart saved to localStorage: Array(2)
+Console.js:61 useCart state: Object
+Console.js:61 Cart saved to localStorage: Array(2)
+Console.js:61 useCart state: Object
+Console.js:61 Cart saved to localStorage: Array(2)
+Console.js:61 useCart state: Object
+Console.js:61 Cart saved to localStorage: Array(2)
+Console.js:61 useCart state: Object
+Console.js:61 Cart saved to localStorage: Array(2)
+Console.js:61 useCart state: Object
+Console.js:61 Cart saved to localStorage: Array(2)
+Console.js:61 useCart state: Object
+Console.js:61 Cart saved to localStorage: Array(2)
+Console.js:61 useCart state: Object
+Console.js:61 Cart saved to localStorage: Array(2)
+Console.js:61 useCart state: Object
+Console.js:61 Cart saved to localStorage: Array(2)
+Console.js:61 useCart state: Object
+Console.js:61 Cart saved to localStorage: Array(2)
+Console.js:61 useCart state: Object
+Console.js:61 Cart saved to localStorage: Array(2)
+Console.js:61 useCart state: Object
+Console.js:61 Cart saved to localStorage: Array(2)
+Console.js:61 useCart state: Object
+Console.js:61 Cart saved to localStorage: Array(2)
+Console.js:61 useCart state: Object
+Console.js:61 Cart saved to localStorage: Array(2)
+Console.js:61 useCart state: Object
+Console.js:61 Cart saved to localStorage: Array(2)
+Console.js:61 useCart state: Object
+Console.js:61 Cart saved to localStorage: Array(2)
+Console.js:61 useCart state: Object
+Console.js:61 Cart saved to localStorage: Array(2)
+Console.js:61 useCart state: Object
+Console.js:61 Cart saved to localStorage: Array(2)
+Console.js:61 useCart state: Object
+Console.js:61 Cart saved to localStorage: Array(2)
+Console.js:61 useCart state: Object
+Console.js:61 Cart saved to localStorage: Array(2)
+Console.js:61 useCart state: Object
+Console.js:61 Cart saved to localStorage: Array(2)
+Console.js:61 useCart state: Object
+Console.js:61 Cart saved to localStorage: Array(2)
+Console.js:61 useCart state: Object
+Console.js:61 Cart saved to localStorage: Array(2)
+Console.js:61 useCart state: Object
+Console.js:61 Cart saved to localStorage: Array(2)
+Console.js:61 useCart state: Object
+Console.js:61 Cart saved to localStorage: Array(2)
+Console.js:61 useCart state: Object
+Console.js:61 Cart loaded from localStorage: Array(2)
+Console.js:61 Cart loaded from localStorage: Array(2)
+Console.js:61 Cart loaded from localStorage: Array(2)
+Console.js:61 🚀 Home page initialized
+Console.js:61 Cart saved to localStorage: Array(2)
+Console.js:61 useCart state: Object
+Console.js:61 Cart saved to localStorage: Array(2)
+Console.js:61 useCart state: Object
+Console.js:61 Cart saved to localStorage: Array(2)
+Console.js:61 useCart state: Object
+Console.js:61 Cart loaded from localStorage: Array(2)
+Console.js:61 Cart loaded from localStorage: Array(2)
+Console.js:61 Cart loaded from localStorage: Array(2)
+Console.js:61 Cart loaded from localStorage: Array(2)
+Console.js:61 Cart loaded from localStorage: Array(2)
+Console.js:61 Cart loaded from localStorage: Array(2)
+Console.js:61 Cart loaded from localStorage: Array(2)
+Console.js:61 Cart loaded from localStorage: Array(2)
+Console.js:61 Cart loaded from localStorage: Array(2)
+Console.js:61 Cart loaded from localStorage: Array(2)
+Console.js:61 Cart loaded from localStorage: Array(2)
+Console.js:61 Cart loaded from localStorage: Array(2)
+Console.js:61 Cart loaded from localStorage: Array(2)
+Console.js:61 Cart loaded from localStorage: Array(2)
+Console.js:61 Cart loaded from localStorage: Array(2)
+Console.js:61 Cart loaded from localStorage: Array(2)
+Console.js:61 Cart loaded from localStorage: Array(2)
+Console.js:61 Cart loaded from localStorage: Array(2)
+Console.js:61 Cart loaded from localStorage: Array(2)
+Console.js:61 Cart loaded from localStorage: Array(2)
+Console.js:61 Cart loaded from localStorage: Array(2)
+Console.js:61 Cart loaded from localStorage: Array(2)
+Console.js:61 Cart loaded from localStorage: Array(2)
+Console.js:61 Cart loaded from localStorage: Array(2)
+Console.js:61 Cart loaded from localStorage: Array(2)
+Console.js:61 Cart loaded from localStorage: Array(2)
+Console.js:61 Cart loaded from localStorage: Array(2)
+Console.js:61 Cart loaded from localStorage: Array(2)
+Console.js:61 Cart loaded from localStorage: Array(2)
+Console.js:61 Cart loaded from localStorage: Array(2)
+Console.js:61 Cart loaded from localStorage: Array(2)
+Console.js:61 Cart loaded from localStorage: Array(2)
+Console.js:61 Cart loaded from localStorage: Array(2)
+Console.js:61 Request aborted for /api/offers
+Mt.forEach.n.<computed> @ Console.js:61
+Console.js:61 Cart saved to localStorage: Array(2)
+Console.js:61 useCart state: Object
+Console.js:61 Cart saved to localStorage: Array(2)
+Console.js:61 useCart state: Object
+Console.js:61 Cart saved to localStorage: Array(2)
+Console.js:61 useCart state: Object
+Console.js:61 Cart saved to localStorage: Array(2)
+Console.js:61 useCart state: Object
+Console.js:61 Cart saved to localStorage: Array(2)
+Console.js:61 useCart state: Object
+Console.js:61 Cart saved to localStorage: Array(2)
+Console.js:61 useCart state: Object
+Console.js:61 Cart saved to localStorage: Array(2)
+Console.js:61 useCart state: Object
+Console.js:61 Cart saved to localStorage: Array(2)
+Console.js:61 useCart state: Object
+Console.js:61 Cart saved to localStorage: Array(2)
+Console.js:61 useCart state: Object
+Console.js:61 Cart saved to localStorage: Array(2)
+Console.js:61 useCart state: Object
+Console.js:61 Cart saved to localStorage: Array(2)
+Console.js:61 useCart state: Object
+Console.js:61 Cart saved to localStorage: Array(2)
+Console.js:61 useCart state: Object
+Console.js:61 Cart saved to localStorage: Array(2)
+Console.js:61 useCart state: Object
+Console.js:61 Cart saved to localStorage: Array(2)
+Console.js:61 useCart state: Object
+Console.js:61 Cart saved to localStorage: Array(2)
+Console.js:61 useCart state: Object
+Console.js:61 Cart saved to localStorage: Array(2)
+Console.js:61 useCart state: Object
+Console.js:61 Cart saved to localStorage: Array(2)
+Console.js:61 useCart state: Object
+Console.js:61 Cart saved to localStorage: Array(2)
+Console.js:61 useCart state: Object
+Console.js:61 Cart saved to localStorage: Array(2)
+Console.js:61 useCart state: Object
+Console.js:61 Cart saved to localStorage: Array(2)
+Console.js:61 useCart state: Object
+Console.js:61 Cart saved to localStorage: Array(2)
+Console.js:61 useCart state: Object
+Console.js:61 Cart saved to localStorage: Array(2)
+Console.js:61 useCart state: Object
+Console.js:61 Cart saved to localStorage: Array(2)
+Console.js:61 useCart state: Object
+Console.js:61 Cart saved to localStorage: Array(2)
+Console.js:61 useCart state: Object
+Console.js:61 Cart saved to localStorage: Array(2)
+Console.js:61 useCart state: Object
+Console.js:61 Cart saved to localStorage: Array(2)
+Console.js:61 useCart state: Object
+Console.js:61 Cart saved to localStorage: Array(2)
+Console.js:61 useCart state: Object
+Console.js:61 Cart saved to localStorage: Array(2)
+Console.js:61 useCart state: Object
+Console.js:61 Cart saved to localStorage: Array(2)
+Console.js:61 useCart state: Object
+Console.js:61 Cart saved to localStorage: Array(2)
+Console.js:61 useCart state: Object
+Console.js:61 Cart saved to localStorage: Array(2)
+Console.js:61 useCart state: Object
+Console.js:61 Cart saved to localStorage: Array(2)
+Console.js:61 useCart state: Object
+Console.js:61 Cart saved to localStorage: Array(2)
+Console.js:61 useCart state: Object
+@tanstack_react-query.js?v=b68f1d26:460 Uncaught (in promise) AbortError: signal is aborted without reason
+    at Object.cancel (@tanstack_react-query.js?v=b68f1d26:460:53)
+    at _a4.removeObserver (@tanstack_react-query.js?v=b68f1d26:807:42)
+    at _a9.destroy (@tanstack_react-query.js?v=b68f1d26:2013:39)
+    at _a9.onUnsubscribe (@tanstack_react-query.js?v=b68f1d26:1992:12)
+    at @tanstack_react-query.js?v=b68f1d26:27:12
+    at safelyCallDestroy (chunk-RPCDYKBN.js?v=b68f1d26:16748:13)
+    at commitHookEffectListUnmount (chunk-RPCDYKBN.js?v=b68f1d26:16875:19)
+    at commitPassiveUnmountInsideDeletedTreeOnFiber (chunk-RPCDYKBN.js?v=b68f1d26:18283:17)
+    at commitPassiveUnmountEffectsInsideOfDeletedTree_begin (chunk-RPCDYKBN.js?v=b68f1d26:18245:13)
+    at commitPassiveUnmountEffects_begin (chunk-RPCDYKBN.js?v=b68f1d26:18181:19)
