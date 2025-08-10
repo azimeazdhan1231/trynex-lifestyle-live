@@ -148,7 +148,9 @@ function ProductForm({ product, onClose, isEdit = false }: any) {
       
       // Force complete cache refresh
       await invalidateAllCaches();
-      onClose();
+      
+      // Force page reload to show updated data immediately
+      window.location.reload();
     },
     onError: (error: any) => {
       console.error('Update product error:', error);
@@ -406,7 +408,9 @@ export default function ProductManagement() {
     queryKey: ["/api/products"],
     refetchInterval: false, // Disable auto-refresh to prevent conflicts
     staleTime: 0, // Always consider data stale
-    cacheTime: 0, // Don't cache data
+    gcTime: 0, // Don't cache data (new React Query v5 syntax)
+    refetchOnMount: 'always', // Always refetch when component mounts
+    refetchOnWindowFocus: true, // Refetch when window gains focus
   });
 
   const { data: categories = [] } = useQuery({ queryKey: ["/api/categories"] });

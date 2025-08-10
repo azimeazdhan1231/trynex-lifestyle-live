@@ -1233,7 +1233,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.set({
         'Cache-Control': 'no-cache, no-store, must-revalidate',
         'Pragma': 'no-cache',
-        'Expires': '0'
+        'Expires': '0',
+        'X-Cache-Bust': Date.now().toString() // Force cache busting
       });
       
       res.json(updatedProduct);
