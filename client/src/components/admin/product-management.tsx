@@ -80,19 +80,19 @@ function ProductForm({ product, onClose, isEdit = false }: any) {
     mutationFn: async (data: ProductFormData) => {
       console.log('Creating product with data:', data);
       
-      // Convert string fields to proper types
+      // Convert data to match server expectations (strings for validation)
       const productData = {
-        name: data.name,
-        description: data.description,
-        price: parseFloat(data.price) || 0,
-        stock: parseInt(data.stock) || 0,
+        name: data.name.trim(),
+        description: data.description?.trim() || '',
+        price: data.price.toString(), // Keep as string for server validation
+        stock: data.stock.toString(), // Keep as string for server validation
         category: data.category,
-        image_url: data.image_url,
+        image_url: data.image_url.trim(),
         additional_images: additionalImages.filter(Boolean),
-        is_active: data.is_active,
-        is_featured: data.is_featured || false,
-        is_latest: data.is_latest || false,
-        is_best_selling: data.is_best_selling || false
+        is_active: Boolean(data.is_active),
+        is_featured: Boolean(data.is_featured),
+        is_latest: Boolean(data.is_latest),
+        is_best_selling: Boolean(data.is_best_selling)
       };
       
       const response = await fetch('/api/products', {
@@ -145,19 +145,19 @@ function ProductForm({ product, onClose, isEdit = false }: any) {
     mutationFn: async (data: ProductFormData) => {
       console.log('Updating product with data:', data);
       
-      // Convert string fields to proper types for API
+      // Convert data to match server expectations (strings for validation)
       const productData = {
-        name: data.name,
-        description: data.description,
-        price: parseFloat(data.price) || 0,
-        stock: parseInt(data.stock) || 0,
+        name: data.name.trim(),
+        description: data.description?.trim() || '',
+        price: data.price.toString(), // Keep as string for server validation
+        stock: data.stock.toString(), // Keep as string for server validation  
         category: data.category,
-        image_url: data.image_url,
+        image_url: data.image_url.trim(),
         additional_images: additionalImages.filter(Boolean),
-        is_active: data.is_active,
-        is_featured: data.is_featured || false,
-        is_latest: data.is_latest || false,
-        is_best_selling: data.is_best_selling || false
+        is_active: Boolean(data.is_active),
+        is_featured: Boolean(data.is_featured),
+        is_latest: Boolean(data.is_latest),
+        is_best_selling: Boolean(data.is_best_selling)
       };
       
       console.log('Processed product data:', productData);
@@ -453,9 +453,20 @@ export default function ProductManagement() {
     refetchOnWindowFocus: true,
     refetchOnReconnect: true,
     networkMode: 'always',
+    retry: (failureCount, error) => {
+      // Don't retry on validation errors
+      if (error?.message?.includes('Invalid product data')) {
+        return false;
+      }
+      return failureCount < 2;
+    }
   });
 
-  const { data: categories = [] } = useQuery({ queryKey: ["/api/categories"] });
+  const { data: categories = [] } = useQuery({ 
+    queryKey: ["/api/categories"],
+    retry: 2,
+    staleTime: 60000
+  });
   const { toast } = useToast();
   const queryClient = useQueryClient();
 

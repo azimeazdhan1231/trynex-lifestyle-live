@@ -89,13 +89,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         'Cache-Control': 'no-cache, no-store, must-revalidate'
       });
       
-      // Process data - ensure proper conversion to strings for validation
+      // Process data - clean and validate
       const processedData = {
         ...req.body,
-        price: req.body.price !== undefined ? req.body.price.toString() : '0',
-        stock: req.body.stock !== undefined ? req.body.stock.toString() : '0',
         created_at: new Date()
       };
+      
+      // Remove any undefined values
+      Object.keys(processedData).forEach(key => {
+        if (processedData[key] === undefined || processedData[key] === null) {
+          delete processedData[key];
+        }
+      });
       
       console.log('✅ Processed data for validation:', processedData);
       
@@ -148,14 +153,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         'Cache-Control': 'no-cache, no-store, must-revalidate'
       });
       
-      // Process data - handle both string and number inputs properly
+      // Process data - ensure proper types for validation
       const processedData = {
-        ...req.body,
-        // Convert price to string for validation if it's a number
-        price: req.body.price !== undefined ? req.body.price.toString() : undefined,
-        // Convert stock to string for validation if it's a number  
-        stock: req.body.stock !== undefined ? req.body.stock.toString() : undefined
+        ...req.body
       };
+      
+      // Clean up the data - remove any undefined values
+      Object.keys(processedData).forEach(key => {
+        if (processedData[key] === undefined || processedData[key] === null) {
+          delete processedData[key];
+        }
+      });
       
       // For updates, make all fields optional
       const updateSchema = insertProductSchema.partial();
