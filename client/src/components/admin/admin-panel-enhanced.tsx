@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -65,7 +65,7 @@ function SiteSettingsPanel() {
 
   const handleSettingChange = (key: string, value: any) => {
     setSettings(prev => ({ ...prev, [key]: value }));
-    
+
     // Real-time updates for critical settings
     if (key === 'site_name' && value) {
       document.title = value;
@@ -76,17 +76,17 @@ function SiteSettingsPanel() {
     try {
       setIsLoading(true);
       await apiRequest("POST", "/api/settings", settings);
-      
+
       // Update document title immediately
       if (settings.site_name) {
         document.title = settings.site_name;
       }
-      
+
       toast({ 
         title: "সেটিংস সেভ হয়েছে", 
         description: "সাইট সেটিংস সফলভাবে আপডেট হয়েছে।" 
       });
-      
+
       // Invalidate queries to refresh data
       await queryClient.invalidateQueries({ queryKey: ["/api/settings"] });
     } catch (error: any) {
@@ -130,7 +130,7 @@ function SiteSettingsPanel() {
               />
             </div>
           </div>
-          
+
           <div>
             <Label htmlFor="site_description">সাইটের বিবরণ</Label>
             <Textarea
@@ -141,7 +141,7 @@ function SiteSettingsPanel() {
               rows={3}
             />
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <Label htmlFor="contact_phone">যোগাযোগ ফোন</Label>
@@ -252,7 +252,7 @@ function SiteSettingsPanel() {
                 onCheckedChange={(checked) => handleSettingChange("maintenance_mode", checked)}
               />
             </div>
-            
+
             <div className="flex items-center justify-between">
               <div>
                 <Label>গেস্ট চেকআউট</Label>
@@ -291,17 +291,17 @@ function FixDescriptionsButton({ onComplete }: { onComplete: () => void }) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' }
       });
-      
+
       if (!response.ok) {
         throw new Error('Fix failed');
       }
-      
+
       const result = await response.json();
       toast({ 
         title: "বিবরণ আপডেট সফল", 
         description: `${result.updated} টি পণ্যের বিবরণ আপডেট হয়েছে` 
       });
-      
+
       onComplete();
     } catch (error) {
       toast({ 
@@ -365,13 +365,13 @@ function ProductFormModal({
         if (process.env.NODE_ENV === 'development') {
           console.log("🔍 ProductFormModal: Loading product data:", product);
         }
-        
+
         // Handle description properly - it might be null or undefined
         const description = product.description || "";
         if (process.env.NODE_ENV === 'development') {
           console.log("📝 Description being loaded:", description);
         }
-        
+
         form.reset({
           name: product.name || "",
           description: description,
@@ -383,7 +383,7 @@ function ProductFormModal({
           is_latest: Boolean(product.is_latest),
           is_best_selling: Boolean(product.is_best_selling)
         });
-        
+
         if (process.env.NODE_ENV === 'development') {
           console.log("✅ Form reset with values:", form.getValues());
         }
@@ -416,7 +416,7 @@ function ProductFormModal({
   const onSubmit = async (data: any) => {
     try {
       setIsLoading(true);
-      
+
       // Validate required fields
       if (!data.name?.trim()) {
         toast({ title: "ত্রুটি", description: "পণ্যের নাম প্রয়োজন", variant: "destructive" });
@@ -498,7 +498,7 @@ function ProductFormModal({
       await queryClient.removeQueries({ queryKey: ["/api/products"] });
       await queryClient.invalidateQueries({ queryKey: ["/api/products"] });
       await queryClient.refetchQueries({ queryKey: ["/api/products"] });
-      
+
       // Clear localStorage cache
       try {
         const cacheKeys = Object.keys(localStorage).filter(key => 
@@ -511,12 +511,12 @@ function ProductFormModal({
       } catch (e) {
         console.warn('Failed to clear localStorage cache:', e);
       }
-      
+
       // Call onSave callback if provided
       if (onSave && typeof onSave === 'function') {
         onSave();
       }
-      
+
       onClose();
       form.reset();
     } catch (error: any) {
@@ -558,7 +558,7 @@ function ProductFormModal({
             পণ্যের বিস্তারিত তথ্য দিন। সকল প্রয়োজনীয় ক্ষেত্র পূরণ করুন।
           </DialogDescription>
         </DialogHeader>
-        
+
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
@@ -573,7 +573,7 @@ function ProductFormModal({
                 <p className="text-red-500 text-sm">{form.formState.errors.name.message}</p>
               )}
             </div>
-            
+
             <div className="space-y-2">
               <Label htmlFor="category">ক্যাটেগরি *</Label>
               <Select 
@@ -594,7 +594,7 @@ function ProductFormModal({
               )}
             </div>
           </div>
-          
+
           <div className="space-y-2">
             <Label htmlFor="description">পণ্যের বিবরণ ও ডেলিভারি তথ্য</Label>
             <Textarea
@@ -629,7 +629,7 @@ function ProductFormModal({
                 <p className="text-red-500 text-sm">{form.formState.errors.price.message}</p>
               )}
             </div>
-            
+
             <div className="space-y-2">
               <Label htmlFor="stock">স্টক *</Label>
               <Input
@@ -669,7 +669,7 @@ function ProductFormModal({
               />
               <Label htmlFor="is_featured">ফিচার্ড পণ্য</Label>
             </div>
-            
+
             <div className="flex items-center space-x-2">
               <Switch
                 id="is_latest"
@@ -679,7 +679,7 @@ function ProductFormModal({
               />
               <Label htmlFor="is_latest">নতুন পণ্য</Label>
             </div>
-            
+
             <div className="flex items-center space-x-2">
               <Switch
                 id="is_best_selling"
@@ -807,7 +807,7 @@ function ProductsManagement() {
             className="pl-10"
           />
         </div>
-        
+
         <div className="relative">
           <Button
             variant="outline"
@@ -822,7 +822,7 @@ function ProductsManagement() {
               </Badge>
             )}
           </Button>
-          
+
           {isFilterOpen && (
             <Card className="absolute right-0 top-full mt-2 w-80 z-50 shadow-lg">
               <CardHeader className="pb-3">
@@ -853,7 +853,7 @@ function ProductsManagement() {
                     </SelectContent>
                   </Select>
                 </div>
-                
+
                 <div className="flex gap-2 pt-2">
                   <Button
                     variant="outline"
@@ -875,7 +875,7 @@ function ProductsManagement() {
             </Card>
           )}
         </div>
-        
+
         <Button
           variant="outline"
           onClick={() => refetch()}
@@ -1055,11 +1055,11 @@ function OrderDetailsModal({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status }),
       });
-      
+
       if (!response.ok) {
         throw new Error(`Failed to update status: ${response.statusText}`);
       }
-      
+
       return await response.json();
     },
     onSuccess: () => {
@@ -1421,7 +1421,7 @@ export default function AdminPanelEnhanced() {
 
     const todayStart = new Date();
     todayStart.setHours(0, 0, 0, 0);
-    
+
     const todayOrders = orderArray.filter((order: any) => {
       const orderDate = new Date(order.created_at);
       return orderDate >= todayStart;
