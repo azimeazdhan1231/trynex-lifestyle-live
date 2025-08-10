@@ -121,22 +121,22 @@ export default function PerfectProductModal({
       onClose={onClose}
       title={product.name}
       description={product.description || "পণ্যের বিস্তারিত তথ্য"}
-      maxWidth="5xl"
+      maxWidth="7xl"
       data-testid="modal-product-details"
     >
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 min-h-[600px]">
         {/* Product Images */}
-        <div className="space-y-4">
-          <div className="aspect-square bg-gray-100 rounded-xl overflow-hidden border border-gray-200">
+        <div className="space-y-6">
+          <div className="aspect-square bg-gray-100 rounded-xl overflow-hidden border border-gray-200 shadow-lg">
             {selectedImage ? (
               <img
                 src={selectedImage}
                 alt={product.name}
-                className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                className="w-full h-full object-cover hover:scale-105 transition-transform duration-300 cursor-zoom-in"
               />
             ) : (
               <div className="w-full h-full flex items-center justify-center text-gray-400">
-                <Package className="w-24 h-24" />
+                <Package className="w-32 h-32" />
               </div>
             )}
           </div>
@@ -210,12 +210,59 @@ export default function PerfectProductModal({
           </div>
 
           {/* Description */}
-          {product.description && (
-            <div>
-              <h3 className="font-semibold text-gray-900 mb-2">পণ্যের বিবরণ</h3>
-              <p className="text-gray-700 leading-relaxed">{product.description}</p>
+          <div className="space-y-4">
+            <h3 className="font-semibold text-gray-900 mb-3 text-lg">পণ্যের বিবরণ</h3>
+            <div className="bg-gray-50 p-4 rounded-lg">
+              <p className="text-gray-700 leading-relaxed mb-4">
+                {product.description || `${product.name} একটি উচ্চমানের পণ্য যা বিশেষ যত্নে তৈরি করা হয়েছে। এই পণ্যটি আপনার প্রত্যাশা পূরণ করবে এবং দীর্ঘদিন ব্যবহার করতে পারবেন।`}
+              </p>
+              
+              {/* Product Features */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                <div className="space-y-2">
+                  <h4 className="font-medium text-gray-800">বৈশিষ্ট্য:</h4>
+                  <ul className="text-sm text-gray-600 space-y-1">
+                    <li>• উচ্চমানের উপাদান দিয়ে তৈরি</li>
+                    <li>• টেকসই এবং দীর্ঘস্থায়ী</li>
+                    <li>• নিরাপদ এবং পরিবেশবান্ধব</li>
+                    <li>• সহজ রক্ষণাবেক্ষণ</li>
+                  </ul>
+                </div>
+                <div className="space-y-2">
+                  <h4 className="font-medium text-gray-800">সুবিধা:</h4>
+                  <ul className="text-sm text-gray-600 space-y-1">
+                    <li>• ১০০% মানি ব্যাক গ্যারান্টি</li>
+                    <li>• ৬ মাসের ওয়ারেন্টি</li>
+                    <li>• বিনামূল্যে হোম ডেলিভারি</li>
+                    <li>• ২৪/৭ কাস্টমার সাপোর্ট</li>
+                  </ul>
+                </div>
+              </div>
             </div>
-          )}
+          </div>
+
+          {/* Product Specifications */}
+          <div className="bg-blue-50 p-4 rounded-lg">
+            <h4 className="font-medium text-gray-800 mb-3">পণ্যের তথ্য:</h4>
+            <div className="grid grid-cols-2 gap-4 text-sm">
+              <div>
+                <span className="font-medium">ব্র্যান্ড:</span>
+                <span className="ml-2 text-gray-600">ট্রাইনেক্স লাইফস্টাইল</span>
+              </div>
+              <div>
+                <span className="font-medium">ক্যাটেগরি:</span>
+                <span className="ml-2 text-gray-600">{product.category || 'সাধারণ'}</span>
+              </div>
+              <div>
+                <span className="font-medium">স্টক:</span>
+                <span className="ml-2 text-gray-600">{product.stock || 0} টি</span>
+              </div>
+              <div>
+                <span className="font-medium">প্রোডাক্ট কোড:</span>
+                <span className="ml-2 text-gray-600">#{product.id.slice(0, 8)}</span>
+              </div>
+            </div>
+          </div>
 
           <Separator />
 
@@ -300,15 +347,46 @@ export default function PerfectProductModal({
             </Button>
           </div>
 
-          {/* Additional Info */}
-          <div className="bg-gray-50 p-4 rounded-lg space-y-2">
-            <h4 className="font-medium text-gray-900">অতিরিক্ত তথ্য:</h4>
-            <ul className="text-sm text-gray-700 space-y-1">
-              <li>• ১-৩ দিনে ডেলিভারি (ঢাকার ভিতরে)</li>
-              <li>• ৩-৫ দিনে ডেলিভারি (ঢাকার বাইরে)</li>
-              <li>• ক্যাশ অন ডেলিভারি সুবিধা</li>
-              <li>• বিনামূল্যে প্রোডাক্ট রিপ্লেসমেন্ট</li>
-            </ul>
+          {/* Shipping & Return Policy */}
+          <div className="bg-gradient-to-r from-green-50 to-blue-50 p-6 rounded-lg space-y-4">
+            <h4 className="font-semibold text-gray-900 text-lg">শিপিং এবং রিটার্ন নীতি:</h4>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <h5 className="font-medium text-gray-800 mb-2 flex items-center">
+                  <Truck className="w-4 h-4 mr-2 text-green-600" />
+                  ডেলিভারি তথ্য:
+                </h5>
+                <ul className="text-sm text-gray-700 space-y-1">
+                  <li>• ঢাকার ভিতরে: ১-২ দিন</li>
+                  <li>• ঢাকার বাইরে: ৩-৫ দিন</li>
+                  <li>• ২০০০+ টাকায় ফ্রি ডেলিভারি</li>
+                  <li>• ক্যাশ অন ডেলিভারি সুবিধা</li>
+                </ul>
+              </div>
+              
+              <div>
+                <h5 className="font-medium text-gray-800 mb-2 flex items-center">
+                  <Shield className="w-4 h-4 mr-2 text-blue-600" />
+                  গ্যারান্টি ও সার্ভিস:
+                </h5>
+                <ul className="text-sm text-gray-700 space-y-1">
+                  <li>• ৭ দিন রিটার্ন পলিসি</li>
+                  <li>• ৬ মাস ওয়ারেন্টি</li>
+                  <li>• ১০০% অরিজিনাল প্রোডাক্ট</li>
+                  <li>• ২৪/৭ কাস্টমার সাপোর্ট</li>
+                </ul>
+              </div>
+            </div>
+
+            <div className="border-t pt-4 mt-4">
+              <h5 className="font-medium text-gray-800 mb-2">যোগাযোগ করুন:</h5>
+              <div className="flex flex-wrap gap-4 text-sm text-gray-600">
+                <span>📞 +৮৮০১৭৬৫৫৫৫৫৯৳</span>
+                <span>📧 support@trynexlifestyle.com</span>
+                <span>⏰ সকাল ৯টা - রাত ১০টা</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>

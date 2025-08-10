@@ -75,17 +75,18 @@
 
 /* Enhanced Modal responsive styles */
 .modal-content {
-  @apply p-3 sm:p-4 md:p-6;
-  max-height: calc(100vh - 60px);
+  @apply p-4 sm:p-6 md:p-8;
+  max-height: calc(100vh - 80px);
   overflow-y: auto;
 }
 
 .product-modal-content {
-  @apply max-w-4xl w-full max-h-[90vh] overflow-hidden;
+  @apply max-w-7xl w-full max-h-[95vh] overflow-hidden;
+  min-height: 600px;
 }
 
 .product-modal-body {
-  @apply overflow-y-auto max-h-[calc(90vh-120px)] p-3 sm:p-4 md:p-6;
+  @apply overflow-y-auto max-h-[calc(95vh-140px)] p-4 sm:p-6 md:p-8;
 }
 
 .product-modal-grid {

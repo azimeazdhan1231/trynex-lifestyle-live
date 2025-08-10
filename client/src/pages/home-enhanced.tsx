@@ -1,14 +1,14 @@
 import { useState, useEffect, memo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { 
-  ArrowRight, 
-  ShoppingCart, 
-  Gift, 
-  Star, 
-  TrendingUp, 
-  Heart, 
-  Eye, 
-  ChevronRight, 
+import {
+  ArrowRight,
+  ShoppingCart,
+  Gift,
+  Star,
+  TrendingUp,
+  Heart,
+  Eye,
+  ChevronRight,
   ArrowUp,
   Shield,
   Truck,
@@ -40,12 +40,12 @@ interface ModernProductCardProps {
   layout?: "grid" | "list";
 }
 
-const ModernProductCard = memo(function ModernProductCard({ 
-  product, 
-  onAddToCart, 
-  onViewProduct, 
-  onCustomize, 
-  layout = "grid" 
+const ModernProductCard = memo(function ModernProductCard({
+  product,
+  onAddToCart,
+  onViewProduct,
+  onCustomize,
+  layout = "grid"
 }: ModernProductCardProps) {
   const [isFavorite, setIsFavorite] = useState(false);
 
@@ -119,7 +119,7 @@ const ModernProductCard = memo(function ModernProductCard({
   return (
     <Card className="group overflow-hidden hover:shadow-xl transition-all duration-300 border-0 shadow-sm bg-white">
       <div className="relative">
-        <div 
+        <div
           className="aspect-[3/4] overflow-hidden cursor-pointer bg-gray-50"
           onClick={() => onViewProduct(product)}
         >
@@ -270,7 +270,7 @@ const HeroSection = memo(function HeroSection() {
         <div
           key={slide.id}
           className={`absolute inset-0 transition-transform duration-1000 ease-in-out ${
-            index === currentSlide ? 'translate-x-0' : 
+            index === currentSlide ? 'translate-x-0' :
             index < currentSlide ? '-translate-x-full' : 'translate-x-full'
           }`}
         >
@@ -575,7 +575,7 @@ export default function EnhancedHomePage() {
           </div>
         ) : (
           <div className={`grid gap-6 ${
-            productLayout === "list" 
+            productLayout === "list"
               ? "grid-cols-1"
               : "grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5"
           }`}>
@@ -654,8 +654,8 @@ export default function EnhancedHomePage() {
               বিশেষ ছাড় এবং নতুন পণ্যের খবর সবার আগে পেতে আমাদের নিউজলেটার সাবস্ক্রাইব করুন
             </p>
             <div className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto">
-              <Input 
-                type="email" 
+              <Input
+                type="email"
                 placeholder="আপনার ইমেইল ঠিকানা"
                 className="bg-white text-black"
               />
