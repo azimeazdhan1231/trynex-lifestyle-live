@@ -1,5 +1,5 @@
 import { useState } from "react";
-import UnifiedModalBase from "./unified-modal-base";
+import PerfectModalBase from "./perfect-modal-base";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -116,12 +116,13 @@ export default function PerfectProductModal({
   const totalPrice = productPrice * quantity;
 
   return (
-    <UnifiedModalBase
+    <PerfectModalBase
       isOpen={isOpen}
       onClose={onClose}
       title={product.name}
       description={product.description || "পণ্যের বিস্তারিত তথ্য"}
-      size="xl"
+      maxWidth="5xl"
+      data-testid="modal-product-details"
     >
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Product Images */}
@@ -311,7 +312,7 @@ export default function PerfectProductModal({
           </div>
         </div>
       </div>
-    </UnifiedModalBase>
+    </PerfectModalBase>
   );
 }
 

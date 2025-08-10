@@ -75,18 +75,17 @@
 
 /* Enhanced Modal responsive styles */
 .modal-content {
-  @apply p-4 sm:p-6 md:p-8;
-  max-height: calc(100vh - 80px);
+  @apply p-3 sm:p-4 md:p-6;
+  max-height: calc(100vh - 60px);
   overflow-y: auto;
 }
 
 .product-modal-content {
-  @apply max-w-7xl w-full max-h-[95vh] overflow-hidden;
-  min-height: 600px;
+  @apply max-w-4xl w-full max-h-[90vh] overflow-hidden;
 }
 
 .product-modal-body {
-  @apply overflow-y-auto max-h-[calc(95vh-140px)] p-4 sm:p-6 md:p-8;
+  @apply overflow-y-auto max-h-[calc(90vh-120px)] p-3 sm:p-4 md:p-6;
 }
 
 .product-modal-grid {
@@ -925,67 +924,36 @@ input, textarea, select {
   animation: pulse-glow 2s ease-in-out infinite;
 }
 
-/* Unified Modal System - Complete Fix */
+/* Complete Modal System Reset and Fix */
 [data-radix-dialog-content] {
   position: fixed !important;
   top: 50% !important;
   left: 50% !important;
   transform: translate(-50%, -50%) !important;
   z-index: 9999 !important;
+  width: 95vw !important;
+  max-width: 500px !important;
+  max-height: 90vh !important;
   margin: 0 !important;
   padding: 0 !important;
-  overflow: hidden !important;
+  overflow: visible !important;
   border-radius: 12px !important;
   background: white !important;
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
   border: 1px solid #e5e7eb !important;
-  max-height: calc(100vh - 32px) !important;
 }
 
-/* Unified Modal Overlay Fix */
-[data-radix-dialog-overlay] {
-  position: fixed !important;
-  inset: 0 !important;
-  z-index: 9998 !important;
-  background-color: rgba(0, 0, 0, 0.5) !important;
-  backdrop-filter: blur(4px) !important;
+/* Admin Panel Modal Specific Styling */
+.admin-modal [data-radix-dialog-content] {
+  max-width: 800px !important;
+  height: auto !important;
+  max-height: 90vh !important;
 }
 
-/* Accessibility Improvements */
-[data-radix-dialog-content]:focus {
-  outline: 2px solid #3b82f6 !important;
-  outline-offset: 2px !important;
-}
-
-/* Fix Badge in DialogDescription nesting issue */
-[data-radix-dialog-description] .inline-flex {
-  display: inline !important;
-}
-
-/* Ensure proper focus management */
-[data-radix-dialog-content] [data-radix-dialog-close] {
-  position: absolute !important;
-  top: 12px !important;
-  right: 12px !important;
-  z-index: 10 !important;
-}
-
-/* Modal Content Scrollbar */
-[data-radix-dialog-content] .overflow-y-auto::-webkit-scrollbar {
-  width: 6px !important;
-}
-
-[data-radix-dialog-content] .overflow-y-auto::-webkit-scrollbar-track {
-  background: transparent !important;
-}
-
-[data-radix-dialog-content] .overflow-y-auto::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.2) !important;
-  border-radius: 3px !important;
-}
-
-[data-radix-dialog-content] .overflow-y-auto::-webkit-scrollbar-thumb:hover {
-  background: rgba(0, 0, 0, 0.4) !important;
+/* Large modals for product/category management */
+.modal-large [data-radix-dialog-content] {
+  max-width: 900px !important;
+  width: 90vw !important;
 }
 
 /* Fix close button positioning */

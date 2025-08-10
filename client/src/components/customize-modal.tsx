@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import UnifiedModalBase from "./unified-modal-base";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -121,15 +121,34 @@ export default function CustomizeModal({
   const totalPrice = Number(product.price) * customization.quantity;
 
   return (
-    <UnifiedModalBase
-      isOpen={isOpen}
-      onClose={onClose}
-      title={`${product.name} কাস্টমাইজ করুন`}
-      description="আপনার পছন্দ অনুযায়ী ডিজাইন করুন"
-      size="xl"
-    >
-      <div className="space-y-6">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden p-0 bg-white rounded-2xl">
+        <DialogHeader className="px-6 py-4 border-b bg-gray-50/50">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Package className="w-6 h-6 text-orange-500" />
+              <div>
+                <DialogTitle className="text-xl font-bold text-gray-900">
+                  {product.name} কাস্টমাইজ করুন
+                </DialogTitle>
+                <p className="text-sm text-gray-600 mt-1">
+                  আপনার পছন্দ অনুযায়ী ডিজাইন করুন
+                </p>
+              </div>
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onClose}
+              className="h-8 w-8 p-0 rounded-full hover:bg-gray-200"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
+        </DialogHeader>
+
+        <div className="overflow-y-auto max-h-[calc(90vh-140px)]">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 p-6">
             {/* Product Image & Info */}
             <div className="space-y-4">
               <div className="relative">
@@ -312,7 +331,7 @@ export default function CustomizeModal({
         </div>
 
         {/* Action Buttons */}
-        <div className="border-t bg-white p-6 -m-3 sm:-m-4 lg:-m-6 mt-6">
+        <div className="border-t bg-white p-6">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <Button
               onClick={handleAddToCart}
@@ -334,7 +353,7 @@ export default function CustomizeModal({
             </Button>
           </div>
         </div>
-      </div>
-    </UnifiedModalBase>
+      </DialogContent>
+    </Dialog>
   );
 }
