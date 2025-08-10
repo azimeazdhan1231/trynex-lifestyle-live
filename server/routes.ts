@@ -7,7 +7,7 @@ import express from "express"; // Added import
 import bcrypt from "bcryptjs"; // Added import
 import jwt from "jsonwebtoken"; // Added import
 import type { Product, Order, Category, Offer, User, CustomOrder } from "@shared/schema";
-import { insertProductSchema } from "@shared/schema";
+import { insertProductSchema, insertOrderSchema } from "@shared/schema";
 // Removed non-existent imports
 
 // High-performance multi-layer cache system
@@ -769,80 +769,111 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   });
 
-  // Order management
-  // Order creation endpoint
+  // Order management endpoints (fixed to match database schema)
   app.post("/api/orders", async (req, res) => {
     try {
+      console.log('Creating order with data:', req.body);
       const orderData = req.body;
 
-      // Generate order ID
-      const orderId = `ORD-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      // Validate required fields
+      if (!orderData.customer_name || !orderData.phone || !orderData.district || !orderData.thana || !orderData.items || !orderData.total) {
+        return res.status(400).json({ 
+          error: "Missing required fields", 
+          required: ["customer_name", "phone", "district", "thana", "items", "total"]
+        });
+      }
 
-      const newOrder = await db.insert(orders).values({
-        id: orderId,
-        customerName: orderData.customerName,
+      // Generate tracking ID
+      const trackingId = `TRX${Date.now()}${Math.floor(Math.random() * 1000)}`;
+
+      // Prepare order data matching database schema
+      const orderDataForDB = {
+        tracking_id: trackingId,
+        customer_name: orderData.customer_name,
+        district: orderData.district,
+        thana: orderData.thana,
+        address: orderData.address || "",
         phone: orderData.phone,
-        address: orderData.address,
-        items: JSON.stringify(orderData.items),
-        totalAmount: orderData.totalAmount.toString(),
-        paymentMethod: orderData.paymentMethod || "cod",
+        payment_info: orderData.payment_info ? JSON.stringify(orderData.payment_info) : null,
         status: "pending",
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      }).returning();
+        items: typeof orderData.items === 'string' ? orderData.items : JSON.stringify(orderData.items),
+        total: orderData.total.toString(),
+        custom_instructions: orderData.custom_instructions || null,
+        custom_images: orderData.custom_images ? JSON.stringify(orderData.custom_images) : null,
+        user_id: orderData.user_id || null
+      };
 
-      res.json({ success: true, order: newOrder[0] });
+      const newOrder = await storage.createOrder(orderDataForDB);
+      console.log('✅ Order created successfully:', newOrder.tracking_id);
+
+      res.status(201).json({ 
+        success: true, 
+        order: newOrder,
+        tracking_id: newOrder.tracking_id
+      });
     } catch (error) {
-      console.error("Order creation error:", error);
-      res.status(500).json({ error: "Failed to create order" });
+      console.error("❌ Order creation error:", error);
+      res.status(500).json({ error: "Failed to create order", details: error.message });
     }
   });
 
-  // Custom orders endpoint
+  // Custom orders endpoint (updated to match schema)
   app.post("/api/custom-orders", async (req, res) => {
     try {
+      console.log('Creating custom order with data:', req.body);
       const orderData = req.body;
 
-      // Generate custom order ID
-      const orderId = `CUSTOM-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      // Validate required fields for custom orders
+      if (!orderData.customerName || !orderData.phone || !orderData.address) {
+        return res.status(400).json({ 
+          error: "Missing required fields", 
+          required: ["customerName", "phone", "address"]
+        });
+      }
 
-      const customOrder = await db.insert(orders).values({
-        id: orderId,
-        customerName: orderData.customerName,
-        phone: orderData.phone,
-        email: orderData.email || "",
+      // Generate tracking ID for custom order
+      const trackingId = `CUSTOM${Date.now()}${Math.floor(Math.random() * 1000)}`;
+
+      // Prepare custom order data
+      const customOrderData = {
+        tracking_id: trackingId,
+        customer_name: orderData.customerName,
+        district: orderData.district || "ঢাকা", // Default district
+        thana: orderData.thana || "ঢাকা", // Default thana
         address: orderData.address,
+        phone: orderData.phone,
+        payment_info: orderData.paymentMethod ? JSON.stringify({ method: orderData.paymentMethod, trx_id: orderData.trxId }) : null,
+        status: "pending",
         items: JSON.stringify([{
           productId: orderData.productId,
-          productName: orderData.productName,
-          productPrice: orderData.productPrice,
-          quantity: orderData.quantity,
+          productName: orderData.productName || "কাস্টম পণ্য",
+          productPrice: orderData.productPrice || 0,
+          quantity: orderData.quantity || 1,
           customization: {
             size: orderData.selectedSize,
             color: orderData.selectedColor,
             printArea: orderData.selectedPrintArea,
             customText: orderData.customText,
-            customImages: orderData.customImages,
-            instructions: orderData.instructions,
-            customizationPrice: orderData.customizationPrice
+            instructions: orderData.instructions
           }
         }]),
-        totalAmount: orderData.totalPrice.toString(),
-        paymentMethod: "cod",
-        status: "pending",
-        orderType: "custom",
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      }).returning();
+        total: (orderData.totalPrice || orderData.totalAmount || 0).toString(),
+        custom_instructions: orderData.instructions || orderData.custom_instructions || "",
+        custom_images: orderData.customImages ? JSON.stringify(orderData.customImages) : null
+      };
 
-      res.json({ 
+      const customOrder = await storage.createOrder(customOrderData);
+      console.log('✅ Custom order created successfully:', customOrder.tracking_id);
+
+      res.status(201).json({ 
         success: true, 
-        order: customOrder[0],
-        message: "Custom order created successfully"
+        order: customOrder,
+        tracking_id: customOrder.tracking_id,
+        message: "কাস্টম অর্ডার সফলভাবে তৈরি হয়েছে"
       });
     } catch (error) {
-      console.error("Custom order creation error:", error);
-      res.status(500).json({ error: "Failed to create custom order" });
+      console.error("❌ Custom order creation error:", error);
+      res.status(500).json({ error: "Failed to create custom order", details: error.message });
     }
   });
 
@@ -869,6 +900,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Failed to fetch order:', error);
       res.status(500).json({ error: 'Failed to fetch order' });
+    }
+  });
+
+  // Order status update endpoint
+  app.patch('/api/orders/:id/status', async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { status } = req.body;
+      
+      console.log(`Updating order ${id} status to: ${status}`);
+      
+      const updatedOrder = await storage.updateOrderStatus(id, status);
+      
+      res.json({
+        success: true,
+        order: updatedOrder,
+        message: 'অর্ডার স্ট্যাটাস আপডেট হয়েছে'
+      });
+    } catch (error) {
+      console.error('❌ Failed to update order status:', error);
+      res.status(500).json({ error: 'Failed to update order status' });
     }
   });
 
