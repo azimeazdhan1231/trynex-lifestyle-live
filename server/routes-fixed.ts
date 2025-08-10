@@ -415,6 +415,179 @@ export function registerRoutes(app: Express): void {
     }
   });
 
+  // Update product by ID (PATCH endpoint for admin panel)
+  app.patch('/api/products/:id', authenticateToken, async (req: AuthRequest, res) => {
+    try {
+      const { id } = req.params;
+      const updates = req.body;
+
+      console.log(`📝 Updating product ${id} with:`, updates);
+
+      // Validate product exists
+      const existingProduct = await storage.getProduct(id);
+      if (!existingProduct) {
+        return res.status(404).json({ error: 'Product not found' });
+      }
+
+      // Validate and sanitize updates
+      const validatedUpdates: any = {};
+
+      if (updates.name !== undefined) {
+        validatedUpdates.name = String(updates.name).trim();
+        if (!validatedUpdates.name) {
+          return res.status(400).json({ error: 'Product name cannot be empty' });
+        }
+      }
+
+      if (updates.description !== undefined) {
+        validatedUpdates.description = String(updates.description || '').trim();
+      }
+
+      if (updates.price !== undefined) {
+        const priceNum = Number(updates.price);
+        if (isNaN(priceNum) || priceNum < 0) {
+          return res.status(400).json({ error: 'Invalid price - must be a positive number' });
+        }
+        validatedUpdates.price = priceNum.toString();
+      }
+
+      if (updates.stock !== undefined) {
+        const stockNum = Number(updates.stock);
+        if (isNaN(stockNum) || stockNum < 0) {
+          return res.status(400).json({ error: 'Invalid stock - must be a non-negative number' });
+        }
+        validatedUpdates.stock = stockNum;
+      }
+
+      if (updates.category !== undefined) {
+        validatedUpdates.category = String(updates.category).trim();
+        if (!validatedUpdates.category) {
+          return res.status(400).json({ error: 'Product category cannot be empty' });
+        }
+      }
+
+      if (updates.image_url !== undefined) {
+        validatedUpdates.image_url = String(updates.image_url || '').trim();
+      }
+
+      if (updates.additional_images !== undefined) {
+        validatedUpdates.additional_images = updates.additional_images;
+      }
+
+      if (updates.is_active !== undefined) {
+        validatedUpdates.is_active = Boolean(updates.is_active);
+      }
+
+      if (updates.is_featured !== undefined) {
+        validatedUpdates.is_featured = Boolean(updates.is_featured);
+      }
+
+      if (updates.is_latest !== undefined) {
+        validatedUpdates.is_latest = Boolean(updates.is_latest);
+      }
+
+      if (updates.is_best_selling !== undefined) {
+        validatedUpdates.is_best_selling = Boolean(updates.is_best_selling);
+      }
+
+      // Update the product
+      const updatedProduct = await storage.updateProduct(id, validatedUpdates);
+      
+      if (!updatedProduct) {
+        return res.status(404).json({ error: 'Product not found or update failed' });
+      }
+
+      // Clear performance cache
+      performanceCache.clearAll();
+
+      console.log(`✅ Product ${id} updated successfully`);
+      res.json(updatedProduct);
+
+    } catch (error) {
+      console.error('❌ Failed to update product:', error);
+      res.status(500).json({ error: 'Failed to update product' });
+    }
+  });
+
+  // Create new product (POST endpoint for admin panel)
+  app.post('/api/products', authenticateToken, async (req: AuthRequest, res) => {
+    try {
+      const productData = req.body;
+
+      console.log('📝 Creating new product:', productData);
+
+      // Validate required fields
+      if (!productData.name || !productData.category || !productData.price) {
+        return res.status(400).json({ error: 'Name, category, and price are required' });
+      }
+
+      // Validate and sanitize data
+      const validatedProduct: any = {
+        name: String(productData.name).trim(),
+        description: String(productData.description || '').trim(),
+        category: String(productData.category).trim(),
+        image_url: String(productData.image_url || '').trim(),
+        additional_images: productData.additional_images || [],
+        is_active: Boolean(productData.is_active !== false), // default true
+        is_featured: Boolean(productData.is_featured || false),
+        is_latest: Boolean(productData.is_latest || false),
+        is_best_selling: Boolean(productData.is_best_selling || false)
+      };
+
+      // Validate price
+      const priceNum = Number(productData.price);
+      if (isNaN(priceNum) || priceNum < 0) {
+        return res.status(400).json({ error: 'Invalid price - must be a positive number' });
+      }
+      validatedProduct.price = priceNum.toString();
+
+      // Validate stock
+      const stockNum = Number(productData.stock || 0);
+      if (isNaN(stockNum) || stockNum < 0) {
+        return res.status(400).json({ error: 'Invalid stock - must be a non-negative number' });
+      }
+      validatedProduct.stock = stockNum;
+
+      // Create the product
+      const newProduct = await storage.createProduct(validatedProduct);
+
+      // Clear performance cache
+      performanceCache.clearAll();
+
+      console.log(`✅ Product created successfully: ${newProduct.id}`);
+      res.status(201).json(newProduct);
+
+    } catch (error) {
+      console.error('❌ Failed to create product:', error);
+      res.status(500).json({ error: 'Failed to create product' });
+    }
+  });
+
+  // Delete product by ID (DELETE endpoint for admin panel)
+  app.delete('/api/products/:id', authenticateToken, async (req: AuthRequest, res) => {
+    try {
+      const { id } = req.params;
+
+      // Validate product exists
+      const existingProduct = await storage.getProduct(id);
+      if (!existingProduct) {
+        return res.status(404).json({ error: 'Product not found' });
+      }
+
+      await storage.deleteProduct(id);
+
+      // Clear performance cache
+      performanceCache.clearAll();
+
+      console.log(`✅ Product ${id} deleted successfully`);
+      res.json({ message: 'Product deleted successfully', id });
+
+    } catch (error) {
+      console.error('❌ Failed to delete product:', error);
+      res.status(500).json({ error: 'Failed to delete product' });
+    }
+  });
+
   // Orders API
   app.get('/api/orders', async (req, res) => {
     try {
