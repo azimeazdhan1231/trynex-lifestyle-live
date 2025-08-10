@@ -124,7 +124,7 @@ export default function ProductManagement({ products, categories }: ProductManag
       name: "",
       price: "",
       image_url: "",
-      category: "",
+      category: "no-category",
       stock: 0,
       description: "",
       is_featured: false,
@@ -139,7 +139,7 @@ export default function ProductManagement({ products, categories }: ProductManag
       name: product.name,
       price: product.price,
       image_url: product.image_url || "",
-      category: product.category || "",
+      category: product.category || "no-category",
       stock: product.stock,
       description: product.description || "",
       is_featured: product.is_featured || false,
@@ -154,7 +154,7 @@ export default function ProductManagement({ products, categories }: ProductManag
       name: formData.name,
       price: formData.price,
       image_url: formData.image_url || null,
-      category: formData.category || null,
+      category: formData.category === "no-category" ? null : formData.category || null,
       stock: formData.stock,
       description: formData.description || null,
       is_featured: formData.is_featured,
@@ -229,7 +229,7 @@ export default function ProductManagement({ products, categories }: ProductManag
                       {formatPrice(Number(product.price))}
                     </TableCell>
                     <TableCell data-testid={`text-product-category-${product.id}`}>
-                      {product.category || "No Category"}
+                      {product.category || "কোন ক্যাটেগরি নেই"}
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center">
@@ -344,7 +344,7 @@ export default function ProductManagement({ products, categories }: ProductManag
                     <SelectValue placeholder="ক্যাটেগরি নির্বাচন করুন" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">কোন ক্যাটেগরি নেই</SelectItem>
+                    <SelectItem value="no-category">কোন ক্যাটেগরি নেই</SelectItem>
                     {categories.map((category) => (
                       <SelectItem key={category.id} value={category.name}>
                         {category.name_bengali || category.name}

@@ -1,0 +1,88 @@
+The above error occurred in the <SelectItem> component:
+
+    at https://42edcdda-a823-472b-9f66-6a9fa4480510-00-29h7fa1sg3zuu.sisko.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-select.js?v=b68f1d26:848:7
+    at _c1 (https://42edcdda-a823-472b-9f66-6a9fa4480510-00-29h7fa1sg3zuu.sisko.replit.dev/src/components/ui/select.tsx:208:12)
+    at div
+    at https://42edcdda-a823-472b-9f66-6a9fa4480510-00-29h7fa1sg3zuu.sisko.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-I2ZO5QCI.js?v=b68f1d26:43:13
+    at https://42edcdda-a823-472b-9f66-6a9fa4480510-00-29h7fa1sg3zuu.sisko.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-E7TSFT4J.js?v=b68f1d26:79:13
+    at https://42edcdda-a823-472b-9f66-6a9fa4480510-00-29h7fa1sg3zuu.sisko.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-E7TSFT4J.js?v=b68f1d26:56:13
+    at https://42edcdda-a823-472b-9f66-6a9fa4480510-00-29h7fa1sg3zuu.sisko.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-GWFQETYR.js?v=b68f1d26:41:15
+    at https://42edcdda-a823-472b-9f66-6a9fa4480510-00-29h7fa1sg3zuu.sisko.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-select.js?v=b68f1d26:759:13
+    at div
+    at https://42edcdda-a823-472b-9f66-6a9fa4480510-00-29h7fa1sg3zuu.sisko.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-E7TSFT4J.js?v=b68f1d26:79:13
+    at https://42edcdda-a823-472b-9f66-6a9fa4480510-00-29h7fa1sg3zuu.sisko.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-E7TSFT4J.js?v=b68f1d26:56:13
+    at https://42edcdda-a823-472b-9f66-6a9fa4480510-00-29h7fa1sg3zuu.sisko.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-GWFQETYR.js?v=b68f1d26:41:15
+    at Provider (https://42edcdda-a823-472b-9f66-6a9fa4480510-00-29h7fa1sg3zuu.sisko.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-U27FYV5Z.js?v=b68f1d26:38:15)
+    at https://42edcdda-a823-472b-9f66-6a9fa4480510-00-29h7fa1sg3zuu.sisko.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-select.js?v=b68f1d26:302:58
+    at https://42edcdda-a823-472b-9f66-6a9fa4480510-00-29h7fa1sg3zuu.sisko.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-E7TSFT4J.js?v=b68f1d26:79:13
+    at https://42edcdda-a823-472b-9f66-6a9fa4480510-00-29h7fa1sg3zuu.sisko.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-E7TSFT4J.js?v=b68f1d26:56:13
+    at https://42edcdda-a823-472b-9f66-6a9fa4480510-00-29h7fa1sg3zuu.sisko.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-I2ZO5QCI.js?v=b68f1d26:43:13
+    at https://42edcdda-a823-472b-9f66-6a9fa4480510-00-29h7fa1sg3zuu.sisko.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-3LVV6AZP.js?v=b68f1d26:262:22
+    at SelectPortal
+    at _c7 (https://42edcdda-a823-472b-9f66-6a9fa4480510-00-29h7fa1sg3zuu.sisko.replit.dev/src/components/ui/select.tsx:123:12)
+    at Provider (https://42edcdda-a823-472b-9f66-6a9fa4480510-00-29h7fa1sg3zuu.sisko.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-U27FYV5Z.js?v=b68f1d26:38:15)
+    at Provider (https://42edcdda-a823-472b-9f66-6a9fa4480510-00-29h7fa1sg3zuu.sisko.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-U27FYV5Z.js?v=b68f1d26:38:15)
+    at CollectionProvider (https://42edcdda-a823-472b-9f66-6a9fa4480510-00-29h7fa1sg3zuu.sisko.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-GWFQETYR.js?v=b68f1d26:31:13)
+    at Provider (https://42edcdda-a823-472b-9f66-6a9fa4480510-00-29h7fa1sg3zuu.sisko.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-U27FYV5Z.js?v=b68f1d26:38:15)
+    at Provider (https://42edcdda-a823-472b-9f66-6a9fa4480510-00-29h7fa1sg3zuu.sisko.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-U27FYV5Z.js?v=b68f1d26:38:15)
+    at Popper (https://42edcdda-a823-472b-9f66-6a9fa4480510-00-29h7fa1sg3zuu.sisko.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-5PMZFYZ2.js?v=b68f1d26:1945:11)
+    at Select (https://42edcdda-a823-472b-9f66-6a9fa4480510-00-29h7fa1sg3zuu.sisko.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-select.js?v=b68f1d26:88:5)
+    at div
+    at div
+    at div
+    at div
+    at https://42edcdda-a823-472b-9f66-6a9fa4480510-00-29h7fa1sg3zuu.sisko.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-I2ZO5QCI.js?v=b68f1d26:43:13
+    at https://42edcdda-a823-472b-9f66-6a9fa4480510-00-29h7fa1sg3zuu.sisko.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-3LVV6AZP.js?v=b68f1d26:63:7
+    at https://42edcdda-a823-472b-9f66-6a9fa4480510-00-29h7fa1sg3zuu.sisko.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-E7TSFT4J.js?v=b68f1d26:79:13
+    at https://42edcdda-a823-472b-9f66-6a9fa4480510-00-29h7fa1sg3zuu.sisko.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-E7TSFT4J.js?v=b68f1d26:56:13
+    at…
+
+at https://42edcdda-a823-472b-9f66-6a9fa4480510-00-29h7fa1sg3zuu.sisko.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-select.js?v=b68f1d26:848:7
+at _c1 (https://42edcdda-a823-472b-9f66-6a9fa4480510-00-29h7fa1sg3zuu.sisko.replit.dev/src/components/ui/select.tsx:208:12)
+at div
+at https://42edcdda-a823-472b-9f66-6a9fa4480510-00-29h7fa1sg3zuu.sisko.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-I2ZO5QCI.js?v=b68f1d26:43:13
+at https://42edcdda-a823-472b-9f66-6a9fa4480510-00-29h7fa1sg3zuu.sisko.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-E7TSFT4J.js?v=b68f1d26:79:13
+at https://42edcdda-a823-472b-9f66-6a9fa4480510-00-29h7fa1sg3zuu.sisko.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-E7TSFT4J.js?v=b68f1d26:56:13
+at https://42edcdda-a823-472b-9f66-6a9fa4480510-00-29h7fa1sg3zuu.sisko.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-GWFQETYR.js?v=b68f1d26:41:15
+at https://42edcdda-a823-472b-9f66-6a9fa4480510-00-29h7fa1sg3zuu.sisko.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-select.js?v=b68f1d26:759:13
+at div
+at https://42edcdda-a823-472b-9f66-6a9fa4480510-00-29h7fa1sg3zuu.sisko.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-E7TSFT4J.js?v=b68f1d26:79:13
+at https://42edcdda-a823-472b-9f66-6a9fa4480510-00-29h7fa1sg3zuu.sisko.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-E7TSFT4J.js?v=b68f1d26:56:13
+at https://42edcdda-a823-472b-9f66-6a9fa4480510-00-29h7fa1sg3zuu.sisko.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-GWFQETYR.js?v=b68f1d26:41:15
+at Provider (https://42edcdda-a823-472b-9f66-6a9fa4480510-00-29h7fa1sg3zuu.sisko.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-U27FYV5Z.js?v=b68f1d26:38:15)
+at https://42edcdda-a823-472b-9f66-6a9fa4480510-00-29h7fa1sg3zuu.sisko.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-select.js?v=b68f1d26:302:58
+at https://42edcdda-a823-472b-9f66-6a9fa4480510-00-29h7fa1sg3zuu.sisko.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-E7TSFT4J.js?v=b68f1d26:79:13
+at https://42edcdda-a823-472b-9f66-6a9fa4480510-00-29h7fa1sg3zuu.sisko.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-E7TSFT4J.js?v=b68f1d26:56:13
+at https://42edcdda-a823-472b-9f66-6a9fa4480510-00-29h7fa1sg3zuu.sisko.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-I2ZO5QCI.js?v=b68f1d26:43:13
+at https://42edcdda-a823-472b-9f66-6a9fa4480510-00-29h7fa1sg3zuu.sisko.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-3LVV6AZP.js?v=b68f1d26:262:22
+at SelectPortal
+at _c7 (https://42edcdda-a823-472b-9f66-6a9fa4480510-00-29h7fa1sg3zuu.sisko.replit.dev/src/components/ui/select.tsx:123:12)
+at Provider (https://42edcdda-a823-472b-9f66-6a9fa4480510-00-29h7fa1sg3zuu.sisko.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-U27FYV5Z.js?v=b68f1d26:38:15)
+at Provider (https://42edcdda-a823-472b-9f66-6a9fa4480510-00-29h7fa1sg3zuu.sisko.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-U27FYV5Z.js?v=b68f1d26:38:15)
+at CollectionProvider (https://42edcdda-a823-472b-9f66-6a9fa4480510-00-29h7fa1sg3zuu.sisko.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-GWFQETYR.js?v=b68f1d26:31:13)
+at Provider (https://42edcdda-a823-472b-9f66-6a9fa4480510-00-29h7fa1sg3zuu.sisko.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-U27FYV5Z.js?v=b68f1d26:38:15)
+at Provider (https://42edcdda-a823-472b-9f66-6a9fa4480510-00-29h7fa1sg3zuu.sisko.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-U27FYV5Z.js?v=b68f1d26:38:15)
+at Popper (https://42edcdda-a823-472b-9f66-6a9fa4480510-00-29h7fa1sg3zuu.sisko.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-5PMZFYZ2.js?v=b68f1d26:1945:11)
+at Select (https://42edcdda-a823-472b-9f66-6a9fa4480510-00-29h7fa1sg3zuu.sisko.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-select.js?v=b68f1d26:88:5)
+at div
+at div
+at div
+at div
+at https://42edcdda-a823-472b-9f66-6a9fa4480510-00-29h7fa1sg3zuu.sisko.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-I2ZO5QCI.js?v=b68f1d26:43:13
+at https://42edcdda-a823-472b-9f66-6a9fa4480510-00-29h7fa1sg3zuu.sisko.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-3LVV6AZP.js?v=b68f1d26:63:7
+at https://42edcdda-a823-472b-9f66-6a9fa4480510-00-29h7fa1sg3zuu.sisko.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-E7TSFT4J.js?v=b68f1d26:79:13
+at https://42edcdda-a823-472b-9f66-6a9fa4480510-00-29h7fa1sg3zuu.sisko.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-E7TSFT4J.js?v=b68f1d26:56:13
+at…
+at t.value (https://42edcdda-a823-472b-9f66-6a9fa4480510-00-29h7fa1sg3zuu.sisko.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:17465)
+at new t (https://42edcdda-a823-472b-9f66-6a9fa4480510-00-29h7fa1sg3zuu.sisko.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:12630)
+at t.value (https://42edcdda-a823-472b-9f66-6a9fa4480510-00-29h7fa1sg3zuu.sisko.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:32766)
+at https://42edcdda-a823-472b-9f66-6a9fa4480510-00-29h7fa1sg3zuu.sisko.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:34400
+ErrorBoundary caught error: 
+Error {}
+ 
+Object {componentStack: "↵    at…"}
+
+at t.value (https://42edcdda-a823-472b-9f66-6a9fa4480510-00-29h7fa1sg3zuu.sisko.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:17465)
+at new t (https://42edcdda-a823-472b-9f66-6a9fa4480510-00-29h7fa1sg3zuu.sisko.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:12630)
+at t.value (https://42edcdda-a823-472b-9f66-6a9fa4480510-00-29h7fa1sg3zuu.sisko.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:32766)
+at https://42edcdda-a823-472b-9f66-6a9fa4480510-00-29h7fa1sg3zuu.sisko.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:34400
