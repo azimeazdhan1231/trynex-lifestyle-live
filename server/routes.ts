@@ -946,16 +946,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       console.log(`Updating order ${id} status to: ${status}`);
       
+      // Set proper JSON headers
+      res.set({
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, POST, PATCH, DELETE, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization'
+      });
+      
       const updatedOrder = await storage.updateOrderStatus(id, status);
       
-      res.json({
+      return res.status(200).json({
         success: true,
         order: updatedOrder,
         message: 'অর্ডার স্ট্যাটাস আপডেট হয়েছে'
       });
     } catch (error) {
       console.error('❌ Failed to update order status:', error);
-      res.status(500).json({ error: 'Failed to update order status' });
+      
+      res.set({
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*'
+      });
+      
+      return res.status(500).json({ 
+        success: false,
+        error: 'Failed to update order status',
+        message: error.message 
+      });
     }
   });
 
@@ -1311,11 +1329,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { id } = req.params;
       console.log(`🔄 Updating product ${id} with data:`, req.body);
       
+      // Set CORS and JSON headers first
+      res.set({
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, POST, PATCH, DELETE, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+        'Cache-Control': 'no-cache, no-store, must-revalidate, max-age=0',
+        'Pragma': 'no-cache',
+        'Expires': '0'
+      });
+      
       // For updates, we make all fields optional
       const updateSchema = insertProductSchema.partial();
       const validatedData = updateSchema.parse(req.body);
       
-      // AGGRESSIVE cache clearing - clear ALL layers
+      // Clear cache
       performanceCache.clearCache();
       productCache.data = null;
       productCache.timestamp = 0;
@@ -1330,31 +1359,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const updatedProduct = await storage.updateProduct(id, validatedData);
       console.log('✅ Product updated successfully:', updatedProduct);
       
-      // Set ultra-aggressive no-cache headers
-      res.set({
-        'Cache-Control': 'no-cache, no-store, must-revalidate, max-age=0',
-        'Pragma': 'no-cache',
-        'Expires': '0',
-        'X-Cache-Bust': Date.now().toString(),
-        'X-Timestamp': Date.now().toString(),
-        'X-Updated-Product': id,
-        'Vary': '*',
-        'Last-Modified': new Date().toUTCString(),
-        'ETag': `"updated-${Date.now()}"`
-      });
-      
-      // Return updated product with timestamp
-      res.json({
-        ...updatedProduct,
-        _updated_at: new Date().toISOString(),
-        _cache_bust: Date.now()
+      // Ensure JSON response
+      return res.status(200).json({
+        success: true,
+        product: updatedProduct,
+        message: 'পণ্য সফলভাবে আপডেট হয়েছে',
+        timestamp: new Date().toISOString()
       });
     } catch (error) {
       console.error('❌ Failed to update product:', error);
+      
+      // Set JSON headers for error response too
+      res.set({
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*'
+      });
+      
       if (error.name === 'ZodError') {
-        return res.status(400).json({ error: 'Invalid product data', details: error.errors });
+        return res.status(400).json({ 
+          success: false,
+          error: 'Invalid product data', 
+          details: error.errors 
+        });
       }
-      res.status(500).json({ error: 'Failed to update product' });
+      
+      return res.status(500).json({ 
+        success: false,
+        error: 'Failed to update product',
+        message: error.message 
+      });
     }
   });
 

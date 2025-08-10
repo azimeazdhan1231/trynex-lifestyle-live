@@ -229,9 +229,26 @@ export default function AdminPanelBulletproof() {
   // Mutations with proper error handling
   const updateOrderStatusMutation = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: string }) => {
-      const response = await apiRequest("PATCH", `/api/orders/${id}`, { status });
-      if (!response.ok) throw new Error('Failed to update order');
-      return response.json();
+      try {
+        console.log(`Order status update: ${id} -> ${status}`);
+        
+        const response = await apiRequest("PATCH", `/api/orders/${id}`, { status });
+        
+        console.log('Order update response status:', response.status);
+        
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error('Order update failed:', errorText);
+          throw new Error(`HTTP ${response.status}: ${errorText}`);
+        }
+
+        const result = await response.json();
+        console.log('Order update success:', result);
+        return result;
+      } catch (error) {
+        console.error('Order update error:', error);
+        throw error;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/orders"] });
@@ -245,15 +262,33 @@ export default function AdminPanelBulletproof() {
 
   const productMutation = useMutation({
     mutationFn: async (data: any) => {
-      const endpoint = editingItem ? `/api/products/${editingItem.id}` : '/api/products';
-      const method = editingItem ? 'PATCH' : 'POST';
-      const response = await apiRequest(method as any, endpoint, {
-        ...data,
-        price: parseFloat(data.price) || 0,
-        stock: parseInt(data.stock) || 0
-      });
-      if (!response.ok) throw new Error('Failed to save product');
-      return response.json();
+      try {
+        const endpoint = editingItem ? `/api/products/${editingItem.id}` : '/api/products';
+        const method = editingItem ? 'PATCH' : 'POST';
+        
+        console.log(`Product mutation: ${method} ${endpoint}`, data);
+        
+        const response = await apiRequest(method as any, endpoint, {
+          ...data,
+          price: parseFloat(data.price) || 0,
+          stock: parseInt(data.stock) || 0
+        });
+
+        console.log('Product mutation response status:', response.status);
+        
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error('Product mutation failed:', errorText);
+          throw new Error(`HTTP ${response.status}: ${errorText}`);
+        }
+
+        const result = await response.json();
+        console.log('Product mutation success:', result);
+        return result;
+      } catch (error) {
+        console.error('Product mutation error:', error);
+        throw error;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/products"] });
