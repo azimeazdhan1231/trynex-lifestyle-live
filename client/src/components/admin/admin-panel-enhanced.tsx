@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
@@ -455,7 +454,7 @@ function ProductFormModal({
 
       // Refresh data
       await queryClient.invalidateQueries({ queryKey: ["/api/products"] });
-      
+
       // Clear cache
       try {
         const cacheKeys = Object.keys(localStorage).filter(key => 
@@ -550,7 +549,7 @@ function ProductFormModal({
                   <SelectItem value="for-mother">মায়ের জন্য</SelectItem>
                   <SelectItem value="for-father">বাবার জন্য</SelectItem>
                   <SelectItem value="couple-gifts">কাপলদের জন্য</SelectItem>
-                  
+
                   {/* Use PRODUCT_CATEGORIES if available */}
                   {PRODUCT_CATEGORIES.filter(cat => cat.id && cat.id !== 'all').map((cat) => (
                     <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
