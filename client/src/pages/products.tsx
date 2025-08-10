@@ -9,8 +9,9 @@ import { useToast } from "@/hooks/use-toast";
 import { useCart } from "@/hooks/use-cart";
 import MobileOptimizedLayout from "@/components/mobile-optimized-layout";
 import UnifiedProductCard from "@/components/unified-product-card";
-import ProductModal from "@/components/product-modal";
+import EnhancedProductModal from "@/components/enhanced-product-modal";
 import CustomizeModalRedesigned from "@/components/customize-modal-redesigned";
+import ComprehensiveProductLoading from "@/components/comprehensive-product-loading";
 import MobileSearchDrawer from "@/components/mobile-search-drawer";
 import { ProgressiveLoader, PerformanceErrorBoundary, PerformanceMonitor } from "@/components/enhanced-loading-system";
 import type { Product } from "@shared/schema";
@@ -405,9 +406,9 @@ export default function ProductsPage() {
         />
       </div>
 
-      {/* Product Details Modal */}
+      {/* Enhanced Product Details Modal */}
       {selectedProduct && (
-        <ProductModal
+        <EnhancedProductModal
           isOpen={isProductModalOpen}
           onClose={() => {
             console.log("📱 Closing product modal");

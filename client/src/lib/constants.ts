@@ -53,10 +53,15 @@ export const createWhatsAppUrl = (message: string): string => {
   return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
 };
 
-export const calculateDeliveryFee = (district: string): number => {
+export const calculateDeliveryFee = (district: string, orderAmount: number): number => {
   const dhakaDistricts = ["ঢাকা"];
-  return dhakaDistricts.includes(district) ? 80 : 120;
+  const baseFee = dhakaDistricts.includes(district) ? 80 : 120;
+  
+  // Free delivery for orders above 2000tk
+  return orderAmount >= 2000 ? 0 : baseFee;
 };
+
+export const FREE_DELIVERY_THRESHOLD = 2000;
 
 export const THANAS_BY_DISTRICT: Record<string, string[]> = {
   "ঢাকা": [

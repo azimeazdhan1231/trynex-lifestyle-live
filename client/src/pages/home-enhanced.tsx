@@ -23,7 +23,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 
 import UltraSimpleLayout from "@/components/ultra-simple-layout";
-import ProductModal from "@/components/product-modal-fixed";
+import EnhancedProductModal from "@/components/enhanced-product-modal";
 import CustomizeModalEnhanced from "@/components/customize-modal-enhanced";
 import { useToast } from "@/hooks/use-toast";
 import { useCart } from "@/hooks/use-cart";
@@ -669,7 +669,7 @@ export default function EnhancedHomePage() {
 
         {/* Modals */}
         {selectedProduct && (
-          <ProductModal
+          <EnhancedProductModal
             product={selectedProduct}
             isOpen={!!selectedProduct}
             onClose={() => setSelectedProduct(null)}

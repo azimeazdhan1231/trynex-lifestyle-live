@@ -123,7 +123,67 @@
 /* Grid layout fixes */
 .modal-content .grid {
   @apply grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6;
-  min-height: 300px;
+}
+
+/* Enhanced Product Loading Animations */
+@keyframes shimmer-wave {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+@keyframes premium-pulse {
+  0%, 100% { opacity: 0.6; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.05); }
+}
+
+@keyframes loading-progress {
+  0% { width: 0%; transform: translateX(-100%); }
+  50% { width: 70%; }
+  100% { width: 100%; transform: translateX(0%); }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-shimmer-wave {
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite;
+}
+
+.animate-premium-pulse {
+  animation: premium-pulse 2s infinite;
+}
+
+.animate-loading-progress {
+  animation: loading-progress 3s ease-in-out infinite;
+}
+
+.animate-fadeInUp {
+  animation: fadeInUp 0.8s ease-out;
+}
+
+/* Enhanced responsiveness for modals */
+@media (max-width: 768px) {
+  .modal-override {
+    @apply w-[98vw] max-h-[95vh];
+  }
+  
+  .product-modal-grid {
+    @apply grid-cols-1 gap-3;
+    min-height: auto;
+  }
+  
+  .product-modal-image {
+    @apply h-48;
+  }
 }
 
 /* Button responsiveness */

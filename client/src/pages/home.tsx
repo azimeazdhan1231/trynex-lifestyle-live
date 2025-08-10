@@ -8,12 +8,13 @@ import EnhancedProductLoader from "@/components/enhanced-product-loader";
 import UltraSimpleLayout from "@/components/ultra-simple-layout";
 import TrackingSection from "@/components/tracking-section";
 import SimplePopupOffer from "../components/simple-popup-offer";
-import ProductModal from "@/components/product-modal-fixed";
+import EnhancedProductModal from "@/components/enhanced-product-modal";
 import CustomizeModalEnhanced from "@/components/customize-modal-enhanced";
+import ComprehensiveProductLoading from "@/components/comprehensive-product-loading";
 import { useToast } from "@/hooks/use-toast";
 import { useCart } from "@/hooks/use-cart";
 import { Link, useLocation } from "wouter";
-import { COMPANY_NAME, COMPANY_TAGLINE, WHATSAPP_NUMBER, createWhatsAppUrl, formatPrice } from "@/lib/constants";
+import { COMPANY_NAME, COMPANY_TAGLINE, WHATSAPP_NUMBER, createWhatsAppUrl, formatPrice, FREE_DELIVERY_THRESHOLD } from "@/lib/constants";
 import { trackProductView, trackAddToCart } from "@/lib/analytics";
 import UnifiedProductCard from "@/components/unified-product-card";
 import MobileEnhancedProductCard from "@/components/mobile-enhanced-product-card";
@@ -172,7 +173,7 @@ const ProductCard = memo(function ProductCard({ product, onAddToCart, onViewProd
           <div className="flex items-center justify-between">
             <div className="flex flex-col">
               <span className="text-2xl font-bold text-primary">{formatPrice(product.price)}</span>
-              <span className="text-sm text-gray-500">বিনামূল্যে ডেলিভারি</span>
+              <span className="text-sm text-green-600">২০০০ টাকার ওপরে ফ্রি ডেলিভারি</span>
             </div>
             <Badge variant={product.stock > 0 ? "secondary" : "destructive"} className="px-3 py-1">
               স্টক: {product.stock}
@@ -270,7 +271,7 @@ function ProductSection({
           </div>
 
           {/* Enhanced Product Grid Loading */}
-          <EnhancedProductLoader count={8} />
+          <ComprehensiveProductLoading count={8} variant="grid" />
 
           {/* Premium Loading Footer */}
           <div className="text-center mt-16">
@@ -340,15 +341,17 @@ function ProductSection({
         )}
 
         <div className="text-center mt-12">
-          <Button 
-            size="lg" 
-            variant="outline" 
-            className="group bg-white hover:bg-primary hover:text-white border-2 border-primary/20 hover:border-primary shadow-lg hover:shadow-xl btn-professional hover-lift px-8 py-4"
-            onClick={() => window.location.href = '/products'}
-          >
-            <span className="font-medium text-lg">সব পণ্য দেখুন</span>
-            <ChevronRight className="w-5 h-5 ml-3 group-hover:translate-x-1 transition-transform duration-300" />
-          </Button>
+          <Link href="/products">
+            <Button 
+              size="lg" 
+              variant="outline" 
+              className="group bg-white hover:bg-primary hover:text-white border-2 border-primary/20 hover:border-primary shadow-lg hover:shadow-xl btn-professional hover-lift px-8 py-4"
+              data-testid="button-view-all-products"
+            >
+              <span className="font-medium text-lg">সব পণ্য দেখুন</span>
+              <ChevronRight className="w-5 h-5 ml-3 group-hover:translate-x-1 transition-transform duration-300" />
+            </Button>
+          </Link>
         </div>
       </div>
     </section>
@@ -573,23 +576,26 @@ export default function Home() {
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center items-center px-2 animate-fade-in-up" style={{ animationDelay: '0.6s' }}>
-              <Button 
-                onClick={scrollToProducts}
-                size="lg"
-                className="bg-white text-primary hover:bg-gray-50 text-lg sm:text-xl px-8 sm:px-10 lg:px-12 py-4 sm:py-5 lg:py-6 rounded-full shadow-2xl transform hover:scale-110 transition-all duration-500 w-full sm:w-auto font-bold relative overflow-hidden group"
-              >
-                <span className="relative z-10 flex items-center">
-                  এখনই কিনুন 
-                  <ArrowRight className="ml-3 w-5 h-5 sm:w-6 sm:h-6 group-hover:translate-x-1 transition-transform duration-300" />
-                </span>
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
-              </Button>
+              <Link href="/products">
+                <Button 
+                  size="lg"
+                  className="bg-white text-primary hover:bg-gray-50 text-lg sm:text-xl px-8 sm:px-10 lg:px-12 py-4 sm:py-5 lg:py-6 rounded-full shadow-2xl transform hover:scale-110 transition-all duration-500 w-full sm:w-auto font-bold relative overflow-hidden group"
+                  data-testid="button-shop-now"
+                >
+                  <span className="relative z-10 flex items-center">
+                    এখনই কিনুন 
+                    <ArrowRight className="ml-3 w-5 h-5 sm:w-6 sm:h-6 group-hover:translate-x-1 transition-transform duration-300" />
+                  </span>
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
+                </Button>
+              </Link>
 
               <Button 
                 size="lg"
                 variant="outline"
                 className="border-2 border-white/80 text-white hover:bg-white hover:text-primary text-lg sm:text-xl px-8 sm:px-10 lg:px-12 py-4 sm:py-5 lg:py-6 rounded-full shadow-2xl transform hover:scale-110 transition-all duration-500 w-full sm:w-auto font-bold backdrop-blur-sm bg-white/10 relative overflow-hidden group"
-                onClick={() => window.open(createWhatsAppUrl("আসসালামু আলাইকুম। আমি Trynex Lifestyle সম্পর্কে জানতে চাই।"), '_blank')}
+                onClick={() => window.open(createWhatsAppUrl("আসসালামু আলাইকুম। আমি TryneX Shop সম্পর্কে জানতে চাই।"), '_blank')}
+                data-testid="button-whatsapp-contact"
               >
                 <div className="flex items-center relative z-10">
                   <MessageCircle className="mr-3 w-5 h-5 sm:w-6 sm:h-6 group-hover:rotate-12 transition-transform duration-300" />
@@ -725,9 +731,9 @@ export default function Home() {
 
 
 
-      {/* Product Modal */}
+      {/* Enhanced Product Modal */}
       {selectedProduct && (
-        <ProductModal
+        <EnhancedProductModal
           product={selectedProduct}
           isOpen={isModalOpen}
           onClose={() => {
