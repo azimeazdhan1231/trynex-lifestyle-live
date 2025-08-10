@@ -48,39 +48,80 @@ function ProductForm({ product, onClose, isEdit = false }: any) {
 
   const { data: categories = [] } = useQuery({ queryKey: ["/api/categories"] });
 
-  const { register, handleSubmit, formState: { errors }, setValue, watch, reset } = useForm<ProductFormData>({
-    defaultValues: {
-      name: product?.name || '',
-      description: product?.description || '',
-      price: product?.price || 0,
-      category: product?.category || '',
-      stock: product?.stock || 0,
-      image_url: product?.image_url || '',
-      is_active: product?.is_active ?? true,
-      is_featured: product?.is_featured ?? false,
-      is_latest: product?.is_latest ?? false,
-      is_best_selling: product?.is_best_selling ?? false,
-    }
-  });
+  // Don't use defaultValues - we'll set them manually after getting fresh data
+  const { register, handleSubmit, formState: { errors }, setValue, watch, reset } = useForm<ProductFormData>();
 
-  // Reset form when product data changes
+  // Force fresh data loading every time
   React.useEffect(() => {
-    if (product) {
-      console.log('🔄 Resetting form with updated product data:', product);
+    if (product && isEdit) {
+      // For edit mode, fetch completely fresh data from API
+      const fetchFreshData = async () => {
+        try {
+          console.log('🔄 Fetching completely fresh product data for form...');
+          const response = await fetch(`/api/products/${product.id}?t=${Date.now()}`, {
+            headers: {
+              'Cache-Control': 'no-cache',
+              'Pragma': 'no-cache'
+            }
+          });
+          
+          if (response.ok) {
+            const freshProduct = await response.json();
+            console.log('✅ Got fresh product data:', freshProduct);
+            
+            // Reset form with fresh data
+            reset({
+              name: freshProduct.name || '',
+              description: freshProduct.description || '',
+              price: Number(freshProduct.price) || 0,
+              category: freshProduct.category || '',
+              stock: Number(freshProduct.stock) || 0,
+              image_url: freshProduct.image_url || '',
+              is_active: freshProduct.is_active ?? true,
+              is_featured: freshProduct.is_featured ?? false,
+              is_latest: freshProduct.is_latest ?? false,
+              is_best_selling: freshProduct.is_best_selling ?? false,
+            });
+            
+            // Also update local state for image preview
+            setImagePreview(freshProduct.image_url || '');
+            setAdditionalImages(freshProduct.additional_images || []);
+          }
+        } catch (error) {
+          console.error('Failed to fetch fresh product data:', error);
+          // Fallback to passed product data
+          reset({
+            name: product.name || '',
+            description: product.description || '',
+            price: Number(product.price) || 0,
+            category: product.category || '',
+            stock: Number(product.stock) || 0,
+            image_url: product.image_url || '',
+            is_active: product.is_active ?? true,
+            is_featured: product.is_featured ?? false,
+            is_latest: product.is_latest ?? false,
+            is_best_selling: product.is_best_selling ?? false,
+          });
+        }
+      };
+      
+      fetchFreshData();
+    } else if (!isEdit) {
+      // For new products, just reset to empty
       reset({
-        name: product.name || '',
-        description: product.description || '',
-        price: Number(product.price) || 0,
-        category: product.category || '',
-        stock: Number(product.stock) || 0,
-        image_url: product.image_url || '',
-        is_active: product.is_active ?? true,
-        is_featured: product.is_featured ?? false,
-        is_latest: product.is_latest ?? false,
-        is_best_selling: product.is_best_selling ?? false,
+        name: '',
+        description: '',
+        price: 0,
+        category: '',
+        stock: 0,
+        image_url: '',
+        is_active: true,
+        is_featured: false,
+        is_latest: false,
+        is_best_selling: false,
       });
     }
-  }, [product, reset]);
+  }, [product, isEdit, reset]);
 
   // Force cache invalidation helper
   const invalidateAllCaches = async () => {
@@ -177,13 +218,8 @@ function ProductForm({ product, onClose, isEdit = false }: any) {
       // Force complete cache refresh
       await invalidateAllCaches();
       
-      // Update the selected product with fresh data
-      setSelectedProduct(updatedProduct);
-      
-      // Close modal to show updated list
-      setTimeout(() => {
-        onClose();
-      }, 500); // Small delay to let user see the success
+      // Close modal immediately - don't update selectedProduct
+      onClose();
     },
     onError: (error: any) => {
       console.error('Update product error:', error);
@@ -504,32 +540,40 @@ export default function ProductManagement() {
   }, [products, categoryFilter, searchTerm]);
 
   const openEditModal = async (product: any) => {
-    console.log('Opening edit modal for product:', product);
+    console.log('🚀 Opening edit modal for product:', product.id);
     
-    // Fetch fresh product data before opening modal
+    // Always fetch the absolute freshest data from database
     try {
-      const response = await fetch(`/api/products/${product.id}`, {
+      const response = await fetch(`/api/products/${product.id}?fresh=${Date.now()}`, {
         headers: {
-          'Cache-Control': 'no-cache',
-          'Pragma': 'no-cache'
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0'
         }
       });
       
       if (response.ok) {
         const freshProduct = await response.json();
-        console.log('✅ Fetched fresh product data:', freshProduct);
+        console.log('✅ Got FRESH product data for modal:', freshProduct);
         setSelectedProduct(freshProduct);
+        setIsEditModalOpen(true);
       } else {
-        // Fallback to cached data
-        setSelectedProduct(product);
+        console.error('Failed to fetch fresh product data');
+        // Don't open modal if we can't get fresh data
+        toast({
+          title: "ত্রুটি!",
+          description: "পণ্যের তথ্য লোড করতে পারিনি",
+          variant: "destructive",
+        });
       }
     } catch (error) {
-      console.error('Failed to fetch fresh product data:', error);
-      // Fallback to cached data
-      setSelectedProduct(product);
+      console.error('Error fetching fresh product data:', error);
+      toast({
+        title: "ত্রুটি!",
+        description: "পণ্যের তথ্য লোড করতে পারিনি",
+        variant: "destructive",
+      });
     }
-    
-    setIsEditModalOpen(true);
   };
 
   const closeEditModal = async () => {

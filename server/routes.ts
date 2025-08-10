@@ -548,12 +548,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/products/:id', async (req, res) => {
     try {
       const { id } = req.params;
+      const { fresh, t } = req.query;
+      
+      // If fresh data is requested, add stronger cache busting
+      if (fresh || t) {
+        res.set({
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0',
+          'X-Fresh-Data': 'true',
+          'X-Timestamp': Date.now().toString()
+        });
+      }
+      
       const product = await storage.getProduct(id);
 
       if (!product) {
         return res.status(404).json({ error: 'Product not found' });
       }
 
+      console.log(`✅ Serving ${fresh ? 'FRESH' : 'cached'} product data for ID: ${id}`);
       res.json(product);
     } catch (error) {
       console.error('Failed to fetch product:', error);
