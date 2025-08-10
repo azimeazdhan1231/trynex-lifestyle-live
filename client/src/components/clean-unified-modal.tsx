@@ -1,3 +1,4 @@
+
 import { useState, useRef } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -6,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { 
   ShoppingCart, 
   Upload, 
@@ -13,16 +15,19 @@ import {
   Plus, 
   Minus, 
   MessageCircle, 
+  Star,
   Package
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { formatPrice } from "@/lib/constants";
 import type { Product } from "@shared/schema";
 
-interface CustomizeModalProps {
+interface CleanUnifiedModalProps {
   product: Product | null;
   isOpen: boolean;
   onClose: () => void;
   onAddToCart: (product: Product, customization: any) => Promise<void>;
+  modalType: 'product' | 'customize' | 'cart' | 'order';
 }
 
 const SIZES = ['S', 'M', 'L', 'XL', 'XXL'];
@@ -35,19 +40,16 @@ const COLORS = [
   { value: 'yellow', label: 'হলুদ', color: '#f59e0b' }
 ];
 
-const formatPrice = (price: number): string => {
-  return `৳${price.toFixed(0)}`;
-};
-
-export default function CustomizeModal({ 
+export default function CleanUnifiedModal({ 
   product, 
   isOpen, 
   onClose, 
-  onAddToCart
-}: CustomizeModalProps) {
+  onAddToCart, 
+  modalType 
+}: CleanUnifiedModalProps) {
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
-
+  
   const [customization, setCustomization] = useState({
     size: '',
     color: '',
@@ -56,7 +58,7 @@ export default function CustomizeModal({
     specialInstructions: '',
     customImage: null as File | null
   });
-
+  
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -73,9 +75,9 @@ export default function CustomizeModal({
         });
         return;
       }
-
+      
       setCustomization(prev => ({ ...prev, customImage: file }));
-
+      
       const reader = new FileReader();
       reader.onload = (e) => {
         setImagePreview(e.target?.result as string);
@@ -85,7 +87,7 @@ export default function CustomizeModal({
   };
 
   const handleAddToCart = async () => {
-    if (!customization.size || !customization.color) {
+    if (modalType === 'customize' && (!customization.size || !customization.color)) {
       toast({
         title: "তথ্য অসম্পূর্ণ",
         description: "সাইজ এবং রং নির্বাচন করুন",
@@ -129,7 +131,7 @@ export default function CustomizeModal({
               <Package className="w-6 h-6 text-orange-500" />
               <div>
                 <DialogTitle className="text-xl font-bold text-gray-900">
-                  {product.name} কাস্টমাইজ করুন
+                  {product.name} {modalType === 'customize' ? 'কাস্টমাইজ করুন' : ''}
                 </DialogTitle>
                 <p className="text-sm text-gray-600 mt-1">
                   আপনার পছন্দ অনুযায়ী ডিজাইন করুন
@@ -161,7 +163,7 @@ export default function CustomizeModal({
                   কাস্টমাইজেশন
                 </Badge>
               </div>
-
+              
               <Card className="p-4 bg-gray-50">
                 <div className="text-center">
                   <h3 className="text-lg font-bold text-gray-900 mb-2">{product.name}</h3>
@@ -341,7 +343,7 @@ export default function CustomizeModal({
               <ShoppingCart className="w-4 h-4 mr-2" />
               {isLoading ? "যোগ করা হচ্ছে..." : `কার্টে যোগ করুন (${formatPrice(totalPrice)})`}
             </Button>
-
+            
             <Button
               onClick={handleWhatsAppOrder}
               disabled={isLoading || !customization.size || !customization.color}

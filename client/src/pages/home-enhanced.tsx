@@ -443,7 +443,7 @@ export default function EnhancedHomePage() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const { addToCart } = useCart();
-  
+
   // Global add to cart function with customization support
   const globalAddToCart = async (item: any) => {
     await addToCart(item);
@@ -651,14 +651,15 @@ export default function EnhancedHomePage() {
               নতুন অফার এবং আপডেট পেতে সাবস্ক্রাইব করুন
             </h2>
             <p className="text-primary-foreground/80 mb-8 max-w-xl mx-auto">
-              বিশেষ ছাড় এবং নতুন পণ্যের খবর সবার আগে পান
+              বিশেষ ছাড় এবং নতুন পণ্যের খবর সবার আগে পেতে আমাদের নিউজলেটার সাবস্ক্রাইব করুন
             </p>
-            <div className="flex max-w-md mx-auto gap-4">
-              <Input
+            <div className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto">
+              <Input 
+                type="email" 
                 placeholder="আপনার ইমেইল ঠিকানা"
                 className="bg-white text-black"
               />
-              <Button variant="secondary">
+              <Button variant="secondary" className="bg-white text-primary hover:bg-gray-100">
                 সাবস্ক্রাইব করুন
               </Button>
             </div>
