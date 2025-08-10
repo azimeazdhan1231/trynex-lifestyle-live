@@ -17,28 +17,50 @@ export default function CartModalFixed({ isOpen, onClose }: CartModalProps) {
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const { cart, updateQuantity, removeFromCart, totalItems, totalPrice, clearCart, isLoaded } = useCart();
 
-  // Force re-render when modal opens to ensure cart state is fresh
+  // Local cart state for immediate display
+  const [localCart, setLocalCart] = useState(cart);
   const [refreshKey, setRefreshKey] = useState(0);
 
   const handleCheckout = () => {
-    if (cart.length === 0) {
+    const currentCart = localCart.length > 0 ? localCart : cart;
+    if (currentCart.length === 0) {
       return;
     }
     onClose();
     setIsCheckoutOpen(true);
   };
 
-  // Force cart state sync when modal opens
+  // Force cart state sync when modal opens or cart changes
   useEffect(() => {
     if (isOpen) {
       setRefreshKey(prev => prev + 1);
+      // Force re-read from localStorage when modal opens
+      const savedCart = localStorage.getItem('trynex_cart');
+      let freshCart = [];
+      try {
+        if (savedCart) {
+          freshCart = JSON.parse(savedCart);
+        }
+      } catch (e) {
+        console.error('Failed to parse cart from localStorage:', e);
+      }
+      
+      // Always use fresh cart data from localStorage
+      setLocalCart(freshCart);
+      
       console.log('CartModal opened, current cart:', cart);
+      console.log('Fresh cart from localStorage:', freshCart);
+      console.log('Using local cart:', freshCart);
       console.log('Cart isLoaded:', isLoaded);
       console.log('Cart length:', cart?.length);
-      console.log('Cart is array:', Array.isArray(cart));
-      console.log('Cart items:', cart.map(item => ({ id: item.id, name: item.name, quantity: item.quantity })));
+      console.log('Fresh cart length:', freshCart?.length);
     }
   }, [isOpen, cart, isLoaded]);
+
+  // Update local cart when global cart changes
+  useEffect(() => {
+    setLocalCart(cart);
+  }, [cart]);
 
   // Show loading state until cart is loaded
   if (!isLoaded) {
@@ -74,7 +96,7 @@ export default function CartModalFixed({ isOpen, onClose }: CartModalProps) {
             <DialogTitle className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-800 flex items-center gap-2">
               🛒 আপনার কার্ট 
               <span className="bg-primary/20 text-primary px-2 py-1 rounded-full text-sm font-medium">
-                {cart.length}টি পণ্য
+                {(localCart.length > 0 ? localCart : cart).length}টি পণ্য
               </span>
             </DialogTitle>
             <DialogDescription className="text-xs sm:text-sm text-gray-600 mt-1">
@@ -83,20 +105,22 @@ export default function CartModalFixed({ isOpen, onClose }: CartModalProps) {
           </DialogHeader>
           
           <div className="flex-1 overflow-y-auto px-3 sm:px-4 lg:px-6 py-3 sm:py-4">
-            {(!cart || !Array.isArray(cart) || cart.length === 0) ? (
-              <div className="text-center py-12">
-                <ShoppingCart className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                <p className="text-gray-500 text-lg mb-4">আপনার কার্ট খালি</p>
-                <p className="text-gray-400 text-sm mb-6">কোন পণ্য যুক্ত করা হয়নি</p>
-                <Button onClick={onClose} variant="outline">
-                  কেনাকাটা শুরু করুন
-                </Button>
-              </div>
-            ) : (
-              <div className="space-y-6">
-                {/* Cart Items */}
-                <div className="space-y-4">
-                  {cart.map((item) => (
+            {(() => {
+              const currentCart = localCart.length > 0 ? localCart : cart;
+              return (!currentCart || !Array.isArray(currentCart) || currentCart.length === 0) ? (
+                <div className="text-center py-12">
+                  <ShoppingCart className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                  <p className="text-gray-500 text-lg mb-4">আপনার কার্ট খালি</p>
+                  <p className="text-gray-400 text-sm mb-6">কোন পণ্য যুক্ত করা হয়নি</p>
+                  <Button onClick={onClose} variant="outline">
+                    কেনাকাটা শুরু করুন
+                  </Button>
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  {/* Cart Items */}
+                  <div className="space-y-4">
+                    {currentCart.map((item) => (
                     <div
                       key={`${item.id}-${JSON.stringify(item.customization)}`}
                       className="flex items-start gap-3 p-3 sm:p-4 border border-gray-200 rounded-xl bg-white shadow-sm hover:shadow-md transition-all duration-200"
@@ -234,7 +258,8 @@ export default function CartModalFixed({ isOpen, onClose }: CartModalProps) {
                   </Button>
                 </div>
               </div>
-            )}
+            );
+            })()}
           </div>
           
           {/* Footer Actions - Mobile Optimized */}
