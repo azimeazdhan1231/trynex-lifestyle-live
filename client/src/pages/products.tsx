@@ -9,7 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useCart } from "@/hooks/use-cart";
 import MobileOptimizedLayout from "@/components/mobile-optimized-layout";
 import UnifiedProductCard from "@/components/unified-product-card";
-import PerfectProductModal from "@/components/perfect-product-modal";
+import PerfectResponsiveProductModal from "@/components/perfect-responsive-product-modal";
 import PerfectCustomizeModal from "@/components/perfect-customize-modal";
 import ComprehensiveProductLoading from "@/components/comprehensive-product-loading";
 import EnhancedFilterSystem from "@/components/enhanced-filter-system";
@@ -412,9 +412,9 @@ export default function ProductsPage() {
 
       </div>
 
-      {/* Perfect Product Details Modal */}
+      {/* Perfect Responsive Product Details Modal */}
       {selectedProduct && (
-        <PerfectProductModal
+        <PerfectResponsiveProductModal
           product={selectedProduct}
           isOpen={isProductModalOpen}
           onClose={() => {
