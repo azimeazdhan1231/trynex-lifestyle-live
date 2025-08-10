@@ -475,8 +475,15 @@ function ProductFormModal({
       }
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || errorData.message || `HTTP error! status: ${response.status}`);
+        const errorText = await response.text();
+        let errorMessage;
+        try {
+          const errorData = JSON.parse(errorText);
+          errorMessage = errorData.error || errorData.message || `HTTP error! status: ${response.status}`;
+        } catch {
+          errorMessage = errorText || `HTTP error! status: ${response.status}`;
+        }
+        throw new Error(errorMessage);
       }
 
       const result = await response.json();

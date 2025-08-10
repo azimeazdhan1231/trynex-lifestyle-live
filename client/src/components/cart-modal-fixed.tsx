@@ -32,7 +32,7 @@ export default function CartModalFixed({ isOpen, onClose }: CartModalProps) {
     onClose();
     setIsCheckoutOpen(true);
   };
-  
+
   // Dummy state and useEffect for CartModalFixed, as the actual implementation might differ
   // and the original provided snippet was incomplete.
   const [localCart, setLocalCart] = useState(cart);

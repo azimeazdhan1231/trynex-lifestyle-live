@@ -418,6 +418,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     return Array.from(suggestions).slice(0, 8);
   }
 
+  // CORS preflight handler
+  app.options('*', (req, res) => {
+    res.set({
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, POST, PATCH, PUT, DELETE, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Cache-Bust, X-Force-Update',
+      'Access-Control-Max-Age': '86400'
+    });
+    res.status(204).end();
+  });
+
   // Ultra-fast products endpoint with real-time updates
   app.get('/api/products', async (req, res) => {
     try {
@@ -1386,13 +1397,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       console.log('✅ Product updated successfully:', updatedProduct);
       
-      // Ensure JSON response
-      return res.status(200).json({
-        success: true,
-        product: updatedProduct,
-        message: 'পণ্য সফলভাবে আপডেট হয়েছে',
-        timestamp: new Date().toISOString()
-      });
+      // Return the updated product directly without wrapping in extra object
+      return res.status(200).json(updatedProduct);
     } catch (error: any) {
       console.error('❌ Failed to update product:', error);
       
@@ -1403,7 +1409,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
       
       return res.status(500).json({ 
-        success: false,
         error: 'Failed to update product',
         message: error.message || 'Unknown error occurred'
       });
