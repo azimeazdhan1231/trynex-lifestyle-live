@@ -507,7 +507,7 @@ export class DatabaseStorage implements IStorage {
         .where(eq(orders.user_id, userId))
         .orderBy(desc(orders.created_at));
 
-      return result.map(row => ({
+      return result.map((row: any) => ({
         ...row,
         items: typeof row.items === 'string' ? JSON.parse(row.items) : row.items
       }));

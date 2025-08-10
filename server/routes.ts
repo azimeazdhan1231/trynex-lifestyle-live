@@ -938,7 +938,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Order status update endpoint
+  // Order status update endpoint - This is what the admin panel should use
+  app.patch('/api/orders/:id', async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { status } = req.body;
+      
+      console.log(`Updating order ${id} status to: ${status}`);
+      
+      const updatedOrder = await storage.updateOrderStatus(id, status);
+      
+      res.json({
+        success: true,
+        order: updatedOrder,
+        message: 'অর্ডার স্ট্যাটাস আপডেট হয়েছে'
+      });
+    } catch (error) {
+      console.error('❌ Failed to update order status:', error);
+      res.status(500).json({ error: 'Failed to update order status' });
+    }
+  });
+
+  // Legacy endpoint for backward compatibility
   app.patch('/api/orders/:id/status', async (req, res) => {
     try {
       const { id } = req.params;
@@ -1200,6 +1221,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Public category management endpoints (for admin panel)
+  app.post('/api/categories', async (req, res) => {
+    try {
+      console.log('📂 Creating category with data:', req.body);
+      const category = await storage.createCategory(req.body);
+      res.status(201).json(category);
+    } catch (error) {
+      console.error('Failed to create category:', error);
+      res.status(500).json({ error: 'Failed to create category' });
+    }
+  });
+
+  app.patch('/api/categories/:id', async (req, res) => {
+    try {
+      const { id } = req.params;
+      console.log(`🔄 Updating category ${id} with data:`, req.body);
+      const category = await storage.updateCategory(id, req.body);
+      res.json(category);
+    } catch (error) {
+      console.error('Failed to update category:', error);
+      res.status(500).json({ error: 'Failed to update category' });
+    }
+  });
+
+  app.delete('/api/categories/:id', async (req, res) => {
+    try {
+      const { id } = req.params;
+      console.log(`🗑️ Deleting category ${id}`);
+      await storage.deleteCategory(id);
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Failed to delete category:', error);
+      res.status(500).json({ error: 'Failed to delete category' });
+    }
+  });
+
   // Product management endpoints
   app.post('/api/products', async (req, res) => {
     try {
@@ -1335,7 +1392,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Offer management (Admin)
+  // Offer management endpoints (Public for admin panel)
+  app.post('/api/offers', async (req, res) => {
+    try {
+      console.log('🎁 Creating offer with data:', req.body);
+      const offer = await storage.createOffer(req.body);
+      res.status(201).json(offer);
+    } catch (error) {
+      console.error('Failed to create offer:', error);
+      res.status(500).json({ error: 'Failed to create offer' });
+    }
+  });
+
+  app.patch('/api/offers/:id', async (req, res) => {
+    try {
+      const { id } = req.params;
+      console.log(`🔄 Updating offer ${id} with data:`, req.body);
+      const offer = await storage.updateOffer(id, req.body);
+      res.json(offer);
+    } catch (error) {
+      console.error('Failed to update offer:', error);
+      res.status(500).json({ error: 'Failed to update offer' });
+    }
+  });
+
+  app.delete('/api/offers/:id', async (req, res) => {
+    try {
+      const { id } = req.params;
+      console.log(`🗑️ Deleting offer ${id}`);
+      await storage.deleteOffer(id);
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Failed to delete offer:', error);
+      res.status(500).json({ error: 'Failed to delete offer' });
+    }
+  });
+
+  // Admin-only offer management (with auth)
   app.post('/api/admin/offers', authenticateAdmin, async (req, res) => {
     try {
       const offer = await storage.createOffer(req.body);
@@ -1452,6 +1545,78 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Error fixing product descriptions:', error);
       res.status(500).json({ error: 'Failed to fix descriptions' });
+    }
+  });
+
+  // Promo codes management endpoints (Public for admin panel)
+  app.get('/api/promo-codes', async (req, res) => {
+    try {
+      const promoCodes = await storage.getPromoCodes();
+      res.json(promoCodes);
+    } catch (error) {
+      console.error('Failed to fetch promo codes:', error);
+      res.status(500).json({ error: 'Failed to fetch promo codes' });
+    }
+  });
+
+  app.post('/api/promo-codes', async (req, res) => {
+    try {
+      console.log('🎟️ Creating promo code with data:', req.body);
+      const promoCode = await storage.createPromoCode(req.body);
+      res.status(201).json(promoCode);
+    } catch (error) {
+      console.error('Failed to create promo code:', error);
+      res.status(500).json({ error: 'Failed to create promo code' });
+    }
+  });
+
+  app.patch('/api/promo-codes/:id', async (req, res) => {
+    try {
+      const { id } = req.params;
+      console.log(`🔄 Updating promo code ${id} with data:`, req.body);
+      const promoCode = await storage.updatePromoCode(id, req.body);
+      res.json(promoCode);
+    } catch (error) {
+      console.error('Failed to update promo code:', error);
+      res.status(500).json({ error: 'Failed to update promo code' });
+    }
+  });
+
+  app.delete('/api/promo-codes/:id', async (req, res) => {
+    try {
+      const { id } = req.params;
+      console.log(`🗑️ Deleting promo code ${id}`);
+      await storage.deletePromoCode(id);
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Failed to delete promo code:', error);
+      res.status(500).json({ error: 'Failed to delete promo code' });
+    }
+  });
+
+  // Settings management endpoints (Public for admin panel)
+  app.post('/api/settings', async (req, res) => {
+    try {
+      console.log('⚙️ Updating settings with data:', req.body);
+      const updatedSettings: any = {};
+      
+      // Update each setting individually
+      for (const [key, value] of Object.entries(req.body)) {
+        try {
+          const setting = await storage.updateSetting(key, value as string);
+          updatedSettings[key] = setting.value;
+        } catch (error) {
+          console.error(`Failed to update setting ${key}:`, error);
+          // Create new setting if it doesn't exist
+          const newSetting = await storage.createSetting({ key, value: value as string, description: `Auto-created setting for ${key}` });
+          updatedSettings[key] = newSetting.value;
+        }
+      }
+      
+      res.json(updatedSettings);
+    } catch (error) {
+      console.error('Failed to update settings:', error);
+      res.status(500).json({ error: 'Failed to update settings' });
     }
   });
 
