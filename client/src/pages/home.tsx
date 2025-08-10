@@ -8,8 +8,8 @@ import EnhancedProductLoader from "@/components/enhanced-product-loader";
 import UltraSimpleLayout from "@/components/ultra-simple-layout";
 import TrackingSection from "@/components/tracking-section";
 import SimplePopupOffer from "../components/simple-popup-offer";
-import EnhancedProductModal from "@/components/enhanced-product-modal";
-import CustomizeModalEnhanced from "@/components/customize-modal-enhanced";
+import PerfectProductModal from "@/components/perfect-product-modal";
+import PerfectCustomizeModal from "@/components/perfect-customize-modal";
 import ComprehensiveProductLoading from "@/components/comprehensive-product-loading";
 import { useToast } from "@/hooks/use-toast";
 import { useCart } from "@/hooks/use-cart";
@@ -735,9 +735,9 @@ export default function Home() {
 
 
 
-      {/* Enhanced Product Modal */}
+      {/* Perfect Product Modal */}
       {selectedProduct && (
-        <EnhancedProductModal
+        <PerfectProductModal
           product={selectedProduct}
           isOpen={isModalOpen}
           onClose={() => {
@@ -749,9 +749,9 @@ export default function Home() {
         />
       )}
 
-      {/* Customize Modal */}
+      {/* Perfect Customize Modal */}
       {customizeProduct && (
-        <CustomizeModalEnhanced
+        <PerfectCustomizeModal
           product={customizeProduct}
           isOpen={isCustomizeModalOpen}
           onClose={() => {

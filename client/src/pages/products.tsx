@@ -9,8 +9,8 @@ import { useToast } from "@/hooks/use-toast";
 import { useCart } from "@/hooks/use-cart";
 import MobileOptimizedLayout from "@/components/mobile-optimized-layout";
 import UnifiedProductCard from "@/components/unified-product-card";
-import EnhancedProductModal from "@/components/enhanced-product-modal";
-import CustomizeModalRedesigned from "@/components/customize-modal-redesigned";
+import PerfectProductModal from "@/components/perfect-product-modal";
+import PerfectCustomizeModal from "@/components/perfect-customize-modal";
 import ComprehensiveProductLoading from "@/components/comprehensive-product-loading";
 import EnhancedFilterSystem from "@/components/enhanced-filter-system";
 import { ProgressiveLoader, PerformanceErrorBoundary, PerformanceMonitor } from "@/components/enhanced-loading-system";
@@ -187,27 +187,34 @@ export default function ProductsPage() {
     }
   };
 
-  // Handle add to cart with customization using global cart
-  const handleAddToCartWithCustomization = async (product: Product, customization: any) => {
+  // Handle customize add to cart
+  const handleCustomizeAddToCart = async (product: Product, customization: any) => {
+    console.log("🎨 Adding customized product to cart:", product.name, customization);
+    
     try {
       await globalAddToCart({
         id: product.id,
         name: product.name,
         price: Number(product.price),
         image: product.image_url || '',
-        quantity: 1
+        quantity: customization.quantity || 1,
+        customization // Include customization data
       });
-      
+
       toast({
-        title: "কাস্টম অর্ডার যোগ করা হয়েছে",
-        description: `${product.name} কাস্টমাইজেশন সহ কার্টে যোগ করা হয়েছে`,
-        duration: 3000,
+        title: "কাস্টম পণ্য যোগ করা হয়েছে!",
+        description: `${product.name} আপনার পছন্দমতো ডিজাইন করে কার্টে যোগ করা হয়েছে`,
+        duration: 4000,
       });
+
+      // Close the customize modal
+      setIsCustomizeModalOpen(false);
+      setSelectedProduct(null);
     } catch (error) {
       console.error('Error adding customized product to cart:', error);
       toast({
         title: "ত্রুটি",
-        description: "কাস্টম পণ্য কার্টে যোগ করতে সমস্যা হয়েছে",
+        description: "কাস্টম পণ্য যোগ করতে সমস্যা হয়েছে",
         variant: "destructive",
       });
     }
@@ -405,31 +412,31 @@ export default function ProductsPage() {
 
       </div>
 
-      {/* Enhanced Product Details Modal */}
+      {/* Perfect Product Details Modal */}
       {selectedProduct && (
-        <EnhancedProductModal
+        <PerfectProductModal
+          product={selectedProduct}
           isOpen={isProductModalOpen}
           onClose={() => {
             console.log("📱 Closing product modal");
             setIsProductModalOpen(false);
             setSelectedProduct(null);
           }}
-          product={selectedProduct}
           onAddToCart={handleAddToCart}
           onCustomize={handleCustomize}
         />
       )}
 
-      {/* Customize Modal */}
+      {/* Perfect Customize Modal */}
       {selectedProduct && (
-        <CustomizeModalRedesigned
+        <PerfectCustomizeModal
+          product={selectedProduct}
           isOpen={isCustomizeModalOpen}
           onClose={() => {
             setIsCustomizeModalOpen(false);
             setSelectedProduct(null);
           }}
-          product={selectedProduct}
-          onAddToCart={handleAddToCartWithCustomization}
+          onAddToCart={handleCustomizeAddToCart}
         />
       )}
     </MobileOptimizedLayout>
