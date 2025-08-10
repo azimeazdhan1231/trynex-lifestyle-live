@@ -67,14 +67,14 @@ export function useCart(): UseCartReturn {
 
   const updateGlobalCart = useCallback((updater: (cart: CartItem[]) => CartItem[]) => {
     globalCartState = updater(globalCartState);
-    
+
     // Save to localStorage immediately
     try {
       localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(globalCartState));
     } catch (error) {
       console.error('Error saving cart to localStorage:', error);
     }
-    
+
     // Notify all listeners
     globalCartListeners.forEach(listener => listener(globalCartState));
   }, []);

@@ -106,128 +106,80 @@ export async function registerRoutes(app: express.Express) {
   app.put('/api/products/:id', async (req, res) => {
     try {
       const { id } = req.params;
-      console.log(`🔄 Updating product ${id} with data:`, req.body);
-
       const updateData = req.body;
 
-      // Validate required fields
-      if (!updateData.name || !updateData.category) {
-        return res.status(400).json({
-          success: false,
-          error: 'Missing required fields',
-          details: 'Name and category are required'
-        });
+      // Convert price to string if it's a number
+      if (typeof updateData.price === 'number') {
+        updateData.price = updateData.price.toString();
       }
 
-      // Process the data with proper type conversion
-      const processedData = {
-        name: String(updateData.name || '').trim(),
-        description: String(updateData.description || '').trim(),
-        category: String(updateData.category || '').trim(),
-        image_url: String(updateData.image_url || '').trim(),
-        additional_images: updateData.additional_images || [],
-        is_active: Boolean(updateData.is_active !== false),
+      // Ensure all required fields are present
+      const sanitizedData = {
+        name: updateData.name || '',
+        description: updateData.description || '',
+        price: updateData.price || '0',
+        stock: parseInt(updateData.stock) || 0,
+        category: updateData.category || '',
+        image_url: updateData.image_url || '',
         is_featured: Boolean(updateData.is_featured),
         is_latest: Boolean(updateData.is_latest),
         is_best_selling: Boolean(updateData.is_best_selling)
       };
 
-      // Handle price conversion
-      if (updateData.price !== undefined && updateData.price !== null) {
-        const priceNum = parseFloat(updateData.price);
-        if (isNaN(priceNum) || priceNum < 0) {
-          return res.status(400).json({
-            success: false,
-            error: "Invalid price value",
-            details: "Price must be a valid positive number"
-          });
-        }
-        processedData.price = priceNum;
+      const updatedProduct = await storage.updateProduct(id, sanitizedData);
+
+      if (!updatedProduct) {
+        return res.status(404).json({ success: false, message: 'পণ্য পাওয়া যায়নি' });
       }
-
-      // Handle stock conversion
-      if (updateData.stock !== undefined && updateData.stock !== null) {
-        const stockNum = parseInt(updateData.stock, 10);
-        if (isNaN(stockNum) || stockNum < 0) {
-          return res.status(400).json({
-            success: false,
-            error: "Invalid stock value",
-            details: "Stock must be a valid non-negative number"
-          });
-        }
-        processedData.stock = stockNum;
-      }
-
-      console.log('✅ Processed update data:', processedData);
-
-      const product = await storage.updateProduct(id, processedData);
-
-      if (!product) {
-        return res.status(404).json({ success: false, error: 'Product not found' });
-      }
-
-      console.log('✅ Product updated successfully:', product);
-
-      res.json({
-        success: true,
-        product,
-        message: 'পণ্য সফলভাবে আপডেট হয়েছে'
-      });
-    } catch (error) {
-      console.error('Error updating product:', error);
-      res.status(500).json({ 
-        success: false, 
-        error: 'Failed to update product',
-        details: error.message 
-      });
-    }
-  });
-
-  // Update product
-  app.patch("/api/products/:id", async (req, res) => {
-    try {
-      const { id } = req.params;
-      const updates = req.body;
-
-      console.log('Product mutation:', req.method, req.url, updates);
-
-      // Ensure proper data types
-      if (updates.stock !== undefined) {
-        updates.stock = parseInt(updates.stock, 10);
-        if (isNaN(updates.stock)) {
-          return res.status(400).json({
-            success: false,
-            error: "Invalid stock value",
-            details: "Stock must be a valid number"
-          });
-        }
-      }
-
-      if (updates.price !== undefined) {
-        updates.price = parseFloat(updates.price);
-        if (isNaN(updates.price)) {
-          return res.status(400).json({
-            success: false,
-            error: "Invalid price value",
-            details: "Price must be a valid number"
-          });
-        }
-      }
-
-      const updatedProduct = await storage.updateProduct(id, updates);
 
       res.json({
         success: true,
         product: updatedProduct,
-        message: "পণ্য সফলভাবে আপডেট হয়েছে"
+        message: 'পণ্য সফলভাবে আপডেট হয়েছে'
       });
     } catch (error) {
-      console.error("Update product error:", error);
-      res.status(500).json({
-        success: false,
-        error: "পণ্য আপডেট করতে সমস্যা হয়েছে",
-        details: error.message
+      console.error('Error updating product:', error);
+      res.status(500).json({ success: false, message: 'পণ্য আপডেটে সমস্যা হয়েছে' });
+    }
+  });
+
+  // Partial update product (PATCH)
+  app.patch('/api/products/:id', async (req, res) => {
+    try {
+      const { id } = req.params;
+      const updateData = req.body;
+
+      // Convert price to string if it's a number
+      if (typeof updateData.price === 'number') {
+        updateData.price = updateData.price.toString();
+      }
+
+      // Only update fields that are provided
+      const sanitizedData: any = {};
+      if (updateData.name !== undefined) sanitizedData.name = updateData.name;
+      if (updateData.description !== undefined) sanitizedData.description = updateData.description;
+      if (updateData.price !== undefined) sanitizedData.price = updateData.price;
+      if (updateData.stock !== undefined) sanitizedData.stock = parseInt(updateData.stock) || 0;
+      if (updateData.category !== undefined) sanitizedData.category = updateData.category;
+      if (updateData.image_url !== undefined) sanitizedData.image_url = updateData.image_url;
+      if (updateData.is_featured !== undefined) sanitizedData.is_featured = Boolean(updateData.is_featured);
+      if (updateData.is_latest !== undefined) sanitizedData.is_latest = Boolean(updateData.is_latest);
+      if (updateData.is_best_selling !== undefined) sanitizedData.is_best_selling = Boolean(updateData.is_best_selling);
+
+      const updatedProduct = await storage.updateProduct(id, sanitizedData);
+
+      if (!updatedProduct) {
+        return res.status(404).json({ success: false, message: 'পণ্য পাওয়া যায়নি' });
+      }
+
+      res.json({
+        success: true,
+        product: updatedProduct,
+        message: 'পণ্য সফলভাবে আপডেট হয়েছে'
       });
+    } catch (error) {
+      console.error('Error updating product:', error);
+      res.status(500).json({ success: false, message: 'পণ্য আপডেটে সমস্যা হয়েছে' });
     }
   });
 

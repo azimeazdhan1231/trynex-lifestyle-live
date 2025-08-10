@@ -7,6 +7,7 @@ import { ShoppingCart, Plus, Minus, Trash2, X } from "lucide-react";
 import { formatPrice } from "@/lib/constants";
 import { useCart } from "@/hooks/use-cart";
 import CheckoutModal from "@/components/checkout-modal";
+import { useQuery } from '@tanstack/react-query';
 
 interface CartModalProps {
   isOpen: boolean;
@@ -16,6 +17,29 @@ interface CartModalProps {
 export default function CartModalFixed({ isOpen, onClose }: CartModalProps) {
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const { cart, updateQuantity, removeFromCart, totalItems, totalPrice, clearCart, isLoaded, refreshCart } = useCart();
+
+  // Fetch cart data using react-query for real-time updates
+  const { data: cartItems, isLoading, refetch } = useQuery({
+    queryKey: ['cart'],
+    queryFn: async () => {
+      const response = await fetch('/api/cart');
+      if (!response.ok) throw new Error('Failed to fetch cart');
+      return response.json();
+    },
+    refetchOnWindowFocus: true,
+    refetchOnMount: true,
+    staleTime: 0, // Always refetch when component mounts
+  });
+
+  // Listen for cart updates from other tabs/windows
+  useEffect(() => {
+    const handleStorageChange = () => {
+      refetch();
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, [refetch]);
 
   // Force cart refresh when modal opens
   useEffect(() => {
@@ -46,15 +70,15 @@ export default function CartModalFixed({ isOpen, onClose }: CartModalProps) {
       let freshCart = [];
       try {
         if (savedCart) {
-          freshCart = JSON.parse(savedCart);
+          freshCart = JSON.JSON.parse(savedCart);
         }
       } catch (e) {
         console.error('Failed to parse cart from localStorage:', e);
       }
-      
+
       // Always use fresh cart data from localStorage
       setLocalCart(freshCart);
-      
+
       // Debug info removed for production
     }
   }, [isOpen, cart, isLoaded]);
@@ -87,6 +111,9 @@ export default function CartModalFixed({ isOpen, onClose }: CartModalProps) {
     );
   }
 
+  // Use cartItems from useQuery for rendering
+  const displayCart = cartItems || [];
+
   return (
     <>
       <Dialog open={isOpen} onOpenChange={onClose}>
@@ -98,18 +125,17 @@ export default function CartModalFixed({ isOpen, onClose }: CartModalProps) {
             <DialogTitle className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-800 flex items-center gap-2">
               🛒 আপনার কার্ট 
               <span className="bg-primary/20 text-primary px-2 py-1 rounded-full text-sm font-medium">
-                {(localCart.length > 0 ? localCart : cart).length}টি পণ্য
+                {displayCart.length}টি পণ্য
               </span>
             </DialogTitle>
             <DialogDescription className="text-xs sm:text-sm text-gray-600 mt-1">
               আপনার শপিং কার্টে থাকা পণ্যসমূহ দেখুন এবং পরিচালনা করুন
             </DialogDescription>
           </DialogHeader>
-          
+
           <div className="flex-1 overflow-y-auto px-3 sm:px-4 lg:px-6 py-3 sm:py-4">
             {(() => {
-              const currentCart = localCart.length > 0 ? localCart : cart;
-              return (!currentCart || !Array.isArray(currentCart) || currentCart.length === 0) ? (
+              return (!displayCart || !Array.isArray(displayCart) || displayCart.length === 0) ? (
                 <div className="text-center py-12">
                   <ShoppingCart className="w-16 h-16 text-gray-300 mx-auto mb-4" />
                   <p className="text-gray-500 text-lg mb-4">আপনার কার্ট খালি</p>
@@ -122,7 +148,7 @@ export default function CartModalFixed({ isOpen, onClose }: CartModalProps) {
                 <div className="space-y-6">
                   {/* Cart Items */}
                   <div className="space-y-4">
-                    {currentCart.map((item) => (
+                    {displayCart.map((item) => (
                     <div
                       key={`${item.id}-${JSON.stringify(item.customization)}`}
                       className="flex items-start gap-3 p-3 sm:p-4 border border-gray-200 rounded-xl bg-white shadow-sm hover:shadow-md transition-all duration-200"
@@ -142,7 +168,7 @@ export default function CartModalFixed({ isOpen, onClose }: CartModalProps) {
                           />
                         </div>
                       )}
-                      
+
                       {/* Product Details */}
                       <div className="flex-1 min-w-0">
                         <h5 className="font-semibold text-sm sm:text-base text-gray-900 line-clamp-2 leading-tight">
@@ -188,7 +214,7 @@ export default function CartModalFixed({ isOpen, onClose }: CartModalProps) {
                           </div>
                         )}
                       </div>
-                      
+
                       {/* Quantity Controls - Mobile Optimized */}
                       <div className="flex flex-col items-end gap-2 flex-shrink-0">
                         <div className="flex items-center bg-gray-50 rounded-lg p-1">
@@ -263,7 +289,7 @@ export default function CartModalFixed({ isOpen, onClose }: CartModalProps) {
             );
             })()}
           </div>
-          
+
           {/* Footer Actions - Mobile Optimized */}
           {cart.length > 0 && (
             <div className="flex-shrink-0 border-t bg-gray-50/80 px-4 sm:px-6 py-3 sm:py-4">

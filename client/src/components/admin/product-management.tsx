@@ -139,7 +139,14 @@ function ProductForm({ product, onClose, isEdit = false }: any) {
       // Aggressive cache invalidation
       queryClient.removeQueries({ queryKey: ["/api/products"] });
       await queryClient.invalidateQueries({ queryKey: ["/api/products"] });
-      await refetch();
+      await queryClient.refetchQueries({ queryKey: ["/api/products"] });
+
+      // Update the specific product in cache immediately
+      if (newProduct.product) {
+        const currentProducts = queryClient.getQueryData(["/api/products"]) as any[] || [];
+        const updatedProducts = [...currentProducts, newProduct.product];
+        queryClient.setQueryData(["/api/products"], updatedProducts);
+      }
 
       onClose();
     },
@@ -206,7 +213,14 @@ function ProductForm({ product, onClose, isEdit = false }: any) {
       // Aggressive cache invalidation
       queryClient.removeQueries({ queryKey: ["/api/products"] });
       await queryClient.invalidateQueries({ queryKey: ["/api/products"] });
-      await refetch();
+      await queryClient.refetchQueries({ queryKey: ["/api/products"] });
+
+      // Update the specific product in cache immediately
+      if (updatedProduct.product) {
+        const currentProducts = queryClient.getQueryData(["/api/products"]) as any[] || [];
+        const updatedProducts = currentProducts.map(p => p.id === updatedProduct.product.id ? updatedProduct.product : p);
+        queryClient.setQueryData(["/api/products"], updatedProducts);
+      }
 
       onClose();
     },
