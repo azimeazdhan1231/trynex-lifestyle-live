@@ -123,7 +123,8 @@ function ProductForm({ product, onClose, isEdit = false }: any) {
         headers: { 
           'Content-Type': 'application/json',
           'Cache-Control': 'no-cache',
-          'Pragma': 'no-cache'
+          'Pragma': 'no-cache',
+          'X-Timestamp': Date.now().toString()
         },
         body: JSON.stringify({
           ...data,
@@ -149,8 +150,8 @@ function ProductForm({ product, onClose, isEdit = false }: any) {
       // Force complete cache refresh
       await invalidateAllCaches();
       
-      // Force page reload to show updated data immediately
-      window.location.reload();
+      // Close modal immediately to show updated list
+      onClose();
     },
     onError: (error: any) => {
       console.error('Update product error:', error);
@@ -476,13 +477,21 @@ export default function ProductManagement() {
     setIsEditModalOpen(true);
   };
 
-  const closeEditModal = () => {
+  const closeEditModal = async () => {
     setSelectedProduct(null);
     setIsEditModalOpen(false);
+    
+    // Force refresh the product list when modal closes
+    await queryClient.invalidateQueries({ queryKey: ["/api/products"] });
+    await refetch();
   };
 
-  const closeAddModal = () => {
+  const closeAddModal = async () => {
     setIsAddModalOpen(false);
+    
+    // Force refresh the product list when modal closes
+    await queryClient.invalidateQueries({ queryKey: ["/api/products"] });
+    await refetch();
   };
 
   const handleRefresh = async () => {
