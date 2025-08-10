@@ -129,7 +129,7 @@ const ModernProductCard = memo(function ModernProductCard({
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
             loading="lazy"
           />
-          
+
           {/* Overlay Actions */}
           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300">
             <div className="absolute top-3 right-3 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
@@ -156,7 +156,7 @@ const ModernProductCard = memo(function ModernProductCard({
                 <Eye className="w-4 h-4 text-gray-600" />
               </Button>
             </div>
-            
+
             {/* Quick Add to Cart */}
             <div className="absolute bottom-3 left-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
               <Button
@@ -226,7 +226,7 @@ const ModernProductCard = memo(function ModernProductCard({
 
 const HeroSection = memo(function HeroSection() {
   const [currentSlide, setCurrentSlide] = useState(0);
-  
+
   const heroSlides = [
     {
       id: 1,
@@ -281,7 +281,7 @@ const HeroSection = memo(function HeroSection() {
               className="w-full h-full object-cover"
             />
             <div className="absolute inset-0 bg-gradient-to-r from-black/60 to-transparent" />
-            
+
             <div className="absolute inset-0 flex items-center">
               <div className="container mx-auto px-4 md:px-6">
                 <div className="max-w-xl">
@@ -312,7 +312,7 @@ const HeroSection = memo(function HeroSection() {
           </div>
         </div>
       ))}
-      
+
       {/* Slide Indicators */}
       <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex space-x-2">
         {heroSlides.map((_, index) => (
