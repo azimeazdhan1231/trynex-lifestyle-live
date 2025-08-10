@@ -1360,13 +1360,56 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
-      // Sanitize and validate update data
+      // Sanitize and validate update data with proper validation
       const updateData: any = {};
-      if (req.body.name !== undefined) updateData.name = String(req.body.name).trim();
+      
+      // Validate required fields
+      if (req.body.name !== undefined) {
+        const name = String(req.body.name).trim();
+        if (!name) {
+          return res.status(400).json({
+            success: false,
+            error: 'Product name is required'
+          });
+        }
+        updateData.name = name;
+      }
+      
       if (req.body.description !== undefined) updateData.description = String(req.body.description || '').trim();
-      if (req.body.price !== undefined) updateData.price = parseFloat(req.body.price) || 0;
-      if (req.body.stock !== undefined) updateData.stock = parseInt(req.body.stock) || 0;
-      if (req.body.category !== undefined) updateData.category = String(req.body.category).trim();
+      
+      if (req.body.price !== undefined) {
+        const price = parseFloat(req.body.price);
+        if (isNaN(price) || price < 0) {
+          return res.status(400).json({
+            success: false,
+            error: 'Valid price is required'
+          });
+        }
+        updateData.price = price;
+      }
+      
+      if (req.body.stock !== undefined) {
+        const stock = parseInt(req.body.stock);
+        if (isNaN(stock) || stock < 0) {
+          return res.status(400).json({
+            success: false,
+            error: 'Valid stock is required'
+          });
+        }
+        updateData.stock = stock;
+      }
+      
+      if (req.body.category !== undefined) {
+        const category = String(req.body.category).trim();
+        if (!category) {
+          return res.status(400).json({
+            success: false,
+            error: 'Category is required'
+          });
+        }
+        updateData.category = category;
+      }
+      
       if (req.body.image_url !== undefined) updateData.image_url = String(req.body.image_url || '').trim();
       if (req.body.is_featured !== undefined) updateData.is_featured = Boolean(req.body.is_featured);
       if (req.body.is_latest !== undefined) updateData.is_latest = Boolean(req.body.is_latest);
@@ -1397,8 +1440,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       console.log('✅ Product updated successfully:', updatedProduct);
       
-      // Return the updated product directly without wrapping in extra object
-      return res.status(200).json(updatedProduct);
+      // Return the updated product with success flag
+      return res.status(200).json({
+        success: true,
+        ...updatedProduct,
+        message: 'Product updated successfully'
+      });
     } catch (error: any) {
       console.error('❌ Failed to update product:', error);
       
@@ -1409,6 +1456,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
       
       return res.status(500).json({ 
+        success: false,
         error: 'Failed to update product',
         message: error.message || 'Unknown error occurred'
       });

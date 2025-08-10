@@ -587,11 +587,29 @@ function ProductFormModal({
                   {PRODUCT_CATEGORIES.filter(cat => cat.id !== 'all').map((cat) => (
                     <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
                   ))}
+                  {/* Add fallback categories if PRODUCT_CATEGORIES is empty */}
+                  {PRODUCT_CATEGORIES.length <= 1 && (
+                    <>
+                      <SelectItem value="t-shirts">টি-শার্ট</SelectItem>
+                      <SelectItem value="mugs">মগ</SelectItem>
+                      <SelectItem value="frames">ফ্রেম</SelectItem>
+                      <SelectItem value="cushions">কুশন</SelectItem>
+                      <SelectItem value="calendars">ক্যালেন্ডার</SelectItem>
+                      <SelectItem value="accessories">এক্সেসরিজ</SelectItem>
+                      <SelectItem value="gift-for-him">তার জন্য উপহার</SelectItem>
+                      <SelectItem value="gift-for-her">তাঁর জন্য উপহার</SelectItem>
+                      <SelectItem value="birthday-gifts">জন্মদিনের উপহার</SelectItem>
+                      <SelectItem value="anniversary-gifts">বার্ষিকীর উপহার</SelectItem>
+                    </>
+                  )}
                 </SelectContent>
               </Select>
               {form.formState.errors.category && (
                 <p className="text-red-500 text-sm">ক্যাটেগরি নির্বাচন করুন</p>
               )}
+              <p className="text-xs text-muted-foreground">
+                বর্তমান ক্যাটেগরি: {form.watch("category") || "নির্বাচিত নয়"}
+              </p>
             </div>
           </div>
 
