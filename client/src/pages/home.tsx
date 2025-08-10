@@ -8,7 +8,7 @@ import EnhancedProductLoader from "@/components/enhanced-product-loader";
 import UltraSimpleLayout from "@/components/ultra-simple-layout";
 import TrackingSection from "@/components/tracking-section";
 import SimplePopupOffer from "../components/simple-popup-offer";
-import PerfectResponsiveProductModal from "@/components/perfect-responsive-product-modal";
+import UltraLargeProductModal from "@/components/ultra-large-product-modal";
 import PerfectCustomizeModal from "@/components/perfect-customize-modal";
 import ComprehensiveProductLoading from "@/components/comprehensive-product-loading";
 import { useToast } from "@/hooks/use-toast";
@@ -735,9 +735,9 @@ export default function Home() {
 
 
 
-      {/* Perfect Responsive Product Modal */}
+      {/* Ultra Large Product Modal */}
       {selectedProduct && (
-        <PerfectResponsiveProductModal
+        <UltraLargeProductModal
           product={selectedProduct}
           isOpen={isModalOpen}
           onClose={() => {
