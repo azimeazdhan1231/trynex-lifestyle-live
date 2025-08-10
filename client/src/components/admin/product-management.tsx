@@ -105,8 +105,10 @@ function ProductForm({ product, onClose, isEdit = false }: any) {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
-          'Cache-Control': 'no-cache',
-          'Pragma': 'no-cache'
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0',
+          'X-Cache-Bust': Date.now().toString()
         },
         body: JSON.stringify({
           ...data,
@@ -121,18 +123,30 @@ function ProductForm({ product, onClose, isEdit = false }: any) {
       
       return response.json();
     },
-    onSuccess: async () => {
+    onSuccess: async (newProduct) => {
+      console.log('✅ Product created successfully:', newProduct);
+      
       toast({
         title: "সফল!",
         description: "নতুন পণ্য যোগ করা হয়েছে",
       });
       
-      // Force complete cache refresh
-      await invalidateAllCaches();
+      // Immediate and aggressive cache refresh
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["/api/products"] }),
+        queryClient.refetchQueries({ queryKey: ["/api/products"] }),
+        queryClient.removeQueries({ queryKey: ["/api/products"] }),
+        queryClient.invalidateQueries({ queryKey: ["/api/categories"] }),
+      ]);
+      
+      // Force refetch
+      await refetch();
+      
+      console.log('✅ All caches cleared and data refreshed');
       onClose();
     },
     onError: (error: any) => {
-      console.error('Create product error:', error);
+      console.error('❌ Create product error:', error);
       toast({
         title: "ত্রুটি!",
         description: error?.message || "পণ্য যোগ করতে সমস্যা হয়েছে",
@@ -149,9 +163,11 @@ function ProductForm({ product, onClose, isEdit = false }: any) {
         method: 'PATCH',
         headers: { 
           'Content-Type': 'application/json',
-          'Cache-Control': 'no-cache',
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
           'Pragma': 'no-cache',
-          'X-Timestamp': Date.now().toString()
+          'Expires': '0',
+          'X-Cache-Bust': Date.now().toString(),
+          'X-Force-Update': 'true'
         },
         body: JSON.stringify({
           ...data,
@@ -167,26 +183,36 @@ function ProductForm({ product, onClose, isEdit = false }: any) {
       return response.json();
     },
     onSuccess: async (updatedProduct) => {
-      console.log('Product updated successfully:', updatedProduct);
+      console.log('✅ Product updated successfully:', updatedProduct);
       
       toast({
         title: "সফল!",
         description: "পণ্য আপডেট করা হয়েছে",
       });
       
-      // Force complete cache refresh
-      await invalidateAllCaches();
+      // Immediate cache invalidation - multiple strategies
+      await Promise.all([
+        // Invalidate and refetch immediately
+        queryClient.invalidateQueries({ queryKey: ["/api/products"] }),
+        queryClient.refetchQueries({ queryKey: ["/api/products"] }),
+        
+        // Remove all cached data
+        queryClient.removeQueries({ queryKey: ["/api/products"] }),
+        
+        // Also invalidate categories in case product categories changed
+        queryClient.invalidateQueries({ queryKey: ["/api/categories"] }),
+      ]);
       
-      // Update the selected product with fresh data
-      setSelectedProduct(updatedProduct);
+      // Force a hard refresh of the data
+      await refetch();
       
-      // Close modal to show updated list
-      setTimeout(() => {
-        onClose();
-      }, 500); // Small delay to let user see the success
+      console.log('✅ All caches cleared and data refetched');
+      
+      // Close modal immediately
+      onClose();
     },
     onError: (error: any) => {
-      console.error('Update product error:', error);
+      console.error('❌ Update product error:', error);
       toast({
         title: "ত্রুটি!",
         description: error?.message || "পণ্য আপডেট করতে সমস্যা হয়েছে",
@@ -437,11 +463,13 @@ export default function ProductManagement() {
 
   const { data: products = [], isLoading, error, refetch } = useQuery({ 
     queryKey: ["/api/products"],
-    refetchInterval: false, // Disable auto-refresh to prevent conflicts
+    refetchInterval: 5000, // Auto-refresh every 5 seconds for real-time updates
     staleTime: 0, // Always consider data stale
-    gcTime: 0, // Don't cache data (new React Query v5 syntax)
+    gcTime: 0, // Don't cache data
     refetchOnMount: 'always', // Always refetch when component mounts
     refetchOnWindowFocus: true, // Refetch when window gains focus
+    refetchOnReconnect: true, // Refetch on network reconnect
+    networkMode: 'always', // Always fetch regardless of network state
   });
 
   const { data: categories = [] } = useQuery({ queryKey: ["/api/categories"] });
@@ -455,8 +483,10 @@ export default function ProductManagement() {
       const response = await fetch(`/api/products/${productId}`, {
         method: 'DELETE',
         headers: {
-          'Cache-Control': 'no-cache',
-          'Pragma': 'no-cache'
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0',
+          'X-Cache-Bust': Date.now().toString()
         }
       });
       
@@ -467,21 +497,29 @@ export default function ProductManagement() {
       
       return response.json();
     },
-    onSuccess: async () => {
+    onSuccess: async (result) => {
+      console.log('✅ Product deleted successfully:', result);
+      
       toast({
         title: "সফল!",
         description: "পণ্য মুছে ফেলা হয়েছে",
       });
       
-      // Force complete cache refresh
-      await queryClient.invalidateQueries({ queryKey: ["/api/products"] });
-      await queryClient.refetchQueries({ queryKey: ["/api/products"] });
-      queryClient.removeQueries({ queryKey: ["/api/products"] });
+      // Aggressive cache clearing and immediate refresh
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["/api/products"] }),
+        queryClient.refetchQueries({ queryKey: ["/api/products"] }),
+        queryClient.removeQueries({ queryKey: ["/api/products"] }),
+        queryClient.invalidateQueries({ queryKey: ["/api/categories"] }),
+      ]);
       
-      console.log('✅ Product deleted and cache cleared');
+      // Force manual refetch
+      await refetch();
+      
+      console.log('✅ Product deleted and all caches refreshed');
     },
     onError: (error: any) => {
-      console.error('Delete product error:', error);
+      console.error('❌ Delete product error:', error);
       toast({
         title: "ত্রুটি!",
         description: error?.message || "পণ্য মুছতে সমস্যা হয়েছে",

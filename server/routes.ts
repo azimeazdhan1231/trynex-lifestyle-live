@@ -418,12 +418,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
     return Array.from(suggestions).slice(0, 8);
   }
 
-  // Ultra-fast products endpoint with performance cache
+  // Ultra-fast products endpoint with real-time updates
   app.get('/api/products', async (req, res) => {
     try {
-      const products = await getCachedProducts(); // Use the new unified caching approach
-      // Log statement adjusted for clarity, showing actual return count
-      console.log(`✅ Serving ${products.length} products from cache.`);
+      // Check for cache-busting headers
+      const cacheBust = req.headers['x-cache-bust'] || req.headers['x-force-update'];
+      const forceRefresh = cacheBust || req.query.refresh === 'true';
+      
+      if (forceRefresh) {
+        console.log('🔄 Force refresh requested, bypassing cache');
+        // Clear cache and fetch fresh data
+        productCache.data = null;
+        productCache.timestamp = 0;
+        performanceCache.clearCache();
+      }
+      
+      const products = await getCachedProducts();
+      
+      // Set response headers to prevent aggressive caching
+      res.set({
+        'Cache-Control': 'public, max-age=30, must-revalidate', // 30 second cache only
+        'X-Cache-Timestamp': productCache.timestamp.toString(),
+        'X-Products-Count': products.length.toString(),
+        'ETag': `"products-${productCache.timestamp}"`,
+        'Vary': 'Accept-Encoding, X-Cache-Bust'
+      });
+      
+      console.log(`✅ Serving ${products.length} products (cache: ${productCache.timestamp > 0 ? 'HIT' : 'MISS'})`);
       res.json(products);
 
     } catch (error) {
@@ -1182,12 +1203,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Product management endpoints
   app.post('/api/products', async (req, res) => {
     try {
-      console.log('Creating product with data:', req.body);
+      console.log('🆕 Creating product with data:', req.body);
       
       // Validate request data
       const validatedData = insertProductSchema.parse(req.body);
       
-      // Clear ALL cache layers when product is created
+      // IMMEDIATE cache clearing before creation
       performanceCache.clearCache();
       productCache.data = null;
       productCache.timestamp = 0;
@@ -1202,14 +1223,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const product = await storage.createProduct(validatedData);
       console.log('✅ Product created successfully:', product.id);
       
-      // Set headers to prevent caching
+      // Ultra-aggressive no-cache headers
       res.set({
-        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Cache-Control': 'no-cache, no-store, must-revalidate, max-age=0',
         'Pragma': 'no-cache',
-        'Expires': '0'
+        'Expires': '0',
+        'X-Cache-Bust': Date.now().toString(),
+        'X-New-Product': product.id,
+        'Vary': '*',
+        'Last-Modified': new Date().toUTCString(),
+        'ETag': `"created-${Date.now()}"`
       });
       
-      res.status(201).json(product);
+      res.status(201).json({
+        ...product,
+        _created_at: new Date().toISOString(),
+        _cache_bust: Date.now()
+      });
     } catch (error) {
       console.error('❌ Failed to create product:', error);
       if (error.name === 'ZodError') {
@@ -1222,20 +1252,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.patch('/api/products/:id', async (req, res) => {
     try {
       const { id } = req.params;
-      console.log(`Updating product ${id} with data:`, req.body);
+      console.log(`🔄 Updating product ${id} with data:`, req.body);
       
       // For updates, we make all fields optional
       const updateSchema = insertProductSchema.partial();
       const validatedData = updateSchema.parse(req.body);
       
-      // Clear ALL cache layers when product is updated
+      // AGGRESSIVE cache clearing - clear ALL layers
       performanceCache.clearCache();
       productCache.data = null;
       productCache.timestamp = 0;
       categoryCache.data = null;
       categoryCache.timestamp = 0;
       
-      // Clear cache service
+      // Clear cache service if available
       if (cacheService && typeof cacheService.clearAllCache === 'function') {
         cacheService.clearAllCache();
       }
@@ -1243,17 +1273,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const updatedProduct = await storage.updateProduct(id, validatedData);
       console.log('✅ Product updated successfully:', updatedProduct);
       
-      // Set headers to prevent caching
+      // Set ultra-aggressive no-cache headers
       res.set({
-        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Cache-Control': 'no-cache, no-store, must-revalidate, max-age=0',
         'Pragma': 'no-cache',
         'Expires': '0',
-        'X-Cache-Bust': Date.now().toString(), // Force cache busting
+        'X-Cache-Bust': Date.now().toString(),
         'X-Timestamp': Date.now().toString(),
-        'Vary': 'Cache-Control'
+        'X-Updated-Product': id,
+        'Vary': '*',
+        'Last-Modified': new Date().toUTCString(),
+        'ETag': `"updated-${Date.now()}"`
       });
       
-      res.json(updatedProduct);
+      // Return updated product with timestamp
+      res.json({
+        ...updatedProduct,
+        _updated_at: new Date().toISOString(),
+        _cache_bust: Date.now()
+      });
     } catch (error) {
       console.error('❌ Failed to update product:', error);
       if (error.name === 'ZodError') {
