@@ -89,12 +89,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         'Cache-Control': 'no-cache, no-store, must-revalidate'
       });
       
+      // Process data - ensure proper conversion to strings for validation
       const processedData = {
         ...req.body,
-        price: typeof req.body.price === 'number' ? req.body.price.toString() : req.body.price,
-        stock: typeof req.body.stock === 'number' ? req.body.stock.toString() : req.body.stock,
+        price: req.body.price !== undefined ? req.body.price.toString() : '0',
+        stock: req.body.stock !== undefined ? req.body.stock.toString() : '0',
         created_at: new Date()
       };
+      
+      console.log('✅ Processed data for validation:', processedData);
       
       const validatedData = insertProductSchema.parse(processedData);
       const product = await storage.createProduct(validatedData);
@@ -115,6 +118,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
       
       if (error.name === 'ZodError') {
+        console.error('❌ Validation errors:', error.errors);
         return res.status(400).json({ 
           success: false,
           error: 'Invalid product data', 
@@ -144,14 +148,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         'Cache-Control': 'no-cache, no-store, must-revalidate'
       });
       
-      // For updates, make fields optional and convert numbers to strings for validation
-      const updateSchema = insertProductSchema.partial();
+      // Process data - handle both string and number inputs properly
       const processedData = {
         ...req.body,
-        price: typeof req.body.price === 'number' ? req.body.price.toString() : req.body.price,
-        stock: typeof req.body.stock === 'number' ? req.body.stock.toString() : req.body.stock
+        // Convert price to string for validation if it's a number
+        price: req.body.price !== undefined ? req.body.price.toString() : undefined,
+        // Convert stock to string for validation if it's a number  
+        stock: req.body.stock !== undefined ? req.body.stock.toString() : undefined
       };
+      
+      // For updates, make all fields optional
+      const updateSchema = insertProductSchema.partial();
       const validatedData = updateSchema.parse(processedData);
+      
+      console.log('✅ Validated data:', validatedData);
       
       const updatedProduct = await storage.updateProduct(id, validatedData);
       console.log('✅ Product updated successfully:', updatedProduct);
@@ -170,6 +180,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
       
       if (error.name === 'ZodError') {
+        console.error('❌ Validation errors:', error.errors);
         return res.status(400).json({ 
           success: false,
           error: 'Invalid product data', 

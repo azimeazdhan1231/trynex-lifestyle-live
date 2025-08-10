@@ -21,9 +21,9 @@ import {
 interface ProductFormData {
   name: string;
   description: string;
-  price: number;
+  price: string;
   category: string;
-  stock: number;
+  stock: string;
   image_url: string;
   additional_images?: string[];
   is_active: boolean;
@@ -38,23 +38,15 @@ function ProductForm({ product, onClose, isEdit = false }: any) {
   const [imagePreview, setImagePreview] = useState(product?.image_url || '');
   const [additionalImages, setAdditionalImages] = useState<string[]>(product?.additional_images || []);
   
-  // Update local state when product prop changes
-  React.useEffect(() => {
-    if (product) {
-      setImagePreview(product.image_url || '');
-      setAdditionalImages(product.additional_images || []);
-    }
-  }, [product]);
-
   const { data: categories = [] } = useQuery({ queryKey: ["/api/categories"] });
 
   const { register, handleSubmit, formState: { errors }, setValue, watch, reset } = useForm<ProductFormData>({
     defaultValues: {
       name: product?.name || '',
       description: product?.description || '',
-      price: product?.price || 0,
+      price: product?.price?.toString() || '0',
       category: product?.category || '',
-      stock: product?.stock || 0,
+      stock: product?.stock?.toString() || '0',
       image_url: product?.image_url || '',
       is_active: product?.is_active ?? true,
       is_featured: product?.is_featured ?? false,
@@ -70,36 +62,38 @@ function ProductForm({ product, onClose, isEdit = false }: any) {
       reset({
         name: product.name || '',
         description: product.description || '',
-        price: Number(product.price) || 0,
+        price: product.price?.toString() || '0',
         category: product.category || '',
-        stock: Number(product.stock) || 0,
+        stock: product.stock?.toString() || '0',
         image_url: product.image_url || '',
         is_active: product.is_active ?? true,
         is_featured: product.is_featured ?? false,
         is_latest: product.is_latest ?? false,
         is_best_selling: product.is_best_selling ?? false,
       });
+      setImagePreview(product.image_url || '');
+      setAdditionalImages(product.additional_images || []);
     }
   }, [product, reset]);
-
-  // Force cache invalidation helper
-  const invalidateAllCaches = async () => {
-    // Invalidate all product-related queries
-    await queryClient.invalidateQueries({ queryKey: ["/api/products"] });
-    await queryClient.refetchQueries({ queryKey: ["/api/products"] });
-    
-    // Clear React Query cache completely for products
-    queryClient.removeQueries({ queryKey: ["/api/products"] });
-    
-    // Also clear any category caches that might include product counts
-    await queryClient.invalidateQueries({ queryKey: ["/api/categories"] });
-    
-    console.log('✅ All caches invalidated and refetched');
-  };
 
   const createProductMutation = useMutation({
     mutationFn: async (data: ProductFormData) => {
       console.log('Creating product with data:', data);
+      
+      // Convert string fields to proper types
+      const productData = {
+        name: data.name,
+        description: data.description,
+        price: parseFloat(data.price) || 0,
+        stock: parseInt(data.stock) || 0,
+        category: data.category,
+        image_url: data.image_url,
+        additional_images: additionalImages.filter(Boolean),
+        is_active: data.is_active,
+        is_featured: data.is_featured || false,
+        is_latest: data.is_latest || false,
+        is_best_selling: data.is_best_selling || false
+      };
       
       const response = await fetch('/api/products', {
         method: 'POST',
@@ -110,10 +104,7 @@ function ProductForm({ product, onClose, isEdit = false }: any) {
           'Expires': '0',
           'X-Cache-Bust': Date.now().toString()
         },
-        body: JSON.stringify({
-          ...data,
-          additional_images: additionalImages.filter(Boolean)
-        })
+        body: JSON.stringify(productData)
       });
       
       if (!response.ok) {
@@ -131,18 +122,13 @@ function ProductForm({ product, onClose, isEdit = false }: any) {
         description: "নতুন পণ্য যোগ করা হয়েছে",
       });
       
-      // Immediate and aggressive cache refresh
+      // Clear all caches and refetch
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ["/api/products"] }),
         queryClient.refetchQueries({ queryKey: ["/api/products"] }),
         queryClient.removeQueries({ queryKey: ["/api/products"] }),
-        queryClient.invalidateQueries({ queryKey: ["/api/categories"] }),
       ]);
       
-      // Force refetch
-      await refetch();
-      
-      console.log('✅ All caches cleared and data refreshed');
       onClose();
     },
     onError: (error: any) => {
@@ -159,6 +145,23 @@ function ProductForm({ product, onClose, isEdit = false }: any) {
     mutationFn: async (data: ProductFormData) => {
       console.log('Updating product with data:', data);
       
+      // Convert string fields to proper types for API
+      const productData = {
+        name: data.name,
+        description: data.description,
+        price: parseFloat(data.price) || 0,
+        stock: parseInt(data.stock) || 0,
+        category: data.category,
+        image_url: data.image_url,
+        additional_images: additionalImages.filter(Boolean),
+        is_active: data.is_active,
+        is_featured: data.is_featured || false,
+        is_latest: data.is_latest || false,
+        is_best_selling: data.is_best_selling || false
+      };
+      
+      console.log('Processed product data:', productData);
+      
       const response = await fetch(`/api/products/${product.id}`, {
         method: 'PATCH',
         headers: { 
@@ -169,14 +172,12 @@ function ProductForm({ product, onClose, isEdit = false }: any) {
           'X-Cache-Bust': Date.now().toString(),
           'X-Force-Update': 'true'
         },
-        body: JSON.stringify({
-          ...data,
-          additional_images: additionalImages.filter(Boolean)
-        })
+        body: JSON.stringify(productData)
       });
       
       if (!response.ok) {
         const errorData = await response.json();
+        console.error('Update API error:', errorData);
         throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
       }
       
@@ -190,25 +191,13 @@ function ProductForm({ product, onClose, isEdit = false }: any) {
         description: "পণ্য আপডেট করা হয়েছে",
       });
       
-      // Immediate cache invalidation - multiple strategies
+      // Clear all caches and refetch
       await Promise.all([
-        // Invalidate and refetch immediately
         queryClient.invalidateQueries({ queryKey: ["/api/products"] }),
         queryClient.refetchQueries({ queryKey: ["/api/products"] }),
-        
-        // Remove all cached data
         queryClient.removeQueries({ queryKey: ["/api/products"] }),
-        
-        // Also invalidate categories in case product categories changed
-        queryClient.invalidateQueries({ queryKey: ["/api/categories"] }),
       ]);
       
-      // Force a hard refresh of the data
-      await refetch();
-      
-      console.log('✅ All caches cleared and data refetched');
-      
-      // Close modal immediately
       onClose();
     },
     onError: (error: any) => {
@@ -222,17 +211,12 @@ function ProductForm({ product, onClose, isEdit = false }: any) {
   });
 
   const onSubmit = (data: ProductFormData) => {
-    // Ensure numeric values are properly converted
-    const formattedData = {
-      ...data,
-      price: Number(data.price),
-      stock: Number(data.stock)
-    };
+    console.log('Form submitted with data:', data);
     
     if (isEdit) {
-      updateProductMutation.mutate(formattedData);
+      updateProductMutation.mutate(data);
     } else {
-      createProductMutation.mutate(formattedData);
+      createProductMutation.mutate(data);
     }
   };
 
@@ -288,10 +272,10 @@ function ProductForm({ product, onClose, isEdit = false }: any) {
               <Input
                 id="price"
                 type="number"
+                step="0.01"
                 {...register("price", { 
                   required: "দাম আবশ্যক",
-                  valueAsNumber: true,
-                  min: { value: 1, message: "দাম ১ টাকার বেশি হতে হবে" }
+                  min: { value: "0", message: "দাম ০ বা বেশি হতে হবে" }
                 })}
                 placeholder="০"
               />
@@ -305,8 +289,7 @@ function ProductForm({ product, onClose, isEdit = false }: any) {
                 type="number"
                 {...register("stock", { 
                   required: "স্টক আবশ্যক",
-                  valueAsNumber: true,
-                  min: { value: 0, message: "স্টক ০ বা বেশি হতে হবে" }
+                  min: { value: "0", message: "স্টক ০ বা বেশি হতে হবে" }
                 })}
                 placeholder="০"
               />
@@ -316,7 +299,7 @@ function ProductForm({ product, onClose, isEdit = false }: any) {
 
           <div>
             <Label htmlFor="category">ক্যাটেগরি *</Label>
-            <Select onValueChange={(value) => setValue('category', value)} defaultValue={product?.category}>
+            <Select onValueChange={(value) => setValue('category', value)} value={watch('category')}>
               <SelectTrigger>
                 <SelectValue placeholder="ক্যাটেগরি নির্বাচন করুন" />
               </SelectTrigger>
@@ -463,13 +446,13 @@ export default function ProductManagement() {
 
   const { data: products = [], isLoading, error, refetch } = useQuery({ 
     queryKey: ["/api/products"],
-    refetchInterval: 5000, // Auto-refresh every 5 seconds for real-time updates
-    staleTime: 0, // Always consider data stale
-    gcTime: 0, // Don't cache data
-    refetchOnMount: 'always', // Always refetch when component mounts
-    refetchOnWindowFocus: true, // Refetch when window gains focus
-    refetchOnReconnect: true, // Refetch on network reconnect
-    networkMode: 'always', // Always fetch regardless of network state
+    refetchInterval: 5000,
+    staleTime: 0,
+    gcTime: 0,
+    refetchOnMount: 'always',
+    refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
+    networkMode: 'always',
   });
 
   const { data: categories = [] } = useQuery({ queryKey: ["/api/categories"] });
@@ -505,18 +488,13 @@ export default function ProductManagement() {
         description: "পণ্য মুছে ফেলা হয়েছে",
       });
       
-      // Aggressive cache clearing and immediate refresh
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ["/api/products"] }),
         queryClient.refetchQueries({ queryKey: ["/api/products"] }),
         queryClient.removeQueries({ queryKey: ["/api/products"] }),
-        queryClient.invalidateQueries({ queryKey: ["/api/categories"] }),
       ]);
       
-      // Force manual refetch
       await refetch();
-      
-      console.log('✅ Product deleted and all caches refreshed');
     },
     onError: (error: any) => {
       console.error('❌ Delete product error:', error);
@@ -528,12 +506,9 @@ export default function ProductManagement() {
     }
   });
 
-  
-
   const openEditModal = async (product: any) => {
     console.log('Opening edit modal for product:', product);
     
-    // Fetch fresh product data before opening modal
     try {
       const response = await fetch(`/api/products/${product.id}`, {
         headers: {
@@ -547,12 +522,10 @@ export default function ProductManagement() {
         console.log('✅ Fetched fresh product data:', freshProduct);
         setSelectedProduct(freshProduct);
       } else {
-        // Fallback to cached data
         setSelectedProduct(product);
       }
     } catch (error) {
       console.error('Failed to fetch fresh product data:', error);
-      // Fallback to cached data
       setSelectedProduct(product);
     }
     
@@ -563,7 +536,6 @@ export default function ProductManagement() {
     setSelectedProduct(null);
     setIsEditModalOpen(false);
     
-    // Force refresh the product list when modal closes
     await queryClient.invalidateQueries({ queryKey: ["/api/products"] });
     await refetch();
   };
@@ -571,7 +543,6 @@ export default function ProductManagement() {
   const closeAddModal = async () => {
     setIsAddModalOpen(false);
     
-    // Force refresh the product list when modal closes
     await queryClient.invalidateQueries({ queryKey: ["/api/products"] });
     await refetch();
   };
@@ -579,11 +550,8 @@ export default function ProductManagement() {
   const handleRefresh = async () => {
     console.log('Manual refresh triggered');
     
-    // Clear all caches
     queryClient.removeQueries({ queryKey: ["/api/products"] });
     await queryClient.invalidateQueries({ queryKey: ["/api/products"] });
-    
-    // Force refetch
     await refetch();
     
     toast({
