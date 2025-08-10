@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
@@ -277,57 +278,7 @@ function SiteSettingsPanel() {
   );
 }
 
-
-
-// Fix Descriptions Component
-function FixDescriptionsButton({ onComplete }: { onComplete: () => void }) {
-  const { toast } = useToast();
-  const [isFixing, setIsFixing] = useState(false);
-
-  const fixDescriptions = async () => {
-    setIsFixing(true);
-    try {
-      const response = await fetch('/api/admin/fix-descriptions', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' }
-      });
-
-      if (!response.ok) {
-        throw new Error('Fix failed');
-      }
-
-      const result = await response.json();
-      toast({ 
-        title: "বিবরণ আপডেট সফল", 
-        description: `${result.updated} টি পণ্যের বিবরণ আপডেট হয়েছে` 
-      });
-
-      onComplete();
-    } catch (error) {
-      toast({ 
-        title: "ত্রুটি", 
-        description: "বিবরণ আপডেট করতে সমস্যা হয়েছে",
-        variant: "destructive"
-      });
-    } finally {
-      setIsFixing(false);
-    }
-  };
-
-  return (
-    <Button
-      onClick={fixDescriptions}
-      disabled={isFixing}
-      variant="outline"
-      className="flex items-center gap-2"
-    >
-      <FileText className="h-4 w-4" />
-      {isFixing ? "আপডেট হচ্ছে..." : "বিবরণ ফিক্স করুন"}
-    </Button>
-  );
-}
-
-// Enhanced Product Form Modal with Perfect Form Handling
+// Enhanced Product Form Modal with Bulletproof Error Handling
 function ProductFormModal({ 
   isOpen, 
   onClose, 
@@ -343,7 +294,7 @@ function ProductFormModal({
   const queryClient = useQueryClient();
   const [isLoading, setIsLoading] = useState(false);
 
-  // Enhanced form with perfect default value handling
+  // Enhanced form with perfect validation and error handling
   const form = useForm({
     defaultValues: {
       name: "",
@@ -358,24 +309,16 @@ function ProductFormModal({
     }
   });
 
-  // Reset form when product changes or modal opens with proper values
+  // Reset form when product changes or modal opens
   React.useEffect(() => {
     if (isOpen) {
       if (product) {
-        if (process.env.NODE_ENV === 'development') {
-          console.log("🔍 ProductFormModal: Loading product data:", product);
-        }
+        console.log("🔍 Loading product for editing:", product);
 
-        // Handle description properly - it might be null or undefined
-        const description = product.description || "";
-        if (process.env.NODE_ENV === 'development') {
-          console.log("📝 Description being loaded:", description);
-          console.log("📂 Category being loaded:", product.category);
-        }
-
+        // Safely handle all product fields
         const formData = {
           name: product.name || "",
-          description: description,
+          description: product.description || "",
           price: product.price?.toString() || "",
           stock: Number(product.stock) || 0,
           category: product.category || "",
@@ -387,18 +330,16 @@ function ProductFormModal({
 
         form.reset(formData);
 
-        // Force set category value to ensure it's selected
-        if (product.category) {
-          setTimeout(() => {
+        // Ensure category is properly set
+        setTimeout(() => {
+          if (product.category) {
             form.setValue("category", product.category);
-          }, 100);
-        }
+          }
+        }, 100);
 
-        if (process.env.NODE_ENV === 'development') {
-          console.log("✅ Form reset with values:", formData);
-        }
+        console.log("✅ Form reset with data:", formData);
       } else {
-        // Default template for new products with standard delivery info
+        // Default template for new products
         const defaultDescription = `পণ্যের বিবরণ:
 এই পণ্যটি একটি উচ্চমানের পণ্য যা আপনার প্রত্যাশা পূরণ করবে। আমাদের সকল পণ্য যত্নসহকারে নির্বাচিত এবং মান নিয়ন্ত্রিত।
 
@@ -427,20 +368,35 @@ function ProductFormModal({
     try {
       setIsLoading(true);
 
-      // Validate required fields
+      // Enhanced validation
       if (!data.name?.trim()) {
-        toast({ title: "ত্রুটি", description: "পণ্যের নাম প্রয়োজন", variant: "destructive" });
-        return;
-      }
-      if (!data.category?.trim()) {
-        toast({ title: "ত্রুটি", description: "ক্যাটেগরি নির্বাচন করুন", variant: "destructive" });
-        return;
-      }
-      if (!data.price || parseFloat(data.price) < 0) {
-        toast({ title: "ত্রুটি", description: "সঠিক দাম দিন", variant: "destructive" });
+        toast({ 
+          title: "ত্রুটি", 
+          description: "পণ্যের নাম প্রয়োজন", 
+          variant: "destructive" 
+        });
         return;
       }
 
+      if (!data.category?.trim()) {
+        toast({ 
+          title: "ত্রুটি", 
+          description: "ক্যাটেগরি নির্বাচন করুন", 
+          variant: "destructive" 
+        });
+        return;
+      }
+
+      if (!data.price || parseFloat(data.price) < 0) {
+        toast({ 
+          title: "ত্রুটি", 
+          description: "সঠিক দাম দিন", 
+          variant: "destructive" 
+        });
+        return;
+      }
+
+      // Prepare product data
       const productData = {
         name: data.name.trim(),
         description: data.description?.trim() || "",
@@ -455,30 +411,23 @@ function ProductFormModal({
 
       console.log(`${product?.id ? 'Updating' : 'Creating'} product:`, productData);
 
+      // Make API request
       let response;
       if (product?.id) {
-        // Use PATCH for updates to match the server endpoint
         response = await fetch(`/api/products/${product.id}`, {
           method: 'PATCH',
           headers: { 
             'Content-Type': 'application/json',
-            'Cache-Control': 'no-cache, no-store, must-revalidate',
-            'Pragma': 'no-cache',
-            'Expires': '0',
-            'X-Cache-Bust': Date.now().toString()
+            'Cache-Control': 'no-cache'
           },
           body: JSON.stringify(productData)
         });
       } else {
-        // Use POST for creation
         response = await fetch('/api/products', {
           method: 'POST',
           headers: { 
             'Content-Type': 'application/json',
-            'Cache-Control': 'no-cache, no-store, must-revalidate',
-            'Pragma': 'no-cache',
-            'Expires': '0',
-            'X-Cache-Bust': Date.now().toString()
+            'Cache-Control': 'no-cache'
           },
           body: JSON.stringify(productData)
         });
@@ -504,29 +453,20 @@ function ProductFormModal({
         description: product?.id ? "পণ্যের তথ্য সফলভাবে আপডেট হয়েছে।" : "নতুন পণ্য সফলভাবে যোগ করা হয়েছে।"
       });
 
-      // Aggressively invalidate queries and force refresh
-      await queryClient.removeQueries({ queryKey: ["/api/products"] });
+      // Refresh data
       await queryClient.invalidateQueries({ queryKey: ["/api/products"] });
-      await queryClient.refetchQueries({ queryKey: ["/api/products"] });
-
-      // Clear localStorage cache
+      
+      // Clear cache
       try {
         const cacheKeys = Object.keys(localStorage).filter(key => 
           key.includes('products-cache') || key.includes('products-ultra-fast')
         );
         cacheKeys.forEach(key => localStorage.removeItem(key));
-        if (process.env.NODE_ENV === 'development') {
-          console.log('✅ Cleared product cache after save');
-        }
       } catch (e) {
         console.warn('Failed to clear localStorage cache:', e);
       }
 
-      // Call onSave callback if provided
-      if (onSave && typeof onSave === 'function') {
-        onSave();
-      }
-
+      onSave();
       onClose();
       form.reset();
     } catch (error: any) {
@@ -594,7 +534,6 @@ function ProductFormModal({
                   <SelectValue placeholder="ক্যাটেগরি নির্বাচন করুন" />
                 </SelectTrigger>
                 <SelectContent>
-                  {/* Standard categories that are commonly used */}
                   <SelectItem value="t-shirts">টি-শার্ট</SelectItem>
                   <SelectItem value="mugs">মগ</SelectItem>
                   <SelectItem value="frames">ফ্রেম</SelectItem>
@@ -622,7 +561,7 @@ function ProductFormModal({
                 <p className="text-red-500 text-sm">ক্যাটেগরি নির্বাচন করুন</p>
               )}
               <p className="text-xs text-muted-foreground">
-                বর্তমান ক্যাটেগরি: {form.watch("category") || "নির্বাচিত নয়"}
+                বর্তমান: {form.watch("category") || "নির্বাচিত নয়"}
               </p>
             </div>
           </div>
@@ -637,9 +576,6 @@ function ProductFormModal({
               data-testid="textarea-description"
               className="min-h-[200px]"
             />
-            <p className="text-xs text-muted-foreground">
-              বিবরণ, বৈশিষ্ট্য, ডেলিভারি চার্জ ও সময় অন্তর্ভুক্ত করুন
-            </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -723,7 +659,7 @@ function ProductFormModal({
             </div>
           </div>
 
-          <DialogFooter className="gap-2">
+          <div className="flex justify-end gap-2 pt-4">
             <Button 
               type="button" 
               variant="outline" 
@@ -735,14 +671,14 @@ function ProductFormModal({
             <Button type="submit" disabled={isLoading} data-testid="button-save-product">
               {isLoading ? "সেভ হচ্ছে..." : product ? "আপডেট করুন" : "সংরক্ষণ করুন"}
             </Button>
-          </DialogFooter>
+          </div>
         </form>
       </DialogContent>
     </Dialog>
   );
 }
 
-// Enhanced Products Management with Fixed Filtering
+// Enhanced Products Management with Fixed Filtering and Error Handling
 function ProductsManagement() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -753,10 +689,23 @@ function ProductsManagement() {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [deleteProductId, setDeleteProductId] = useState<string | null>(null);
 
-  const { data: products = [], isLoading, refetch } = useQuery({ 
+  const { data: products = [], isLoading, refetch, error } = useQuery({ 
     queryKey: ["/api/products"],
     refetchInterval: 60000,
+    retry: 3,
+    retryDelay: 1000
   });
+
+  // Show error message if products failed to load
+  React.useEffect(() => {
+    if (error) {
+      toast({
+        title: "পণ্য লোড করতে সমস্যা",
+        description: "পণ্য লিস্ট লোড করতে সমস্যা হয়েছে। পুনরায় চেষ্টা করুন।",
+        variant: "destructive"
+      });
+    }
+  }, [error, toast]);
 
   const filteredProducts = useMemo(() => {
     if (!Array.isArray(products)) return [];
@@ -771,11 +720,22 @@ function ProductsManagement() {
 
   const deleteMutation = useMutation({
     mutationFn: async (productId: string) => {
-      const response = await apiRequest("DELETE", `/api/products/${productId}`);
-      return response;
+      const response = await fetch(`/api/products/${productId}`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' }
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to delete product: ${response.statusText}`);
+      }
+
+      return await response.json();
     },
     onSuccess: () => {
-      toast({ title: "পণ্য মুছে ফেলা হয়েছে", description: "পণ্য সফলভাবে মুছে ফেলা হয়েছে।" });
+      toast({ 
+        title: "পণ্য মুছে ফেলা হয়েছে", 
+        description: "পণ্য সফলভাবে মুছে ফেলা হয়েছে।" 
+      });
       queryClient.invalidateQueries({ queryKey: ["/api/products"] });
       setDeleteProductId(null);
     },
@@ -785,6 +745,7 @@ function ProductsManagement() {
         description: `পণ্য মুছতে সমস্যা হয়েছে: ${error.message}`,
         variant: "destructive"
       });
+      setDeleteProductId(null);
     }
   });
 
@@ -794,6 +755,7 @@ function ProductsManagement() {
   };
 
   const handleEditProduct = (product: any) => {
+    console.log("🔧 Edit product clicked:", product);
     setSelectedProduct(product);
     setIsProductModalOpen(true);
   };
@@ -848,9 +810,9 @@ function ProductsManagement() {
           >
             <Filter className="h-4 w-4" />
             ফিল্টার
-            {(searchQuery || categoryFilter) && (
+            {(searchQuery || categoryFilter !== "all") && (
               <Badge variant="secondary" className="ml-2">
-                {(searchQuery ? 1 : 0) + (categoryFilter ? 1 : 0)}
+                {(searchQuery ? 1 : 0) + (categoryFilter !== "all" ? 1 : 0)}
               </Badge>
             )}
           </Button>
@@ -879,9 +841,16 @@ function ProductsManagement() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">সব ক্যাটেগরি</SelectItem>
-                      {PRODUCT_CATEGORIES.filter(cat => cat.id !== 'all').map((cat) => (
-                        <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
-                      ))}
+                      <SelectItem value="t-shirts">টি-শার্ট</SelectItem>
+                      <SelectItem value="mugs">মগ</SelectItem>
+                      <SelectItem value="frames">ফ্রেম</SelectItem>
+                      <SelectItem value="cushions">কুশন</SelectItem>
+                      <SelectItem value="calendars">ক্যালেন্ডার</SelectItem>
+                      <SelectItem value="accessories">এক্সেসরিজ</SelectItem>
+                      <SelectItem value="gift-for-him">তার জন্য উপহার</SelectItem>
+                      <SelectItem value="gift-for-her">তাঁর জন্য উপহার</SelectItem>
+                      <SelectItem value="birthday-gifts">জন্মদিনের উপহার</SelectItem>
+                      <SelectItem value="anniversary-gifts">বার্ষিকীর উপহার</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -926,6 +895,14 @@ function ProductsManagement() {
               <RefreshCw className="h-8 w-8 animate-spin mx-auto mb-4" />
               <p>পণ্য লোড হচ্ছে...</p>
             </div>
+          ) : error ? (
+            <div className="p-8 text-center text-red-500">
+              <AlertTriangle className="h-8 w-8 mx-auto mb-4" />
+              <p>পণ্য লোড করতে সমস্যা হয়েছে</p>
+              <Button onClick={() => refetch()} className="mt-4">
+                পুনরায় চেষ্টা করুন
+              </Button>
+            </div>
           ) : (
             <div className="overflow-x-auto">
               <Table>
@@ -943,7 +920,7 @@ function ProductsManagement() {
                   {filteredProducts.length === 0 ? (
                     <TableRow>
                       <TableCell colSpan={6} className="text-center py-8">
-                        {searchQuery || categoryFilter 
+                        {searchQuery || categoryFilter !== "all"
                           ? "কোন পণ্য খুঁজে পাওয়া যায়নি"
                           : "কোন পণ্য নেই"
                         }
@@ -1032,10 +1009,9 @@ function ProductsManagement() {
         }}
         product={selectedProduct}
         onSave={() => {
-          // The ProductFormModal already handles query invalidation
-          // Just reset the state here
           setSelectedProduct(null);
           setIsProductModalOpen(false);
+          refetch(); // Refresh the products list
         }}
       />
 
@@ -1097,6 +1073,7 @@ function OrderDetailsModal({
     onSuccess: () => {
       toast({ title: "স্ট্যাটাস আপডেট সফল", description: "অর্ডারের স্ট্যাটাস সফলভাবে আপডেট হয়েছে।" });
       queryClient.invalidateQueries({ queryKey: ["/api/orders"] });
+      onStatusUpdate();
     },
     onError: (error: any) => {
       toast({ 
@@ -1128,32 +1105,6 @@ function OrderDetailsModal({
     } catch (error) {
       console.error('Error parsing order items:', error);
       return [];
-    }
-  })();
-
-  // Safe JSON parsing for custom images
-  const customImages = (() => {
-    try {
-      if (!order.custom_images) return [];
-      if (Array.isArray(order.custom_images)) return order.custom_images;
-      if (typeof order.custom_images === 'string') return JSON.parse(order.custom_images);
-      return [];
-    } catch (error) {
-      console.error('Error parsing custom images:', error);
-      return [];
-    }
-  })();
-
-  // Safe JSON parsing for payment info
-  const paymentInfo = (() => {
-    try {
-      if (!order.payment_info) return null;
-      if (typeof order.payment_info === 'object') return order.payment_info;
-      if (typeof order.payment_info === 'string') return JSON.parse(order.payment_info);
-      return null;
-    } catch (error) {
-      console.error('Error parsing payment info:', error);
-      return null;
     }
   })();
 
@@ -1290,67 +1241,7 @@ function OrderDetailsModal({
             </CardContent>
           </Card>
 
-          {/* Custom Instructions */}
-          {order.custom_instructions && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">কাস্টম নির্দেশনা</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="p-3 bg-gray-50 rounded-lg">
-                  <p className="text-sm">{order.custom_instructions}</p>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Custom Images */}
-          {customImages.length > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">কাস্টম আপলোডেড ফটো</CardTitle>
-                <CardDescription>{customImages.length} টি ছবি আপলোড করা হয়েছে</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                  {customImages.map((image: any, index: number) => (
-                    <div key={index} className="border rounded-lg overflow-hidden group relative">
-                      <img 
-                        src={image.url || image} 
-                        alt={`Custom upload ${index + 1}`}
-                        className="w-full h-32 object-cover cursor-pointer hover:opacity-80 transition-opacity"
-                        onClick={() => {
-                          // Open image in new tab for full view
-                          window.open(image.url || image, '_blank');
-                        }}
-                        onError={(e) => {
-                          // Failed to load image
-                          (e.target as HTMLImageElement).style.display = 'none';
-                          const parent = (e.target as HTMLImageElement).parentElement;
-                          if (parent) {
-                            parent.innerHTML = '<div class="w-full h-32 bg-gray-100 flex items-center justify-center"><span class="text-gray-500 text-sm">ছবি লোড হয়নি</span></div>';
-                          }
-                        }}
-                      />
-                      <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all flex items-center justify-center">
-                        <Eye className="w-5 h-5 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
-                      </div>
-                      <div className="p-2">
-                        <p className="text-xs text-muted-foreground">
-                          আপলোড #{index + 1}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                <p className="text-sm text-muted-foreground mt-2">
-                  ছবিতে ক্লিক করে বড় আকারে দেখুন
-                </p>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Payment & Delivery Info */}
+          {/* Payment & Order Info */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Card>
               <CardHeader>
@@ -1382,14 +1273,7 @@ function OrderDetailsModal({
                 <div className="space-y-2">
                   <div>
                     <Label className="text-sm font-medium">অর্ডার তারিখ</Label>
-                    <p>{new Date(order.created_at).toLocaleString('bn-BD', {
-                      timeZone: 'Asia/Dhaka',
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric',
-                      hour: '2-digit',
-                      minute: '2-digit'
-                    })}</p>
+                    <p>{formatDate(order.created_at)}</p>
                   </div>
                   <div>
                     <Label className="text-sm font-medium">পেমেন্ট পদ্ধতি</Label>
@@ -1405,11 +1289,11 @@ function OrderDetailsModal({
           </div>
         </div>
 
-        <DialogFooter>
+        <div className="flex justify-end">
           <Button variant="outline" onClick={onClose}>
             বন্ধ করুন
           </Button>
-        </DialogFooter>
+        </div>
       </DialogContent>
     </Dialog>
   );
@@ -1658,7 +1542,7 @@ export default function AdminPanelEnhanced() {
                         <TableCell>
                           <div>
                             <div className="font-medium">{order.customer_name}</div>
-                            <div className="text-sm text-muted-foreground">{order.customer_phone}</div>
+                            <div className="text-sm text-muted-foreground">{order.phone}</div>
                           </div>
                         </TableCell>
                         <TableCell className="font-medium">
