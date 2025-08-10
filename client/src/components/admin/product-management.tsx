@@ -37,10 +37,18 @@ function ProductForm({ product, onClose, isEdit = false }: any) {
   const queryClient = useQueryClient();
   const [imagePreview, setImagePreview] = useState(product?.image_url || '');
   const [additionalImages, setAdditionalImages] = useState<string[]>(product?.additional_images || []);
+  
+  // Update local state when product prop changes
+  React.useEffect(() => {
+    if (product) {
+      setImagePreview(product.image_url || '');
+      setAdditionalImages(product.additional_images || []);
+    }
+  }, [product]);
 
   const { data: categories = [] } = useQuery({ queryKey: ["/api/categories"] });
 
-  const { register, handleSubmit, formState: { errors }, setValue, watch } = useForm<ProductFormData>({
+  const { register, handleSubmit, formState: { errors }, setValue, watch, reset } = useForm<ProductFormData>({
     defaultValues: {
       name: product?.name || '',
       description: product?.description || '',
@@ -54,6 +62,25 @@ function ProductForm({ product, onClose, isEdit = false }: any) {
       is_best_selling: product?.is_best_selling ?? false,
     }
   });
+
+  // Reset form when product data changes
+  React.useEffect(() => {
+    if (product) {
+      console.log('🔄 Resetting form with updated product data:', product);
+      reset({
+        name: product.name || '',
+        description: product.description || '',
+        price: Number(product.price) || 0,
+        category: product.category || '',
+        stock: Number(product.stock) || 0,
+        image_url: product.image_url || '',
+        is_active: product.is_active ?? true,
+        is_featured: product.is_featured ?? false,
+        is_latest: product.is_latest ?? false,
+        is_best_selling: product.is_best_selling ?? false,
+      });
+    }
+  }, [product, reset]);
 
   // Force cache invalidation helper
   const invalidateAllCaches = async () => {
@@ -150,8 +177,13 @@ function ProductForm({ product, onClose, isEdit = false }: any) {
       // Force complete cache refresh
       await invalidateAllCaches();
       
-      // Close modal immediately to show updated list
-      onClose();
+      // Update the selected product with fresh data
+      setSelectedProduct(updatedProduct);
+      
+      // Close modal to show updated list
+      setTimeout(() => {
+        onClose();
+      }, 500); // Small delay to let user see the success
     },
     onError: (error: any) => {
       console.error('Update product error:', error);
@@ -471,9 +503,32 @@ export default function ProductManagement() {
     });
   }, [products, categoryFilter, searchTerm]);
 
-  const openEditModal = (product: any) => {
+  const openEditModal = async (product: any) => {
     console.log('Opening edit modal for product:', product);
-    setSelectedProduct(product);
+    
+    // Fetch fresh product data before opening modal
+    try {
+      const response = await fetch(`/api/products/${product.id}`, {
+        headers: {
+          'Cache-Control': 'no-cache',
+          'Pragma': 'no-cache'
+        }
+      });
+      
+      if (response.ok) {
+        const freshProduct = await response.json();
+        console.log('✅ Fetched fresh product data:', freshProduct);
+        setSelectedProduct(freshProduct);
+      } else {
+        // Fallback to cached data
+        setSelectedProduct(product);
+      }
+    } catch (error) {
+      console.error('Failed to fetch fresh product data:', error);
+      // Fallback to cached data
+      setSelectedProduct(product);
+    }
+    
     setIsEditModalOpen(true);
   };
 
