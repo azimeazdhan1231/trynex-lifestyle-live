@@ -12,7 +12,7 @@ import ErrorBoundary from "@/components/error-boundary";
 import { UltraPerformanceLoader } from './components/ultra-performance-loader';
 
 // Dynamic imports for better code splitting
-const Home = lazy(() => import("./pages/home"));
+const Home = lazy(() => import("./pages/home-enhanced"));
 const Product = lazy(() => import("./pages/product-enhanced"));
 const Products = lazy(() => import("./pages/products-redesigned"));
 const Contact = lazy(() => import("./pages/contact"));
