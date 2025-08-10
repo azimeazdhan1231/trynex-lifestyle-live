@@ -38,7 +38,19 @@ function ProductForm({ product, onClose, isEdit = false }: any) {
   const [imagePreview, setImagePreview] = useState(product?.image_url || '');
   const [additionalImages, setAdditionalImages] = useState<string[]>(product?.additional_images || []);
   
-  const { data: categories = [] } = useQuery({ queryKey: ["/api/categories"] });
+  const { data: categories = [], isLoading: categoriesLoading, error: categoriesError } = useQuery({ 
+    queryKey: ["/api/categories"],
+    retry: 2,
+    staleTime: 60000,
+    onError: (error) => {
+      console.error('Failed to load categories:', error);
+      toast({
+        title: "ত্রুটি!",
+        description: "ক্যাটেগরি লোড করতে সমস্যা হয়েছে",
+        variant: "destructive",
+      });
+    }
+  });
 
   const { register, handleSubmit, formState: { errors }, setValue, watch, reset } = useForm<ProductFormData>({
     defaultValues: {
@@ -213,10 +225,17 @@ function ProductForm({ product, onClose, isEdit = false }: any) {
   const onSubmit = (data: ProductFormData) => {
     console.log('Form submitted with data:', data);
     
+    // Convert data to match server expectations
+    const processedData = {
+      ...data,
+      price: data.price.toString(), // Convert to string for server
+      stock: parseInt(data.stock.toString(), 10) || 0, // Convert to number for server
+    };
+    
     if (isEdit) {
-      updateProductMutation.mutate(data);
+      updateProductMutation.mutate(processedData);
     } else {
-      createProductMutation.mutate(data);
+      createProductMutation.mutate(processedData);
     }
   };
 
@@ -304,11 +323,17 @@ function ProductForm({ product, onClose, isEdit = false }: any) {
                 <SelectValue placeholder="ক্যাটেগরি নির্বাচন করুন" />
               </SelectTrigger>
               <SelectContent>
-                {categories.map((category: any) => (
-                  <SelectItem key={category.id} value={category.name}>
-                    {category.name}
+                {categories && categories.length > 0 ? (
+                  categories.map((category: any) => (
+                    <SelectItem key={category.id || category.name} value={category.name}>
+                      {category.name}
+                    </SelectItem>
+                  ))
+                ) : (
+                  <SelectItem value="no-categories" disabled>
+                    কোন ক্যাটেগরি পাওয়া যায়নি
                   </SelectItem>
-                ))}
+                )}
               </SelectContent>
             </Select>
             {errors.category && <p className="text-red-500 text-sm">{errors.category.message}</p>}

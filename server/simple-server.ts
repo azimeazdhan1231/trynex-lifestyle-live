@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./simple-storage";
 import { setupAuthRoutes } from "./auth-routes";
-import { 
+import {
   insertOrderSchema, insertProductSchema, insertOfferSchema,
   insertCategorySchema, insertAnalyticsSchema
 } from "@shared/schema";
@@ -20,7 +20,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const startTime = Date.now();
       console.log('🔍 Executing optimized products query...');
-      
+
       // Aggressive cache headers for maximum performance
       res.set({
         'Cache-Control': 'public, max-age=600, stale-while-revalidate=300, stale-if-error=86400',
@@ -29,31 +29,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
         'X-Content-Type-Options': 'nosniff',
         'X-DNS-Prefetch-Control': 'on'
       });
-      
+
       const category = req.query.category as string;
       const limit = parseInt(req.query.limit as string) || 50;
       const offset = parseInt(req.query.offset as string) || 0;
-      
+
       let products;
-      
+
       if (category && category !== 'all') {
         products = await storage.getProductsByCategory(category);
       } else {
         products = await storage.getProducts();
       }
-      
+
       // Apply pagination for better performance
       const paginatedProducts = products.slice(offset, offset + limit);
-      
+
       // Add performance metrics
       const duration = Date.now() - startTime;
       res.set('X-Response-Time', `${duration}ms`);
       res.set('X-Total-Count', products.length.toString());
       res.set('X-Pagination-Limit', limit.toString());
       res.set('X-Pagination-Offset', offset.toString());
-      
+
       console.log(`✅ Products query completed in ${duration}ms - ${paginatedProducts.length} items returned (${products.length} total)`);
-      
+
       res.json(paginatedProducts);
     } catch (error) {
       console.error('❌ Error fetching products:', error);
@@ -65,7 +65,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/products/:id', async (req, res) => {
     try {
       res.set('Cache-Control', 'public, max-age=600'); // 10 minutes
-      
+
       const product = await storage.getProduct(req.params.id);
       if (!product) {
         return res.status(404).json({ message: 'পণ্য পাওয়া যায়নি' });
@@ -81,34 +81,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/products', async (req, res) => {
     try {
       console.log('🆕 Creating product with data:', req.body);
-      
+
       // Set JSON headers
       res.set({
         'Content-Type': 'application/json',
         'Access-Control-Allow-Origin': '*',
         'Cache-Control': 'no-cache, no-store, must-revalidate'
       });
-      
+
       // Process data - clean and validate
       const processedData = {
         ...req.body,
         created_at: new Date()
       };
-      
+
       // Remove any undefined values
       Object.keys(processedData).forEach(key => {
         if (processedData[key] === undefined || processedData[key] === null) {
           delete processedData[key];
         }
       });
-      
+
       console.log('✅ Processed data for validation:', processedData);
-      
-      const validatedData = insertProductSchema.parse(processedData);
+
+      // Convert data to match server expectations
+      const productData = {
+        name: processedData.name.trim(),
+        description: processedData.description?.trim() || '',
+        price: typeof processedData.price === 'string' ? processedData.price : processedData.price.toString(),
+        stock: typeof processedData.stock === 'number' ? processedData.stock : parseInt(processedData.stock.toString(), 10) || 0,
+        category: processedData.category,
+        image_url: processedData.image_url.trim(),
+        additional_images: processedData.additional_images ? processedData.additional_images.filter(Boolean) : [],
+        is_active: Boolean(processedData.is_active),
+        is_featured: Boolean(processedData.is_featured),
+        is_latest: Boolean(processedData.is_latest),
+        is_best_selling: Boolean(processedData.is_best_selling)
+      };
+
+      const validatedData = insertProductSchema.parse(productData);
       const product = await storage.createProduct(validatedData);
-      
+
       console.log('✅ Product created successfully:', product.id);
-      
+
       return res.status(201).json({
         success: true,
         product: product,
@@ -116,25 +131,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error) {
       console.error('❌ Failed to create product:', error);
-      
+
       res.set({
         'Content-Type': 'application/json',
         'Access-Control-Allow-Origin': '*'
       });
-      
+
       if (error.name === 'ZodError') {
         console.error('❌ Validation errors:', error.errors);
-        return res.status(400).json({ 
+        return res.status(400).json({
           success: false,
-          error: 'Invalid product data', 
-          details: error.errors 
+          error: 'Invalid product data',
+          details: error.errors
         });
       }
-      
-      return res.status(500).json({ 
+
+      return res.status(500).json({
         success: false,
         error: 'Failed to create product',
-        message: error.message 
+        message: error.message
       });
     }
   });
@@ -143,7 +158,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { id } = req.params;
       console.log(`🔄 Updating product ${id} with data:`, req.body);
-      
+
       // Set JSON headers FIRST
       res.set({
         'Content-Type': 'application/json',
@@ -152,28 +167,50 @@ export async function registerRoutes(app: Express): Promise<Server> {
         'Access-Control-Allow-Headers': 'Content-Type, Authorization',
         'Cache-Control': 'no-cache, no-store, must-revalidate'
       });
-      
+
       // Process data - ensure proper types for validation
       const processedData = {
         ...req.body
       };
-      
+
       // Clean up the data - remove any undefined values
       Object.keys(processedData).forEach(key => {
         if (processedData[key] === undefined || processedData[key] === null) {
           delete processedData[key];
         }
       });
-      
+
       // For updates, make all fields optional
       const updateSchema = insertProductSchema.partial();
-      const validatedData = updateSchema.parse(processedData);
-      
+      // Convert data to match server expectations
+      const productData = {
+        name: processedData.name?.trim(),
+        description: processedData.description?.trim(),
+        price: typeof processedData.price === 'string' || typeof processedData.price === 'undefined' ? processedData.price : processedData.price.toString(),
+        stock: typeof processedData.stock === 'number' || typeof processedData.stock === 'undefined' ? processedData.stock : parseInt(processedData.stock.toString(), 10) || 0,
+        category: processedData.category,
+        image_url: processedData.image_url?.trim(),
+        additional_images: processedData.additional_images ? processedData.additional_images.filter(Boolean) : undefined,
+        is_active: typeof processedData.is_active === 'boolean' ? processedData.is_active : undefined,
+        is_featured: typeof processedData.is_featured === 'boolean' ? processedData.is_featured : undefined,
+        is_latest: typeof processedData.is_latest === 'boolean' ? processedData.is_latest : undefined,
+        is_best_selling: typeof processedData.is_best_selling === 'boolean' ? processedData.is_best_selling : undefined
+      };
+
+      // Filter out undefined values before parsing
+      Object.keys(productData).forEach(key => {
+        if (productData[key] === undefined) {
+          delete productData[key];
+        }
+      });
+
+      const validatedData = updateSchema.parse(productData);
+
       console.log('✅ Validated data:', validatedData);
-      
+
       const updatedProduct = await storage.updateProduct(id, validatedData);
       console.log('✅ Product updated successfully:', updatedProduct);
-      
+
       return res.status(200).json({
         success: true,
         product: updatedProduct,
@@ -181,25 +218,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error) {
       console.error('❌ Failed to update product:', error);
-      
+
       res.set({
         'Content-Type': 'application/json',
         'Access-Control-Allow-Origin': '*'
       });
-      
+
       if (error.name === 'ZodError') {
         console.error('❌ Validation errors:', error.errors);
-        return res.status(400).json({ 
+        return res.status(400).json({
           success: false,
-          error: 'Invalid product data', 
-          details: error.errors 
+          error: 'Invalid product data',
+          details: error.errors
         });
       }
-      
-      return res.status(500).json({ 
+
+      return res.status(500).json({
         success: false,
         error: 'Failed to update product',
-        message: error.message 
+        message: error.message
       });
     }
   });
@@ -208,31 +245,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { id } = req.params;
       console.log(`🗑️ Deleting product ${id}`);
-      
+
       res.set({
         'Content-Type': 'application/json',
         'Access-Control-Allow-Origin': '*'
       });
-      
+
       await storage.deleteProduct(id);
       console.log('✅ Product deleted successfully:', id);
-      
+
       return res.status(200).json({
         success: true,
         message: 'পণ্য সফলভাবে মুছে ফেলা হয়েছে'
       });
     } catch (error) {
       console.error('❌ Failed to delete product:', error);
-      
+
       res.set({
         'Content-Type': 'application/json',
         'Access-Control-Allow-Origin': '*'
       });
-      
-      return res.status(500).json({ 
+
+      return res.status(500).json({
         success: false,
         error: 'Failed to delete product',
-        message: error.message 
+        message: error.message
       });
     }
   });
@@ -248,25 +285,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
         created_at: new Date(),
         updated_at: new Date()
       };
-      
+
       // Enhanced validation for customization data
       if (orderData.items) {
-        orderData.items = typeof orderData.items === 'string' 
-          ? orderData.items 
+        orderData.items = typeof orderData.items === 'string'
+          ? orderData.items
           : JSON.stringify(orderData.items);
       }
-      
+
       if (orderData.payment_info) {
         orderData.payment_info = typeof orderData.payment_info === 'string'
           ? orderData.payment_info
           : JSON.stringify(orderData.payment_info);
       }
-      
+
       const validatedData = insertOrderSchema.parse(orderData);
       const order = await storage.createOrder({ ...validatedData, tracking_id: trackingId });
-      
+
       console.log(`✅ Order created: ${order.tracking_id}`);
-      
+
       res.status(201).json({
         success: true,
         tracking_id: trackingId,
@@ -275,9 +312,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error) {
       console.error('❌ Error creating order:', error);
-      res.status(500).json({ 
+      res.status(500).json({
         success: false,
-        message: 'অর্ডার তৈরি করতে সমস্যা হয়েছে' 
+        message: 'অর্ডার তৈরি করতে সমস্যা হয়েছে'
       });
     }
   });
@@ -286,44 +323,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/orders', async (req, res) => {
     try {
       const { status, customer_phone, date_from, date_to } = req.query;
-      
+
       const orders = await storage.getOrders();
       let filteredOrders = orders;
-      
+
       // Status filtering
       if (status && status !== 'all') {
         filteredOrders = filteredOrders.filter(order => order.status === status);
       }
-      
+
       // Phone filtering
       if (customer_phone) {
-        filteredOrders = filteredOrders.filter(order => 
+        filteredOrders = filteredOrders.filter(order =>
           order.phone.includes(customer_phone as string)
         );
       }
-      
+
       // Date range filtering
       if (date_from || date_to) {
         filteredOrders = filteredOrders.filter(order => {
           const orderDate = new Date(order.created_at || order.createdAt);
           let isInRange = true;
-          
+
           if (date_from) {
             const fromDate = new Date(date_from as string);
             isInRange = isInRange && orderDate >= fromDate;
           }
-          
+
           if (date_to) {
             const toDate = new Date(date_to as string);
             // Include orders up to end of the day
             toDate.setHours(23, 59, 59, 999);
             isInRange = isInRange && orderDate <= toDate;
           }
-          
+
           return isInRange;
         });
       }
-      
+
       res.json(filteredOrders);
     } catch (error) {
       console.error('❌ Error fetching orders:', error);
@@ -338,14 +375,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!order) {
         return res.status(404).json({ message: 'অর্ডার পাওয়া যায়নি' });
       }
-      
+
       // Parse JSON fields for frontend consumption
       const enhancedOrder = {
         ...order,
         items: typeof order.items === 'string' ? JSON.parse(order.items) : order.items,
         payment_info: typeof order.payment_info === 'string' ? JSON.parse(order.payment_info) : order.payment_info
       };
-      
+
       res.json(enhancedOrder);
     } catch (error) {
       console.error('❌ Error fetching order:', error);
@@ -358,9 +395,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { status } = req.body;
       const order = await storage.updateOrderStatus(req.params.id, status);
-      
+
       console.log(`✅ Order ${req.params.id} status updated to: ${status}`);
-      
+
       res.json({
         success: true,
         order,
@@ -377,9 +414,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { id } = req.params;
       const { status } = req.body;
-      
+
       console.log(`Updating order ${id} status to: ${status}`);
-      
+
       // Set proper JSON headers
       res.set({
         'Content-Type': 'application/json',
@@ -387,9 +424,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         'Access-Control-Allow-Methods': 'GET, POST, PATCH, DELETE, OPTIONS',
         'Access-Control-Allow-Headers': 'Content-Type, Authorization'
       });
-      
+
       const updatedOrder = await storage.updateOrderStatus(id, status);
-      
+
       return res.status(200).json({
         success: true,
         order: updatedOrder,
@@ -397,16 +434,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error) {
       console.error('❌ Failed to update order status:', error);
-      
+
       res.set({
         'Content-Type': 'application/json',
         'Access-Control-Allow-Origin': '*'
       });
-      
-      return res.status(500).json({ 
+
+      return res.status(500).json({
         success: false,
         error: 'Failed to update order status',
-        message: error.message 
+        message: error.message
       });
     }
   });
@@ -415,7 +452,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/categories', async (req, res) => {
     try {
       res.set('Cache-Control', 'public, max-age=900'); // 15 minutes
-      
+
       const categories = await storage.getCategories();
       res.json(categories);
     } catch (error) {
@@ -427,20 +464,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/categories', async (req, res) => {
     try {
       console.log('🆕 Creating category with data:', req.body);
-      
+
       res.set({
         'Content-Type': 'application/json',
         'Access-Control-Allow-Origin': '*'
       });
-      
+
       const categoryData = {
         ...req.body,
         created_at: new Date()
       };
-      
+
       const validatedData = insertCategorySchema.parse(categoryData);
       const category = await storage.createCategory(validatedData);
-      
+
       return res.status(201).json({
         success: true,
         category: category,
@@ -448,16 +485,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error) {
       console.error('❌ Failed to create category:', error);
-      
+
       res.set({
         'Content-Type': 'application/json',
         'Access-Control-Allow-Origin': '*'
       });
-      
-      return res.status(500).json({ 
+
+      if (error.name === 'ZodError') {
+        console.error('❌ Validation errors:', error.errors);
+        return res.status(400).json({
+          success: false,
+          error: 'Invalid category data',
+          details: error.errors
+        });
+      }
+
+      return res.status(500).json({
         success: false,
         error: 'Failed to create category',
-        message: error.message 
+        message: error.message
       });
     }
   });
@@ -466,17 +512,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { id } = req.params;
       console.log(`🔄 Updating category ${id} with data:`, req.body);
-      
+
       res.set({
         'Content-Type': 'application/json',
         'Access-Control-Allow-Origin': '*'
       });
-      
+
       const updateSchema = insertCategorySchema.partial();
       const validatedData = updateSchema.parse(req.body);
-      
+
       const updatedCategory = await storage.updateCategory(id, validatedData);
-      
+
       return res.status(200).json({
         success: true,
         category: updatedCategory,
@@ -484,16 +530,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error) {
       console.error('❌ Failed to update category:', error);
-      
+
       res.set({
         'Content-Type': 'application/json',
         'Access-Control-Allow-Origin': '*'
       });
-      
-      return res.status(500).json({ 
+
+      if (error.name === 'ZodError') {
+        console.error('❌ Validation errors:', error.errors);
+        return res.status(400).json({
+          success: false,
+          error: 'Invalid category data',
+          details: error.errors
+        });
+      }
+
+      return res.status(500).json({
         success: false,
         error: 'Failed to update category',
-        message: error.message 
+        message: error.message
       });
     }
   });
@@ -502,30 +557,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { id } = req.params;
       console.log(`🗑️ Deleting category ${id}`);
-      
+
       res.set({
         'Content-Type': 'application/json',
         'Access-Control-Allow-Origin': '*'
       });
-      
+
       await storage.deleteCategory(id);
-      
+
       return res.status(200).json({
         success: true,
         message: 'ক্যাটেগরি মুছে ফেলা হয়েছে'
       });
     } catch (error) {
       console.error('❌ Failed to delete category:', error);
-      
+
       res.set({
         'Content-Type': 'application/json',
         'Access-Control-Allow-Origin': '*'
       });
-      
-      return res.status(500).json({ 
+
+      if (error.name === 'ZodError') {
+        console.error('❌ Validation errors:', error.errors);
+        return res.status(400).json({
+          success: false,
+          error: 'Invalid category data',
+          details: error.errors
+        });
+      }
+
+      return res.status(500).json({
         success: false,
         error: 'Failed to delete category',
-        message: error.message 
+        message: error.message
       });
     }
   });
@@ -537,10 +601,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ...req.body,
         created_at: new Date()
       };
-      
+
       const validatedData = insertAnalyticsSchema.parse(analyticsData);
       await storage.createAnalytics(validatedData);
-      
+
       res.json({ success: true });
     } catch (error) {
       console.error('❌ Analytics error:', error);
@@ -577,7 +641,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           { name: 'কাস্টম কীচেইন', sales: 32, revenue: 9600 }
         ]
       };
-      
+
       res.json(analytics);
     } catch (error) {
       console.error('❌ Error fetching analytics:', error);
@@ -602,10 +666,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ...req.body,
         created_at: new Date()
       };
-      
+
       const validatedData = insertOfferSchema.parse(offerData);
       const offer = await storage.createOffer(validatedData);
-      
+
       res.status(201).json(offer);
     } catch (error) {
       console.error('❌ Error creating offer:', error);
@@ -647,19 +711,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/promo-codes', async (req, res) => {
     try {
       console.log('🆕 Creating promo code with data:', req.body);
-      
+
       res.set({
         'Content-Type': 'application/json',
         'Access-Control-Allow-Origin': '*'
       });
-      
+
       const promoCodeData = {
         ...req.body,
         created_at: new Date()
       };
-      
+
       const promoCode = await storage.createPromoCode(promoCodeData);
-      
+
       return res.status(201).json({
         success: true,
         promoCode: promoCode,
@@ -667,16 +731,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error) {
       console.error('❌ Failed to create promo code:', error);
-      
+
       res.set({
         'Content-Type': 'application/json',
         'Access-Control-Allow-Origin': '*'
       });
-      
-      return res.status(500).json({ 
+
+      if (error.name === 'ZodError') {
+        console.error('❌ Validation errors:', error.errors);
+        return res.status(400).json({
+          success: false,
+          error: 'Invalid promo code data',
+          details: error.errors
+        });
+      }
+
+      return res.status(500).json({
         success: false,
         error: 'Failed to create promo code',
-        message: error.message 
+        message: error.message
       });
     }
   });
@@ -685,14 +758,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { id } = req.params;
       console.log(`🔄 Updating promo code ${id} with data:`, req.body);
-      
+
       res.set({
         'Content-Type': 'application/json',
         'Access-Control-Allow-Origin': '*'
       });
-      
+
       const updatedPromoCode = await storage.updatePromoCode(id, req.body);
-      
+
       return res.status(200).json({
         success: true,
         promoCode: updatedPromoCode,
@@ -700,16 +773,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error) {
       console.error('❌ Failed to update promo code:', error);
-      
+
       res.set({
         'Content-Type': 'application/json',
         'Access-Control-Allow-Origin': '*'
       });
-      
-      return res.status(500).json({ 
+
+      if (error.name === 'ZodError') {
+        console.error('❌ Validation errors:', error.errors);
+        return res.status(400).json({
+          success: false,
+          error: 'Invalid promo code data',
+          details: error.errors
+        });
+      }
+
+      return res.status(500).json({
         success: false,
         error: 'Failed to update promo code',
-        message: error.message 
+        message: error.message
       });
     }
   });
@@ -718,30 +800,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { id } = req.params;
       console.log(`🗑️ Deleting promo code ${id}`);
-      
+
       res.set({
         'Content-Type': 'application/json',
         'Access-Control-Allow-Origin': '*'
       });
-      
+
       await storage.deletePromoCode(id);
-      
+
       return res.status(200).json({
         success: true,
         message: 'প্রোমো কোড মুছে ফেলা হয়েছে'
       });
     } catch (error) {
       console.error('❌ Failed to delete promo code:', error);
-      
+
       res.set({
         'Content-Type': 'application/json',
         'Access-Control-Allow-Origin': '*'
       });
-      
-      return res.status(500).json({ 
+
+      if (error.name === 'ZodError') {
+        console.error('❌ Validation errors:', error.errors);
+        return res.status(400).json({
+          success: false,
+          error: 'Invalid promo code data',
+          details: error.errors
+        });
+      }
+
+      return res.status(500).json({
         success: false,
         error: 'Failed to delete promo code',
-        message: error.message 
+        message: error.message
       });
     }
   });
@@ -802,7 +893,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         createdAt: new Date(),
         updatedAt: new Date()
       };
-      
+
       // Process custom images if provided
       if (req.body.customImages && req.body.customImages.length > 0) {
         // Convert base64 images to references (in production, upload to storage)
@@ -812,9 +903,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const customOrder = await storage.createCustomOrder(customOrderData);
-      
+
       console.log(`✅ Custom order created: ${customOrder.id}`);
-      
+
       res.status(201).json({
         success: true,
         customOrder,
@@ -830,7 +921,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { status } = req.body;
       const customOrder = await storage.updateCustomOrderStatus(parseInt(req.params.id), status);
-      
+
       res.json({
         success: true,
         customOrder,
@@ -859,12 +950,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/cart', async (req, res) => {
     try {
       const cartData = req.body;
-      
+
       // Process customization data
       if (cartData.customization) {
         cartData.customizationData = JSON.stringify(cartData.customization);
       }
-      
+
       // Store custom images info
       if (cartData.customImages && cartData.customImages.length > 0) {
         cartData.hasCustomImages = true;
@@ -886,15 +977,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/settings', async (req, res) => {
     try {
       res.set('Cache-Control', 'public, max-age=60'); // 1 minute
-      
+
       const settings = await storage.getSettings();
-      
+
       // Convert settings array to object for easier access
       const settingsObj: any = {};
       settings.forEach(setting => {
         settingsObj[setting.key] = setting.value;
       });
-      
+
       res.json(settingsObj);
     } catch (error) {
       console.error('❌ Error fetching settings:', error);
