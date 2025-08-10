@@ -89,44 +89,49 @@ function ProductForm({ product, onClose, isEdit = false }: any) {
 
   const createProductMutation = useMutation({
     mutationFn: async (data: ProductFormData) => {
-      console.log('Creating product with data:', data);
+      try {
+        console.log('Creating product with data:', data);
 
-      // Convert data to exact server expectations
-      const productData = {
-        name: String(data.name || '').trim(),
-        description: String(data.description || '').trim(),
-        price: parseFloat(String(data.price)) || 0, // Convert to number
-        stock: parseInt(String(data.stock)) || 0, // Convert to number
-        category: String(data.category || '').trim(),
-        image_url: String(data.image_url || '').trim(),
-        additional_images: additionalImages.filter(Boolean),
-        is_active: Boolean(data.is_active),
-        is_featured: Boolean(data.is_featured),
-        is_latest: Boolean(data.is_latest),
-        is_best_selling: Boolean(data.is_best_selling)
-      };
+        // Convert data to exact server expectations
+        const productData = {
+          name: String(data.name || '').trim(),
+          description: String(data.description || '').trim(),
+          price: parseFloat(String(data.price)) || 0, // Convert to number
+          stock: parseInt(String(data.stock)) || 0, // Convert to number
+          category: String(data.category || '').trim(),
+          image_url: String(data.image_url || '').trim(),
+          additional_images: additionalImages.filter(Boolean),
+          is_active: Boolean(data.is_active),
+          is_featured: Boolean(data.is_featured),
+          is_latest: Boolean(data.is_latest),
+          is_best_selling: Boolean(data.is_best_selling)
+        };
 
-      console.log('Processed data for server:', productData);
+        console.log('Processed data for server:', productData);
 
-      const response = await fetch('/api/products', {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Cache-Control': 'no-cache, no-store, must-revalidate',
-          'Pragma': 'no-cache',
-          'Expires': '0',
-          'X-Cache-Bust': Date.now().toString()
-        },
-        body: JSON.stringify(productData)
-      });
+        const response = await fetch('/api/products', {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json',
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache',
+            'Expires': '0',
+            'X-Cache-Bust': Date.now().toString()
+          },
+          body: JSON.stringify(productData)
+        });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error('Create API error:', errorData);
-        throw new Error(errorData.error || errorData.message || `HTTP error! status: ${response.status}`);
+        if (!response.ok) {
+          const errorData = await response.json();
+          console.error('Create API error:', errorData);
+          throw new Error(errorData.error || errorData.message || `HTTP error! status: ${response.status}`);
+        }
+
+        return response.json();
+      } catch (error) {
+        console.error('Create product error:', error);
+        throw error;
       }
-
-      return response.json();
     },
     onSuccess: async (newProduct) => {
       console.log('✅ Product created successfully:', newProduct);
@@ -162,45 +167,50 @@ function ProductForm({ product, onClose, isEdit = false }: any) {
 
   const updateProductMutation = useMutation({
     mutationFn: async (data: ProductFormData) => {
-      console.log('Updating product with data:', data);
+      try {
+        console.log('Updating product with data:', data);
 
-      // Convert data to exact server expectations
-      const productData = {
-        name: String(data.name || '').trim(),
-        description: String(data.description || '').trim(),
-        price: parseFloat(String(data.price)) || 0, // Convert to number
-        stock: parseInt(String(data.stock)) || 0, // Convert to number
-        category: String(data.category || '').trim(),
-        image_url: String(data.image_url || '').trim(),
-        additional_images: additionalImages.filter(Boolean),
-        is_active: Boolean(data.is_active),
-        is_featured: Boolean(data.is_featured),
-        is_latest: Boolean(data.is_latest),
-        is_best_selling: Boolean(data.is_best_selling)
-      };
+        // Convert data to exact server expectations
+        const productData = {
+          name: String(data.name || '').trim(),
+          description: String(data.description || '').trim(),
+          price: parseFloat(String(data.price)) || 0, // Convert to number
+          stock: parseInt(String(data.stock)) || 0, // Convert to number
+          category: String(data.category || '').trim(),
+          image_url: String(data.image_url || '').trim(),
+          additional_images: additionalImages.filter(Boolean),
+          is_active: Boolean(data.is_active),
+          is_featured: Boolean(data.is_featured),
+          is_latest: Boolean(data.is_latest),
+          is_best_selling: Boolean(data.is_best_selling)
+        };
 
-      console.log('Processed product data for update:', productData);
+        console.log('Processed product data for update:', productData);
 
-      const response = await fetch(`/api/products/${product.id}`, {
-        method: 'PUT', // Use PUT for consistency with server
-        headers: { 
-          'Content-Type': 'application/json',
-          'Cache-Control': 'no-cache, no-store, must-revalidate',
-          'Pragma': 'no-cache',
-          'Expires': '0',
-          'X-Cache-Bust': Date.now().toString(),
-          'X-Force-Update': 'true'
-        },
-        body: JSON.stringify(productData)
-      });
+        const response = await fetch(`/api/products/${product.id}`, {
+          method: 'PUT', // Use PUT for consistency with server
+          headers: { 
+            'Content-Type': 'application/json',
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache',
+            'Expires': '0',
+            'X-Cache-Bust': Date.now().toString(),
+            'X-Force-Update': 'true'
+          },
+          body: JSON.stringify(productData)
+        });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error('Update API error:', errorData);
-        throw new Error(errorData.error || errorData.message || `HTTP error! status: ${response.status}`);
+        if (!response.ok) {
+          const errorData = await response.json();
+          console.error('Update API error:', errorData);
+          throw new Error(errorData.error || errorData.message || `HTTP error! status: ${response.status}`);
+        }
+
+        return response.json();
+      } catch (error) {
+        console.error('Update product error:', error);
+        throw error;
       }
-
-      return response.json();
     },
     onSuccess: async (updatedProduct) => {
       console.log('✅ Product updated successfully:', updatedProduct);
@@ -476,7 +486,8 @@ export default function ProductManagement() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
-  const { data: products = [], isLoading, error, refetch } = useQuery({ 
+  // Corrected useQuery for products with error handling and retry logic
+  const { data: products = [], isLoading, error, refetch } = useQuery({
     queryKey: ["/api/products"],
     refetchInterval: 5000,
     staleTime: 0,
@@ -485,13 +496,21 @@ export default function ProductManagement() {
     refetchOnWindowFocus: true,
     refetchOnReconnect: true,
     networkMode: 'always',
-    retry: (failureCount, error) => {
-      // Don't retry on validation errors
-      if (error?.message?.includes('Invalid product data')) {
-        return false;
+    queryFn: async () => {
+      try {
+        const response = await fetch('/api/products');
+        if (!response.ok) throw new Error('Failed to fetch products');
+        const data = await response.json();
+        // Ensure data is always an array
+        return Array.isArray(data) ? data : [];
+      } catch (error) {
+        console.error('Failed to fetch products:', error);
+        throw error; // Re-throw to let react-query handle it
       }
-      return failureCount < 2;
-    }
+    },
+    retry: 3, // Retry up to 3 times
+    retryDelay: 1000, // Wait 1 second between retries
+    // Removed specific retry condition as general error handling is now in place
   });
 
   const { data: categories = [] } = useQuery({ 
@@ -531,13 +550,14 @@ export default function ProductManagement() {
         description: "পণ্য মুছে ফেলা হয়েছে",
       });
 
+      // Invalidate and refetch to update the UI
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ["/api/products"] }),
         queryClient.refetchQueries({ queryKey: ["/api/products"] }),
         queryClient.removeQueries({ queryKey: ["/api/products"] }),
       ]);
 
-      await refetch();
+      await refetch(); // Ensure the local state is updated by refetching
     },
     onError: (error: any) => {
       console.error('❌ Delete product error:', error);
@@ -553,9 +573,10 @@ export default function ProductManagement() {
     console.log('Opening edit modal for product:', product);
 
     try {
+      // Fetch the latest product data before opening the modal for editing
       const response = await fetch(`/api/products/${product.id}`, {
         headers: {
-          'Cache-Control': 'no-cache',
+          'Cache-Control': 'no-cache', // Ensure fresh data
           'Pragma': 'no-cache'
         }
       });
@@ -565,10 +586,13 @@ export default function ProductManagement() {
         console.log('✅ Fetched fresh product data:', freshProduct);
         setSelectedProduct(freshProduct);
       } else {
+        // If fetching fresh data fails, use the currently available product data
+        console.warn('Failed to fetch fresh product data, using cached data.');
         setSelectedProduct(product);
       }
     } catch (error) {
-      console.error('Failed to fetch fresh product data:', error);
+      console.error('Error fetching fresh product data:', error);
+      // If there's a network error or other issue, use the cached data
       setSelectedProduct(product);
     }
 
@@ -576,16 +600,18 @@ export default function ProductManagement() {
   };
 
   const closeEditModal = async () => {
-    setSelectedProduct(null);
-    setIsEditModalOpen(false);
+    setSelectedProduct(null); // Clear selected product
+    setIsEditModalOpen(false); // Close the modal
 
+    // Invalidate and refetch to ensure the list is up-to-date after potential edits
     await queryClient.invalidateQueries({ queryKey: ["/api/products"] });
     await refetch();
   };
 
   const closeAddModal = async () => {
-    setIsAddModalOpen(false);
+    setIsAddModalOpen(false); // Close the modal
 
+    // Invalidate and refetch to ensure the list is up-to-date after adding a product
     await queryClient.invalidateQueries({ queryKey: ["/api/products"] });
     await refetch();
   };
@@ -593,9 +619,10 @@ export default function ProductManagement() {
   const handleRefresh = async () => {
     console.log('Manual refresh triggered');
 
+    // Clear cache and refetch to get the latest data
     queryClient.removeQueries({ queryKey: ["/api/products"] });
     await queryClient.invalidateQueries({ queryKey: ["/api/products"] });
-    await refetch();
+    await refetch(); // Explicitly refetch the current query
 
     toast({
       title: "রিফ্রেশ সম্পন্ন!",
@@ -604,13 +631,14 @@ export default function ProductManagement() {
   };
 
   if (error) {
+    console.error("Error fetching products:", error);
     return (
       <Card>
         <CardContent className="pt-6">
           <div className="text-center">
             <AlertTriangle className="w-12 h-12 mx-auto mb-4 text-red-500" />
             <h3 className="text-lg font-semibold mb-2">পণ্য লোড করতে সমস্যা</h3>
-            <p className="text-gray-600 mb-4">পণ্যের তথ্য লোড করতে সমস্যা হয়েছে</p>
+            <p className="text-gray-600 mb-4">পণ্যের তথ্য লোড করতে সমস্যা হয়েছে। অনুগ্রহ করে আবার চেষ্টা করুন।</p>
             <Button onClick={handleRefresh}>
               <RefreshCw className="w-4 h-4 mr-2" />
               পুনরায় চেষ্টা করুন
