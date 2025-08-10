@@ -12,9 +12,9 @@ import ErrorBoundary from "@/components/error-boundary";
 import { UltraPerformanceLoader } from './components/ultra-performance-loader';
 
 // Dynamic imports for better code splitting
-const Home = lazy(() => import("./pages/home-enhanced"));
+const Home = lazy(() => import("./pages/home"));
 const Product = lazy(() => import("./pages/product-enhanced"));
-const Products = lazy(() => import("./pages/products-redesigned"));
+const Products = lazy(() => import("./pages/products"));
 const Contact = lazy(() => import("./pages/contact"));
 const Tracking = lazy(() => import("./pages/tracking"));
 const Admin = lazy(() => import("./pages/admin"));
@@ -36,7 +36,6 @@ const Categories = lazy(() => import("./pages/categories"));
 const CustomizeProduct = lazy(() => import("./pages/customize-product-enhanced"));
 
 // Performance and Mobile Optimization Components
-const ConsolidatedMobileFix = lazy(() => import("./components/consolidated-mobile-fix"));
 // const PerformanceOptimizer = lazy(() => import("./components/PerformanceOptimizer"));
 
 // Loading fallback component
@@ -103,10 +102,9 @@ function App() {
         <TooltipProvider>
           <div className="font-bengali">
             <Suspense fallback={null}>
-              <ConsolidatedMobileFix />
               {/* <PerformanceOptimizer /> */}
             </Suspense>
-            <UltraPerformanceLoader />
+            {/* <UltraPerformanceLoader /> */}
             <Toaster />
             <Router />
             <DebugInfo />
