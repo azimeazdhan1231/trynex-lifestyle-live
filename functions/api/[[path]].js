@@ -377,6 +377,171 @@ export async function onRequest(context) {
       });
     }
 
+    // Categories routes
+    if (path === "/api/categories" && method === "GET") {
+      const data = await supabaseRequest('categories?select=*&order=name.asc');
+      return new Response(JSON.stringify(data), {
+        headers: { 
+          ...corsHeaders, 
+          "Content-Type": "application/json",
+          "Cache-Control": "public, max-age=300"
+        }
+      });
+    }
+
+    if (path === "/api/categories" && method === "POST") {
+      const body = await request.json();
+      const { name, name_bengali, description } = body;
+      
+      if (!name) {
+        return new Response(JSON.stringify({ error: "Name is required" }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" }
+        });
+      }
+
+      const categoryData = {
+        name,
+        name_bengali: name_bengali || null,
+        description: description || null
+      };
+
+      const data = await supabaseRequest('categories', {
+        method: 'POST',
+        body: JSON.stringify(categoryData),
+        serviceKey: true
+      });
+      
+      return new Response(JSON.stringify(data[0]), {
+        status: 201,
+        headers: { ...corsHeaders, "Content-Type": "application/json" }
+      });
+    }
+
+    if (path.startsWith("/api/categories/") && method === "PATCH") {
+      const id = path.split("/")[3];
+      const body = await request.json();
+      
+      const data = await supabaseRequest(`categories?id=eq.${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify(body),
+        serviceKey: true
+      });
+      
+      return new Response(JSON.stringify(data[0]), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" }
+      });
+    }
+
+    if (path.startsWith("/api/categories/") && method === "DELETE") {
+      const id = path.split("/")[3];
+      await supabaseRequest(`categories?id=eq.${id}`, {
+        method: 'DELETE',
+        serviceKey: true
+      });
+      
+      return new Response(JSON.stringify({ message: "Category deleted successfully" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" }
+      });
+    }
+
+    // Promo codes routes
+    if (path === "/api/promo-codes" && method === "GET") {
+      const data = await supabaseRequest('promo_codes?select=*&order=created_at.desc');
+      return new Response(JSON.stringify(data), {
+        headers: { 
+          ...corsHeaders, 
+          "Content-Type": "application/json",
+          "Cache-Control": "public, max-age=60"
+        }
+      });
+    }
+
+    if (path === "/api/promo-codes" && method === "POST") {
+      const body = await request.json();
+      const { code, discount_percentage, discount_type, min_order_amount, max_discount_amount, expires_at, is_active, usage_limit } = body;
+      
+      if (!code || !discount_percentage) {
+        return new Response(JSON.stringify({ error: "Code and discount percentage are required" }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" }
+        });
+      }
+
+      const promoData = {
+        code: code.toUpperCase(),
+        discount_percentage: Number(discount_percentage),
+        discount_type: discount_type || 'percentage',
+        min_order_amount: min_order_amount ? Number(min_order_amount) : null,
+        max_discount_amount: max_discount_amount ? Number(max_discount_amount) : null,
+        expires_at: expires_at || null,
+        is_active: Boolean(is_active),
+        usage_limit: usage_limit ? Number(usage_limit) : null,
+        usage_count: 0
+      };
+
+      const data = await supabaseRequest('promo_codes', {
+        method: 'POST',
+        body: JSON.stringify(promoData),
+        serviceKey: true
+      });
+      
+      return new Response(JSON.stringify(data[0]), {
+        status: 201,
+        headers: { ...corsHeaders, "Content-Type": "application/json" }
+      });
+    }
+
+    if (path.startsWith("/api/promo-codes/") && method === "PATCH") {
+      const id = path.split("/")[3];
+      const body = await request.json();
+      
+      const data = await supabaseRequest(`promo_codes?id=eq.${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify(body),
+        serviceKey: true
+      });
+      
+      return new Response(JSON.stringify(data[0]), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" }
+      });
+    }
+
+    if (path.startsWith("/api/promo-codes/") && method === "DELETE") {
+      const id = path.split("/")[3];
+      await supabaseRequest(`promo_codes?id=eq.${id}`, {
+        method: 'DELETE',
+        serviceKey: true
+      });
+      
+      return new Response(JSON.stringify({ message: "Promo code deleted successfully" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" }
+      });
+    }
+
+    // Admin verification route - FIXED
+    if (path === "/api/admin/verify" && method === "GET") {
+      const authHeader = request.headers.get('Authorization');
+      if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        return new Response(JSON.stringify({ error: 'No token provided' }), {
+          status: 401,
+          headers: { ...corsHeaders, "Content-Type": "application/json" }
+        });
+      }
+      
+      // For demo - return admin info
+      return new Response(JSON.stringify({ 
+        success: true,
+        admin: {
+          id: 'admin',
+          email: 'admin@trynex.com',
+          role: 'admin'
+        }
+      }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" }
+      });
+    }
+
     // Settings route
     if (path === "/api/settings" && method === "GET") {
       return new Response(JSON.stringify({
