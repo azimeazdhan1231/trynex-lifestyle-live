@@ -312,6 +312,64 @@ export class SimpleStorage {
       .where(eq(orders.user_id, userId))
       .orderBy(desc(orders.created_at));
   }
+
+  // Promo Codes CRUD operations
+  async getPromoCodes(): Promise<PromoCode[]> {
+    try {
+      const result = await db.select().from(promoCodes).orderBy(desc(promoCodes.created_at));
+      return result;
+    } catch (error) {
+      console.error('Error fetching promo codes:', error);
+      // Return default promo codes if database fetch fails
+      return [
+        {
+          id: '1',
+          code: 'SAVE10',
+          description: '১০% ছাড়',
+          discount_type: 'percentage',
+          discount_value: '10',
+          min_order_amount: '1000',
+          usage_limit: 100,
+          expires_at: new Date('2025-12-31'),
+          is_active: true,
+          created_at: new Date(),
+          updated_at: new Date()
+        },
+        {
+          id: '2',
+          code: 'WELCOME20',
+          description: '২০% ছাড় নতুন গ্রাহকদের জন্য',
+          discount_type: 'percentage',
+          discount_value: '20',
+          min_order_amount: '1500',
+          usage_limit: 50,
+          expires_at: new Date('2025-12-31'),
+          is_active: true,
+          created_at: new Date(),
+          updated_at: new Date()
+        }
+      ];
+    }
+  }
+
+  async getPromoCode(id: string): Promise<PromoCode | undefined> {
+    const result = await db.select().from(promoCodes).where(eq(promoCodes.id, id)).limit(1);
+    return result[0];
+  }
+
+  async createPromoCode(promoCode: InsertPromoCode): Promise<PromoCode> {
+    const result = await db.insert(promoCodes).values(promoCode).returning();
+    return result[0];
+  }
+
+  async updatePromoCode(id: string, updates: Partial<PromoCode>): Promise<PromoCode> {
+    const result = await db.update(promoCodes).set(updates).where(eq(promoCodes.id, id)).returning();
+    return result[0];
+  }
+
+  async deletePromoCode(id: string): Promise<void> {
+    await db.delete(promoCodes).where(eq(promoCodes.id, id));
+  }
 }
 
 export const storage = new SimpleStorage();

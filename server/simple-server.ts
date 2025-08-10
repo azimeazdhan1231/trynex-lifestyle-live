@@ -89,12 +89,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         'Cache-Control': 'no-cache, no-store, must-revalidate'
       });
       
-      const productData = {
+      const processedData = {
         ...req.body,
+        price: typeof req.body.price === 'number' ? req.body.price.toString() : req.body.price,
+        stock: typeof req.body.stock === 'number' ? req.body.stock.toString() : req.body.stock,
         created_at: new Date()
       };
       
-      const validatedData = insertProductSchema.parse(productData);
+      const validatedData = insertProductSchema.parse(processedData);
       const product = await storage.createProduct(validatedData);
       
       console.log('✅ Product created successfully:', product.id);
@@ -142,9 +144,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         'Cache-Control': 'no-cache, no-store, must-revalidate'
       });
       
-      // For updates, make fields optional
+      // For updates, make fields optional and convert numbers to strings for validation
       const updateSchema = insertProductSchema.partial();
-      const validatedData = updateSchema.parse(req.body);
+      const processedData = {
+        ...req.body,
+        price: typeof req.body.price === 'number' ? req.body.price.toString() : req.body.price,
+        stock: typeof req.body.stock === 'number' ? req.body.stock.toString() : req.body.stock
+      };
+      const validatedData = updateSchema.parse(processedData);
       
       const updatedProduct = await storage.updateProduct(id, validatedData);
       console.log('✅ Product updated successfully:', updatedProduct);

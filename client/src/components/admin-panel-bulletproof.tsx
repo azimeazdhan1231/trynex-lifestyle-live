@@ -270,8 +270,8 @@ export default function AdminPanelBulletproof() {
         
         const response = await apiRequest(method as any, endpoint, {
           ...data,
-          price: parseFloat(data.price) || 0,
-          stock: parseInt(data.stock) || 0
+          price: data.price.toString(),
+          stock: data.stock.toString()
         });
 
         console.log('Product mutation response status:', response.status);
@@ -728,7 +728,7 @@ export default function AdminPanelBulletproof() {
                           <Select
                             value={order.status}
                             onValueChange={(status) => handleOrderStatusUpdate(order.id, status)}
-                            disabled={updateOrderStatusMutation.isLoading}
+                            disabled={updateOrderStatusMutation.isPending}
                           >
                             <SelectTrigger className="w-32">
                               <SelectValue />
@@ -1483,8 +1483,8 @@ export default function AdminPanelBulletproof() {
               <Button type="button" variant="outline" onClick={() => setProductModalOpen(false)}>
                 বাতিল
               </Button>
-              <Button type="submit" disabled={productMutation.isLoading}>
-                {productMutation.isLoading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+              <Button type="submit" disabled={productMutation.isPending}>
+                {productMutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                 {editingItem ? "আপডেট করুন" : "যোগ করুন"}
               </Button>
             </div>
@@ -1563,8 +1563,8 @@ export default function AdminPanelBulletproof() {
               <Button type="button" variant="outline" onClick={() => setCategoryModalOpen(false)}>
                 বাতিল
               </Button>
-              <Button type="submit" disabled={categoryMutation.isLoading}>
-                {categoryMutation.isLoading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+              <Button type="submit" disabled={categoryMutation.isPending}>
+                {categoryMutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                 {editingItem ? "আপডেট করুন" : "যোগ করুন"}
               </Button>
             </div>
@@ -1664,8 +1664,8 @@ export default function AdminPanelBulletproof() {
               <Button type="button" variant="outline" onClick={() => setOfferModalOpen(false)}>
                 বাতিল
               </Button>
-              <Button type="submit" disabled={offerMutation.isLoading}>
-                {offerMutation.isLoading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+              <Button type="submit" disabled={offerMutation.isPending}>
+                {offerMutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                 {editingItem ? "আপডেট করুন" : "যোগ করুন"}
               </Button>
             </div>
@@ -1764,8 +1764,8 @@ export default function AdminPanelBulletproof() {
               <Button type="button" variant="outline" onClick={() => setPromoModalOpen(false)}>
                 বাতিল
               </Button>
-              <Button type="submit" disabled={promoMutation.isLoading}>
-                {promoMutation.isLoading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+              <Button type="submit" disabled={promoMutation.isPending}>
+                {promoMutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                 {editingItem ? "আপডেট করুন" : "যোগ করুন"}
               </Button>
             </div>
@@ -1884,8 +1884,8 @@ export default function AdminPanelBulletproof() {
               <Button type="button" variant="outline" onClick={() => setSettingsModalOpen(false)}>
                 বাতিল
               </Button>
-              <Button type="submit" disabled={settingsMutation.isLoading}>
-                {settingsMutation.isLoading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+              <Button type="submit" disabled={settingsMutation.isPending}>
+                {settingsMutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                 সেটিংস সেভ করুন
               </Button>
             </div>
