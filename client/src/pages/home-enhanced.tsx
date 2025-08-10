@@ -23,8 +23,8 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 
 import UltraSimpleLayout from "@/components/ultra-simple-layout";
-import EnhancedProductModal from "@/components/enhanced-product-modal";
-import CustomizeModalEnhanced from "@/components/customize-modal-enhanced";
+import PerfectProductModal from "@/components/perfect-product-modal";
+import PerfectCustomizeModal from "@/components/perfect-customize-modal";
 import { useToast } from "@/hooks/use-toast";
 import { useCart } from "@/hooks/use-cart";
 import { Link, useLocation } from "wouter";
@@ -443,6 +443,15 @@ export default function EnhancedHomePage() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const { addToCart } = useCart();
+  
+  // Global add to cart function with customization support
+  const globalAddToCart = async (item: any) => {
+    await addToCart(item);
+    toast({
+      title: "কার্টে যোগ করা হয়েছে!",
+      description: `${item.name} সফলভাবে কার্টে যোগ করা হয়েছে`,
+    });
+  };
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [customizeProduct, setCustomizeProduct] = useState<Product | null>(null);
   const [productLayout, setProductLayout] = useState<"grid" | "list">("grid");
@@ -669,21 +678,31 @@ export default function EnhancedHomePage() {
 
         {/* Modals */}
         {selectedProduct && (
-          <EnhancedProductModal
+          <PerfectProductModal
             product={selectedProduct}
             isOpen={!!selectedProduct}
             onClose={() => setSelectedProduct(null)}
             onAddToCart={handleAddToCart}
+            onCustomize={(product) => setCustomizeProduct(product)}
           />
         )}
 
         {customizeProduct && (
-          <CustomizeModalEnhanced
+          <PerfectCustomizeModal
             product={customizeProduct}
             isOpen={!!customizeProduct}
             onClose={() => setCustomizeProduct(null)}
-            onAddToCart={async (product: Product) => {
-              handleAddToCart(product);
+            onAddToCart={async (product: Product, customization: any) => {
+              // Add customization data to cart
+              await globalAddToCart({
+                id: product.id,
+                name: product.name,
+                price: typeof product.price === 'string' ? parseFloat(product.price) : product.price,
+                image: product.image_url || '',
+                quantity: customization.quantity || 1,
+                customization // Include all customization data
+              });
+              setCustomizeProduct(null);
             }}
           />
         )}
