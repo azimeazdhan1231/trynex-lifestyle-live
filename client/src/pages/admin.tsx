@@ -1,13 +1,60 @@
-import { useState } from "react";
+
+import { useState, useEffect } from "react";
 import AdminLogin from "@/components/admin-login";
 import AdminPanelBulletproof from "@/components/admin-panel-bulletproof";
 
 export default function Admin() {
-  const [isLoggedIn, setIsLoggedIn] = useState(true); // Temporarily bypass auth check
-  const [isLoading, setIsLoading] = useState(false);  // Set to false to skip loading
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    // Check if admin is already logged in
+    const checkAuthStatus = async () => {
+      const token = localStorage.getItem('admin_token');
+      
+      if (!token) {
+        setIsLoggedIn(false);
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        const response = await fetch('/api/admin/verify', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success) {
+            setIsLoggedIn(true);
+          } else {
+            // Invalid token, remove it
+            localStorage.removeItem('admin_token');
+            localStorage.removeItem('admin_data');
+            setIsLoggedIn(false);
+          }
+        } else {
+          // Token verification failed
+          localStorage.removeItem('admin_token');
+          localStorage.removeItem('admin_data');
+          setIsLoggedIn(false);
+        }
+      } catch (error) {
+        console.error('Auth verification error:', error);
+        setIsLoggedIn(false);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    checkAuthStatus();
+  }, []);
 
   const handleLogout = () => {
     localStorage.removeItem('admin_token');
+    localStorage.removeItem('admin_data');
     setIsLoggedIn(false);
   };
 

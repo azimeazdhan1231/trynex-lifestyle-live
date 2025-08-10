@@ -22,7 +22,7 @@ let connectionString = SUPABASE_DATABASE_URL;
 
 if (!connectionString) {
   const { PGHOST, PGPORT, PGUSER, PGPASSWORD, PGDATABASE } = process.env;
-  
+
   // If we have individual PostgreSQL environment variables, construct the connection string
   if (PGHOST && PGUSER && PGDATABASE) {
     const port = PGPORT || '5432';
@@ -68,7 +68,7 @@ export class SimpleStorage {
         console.log('🔍 Executing optimized products query...');
       }
       const start = Date.now();
-      
+
       // Ultra-optimized query with strategic field selection and indexing
       const result = await db.select({
         id: products.id,
@@ -85,12 +85,12 @@ export class SimpleStorage {
       }).from(products)
         .orderBy(desc(products.is_featured), desc(products.is_latest), desc(products.created_at))
         .limit(100); // Limit to prevent massive queries
-      
+
       if (process.env.NODE_ENV === 'development') {
         const duration = Date.now() - start;
         console.log(`✅ Products query completed in ${duration}ms - ${result.length} items`);
       }
-      
+
       return result;
     } catch (error: any) {
       console.error('❌ Database query error:', error);
@@ -99,7 +99,7 @@ export class SimpleStorage {
         code: error?.code || 'NO_CODE',
         stack: error?.stack?.split('\n')[0] || 'No stack trace'
       });
-      
+
       // Return empty array instead of throwing to prevent app crashes
       return [];
     }
@@ -114,18 +114,106 @@ export class SimpleStorage {
     return result[0];
   }
 
-  async createProduct(product: InsertProduct): Promise<Product> {
-    const result = await db.insert(products).values(product).returning();
-    return result[0];
+  // Enhanced product operations with error handling and validation
+  async createProduct(productData: Omit<InsertProduct, 'id' | 'created_at'>): Promise<Product> {
+    try {
+      // Validate and sanitize data
+      const validatedData = {
+        name: String(productData.name || '').trim(),
+        description: String(productData.description || '').trim(),
+        price: String(productData.price || '0'),
+        stock: Number(productData.stock) || 0,
+        category: String(productData.category || '').trim(),
+        image_url: String(productData.image_url || '').trim(),
+        is_featured: Boolean(productData.is_featured),
+        is_latest: Boolean(productData.is_latest),
+        is_best_selling: Boolean(productData.is_best_selling)
+      };
+
+      // Validation checks
+      if (!validatedData.name) {
+        throw new Error('Product name is required');
+      }
+      if (!validatedData.category) {
+        throw new Error('Product category is required');
+      }
+      if (!validatedData.price || validatedData.price === '0') {
+        throw new Error('Valid price is required');
+      }
+
+      const [product] = await db.insert(products).values({
+        ...validatedData,
+        created_at: new Date()
+      }).returning();
+
+      return product;
+    } catch (error) {
+      console.error('Error creating product:', error);
+      throw error;
+    }
   }
 
-  async updateProduct(id: string, product: Partial<InsertProduct>): Promise<Product> {
-    const result = await db.update(products).set(product).where(eq(products.id, id)).returning();
-    return result[0];
-  }
+  async updateProduct(id: string, updates: Partial<Omit<Product, 'id' | 'created_at'>>): Promise<Product | null> {
+    try {
+      // Validate and sanitize data
+      const validatedUpdates: any = {};
 
-  async deleteProduct(id: string): Promise<void> {
-    await db.delete(products).where(eq(products.id, id));
+      if (updates.name !== undefined) {
+        validatedUpdates.name = String(updates.name).trim();
+        if (!validatedUpdates.name) {
+          throw new Error('Product name cannot be empty');
+        }
+      }
+
+      if (updates.description !== undefined) {
+        validatedUpdates.description = String(updates.description).trim();
+      }
+
+      if (updates.price !== undefined) {
+        validatedUpdates.price = String(updates.price);
+        if (!validatedUpdates.price || validatedUpdates.price === '0') {
+          throw new Error('Valid price is required');
+        }
+      }
+
+      if (updates.stock !== undefined) {
+        validatedUpdates.stock = Number(updates.stock) || 0;
+      }
+
+      if (updates.category !== undefined) {
+        validatedUpdates.category = String(updates.category).trim();
+        if (!validatedUpdates.category) {
+          throw new Error('Product category cannot be empty');
+        }
+      }
+
+      if (updates.image_url !== undefined) {
+        validatedUpdates.image_url = String(updates.image_url).trim();
+      }
+
+      if (updates.is_featured !== undefined) {
+        validatedUpdates.is_featured = Boolean(updates.is_featured);
+      }
+
+      if (updates.is_latest !== undefined) {
+        validatedUpdates.is_latest = Boolean(updates.is_latest);
+      }
+
+      if (updates.is_best_selling !== undefined) {
+        validatedUpdates.is_best_selling = Boolean(updates.is_best_selling);
+      }
+
+      const [product] = await db
+        .update(products)
+        .set(validatedUpdates)
+        .where(eq(products.id, id))
+        .returning();
+
+      return product || null;
+    } catch (error) {
+      console.error('Error updating product:', error);
+      throw error;
+    }
   }
 
   // Orders (Enhanced with error handling)
@@ -262,7 +350,7 @@ export class SimpleStorage {
   async updateSetting(key: string, value: string): Promise<SiteSettings> {
     // First try to update existing setting
     const existing = await db.select().from(siteSettings).where(eq(siteSettings.key, key)).limit(1);
-    
+
     if (existing.length > 0) {
       const result = await db.update(siteSettings).set({ value, updated_at: new Date() }).where(eq(siteSettings.key, key)).returning();
       return result[0];
