@@ -20,6 +20,7 @@ import UnifiedProductCard from "@/components/unified-product-card";
 import MobileEnhancedProductCard from "@/components/mobile-enhanced-product-card";
 import MobileEnhancedCarousel from "@/components/mobile-enhanced-carousel";
 import DynamicProductCarousel from "@/components/dynamic-product-carousel";
+import GiftCategoryShowcase from "@/components/gift-category-showcase";
 // Optimized imports - removed heavy utilities
 import type { Product, Offer } from "@shared/schema";
 
@@ -683,6 +684,9 @@ export default function Home() {
       />
 
       {/* Order Tracking */}
+      {/* Gift Categories Showcase */}
+      <GiftCategoryShowcase />
+
       <TrackingSection />
 
       {/* Contact Section */}

@@ -12,23 +12,13 @@ import UnifiedProductCard from "@/components/unified-product-card";
 import EnhancedProductModal from "@/components/enhanced-product-modal";
 import CustomizeModalRedesigned from "@/components/customize-modal-redesigned";
 import ComprehensiveProductLoading from "@/components/comprehensive-product-loading";
-import MobileSearchDrawer from "@/components/mobile-search-drawer";
+import EnhancedFilterSystem from "@/components/enhanced-filter-system";
 import { ProgressiveLoader, PerformanceErrorBoundary, PerformanceMonitor } from "@/components/enhanced-loading-system";
 import type { Product } from "@shared/schema";
 
-// Product categories
-const PRODUCT_CATEGORIES = [
-  { id: "all", name: "সব পণ্য" },
-  { id: "mugs", name: "মগ" },
-  { id: "frames", name: "ফ্রেম" },
-  { id: "clothing", name: "পোশাক" },
-  { id: "canvas", name: "ক্যানভাস" },
-  { id: "accessories", name: "এক্সেসরিজ" },
-  { id: "home", name: "ঘরের জিনিস" },
-  { id: "stationery", name: "স্টেশনারি" },
-  { id: "prints", name: "প্রিন্ট" },
-  { id: "decorations", name: "সাজসজ্জা" },
-].filter(category => category.id && category.name); // Filter out any empty values
+import { PRODUCT_CATEGORIES } from "@/lib/constants";
+
+// Use the unified categories from constants
 
 // Sort options
 const SORT_OPTIONS = [
@@ -103,9 +93,27 @@ export default function ProductsPage() {
       );
     }
 
-    // Filter by category
-    if (selectedCategory !== "all") {
-      filtered = filtered.filter(product => product.category === selectedCategory);
+    // Filter by category - Enhanced matching for gift categories
+    if (selectedCategory && selectedCategory !== "all") {
+      filtered = filtered.filter(product => {
+        if (!product.category) return false;
+        
+        const productCategory = product.category.toLowerCase();
+        const selectedCat = selectedCategory.toLowerCase();
+        
+        // Direct match
+        if (productCategory === selectedCat) return true;
+        
+        // Gift category matching
+        if (selectedCat.includes('gift-for-her') && (productCategory.includes('women') || productCategory.includes('her') || productCategory.includes('female'))) return true;
+        if (selectedCat.includes('gift-for-him') && (productCategory.includes('men') || productCategory.includes('him') || productCategory.includes('male'))) return true;
+        if (selectedCat.includes('gift-for-babies') && (productCategory.includes('baby') || productCategory.includes('kids') || productCategory.includes('children'))) return true;
+        if (selectedCat.includes('birthday') && productCategory.includes('birthday')) return true;
+        if (selectedCat.includes('anniversary') && productCategory.includes('anniversary')) return true;
+        
+        // Fallback to partial match
+        return productCategory.includes(selectedCat) || selectedCat.includes(productCategory);
+      });
     }
 
     // Sort products
@@ -280,9 +288,12 @@ export default function ProductsPage() {
                 <SelectValue placeholder="বিভাগ নির্বাচন করুন" />
               </SelectTrigger>
               <SelectContent className="max-h-60">
-                {PRODUCT_CATEGORIES.filter(category => category.id && category.id.trim() && category.name).map((category) => (
+                {PRODUCT_CATEGORIES.filter(category => category.id && category.id.trim()).map((category) => (
                   <SelectItem key={category.id} value={category.id} className="text-base py-3">
-                    {category.name}
+                    <div className="flex items-center gap-2">
+                      {category.icon && <span>{category.icon}</span>}
+                      <span>{category.bengaliName || category.name}</span>
+                    </div>
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -391,19 +402,7 @@ export default function ProductsPage() {
           </PerformanceMonitor>
         </PerformanceErrorBoundary>
 
-        {/* Mobile Search Drawer */}
-        <MobileSearchDrawer
-          searchTerm={searchTerm}
-          setSearchTerm={setSearchTerm}
-          selectedCategory={selectedCategory}
-          setSelectedCategory={setSelectedCategory}
-          sortOption={sortOption}
-          setSortOption={setSortOption}
-          categories={PRODUCT_CATEGORIES}
-          sortOptions={SORT_OPTIONS}
-          resultsCount={displayedProducts.length}
-          totalCount={filteredProducts.length}
-        />
+
       </div>
 
       {/* Enhanced Product Details Modal */}

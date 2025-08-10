@@ -19,7 +19,7 @@ interface MobileSearchDrawerProps {
   setSelectedCategory: (value: string) => void;
   sortOption: string;
   setSortOption: (value: string) => void;
-  categories: Array<{ id: string; name: string }>;
+  categories: Array<{ id: string; name: string; icon?: string }>;
   sortOptions: Array<{ value: string; label: string }>;
   resultsCount: number;
   totalCount: number;
