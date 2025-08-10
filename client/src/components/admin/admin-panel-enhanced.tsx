@@ -445,6 +445,18 @@ function ProductFormModal({
 
       // Safely invalidate queries and handle callbacks
       await queryClient.invalidateQueries({ queryKey: ["/api/products"] });
+      await queryClient.invalidateQueries({ queryKey: ["products-ultra-fast"] });
+      
+      // Clear localStorage cache
+      try {
+        const cacheKeys = Object.keys(localStorage).filter(key => 
+          key.includes('products-cache') || key.includes('products-ultra-fast')
+        );
+        cacheKeys.forEach(key => localStorage.removeItem(key));
+        console.log('✅ Cleared product cache after save');
+      } catch (e) {
+        console.warn('Failed to clear localStorage cache:', e);
+      }
       
       // Call onSave callback if provided
       if (onSave && typeof onSave === 'function') {

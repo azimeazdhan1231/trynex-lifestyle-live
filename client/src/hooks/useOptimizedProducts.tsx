@@ -24,7 +24,7 @@ export function useOptimizedProducts({
     queryKey: ['products-ultra-fast', category],
     queryFn: async () => {
       const CACHE_KEY = `products-cache-${category || 'all'}`;
-      const CACHE_DURATION = 365 * 24 * 60 * 60 * 1000; // 1 year
+      const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes only
       
       // Try browser cache first
       try {
@@ -38,11 +38,11 @@ export function useOptimizedProducts({
         }
       } catch (e) {}
       
-      // Fetch with aggressive optimization
+      // Fetch with minimal caching
       const url = category ? `/api/products?category=${category}` : '/api/products';
       const response = await fetch(url, {
         headers: {
-          'Cache-Control': 'max-age=31536000', // 1 year
+          'Cache-Control': 'max-age=300', // 5 minutes only
           'Accept': 'application/json'
         }
       });
@@ -51,7 +51,7 @@ export function useOptimizedProducts({
       
       const data = await response.json();
       
-      // Cache immediately
+      // Cache for short duration
       try {
         localStorage.setItem(CACHE_KEY, JSON.stringify({
           data,
@@ -62,10 +62,10 @@ export function useOptimizedProducts({
       console.log('🚀 Products fetched and cached');
       return data;
     },
-    staleTime: Infinity, // Never consider stale
-    gcTime: Infinity, // Keep forever
-    refetchOnWindowFocus: false,
-    refetchOnReconnect: false,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes
+    refetchOnWindowFocus: true, // Refetch when window gains focus
+    refetchOnReconnect: true, // Refetch when reconnecting
     retry: 1
   });
 

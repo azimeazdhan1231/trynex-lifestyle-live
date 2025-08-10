@@ -1200,10 +1200,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const updateSchema = insertProductSchema.partial();
       const validatedData = updateSchema.parse(req.body);
       
-      // Clear cache when product is updated
+      // Clear ALL cache layers when product is updated
       performanceCache.clearCache();
       productCache.data = null;
       productCache.timestamp = 0;
+      
+      // Clear cache service
+      if (cacheService && typeof cacheService.clearAllCache === 'function') {
+        cacheService.clearAllCache();
+      }
       
       const updatedProduct = await storage.updateProduct(id, validatedData);
       console.log('✅ Product updated successfully:', updatedProduct.id);
@@ -1223,10 +1228,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { id } = req.params;
       console.log(`Deleting product ${id}`);
       
-      // Clear cache when product is deleted
+      // Clear ALL cache layers when product is deleted
       performanceCache.clearCache();
       productCache.data = null;
       productCache.timestamp = 0;
+      
+      // Clear cache service
+      if (cacheService && typeof cacheService.clearAllCache === 'function') {
+        cacheService.clearAllCache();
+      }
       
       await storage.deleteProduct(id);
       console.log('✅ Product deleted successfully:', id);

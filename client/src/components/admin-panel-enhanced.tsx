@@ -99,10 +99,10 @@ export default function AdminPanelEnhanced() {
 
   const { data: products = [], isLoading: productsLoading, error: productsError } = useQuery<Product[]>({ 
     queryKey: ["/api/products"],
-    staleTime: Infinity,
+    staleTime: 0, // Always consider stale for admin panel
     refetchInterval: false,
-    refetchOnWindowFocus: false,
-    refetchOnReconnect: false,
+    refetchOnWindowFocus: true, // Refetch when focusing window
+    refetchOnReconnect: true, // Refetch when reconnecting
     retry: 1
   });
 
@@ -179,7 +179,21 @@ export default function AdminPanelEnhanced() {
       return response.json();
     },
     onSuccess: () => {
+      // Invalidate all product-related queries
       queryClient.invalidateQueries({ queryKey: ["/api/products"] });
+      queryClient.invalidateQueries({ queryKey: ["products-ultra-fast"] });
+      
+      // Clear localStorage cache
+      try {
+        const cacheKeys = Object.keys(localStorage).filter(key => 
+          key.includes('products-cache') || key.includes('products-ultra-fast')
+        );
+        cacheKeys.forEach(key => localStorage.removeItem(key));
+        console.log('✅ Cleared product cache after create');
+      } catch (e) {
+        console.warn('Failed to clear localStorage cache:', e);
+      }
+      
       setIsProductDialogOpen(false);
       resetProductForm();
       toast({ title: "পণ্য যোগ করা হয়েছে", description: "নতুন পণ্য সফলভাবে যোগ করা হয়েছে" });
@@ -195,7 +209,21 @@ export default function AdminPanelEnhanced() {
       return response.json();
     },
     onSuccess: () => {
+      // Invalidate all product-related queries
       queryClient.invalidateQueries({ queryKey: ["/api/products"] });
+      queryClient.invalidateQueries({ queryKey: ["products-ultra-fast"] });
+      
+      // Clear localStorage cache
+      try {
+        const cacheKeys = Object.keys(localStorage).filter(key => 
+          key.includes('products-cache') || key.includes('products-ultra-fast')
+        );
+        cacheKeys.forEach(key => localStorage.removeItem(key));
+        console.log('✅ Cleared product cache after update');
+      } catch (e) {
+        console.warn('Failed to clear localStorage cache:', e);
+      }
+      
       setIsProductDialogOpen(false);
       setEditingProduct(null);
       resetProductForm();
@@ -212,7 +240,21 @@ export default function AdminPanelEnhanced() {
       return response.json();
     },
     onSuccess: () => {
+      // Invalidate all product-related queries
       queryClient.invalidateQueries({ queryKey: ["/api/products"] });
+      queryClient.invalidateQueries({ queryKey: ["products-ultra-fast"] });
+      
+      // Clear localStorage cache
+      try {
+        const cacheKeys = Object.keys(localStorage).filter(key => 
+          key.includes('products-cache') || key.includes('products-ultra-fast')
+        );
+        cacheKeys.forEach(key => localStorage.removeItem(key));
+        console.log('✅ Cleared product cache after delete');
+      } catch (e) {
+        console.warn('Failed to clear localStorage cache:', e);
+      }
+      
       toast({ title: "পণ্য মুছে ফেলা হয়েছে", description: "পণ্য সফলভাবে মুছে ফেলা হয়েছে" });
     },
     onError: () => {
