@@ -36,17 +36,26 @@ export function useCart(): UseCartReturn {
   useEffect(() => {
     try {
       const savedCart = localStorage.getItem(CART_STORAGE_KEY);
-      if (savedCart) {
+      if (savedCart && savedCart.trim() !== '') {
         const parsedCart = JSON.parse(savedCart);
         if (Array.isArray(parsedCart)) {
           globalCartState = parsedCart;
           setCart(parsedCart);
         } else {
+          console.warn('Invalid cart data structure, clearing cart');
           localStorage.removeItem(CART_STORAGE_KEY);
+          globalCartState = [];
+          setCart([]);
         }
+      } else {
+        globalCartState = [];
+        setCart([]);
       }
     } catch (error) {
+      console.error('Failed to parse cart from localStorage:', error);
       localStorage.removeItem(CART_STORAGE_KEY);
+      globalCartState = [];
+      setCart([]);
     } finally {
       setIsLoaded(true);
     }

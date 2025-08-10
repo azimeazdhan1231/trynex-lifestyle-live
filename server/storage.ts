@@ -13,7 +13,7 @@ import {
   type UserOrder, type InsertUserOrder, type CustomOrder, type InsertCustomOrder
 } from "@shared/schema";
 
-const connectionString = process.env.DATABASE_URL || "postgresql://postgres.lxhhgdqdictfhmkbyoev:Fz0R2tN542G09u6W@aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres";
+const connectionString = process.env.DATABASE_URL || "postgresql://postgres.lxhhgdqfxmeohayceshb:Amiomito1Amiomito1@aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres";
 
 // Optimized connection with pooling
 const client = postgres(connectionString, {
@@ -219,11 +219,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createOrder(order: InsertOrder): Promise<Order> {
-    const trackingId = `TRX${Date.now()}${Math.floor(Math.random() * 1000)}`;
-    const result = await this.db.insert(orders).values({
-      ...order,
-      tracking_id: trackingId,
-    }).returning();
+    const result = await this.db.insert(orders).values(order).returning();
     return result[0];
   }
 
