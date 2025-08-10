@@ -32,6 +32,8 @@ import { createWhatsAppUrl, formatPrice } from "@/lib/constants";
 import { trackProductView, trackAddToCart } from "@/lib/analytics";
 import type { Product } from "@shared/schema";
 
+import { useModalManager } from "@/hooks/use-modal-manager";
+
 interface ModernProductCardProps {
   product: Product;
   onAddToCart: (product: Product) => void;
@@ -443,6 +445,7 @@ export default function EnhancedHomePage() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const { addToCart } = useCart();
+  const { openModal } = useModalManager();
 
   // Global add to cart function with customization support
   const globalAddToCart = async (item: any) => {

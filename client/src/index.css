@@ -925,36 +925,67 @@ input, textarea, select {
   animation: pulse-glow 2s ease-in-out infinite;
 }
 
-/* Complete Modal System Reset and Fix */
+/* Unified Modal System - Complete Fix */
 [data-radix-dialog-content] {
   position: fixed !important;
   top: 50% !important;
   left: 50% !important;
   transform: translate(-50%, -50%) !important;
   z-index: 9999 !important;
-  width: 95vw !important;
-  max-width: 500px !important;
-  max-height: 90vh !important;
   margin: 0 !important;
   padding: 0 !important;
-  overflow: visible !important;
+  overflow: hidden !important;
   border-radius: 12px !important;
   background: white !important;
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
   border: 1px solid #e5e7eb !important;
+  max-height: calc(100vh - 32px) !important;
 }
 
-/* Admin Panel Modal Specific Styling */
-.admin-modal [data-radix-dialog-content] {
-  max-width: 800px !important;
-  height: auto !important;
-  max-height: 90vh !important;
+/* Unified Modal Overlay Fix */
+[data-radix-dialog-overlay] {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 9998 !important;
+  background-color: rgba(0, 0, 0, 0.5) !important;
+  backdrop-filter: blur(4px) !important;
 }
 
-/* Large modals for product/category management */
-.modal-large [data-radix-dialog-content] {
-  max-width: 900px !important;
-  width: 90vw !important;
+/* Accessibility Improvements */
+[data-radix-dialog-content]:focus {
+  outline: 2px solid #3b82f6 !important;
+  outline-offset: 2px !important;
+}
+
+/* Fix Badge in DialogDescription nesting issue */
+[data-radix-dialog-description] .inline-flex {
+  display: inline !important;
+}
+
+/* Ensure proper focus management */
+[data-radix-dialog-content] [data-radix-dialog-close] {
+  position: absolute !important;
+  top: 12px !important;
+  right: 12px !important;
+  z-index: 10 !important;
+}
+
+/* Modal Content Scrollbar */
+[data-radix-dialog-content] .overflow-y-auto::-webkit-scrollbar {
+  width: 6px !important;
+}
+
+[data-radix-dialog-content] .overflow-y-auto::-webkit-scrollbar-track {
+  background: transparent !important;
+}
+
+[data-radix-dialog-content] .overflow-y-auto::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2) !important;
+  border-radius: 3px !important;
+}
+
+[data-radix-dialog-content] .overflow-y-auto::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.4) !important;
 }
 
 /* Fix close button positioning */

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import UnifiedModalBase from "./unified-modal-base";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -108,14 +108,13 @@ export default function OrderDetailsModal({ isOpen, onClose, order }: OrderDetai
 
   return (
     <>
-      <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="max-w-6xl max-h-[95vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-xl">
-              <Package className="w-6 h-6" />
-              অর্ডার বিস্তারিত - {order.tracking_id}
-            </DialogTitle>
-          </DialogHeader>
+      <UnifiedModalBase
+        isOpen={isOpen}
+        onClose={onClose}
+        title={`অর্ডার বিস্তারিত - ${order.tracking_id}`}
+        description="সম্পূর্ণ অর্ডার তথ্য এবং অবস্থা"
+        size="full"
+      >
 
           <div className="space-y-6">
             {/* Status Card */}
@@ -450,8 +449,7 @@ export default function OrderDetailsModal({ isOpen, onClose, order }: OrderDetai
               </Card>
             )}
           </div>
-        </DialogContent>
-      </Dialog>
+      </UnifiedModalBase>
 
       {/* Image Preview Modal */}
       {imagePreview && (
