@@ -91,20 +91,22 @@ function ProductForm({ product, onClose, isEdit = false }: any) {
     mutationFn: async (data: ProductFormData) => {
       console.log('Creating product with data:', data);
 
-      // Convert data to match server expectations
+      // Convert data to exact server expectations
       const productData = {
-        name: data.name.trim(),
-        description: data.description?.trim() || '',
-        price: data.price.toString(), // Server expects string
-        stock: typeof data.stock === 'number' ? data.stock : parseInt(data.stock.toString(), 10) || 0, // Server expects number
-        category: data.category,
-        image_url: data.image_url.trim(),
+        name: String(data.name || '').trim(),
+        description: String(data.description || '').trim(),
+        price: parseFloat(String(data.price)) || 0, // Convert to number
+        stock: parseInt(String(data.stock)) || 0, // Convert to number
+        category: String(data.category || '').trim(),
+        image_url: String(data.image_url || '').trim(),
         additional_images: additionalImages.filter(Boolean),
         is_active: Boolean(data.is_active),
         is_featured: Boolean(data.is_featured),
         is_latest: Boolean(data.is_latest),
         is_best_selling: Boolean(data.is_best_selling)
       };
+
+      console.log('Processed data for server:', productData);
 
       const response = await fetch('/api/products', {
         method: 'POST',
@@ -120,7 +122,8 @@ function ProductForm({ product, onClose, isEdit = false }: any) {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+        console.error('Create API error:', errorData);
+        throw new Error(errorData.error || errorData.message || `HTTP error! status: ${response.status}`);
       }
 
       return response.json();
@@ -133,12 +136,10 @@ function ProductForm({ product, onClose, isEdit = false }: any) {
         description: "নতুন পণ্য যোগ করা হয়েছে",
       });
 
-      // Clear all caches and refetch
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ["/api/products"] }),
-        queryClient.refetchQueries({ queryKey: ["/api/products"] }),
-        queryClient.removeQueries({ queryKey: ["/api/products"] }),
-      ]);
+      // Aggressive cache invalidation
+      queryClient.removeQueries({ queryKey: ["/api/products"] });
+      await queryClient.invalidateQueries({ queryKey: ["/api/products"] });
+      await refetch();
 
       onClose();
     },
@@ -156,14 +157,14 @@ function ProductForm({ product, onClose, isEdit = false }: any) {
     mutationFn: async (data: ProductFormData) => {
       console.log('Updating product with data:', data);
 
-      // Convert data to match server expectations
+      // Convert data to exact server expectations
       const productData = {
-        name: data.name.trim(),
-        description: data.description?.trim() || '',
-        price: data.price.toString(), // Server expects string
-        stock: typeof data.stock === 'number' ? data.stock : parseInt(data.stock.toString(), 10) || 0, // Server expects number
-        category: data.category,
-        image_url: data.image_url.trim(),
+        name: String(data.name || '').trim(),
+        description: String(data.description || '').trim(),
+        price: parseFloat(String(data.price)) || 0, // Convert to number
+        stock: parseInt(String(data.stock)) || 0, // Convert to number
+        category: String(data.category || '').trim(),
+        image_url: String(data.image_url || '').trim(),
         additional_images: additionalImages.filter(Boolean),
         is_active: Boolean(data.is_active),
         is_featured: Boolean(data.is_featured),
@@ -171,10 +172,10 @@ function ProductForm({ product, onClose, isEdit = false }: any) {
         is_best_selling: Boolean(data.is_best_selling)
       };
 
-      console.log('Processed product data:', productData);
+      console.log('Processed product data for update:', productData);
 
       const response = await fetch(`/api/products/${product.id}`, {
-        method: 'PATCH',
+        method: 'PUT', // Use PUT for consistency with server
         headers: { 
           'Content-Type': 'application/json',
           'Cache-Control': 'no-cache, no-store, must-revalidate',
@@ -189,7 +190,7 @@ function ProductForm({ product, onClose, isEdit = false }: any) {
       if (!response.ok) {
         const errorData = await response.json();
         console.error('Update API error:', errorData);
-        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+        throw new Error(errorData.error || errorData.message || `HTTP error! status: ${response.status}`);
       }
 
       return response.json();
@@ -202,12 +203,10 @@ function ProductForm({ product, onClose, isEdit = false }: any) {
         description: "পণ্য আপডেট করা হয়েছে",
       });
 
-      // Clear all caches and refetch
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ["/api/products"] }),
-        queryClient.refetchQueries({ queryKey: ["/api/products"] }),
-        queryClient.removeQueries({ queryKey: ["/api/products"] }),
-      ]);
+      // Aggressive cache invalidation
+      queryClient.removeQueries({ queryKey: ["/api/products"] });
+      await queryClient.invalidateQueries({ queryKey: ["/api/products"] });
+      await refetch();
 
       onClose();
     },
@@ -224,19 +223,12 @@ function ProductForm({ product, onClose, isEdit = false }: any) {
   const onSubmit = (data: ProductFormData) => {
     console.log('Form submitted with data:', data);
 
-    // Convert data to match server expectations - price as string, stock as number
-    const processedData = {
-      ...data,
-      price: data.price.toString(), // Server expects string
-      stock: parseInt(data.stock.toString(), 10) || 0, // Server expects number
-    };
-
-    console.log('Processed data for server:', processedData);
-
+    // Data will be processed in the mutation functions
+    // Just pass the raw form data
     if (isEdit) {
-      updateProductMutation.mutate(processedData);
+      updateProductMutation.mutate(data);
     } else {
-      createProductMutation.mutate(processedData);
+      createProductMutation.mutate(data);
     }
   };
 

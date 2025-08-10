@@ -121,14 +121,28 @@ export class SimpleStorage {
       const validatedData = {
         name: String(productData.name || '').trim(),
         description: String(productData.description || '').trim(),
-        price: String(productData.price || '0'),
-        stock: Number(productData.stock) || 0,
         category: String(productData.category || '').trim(),
         image_url: String(productData.image_url || '').trim(),
+        additional_images: productData.additional_images || [],
+        is_active: Boolean(productData.is_active !== false), // Default to true
         is_featured: Boolean(productData.is_featured),
         is_latest: Boolean(productData.is_latest),
         is_best_selling: Boolean(productData.is_best_selling)
       };
+
+      // Handle price conversion
+      const priceNum = Number(productData.price);
+      if (isNaN(priceNum) || priceNum < 0) {
+        throw new Error('Valid positive price is required');
+      }
+      validatedData.price = priceNum.toString(); // Store as string in database
+
+      // Handle stock conversion
+      const stockNum = Number(productData.stock);
+      if (isNaN(stockNum) || stockNum < 0) {
+        throw new Error('Valid non-negative stock is required');
+      }
+      validatedData.stock = stockNum;
 
       // Validation checks
       if (!validatedData.name) {
@@ -137,9 +151,8 @@ export class SimpleStorage {
       if (!validatedData.category) {
         throw new Error('Product category is required');
       }
-      if (!validatedData.price || validatedData.price === '0') {
-        throw new Error('Valid price is required');
-      }
+
+      console.log('Final validated data for database insert:', validatedData);
 
       const [product] = await db.insert(products).values({
         ...validatedData,
@@ -148,7 +161,7 @@ export class SimpleStorage {
 
       return product;
     } catch (error) {
-      console.error('Error creating product:', error);
+      console.error('Error creating product in storage:', error);
       throw error;
     }
   }
@@ -170,17 +183,20 @@ export class SimpleStorage {
       }
 
       if (updates.price !== undefined) {
-        validatedUpdates.price = Number(updates.price);
-        if (isNaN(validatedUpdates.price)) {
-          throw new Error('Invalid price value - must be a number');
+        const priceNum = Number(updates.price);
+        if (isNaN(priceNum) || priceNum < 0) {
+          throw new Error('Invalid price value - must be a positive number');
         }
+        // Store price as string in database for consistency
+        validatedUpdates.price = priceNum.toString();
       }
 
       if (updates.stock !== undefined) {
-        validatedUpdates.stock = Number(updates.stock);
-        if (isNaN(validatedUpdates.stock)) {
-          throw new Error('Invalid stock value - must be a number');
+        const stockNum = Number(updates.stock);
+        if (isNaN(stockNum) || stockNum < 0) {
+          throw new Error('Invalid stock value - must be a non-negative number');
         }
+        validatedUpdates.stock = stockNum;
       }
 
       if (updates.category !== undefined) {
@@ -192,6 +208,14 @@ export class SimpleStorage {
 
       if (updates.image_url !== undefined) {
         validatedUpdates.image_url = String(updates.image_url).trim();
+      }
+
+      if (updates.additional_images !== undefined) {
+        validatedUpdates.additional_images = updates.additional_images;
+      }
+
+      if (updates.is_active !== undefined) {
+        validatedUpdates.is_active = Boolean(updates.is_active);
       }
 
       if (updates.is_featured !== undefined) {
@@ -206,6 +230,8 @@ export class SimpleStorage {
         validatedUpdates.is_best_selling = Boolean(updates.is_best_selling);
       }
 
+      console.log('Final validated updates for database:', validatedUpdates);
+
       const [product] = await db
         .update(products)
         .set(validatedUpdates)
@@ -214,7 +240,7 @@ export class SimpleStorage {
 
       return product || null;
     } catch (error) {
-      console.error('Error updating product:', error);
+      console.error('Error updating product in storage:', error);
       throw error;
     }
   }

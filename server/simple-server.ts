@@ -32,30 +32,61 @@ export async function registerRoutes(app: express.Express) {
       const productData = req.body;
       console.log('Creating product:', productData);
 
-      // Validate and convert data types
-      if (productData.stock !== undefined) {
-        productData.stock = parseInt(productData.stock, 10);
-        if (isNaN(productData.stock)) {
-          return res.status(400).json({
-            success: false,
-            error: "Invalid stock value",
-            details: "Stock must be a valid number"
-          });
-        }
+      // Validate required fields
+      if (!productData.name || !productData.category) {
+        return res.status(400).json({
+          success: false,
+          error: "Missing required fields",
+          details: "Name and category are required"
+        });
       }
 
-      if (productData.price !== undefined) {
-        productData.price = parseFloat(productData.price);
-        if (isNaN(productData.price)) {
+      // Validate and convert data types with better error handling
+      const processedData = {
+        name: String(productData.name || '').trim(),
+        description: String(productData.description || '').trim(),
+        category: String(productData.category || '').trim(),
+        image_url: String(productData.image_url || '').trim(),
+        additional_images: productData.additional_images || [],
+        is_active: Boolean(productData.is_active !== false), // Default to true
+        is_featured: Boolean(productData.is_featured),
+        is_latest: Boolean(productData.is_latest),
+        is_best_selling: Boolean(productData.is_best_selling)
+      };
+
+      // Handle price conversion
+      if (productData.price !== undefined && productData.price !== null) {
+        const priceNum = parseFloat(productData.price);
+        if (isNaN(priceNum) || priceNum < 0) {
           return res.status(400).json({
             success: false,
             error: "Invalid price value",
-            details: "Price must be a valid number"
+            details: "Price must be a valid positive number"
           });
         }
+        processedData.price = priceNum;
+      } else {
+        processedData.price = 0;
       }
 
-      const newProduct = await storage.createProduct(productData);
+      // Handle stock conversion
+      if (productData.stock !== undefined && productData.stock !== null) {
+        const stockNum = parseInt(productData.stock, 10);
+        if (isNaN(stockNum) || stockNum < 0) {
+          return res.status(400).json({
+            success: false,
+            error: "Invalid stock value",
+            details: "Stock must be a valid non-negative number"
+          });
+        }
+        processedData.stock = stockNum;
+      } else {
+        processedData.stock = 0;
+      }
+
+      console.log('Processed data for database:', processedData);
+
+      const newProduct = await storage.createProduct(processedData);
 
       res.status(201).json({
         success: true,
@@ -77,33 +108,59 @@ export async function registerRoutes(app: express.Express) {
       const { id } = req.params;
       console.log(`🔄 Updating product ${id} with data:`, req.body);
 
-      const { name, description, price, stock, category, image_url, is_featured, is_latest, is_best_selling } = req.body;
+      const updateData = req.body;
 
       // Validate required fields
-      if (!name || !category || price === undefined || price === null) {
+      if (!updateData.name || !updateData.category) {
         return res.status(400).json({
           success: false,
           error: 'Missing required fields',
-          details: 'Name, category, and price are required'
+          details: 'Name and category are required'
         });
       }
 
-      // Validate and convert data types
-      const productData = {
-        name: String(name).trim(),
-        description: String(description || '').trim(),
-        price: String(price), // Keep price as string for database
-        stock: parseInt(String(stock)) || 0, // Ensure stock is number
-        category: String(category).trim(),
-        image_url: String(image_url || '').trim(),
-        is_featured: Boolean(is_featured),
-        is_latest: Boolean(is_latest),
-        is_best_selling: Boolean(is_best_selling)
+      // Process the data with proper type conversion
+      const processedData = {
+        name: String(updateData.name || '').trim(),
+        description: String(updateData.description || '').trim(),
+        category: String(updateData.category || '').trim(),
+        image_url: String(updateData.image_url || '').trim(),
+        additional_images: updateData.additional_images || [],
+        is_active: Boolean(updateData.is_active !== false),
+        is_featured: Boolean(updateData.is_featured),
+        is_latest: Boolean(updateData.is_latest),
+        is_best_selling: Boolean(updateData.is_best_selling)
       };
 
-      console.log('✅ Validated data:', productData);
+      // Handle price conversion
+      if (updateData.price !== undefined && updateData.price !== null) {
+        const priceNum = parseFloat(updateData.price);
+        if (isNaN(priceNum) || priceNum < 0) {
+          return res.status(400).json({
+            success: false,
+            error: "Invalid price value",
+            details: "Price must be a valid positive number"
+          });
+        }
+        processedData.price = priceNum;
+      }
 
-      const product = await storage.updateProduct(id, productData);
+      // Handle stock conversion
+      if (updateData.stock !== undefined && updateData.stock !== null) {
+        const stockNum = parseInt(updateData.stock, 10);
+        if (isNaN(stockNum) || stockNum < 0) {
+          return res.status(400).json({
+            success: false,
+            error: "Invalid stock value",
+            details: "Stock must be a valid non-negative number"
+          });
+        }
+        processedData.stock = stockNum;
+      }
+
+      console.log('✅ Processed update data:', processedData);
+
+      const product = await storage.updateProduct(id, processedData);
 
       if (!product) {
         return res.status(404).json({ success: false, error: 'Product not found' });
@@ -118,7 +175,11 @@ export async function registerRoutes(app: express.Express) {
       });
     } catch (error) {
       console.error('Error updating product:', error);
-      res.status(500).json({ success: false, error: 'Failed to update product' });
+      res.status(500).json({ 
+        success: false, 
+        error: 'Failed to update product',
+        details: error.message 
+      });
     }
   });
 
