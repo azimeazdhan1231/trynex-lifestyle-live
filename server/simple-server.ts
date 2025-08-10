@@ -77,6 +77,140 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Product management endpoints - CREATE, UPDATE, DELETE
+  app.post('/api/products', async (req, res) => {
+    try {
+      console.log('🆕 Creating product with data:', req.body);
+      
+      // Set JSON headers
+      res.set({
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*',
+        'Cache-Control': 'no-cache, no-store, must-revalidate'
+      });
+      
+      const productData = {
+        ...req.body,
+        created_at: new Date()
+      };
+      
+      const validatedData = insertProductSchema.parse(productData);
+      const product = await storage.createProduct(validatedData);
+      
+      console.log('✅ Product created successfully:', product.id);
+      
+      return res.status(201).json({
+        success: true,
+        product: product,
+        message: 'নতুন পণ্য সফলভাবে তৈরি হয়েছে'
+      });
+    } catch (error) {
+      console.error('❌ Failed to create product:', error);
+      
+      res.set({
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*'
+      });
+      
+      if (error.name === 'ZodError') {
+        return res.status(400).json({ 
+          success: false,
+          error: 'Invalid product data', 
+          details: error.errors 
+        });
+      }
+      
+      return res.status(500).json({ 
+        success: false,
+        error: 'Failed to create product',
+        message: error.message 
+      });
+    }
+  });
+
+  app.patch('/api/products/:id', async (req, res) => {
+    try {
+      const { id } = req.params;
+      console.log(`🔄 Updating product ${id} with data:`, req.body);
+      
+      // Set JSON headers FIRST
+      res.set({
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, POST, PATCH, DELETE, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+        'Cache-Control': 'no-cache, no-store, must-revalidate'
+      });
+      
+      // For updates, make fields optional
+      const updateSchema = insertProductSchema.partial();
+      const validatedData = updateSchema.parse(req.body);
+      
+      const updatedProduct = await storage.updateProduct(id, validatedData);
+      console.log('✅ Product updated successfully:', updatedProduct);
+      
+      return res.status(200).json({
+        success: true,
+        product: updatedProduct,
+        message: 'পণ্য সফলভাবে আপডেট হয়েছে'
+      });
+    } catch (error) {
+      console.error('❌ Failed to update product:', error);
+      
+      res.set({
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*'
+      });
+      
+      if (error.name === 'ZodError') {
+        return res.status(400).json({ 
+          success: false,
+          error: 'Invalid product data', 
+          details: error.errors 
+        });
+      }
+      
+      return res.status(500).json({ 
+        success: false,
+        error: 'Failed to update product',
+        message: error.message 
+      });
+    }
+  });
+
+  app.delete('/api/products/:id', async (req, res) => {
+    try {
+      const { id } = req.params;
+      console.log(`🗑️ Deleting product ${id}`);
+      
+      res.set({
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*'
+      });
+      
+      await storage.deleteProduct(id);
+      console.log('✅ Product deleted successfully:', id);
+      
+      return res.status(200).json({
+        success: true,
+        message: 'পণ্য সফলভাবে মুছে ফেলা হয়েছে'
+      });
+    } catch (error) {
+      console.error('❌ Failed to delete product:', error);
+      
+      res.set({
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*'
+      });
+      
+      return res.status(500).json({ 
+        success: false,
+        error: 'Failed to delete product',
+        message: error.message 
+      });
+    }
+  });
+
   // Enhanced Orders API with detailed customization support
   app.post('/api/orders', async (req, res) => {
     try {
@@ -193,7 +327,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Update order status
+  // Update order status - BOTH endpoints for compatibility
   app.patch('/api/orders/:id/status', async (req, res) => {
     try {
       const { status } = req.body;
@@ -212,7 +346,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Categories API with caching
+  // Alternative order status update endpoint (used by admin panel)
+  app.patch('/api/orders/:id', async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { status } = req.body;
+      
+      console.log(`Updating order ${id} status to: ${status}`);
+      
+      // Set proper JSON headers
+      res.set({
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, POST, PATCH, DELETE, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization'
+      });
+      
+      const updatedOrder = await storage.updateOrderStatus(id, status);
+      
+      return res.status(200).json({
+        success: true,
+        order: updatedOrder,
+        message: 'অর্ডার স্ট্যাটাস আপডেট হয়েছে'
+      });
+    } catch (error) {
+      console.error('❌ Failed to update order status:', error);
+      
+      res.set({
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*'
+      });
+      
+      return res.status(500).json({ 
+        success: false,
+        error: 'Failed to update order status',
+        message: error.message 
+      });
+    }
+  });
+
+  // Categories API with CRUD operations
   app.get('/api/categories', async (req, res) => {
     try {
       res.set('Cache-Control', 'public, max-age=900'); // 15 minutes
@@ -222,6 +395,112 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('❌ Error fetching categories:', error);
       res.status(500).json({ message: 'ক্যাটেগরি লোড করতে সমস্যা হয়েছে' });
+    }
+  });
+
+  app.post('/api/categories', async (req, res) => {
+    try {
+      console.log('🆕 Creating category with data:', req.body);
+      
+      res.set({
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*'
+      });
+      
+      const categoryData = {
+        ...req.body,
+        created_at: new Date()
+      };
+      
+      const validatedData = insertCategorySchema.parse(categoryData);
+      const category = await storage.createCategory(validatedData);
+      
+      return res.status(201).json({
+        success: true,
+        category: category,
+        message: 'নতুন ক্যাটেগরি তৈরি হয়েছে'
+      });
+    } catch (error) {
+      console.error('❌ Failed to create category:', error);
+      
+      res.set({
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*'
+      });
+      
+      return res.status(500).json({ 
+        success: false,
+        error: 'Failed to create category',
+        message: error.message 
+      });
+    }
+  });
+
+  app.patch('/api/categories/:id', async (req, res) => {
+    try {
+      const { id } = req.params;
+      console.log(`🔄 Updating category ${id} with data:`, req.body);
+      
+      res.set({
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*'
+      });
+      
+      const updateSchema = insertCategorySchema.partial();
+      const validatedData = updateSchema.parse(req.body);
+      
+      const updatedCategory = await storage.updateCategory(id, validatedData);
+      
+      return res.status(200).json({
+        success: true,
+        category: updatedCategory,
+        message: 'ক্যাটেগরি আপডেট হয়েছে'
+      });
+    } catch (error) {
+      console.error('❌ Failed to update category:', error);
+      
+      res.set({
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*'
+      });
+      
+      return res.status(500).json({ 
+        success: false,
+        error: 'Failed to update category',
+        message: error.message 
+      });
+    }
+  });
+
+  app.delete('/api/categories/:id', async (req, res) => {
+    try {
+      const { id } = req.params;
+      console.log(`🗑️ Deleting category ${id}`);
+      
+      res.set({
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*'
+      });
+      
+      await storage.deleteCategory(id);
+      
+      return res.status(200).json({
+        success: true,
+        message: 'ক্যাটেগরি মুছে ফেলা হয়েছে'
+      });
+    } catch (error) {
+      console.error('❌ Failed to delete category:', error);
+      
+      res.set({
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*'
+      });
+      
+      return res.status(500).json({ 
+        success: false,
+        error: 'Failed to delete category',
+        message: error.message 
+      });
     }
   });
 
@@ -328,38 +607,116 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Promo Codes API
+  // Promo Codes API with CRUD operations
   app.get('/api/promo-codes', async (req, res) => {
     try {
-      // Mock promo codes data
-      const promoCodes = [
-        {
-          id: '1',
-          code: 'SAVE10',
-          description: '১০% ছাড়',
-          discount_type: 'percentage',
-          discount_value: 10,
-          min_order_amount: 1000,
-          usage_limit: 100,
-          expires_at: '2025-12-31',
-          is_active: true
-        },
-        {
-          id: '2',
-          code: 'WELCOME20',
-          description: '২০% ছাড় নতুন গ্রাহকদের জন্য',
-          discount_type: 'percentage',
-          discount_value: 20,
-          min_order_amount: 1500,
-          usage_limit: 50,
-          expires_at: '2025-12-31',
-          is_active: true
-        }
-      ];
+      const promoCodes = await storage.getPromoCodes();
       res.json(promoCodes);
     } catch (error) {
       console.error('❌ Error fetching promo codes:', error);
       res.status(500).json({ message: 'প্রমো কোড লোড করতে সমস্যা হয়েছে' });
+    }
+  });
+
+  app.post('/api/promo-codes', async (req, res) => {
+    try {
+      console.log('🆕 Creating promo code with data:', req.body);
+      
+      res.set({
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*'
+      });
+      
+      const promoCodeData = {
+        ...req.body,
+        created_at: new Date()
+      };
+      
+      const promoCode = await storage.createPromoCode(promoCodeData);
+      
+      return res.status(201).json({
+        success: true,
+        promoCode: promoCode,
+        message: 'নতুন প্রোমো কোড তৈরি হয়েছে'
+      });
+    } catch (error) {
+      console.error('❌ Failed to create promo code:', error);
+      
+      res.set({
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*'
+      });
+      
+      return res.status(500).json({ 
+        success: false,
+        error: 'Failed to create promo code',
+        message: error.message 
+      });
+    }
+  });
+
+  app.patch('/api/promo-codes/:id', async (req, res) => {
+    try {
+      const { id } = req.params;
+      console.log(`🔄 Updating promo code ${id} with data:`, req.body);
+      
+      res.set({
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*'
+      });
+      
+      const updatedPromoCode = await storage.updatePromoCode(id, req.body);
+      
+      return res.status(200).json({
+        success: true,
+        promoCode: updatedPromoCode,
+        message: 'প্রোমো কোড আপডেট হয়েছে'
+      });
+    } catch (error) {
+      console.error('❌ Failed to update promo code:', error);
+      
+      res.set({
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*'
+      });
+      
+      return res.status(500).json({ 
+        success: false,
+        error: 'Failed to update promo code',
+        message: error.message 
+      });
+    }
+  });
+
+  app.delete('/api/promo-codes/:id', async (req, res) => {
+    try {
+      const { id } = req.params;
+      console.log(`🗑️ Deleting promo code ${id}`);
+      
+      res.set({
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*'
+      });
+      
+      await storage.deletePromoCode(id);
+      
+      return res.status(200).json({
+        success: true,
+        message: 'প্রোমো কোড মুছে ফেলা হয়েছে'
+      });
+    } catch (error) {
+      console.error('❌ Failed to delete promo code:', error);
+      
+      res.set({
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*'
+      });
+      
+      return res.status(500).json({ 
+        success: false,
+        error: 'Failed to delete promo code',
+        message: error.message 
+      });
     }
   });
 
