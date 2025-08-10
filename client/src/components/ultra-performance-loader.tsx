@@ -9,7 +9,9 @@ export function UltraPerformanceLoader() {
 
   useEffect(() => {
     const optimizeEverything = async () => {
-      console.log('🚀 Ultra Performance Mode: ACTIVATED');
+      if (process.env.NODE_ENV === 'development') {
+        console.log('🚀 Ultra Performance Mode: ACTIVATED');
+      }
       
       // 1. Immediate DOM optimizations
       document.documentElement.style.willChange = 'transform';
@@ -46,21 +48,27 @@ export function UltraPerformanceLoader() {
           .then(res => res.json())
           .then(data => {
             queryClient.setQueryData(['products'], data);
-            console.log('🚀 Products preloaded successfully');
+            if (process.env.NODE_ENV === 'development') {
+              console.log('🚀 Products preloaded successfully');
+            }
           }),
         
         fetch('/api/categories', { headers: { 'Cache-Control': 'max-age=60' } })
           .then(res => res.json())
           .then(data => {
             queryClient.setQueryData(['categories'], data);
-            console.log('🚀 Categories preloaded successfully');
+            if (process.env.NODE_ENV === 'development') {
+              console.log('🚀 Categories preloaded successfully');
+            }
           }),
         
         fetch('/api/settings')
           .then(res => res.json())
           .then(data => {
             queryClient.setQueryData(['settings'], data);
-            console.log('🚀 Settings preloaded successfully');
+            if (process.env.NODE_ENV === 'development') {
+              console.log('🚀 Settings preloaded successfully');
+            }
           })
       ];
       

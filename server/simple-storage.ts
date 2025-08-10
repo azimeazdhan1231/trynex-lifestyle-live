@@ -131,9 +131,13 @@ export class SimpleStorage {
   // Orders (Enhanced with error handling)
   async getOrders(): Promise<Order[]> {
     try {
-      console.log('🔍 Fetching orders from database...');
+      if (process.env.NODE_ENV === 'development') {
+        console.log('🔍 Fetching orders from database...');
+      }
       const result = await db.select().from(orders).orderBy(desc(orders.created_at));
-      console.log(`✅ Orders fetched successfully: ${result.length} orders`);
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`✅ Orders fetched successfully: ${result.length} orders`);
+      }
       return result;
     } catch (error: any) {
       console.error('❌ Error fetching orders:', error);

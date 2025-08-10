@@ -85,11 +85,15 @@ export const loadFacebookPixelFromSettings = async () => {
       console.log('Loading Facebook Pixel with ID:', pixelId);
       loadFacebookPixel(pixelId.trim());
     } else {
-      console.log('No Facebook Pixel ID found in settings');
+      if (process.env.NODE_ENV === 'development') {
+        console.log('No Facebook Pixel ID found in settings');
+      }
     }
   } catch (error) {
     if (error instanceof DOMException && error.name === 'AbortError') {
-      console.log('Facebook Pixel loading was cancelled');
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Facebook Pixel loading was cancelled');
+      }
     } else {
       console.warn('Failed to load Facebook Pixel from settings:', error);
     }
