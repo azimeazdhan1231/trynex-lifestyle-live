@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
@@ -26,6 +27,9 @@ interface ProductFormData {
   image_url: string;
   additional_images?: string[];
   is_active: boolean;
+  is_featured?: boolean;
+  is_latest?: boolean;
+  is_best_selling?: boolean;
 }
 
 function ProductForm({ product, onClose, isEdit = false }: any) {
@@ -45,14 +49,38 @@ function ProductForm({ product, onClose, isEdit = false }: any) {
       stock: product?.stock || 0,
       image_url: product?.image_url || '',
       is_active: product?.is_active ?? true,
+      is_featured: product?.is_featured ?? false,
+      is_latest: product?.is_latest ?? false,
+      is_best_selling: product?.is_best_selling ?? false,
     }
   });
 
+  // Force cache invalidation helper
+  const invalidateAllCaches = async () => {
+    // Invalidate all product-related queries
+    await queryClient.invalidateQueries({ queryKey: ["/api/products"] });
+    await queryClient.refetchQueries({ queryKey: ["/api/products"] });
+    
+    // Clear React Query cache completely for products
+    queryClient.removeQueries({ queryKey: ["/api/products"] });
+    
+    // Also clear any category caches that might include product counts
+    await queryClient.invalidateQueries({ queryKey: ["/api/categories"] });
+    
+    console.log('✅ All caches invalidated and refetched');
+  };
+
   const createProductMutation = useMutation({
     mutationFn: async (data: ProductFormData) => {
+      console.log('Creating product with data:', data);
+      
       const response = await fetch('/api/products', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Cache-Control': 'no-cache',
+          'Pragma': 'no-cache'
+        },
         body: JSON.stringify({
           ...data,
           additional_images: additionalImages.filter(Boolean)
@@ -60,20 +88,24 @@ function ProductForm({ product, onClose, isEdit = false }: any) {
       });
       
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const errorData = await response.json();
+        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
       }
       
       return response.json();
     },
-    onSuccess: () => {
+    onSuccess: async () => {
       toast({
         title: "সফল!",
         description: "নতুন পণ্য যোগ করা হয়েছে",
       });
-      queryClient.invalidateQueries({ queryKey: ["/api/products"] });
+      
+      // Force complete cache refresh
+      await invalidateAllCaches();
       onClose();
     },
     onError: (error: any) => {
+      console.error('Create product error:', error);
       toast({
         title: "ত্রুটি!",
         description: error?.message || "পণ্য যোগ করতে সমস্যা হয়েছে",
@@ -84,9 +116,15 @@ function ProductForm({ product, onClose, isEdit = false }: any) {
 
   const updateProductMutation = useMutation({
     mutationFn: async (data: ProductFormData) => {
+      console.log('Updating product with data:', data);
+      
       const response = await fetch(`/api/products/${product.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        method: 'PATCH',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Cache-Control': 'no-cache',
+          'Pragma': 'no-cache'
+        },
         body: JSON.stringify({
           ...data,
           additional_images: additionalImages.filter(Boolean)
@@ -94,20 +132,26 @@ function ProductForm({ product, onClose, isEdit = false }: any) {
       });
       
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const errorData = await response.json();
+        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
       }
       
       return response.json();
     },
-    onSuccess: () => {
+    onSuccess: async (updatedProduct) => {
+      console.log('Product updated successfully:', updatedProduct);
+      
       toast({
         title: "সফল!",
         description: "পণ্য আপডেট করা হয়েছে",
       });
-      queryClient.invalidateQueries({ queryKey: ["/api/products"] });
+      
+      // Force complete cache refresh
+      await invalidateAllCaches();
       onClose();
     },
     onError: (error: any) => {
+      console.error('Update product error:', error);
       toast({
         title: "ত্রুটি!",
         description: error?.message || "পণ্য আপডেট করতে সমস্যা হয়েছে",
@@ -117,10 +161,17 @@ function ProductForm({ product, onClose, isEdit = false }: any) {
   });
 
   const onSubmit = (data: ProductFormData) => {
+    // Ensure numeric values are properly converted
+    const formattedData = {
+      ...data,
+      price: Number(data.price),
+      stock: Number(data.stock)
+    };
+    
     if (isEdit) {
-      updateProductMutation.mutate(data);
+      updateProductMutation.mutate(formattedData);
     } else {
-      createProductMutation.mutate(data);
+      createProductMutation.mutate(formattedData);
     }
   };
 
@@ -218,6 +269,45 @@ function ProductForm({ product, onClose, isEdit = false }: any) {
             </Select>
             {errors.category && <p className="text-red-500 text-sm">{errors.category.message}</p>}
           </div>
+
+          {/* Product Status Checkboxes */}
+          <div className="space-y-2">
+            <Label>পণ্যের স্ট্যাটাস</Label>
+            <div className="flex flex-col space-y-2">
+              <div className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  id="is_featured"
+                  {...register("is_featured")}
+                />
+                <Label htmlFor="is_featured">ফিচার্ড পণ্য</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  id="is_latest"
+                  {...register("is_latest")}
+                />
+                <Label htmlFor="is_latest">নতুন পণ্য</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  id="is_best_selling"
+                  {...register("is_best_selling")}
+                />
+                <Label htmlFor="is_best_selling">বেস্ট সেলিং</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  id="is_active"
+                  {...register("is_active")}
+                />
+                <Label htmlFor="is_active">সক্রিয়</Label>
+              </div>
+            </div>
+          </div>
         </div>
 
         <div className="space-y-4">
@@ -314,7 +404,9 @@ export default function ProductManagement() {
 
   const { data: products = [], isLoading, error, refetch } = useQuery({ 
     queryKey: ["/api/products"],
-    refetchInterval: 60000, // Auto-refresh every minute
+    refetchInterval: false, // Disable auto-refresh to prevent conflicts
+    staleTime: 0, // Always consider data stale
+    cacheTime: 0, // Don't cache data
   });
 
   const { data: categories = [] } = useQuery({ queryKey: ["/api/categories"] });
@@ -323,24 +415,38 @@ export default function ProductManagement() {
 
   const deleteProductMutation = useMutation({
     mutationFn: async (productId: string) => {
+      console.log('Deleting product:', productId);
+      
       const response = await fetch(`/api/products/${productId}`, {
         method: 'DELETE',
+        headers: {
+          'Cache-Control': 'no-cache',
+          'Pragma': 'no-cache'
+        }
       });
       
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const errorData = await response.json();
+        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
       }
       
       return response.json();
     },
-    onSuccess: () => {
+    onSuccess: async () => {
       toast({
         title: "সফল!",
         description: "পণ্য মুছে ফেলা হয়েছে",
       });
-      queryClient.invalidateQueries({ queryKey: ["/api/products"] });
+      
+      // Force complete cache refresh
+      await queryClient.invalidateQueries({ queryKey: ["/api/products"] });
+      await queryClient.refetchQueries({ queryKey: ["/api/products"] });
+      queryClient.removeQueries({ queryKey: ["/api/products"] });
+      
+      console.log('✅ Product deleted and cache cleared');
     },
     onError: (error: any) => {
+      console.error('Delete product error:', error);
       toast({
         title: "ত্রুটি!",
         description: error?.message || "পণ্য মুছতে সমস্যা হয়েছে",
@@ -361,6 +467,7 @@ export default function ProductManagement() {
   }, [products, categoryFilter, searchTerm]);
 
   const openEditModal = (product: any) => {
+    console.log('Opening edit modal for product:', product);
     setSelectedProduct(product);
     setIsEditModalOpen(true);
   };
@@ -374,6 +481,22 @@ export default function ProductManagement() {
     setIsAddModalOpen(false);
   };
 
+  const handleRefresh = async () => {
+    console.log('Manual refresh triggered');
+    
+    // Clear all caches
+    queryClient.removeQueries({ queryKey: ["/api/products"] });
+    await queryClient.invalidateQueries({ queryKey: ["/api/products"] });
+    
+    // Force refetch
+    await refetch();
+    
+    toast({
+      title: "রিফ্রেশ সম্পন্ন!",
+      description: "পণ্যের তালিকা আপডেট করা হয়েছে",
+    });
+  };
+
   if (error) {
     return (
       <Card>
@@ -382,7 +505,7 @@ export default function ProductManagement() {
             <AlertTriangle className="w-12 h-12 mx-auto mb-4 text-red-500" />
             <h3 className="text-lg font-semibold mb-2">পণ্য লোড করতে সমস্যা</h3>
             <p className="text-gray-600 mb-4">পণ্যের তথ্য লোড করতে সমস্যা হয়েছে</p>
-            <Button onClick={() => refetch()}>
+            <Button onClick={handleRefresh}>
               <RefreshCw className="w-4 h-4 mr-2" />
               পুনরায় চেষ্টা করুন
             </Button>
@@ -434,7 +557,7 @@ export default function ProductManagement() {
             </div>
 
             <div className="flex items-end">
-              <Button onClick={() => refetch()} variant="outline" className="w-full">
+              <Button onClick={handleRefresh} variant="outline" className="w-full">
                 <RefreshCw className="w-4 h-4 mr-2" />
                 রিফ্রেশ
               </Button>
@@ -516,9 +639,14 @@ export default function ProductManagement() {
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        <Badge variant={product.is_active ? 'default' : 'secondary'}>
-                          {product.is_active ? 'সক্রিয়' : 'নিষ্ক্রিয়'}
-                        </Badge>
+                        <div className="flex flex-col gap-1">
+                          <Badge variant={product.is_active ? 'default' : 'secondary'}>
+                            {product.is_active ? 'সক্রিয়' : 'নিষ্ক্রিয়'}
+                          </Badge>
+                          {product.is_featured && <Badge variant="outline" className="text-xs">ফিচার্ড</Badge>}
+                          {product.is_latest && <Badge variant="outline" className="text-xs">নতুন</Badge>}
+                          {product.is_best_selling && <Badge variant="outline" className="text-xs">বেস্ট সেলিং</Badge>}
+                        </div>
                       </TableCell>
                       <TableCell>
                         <div className="flex gap-2">

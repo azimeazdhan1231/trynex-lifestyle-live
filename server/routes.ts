@@ -1173,13 +1173,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Validate request data
       const validatedData = insertProductSchema.parse(req.body);
       
-      // Clear cache when product is created
+      // Clear ALL cache layers when product is created
       performanceCache.clearCache();
       productCache.data = null;
       productCache.timestamp = 0;
+      categoryCache.data = null;
+      categoryCache.timestamp = 0;
+      
+      // Clear cache service
+      if (cacheService && typeof cacheService.clearAllCache === 'function') {
+        cacheService.clearAllCache();
+      }
       
       const product = await storage.createProduct(validatedData);
       console.log('✅ Product created successfully:', product.id);
+      
+      // Set headers to prevent caching
+      res.set({
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0'
+      });
       
       res.status(201).json(product);
     } catch (error) {
@@ -1204,6 +1218,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       performanceCache.clearCache();
       productCache.data = null;
       productCache.timestamp = 0;
+      categoryCache.data = null;
+      categoryCache.timestamp = 0;
       
       // Clear cache service
       if (cacheService && typeof cacheService.clearAllCache === 'function') {
@@ -1211,7 +1227,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       const updatedProduct = await storage.updateProduct(id, validatedData);
-      console.log('✅ Product updated successfully:', updatedProduct.id);
+      console.log('✅ Product updated successfully:', updatedProduct);
+      
+      // Set headers to prevent caching
+      res.set({
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0'
+      });
       
       res.json(updatedProduct);
     } catch (error) {
@@ -1232,6 +1255,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       performanceCache.clearCache();
       productCache.data = null;
       productCache.timestamp = 0;
+      categoryCache.data = null;
+      categoryCache.timestamp = 0;
       
       // Clear cache service
       if (cacheService && typeof cacheService.clearAllCache === 'function') {
@@ -1240,6 +1265,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       await storage.deleteProduct(id);
       console.log('✅ Product deleted successfully:', id);
+      
+      // Set headers to prevent caching
+      res.set({
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0'
+      });
       
       res.json({ success: true });
     } catch (error) {
