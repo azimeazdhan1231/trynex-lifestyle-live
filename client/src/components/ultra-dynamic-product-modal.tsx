@@ -1,5 +1,5 @@
 import { useState, useEffect, memo } from "react";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -259,6 +259,11 @@ export default function UltraDynamicProductModal({
         className="max-w-6xl w-[95vw] h-[95vh] overflow-hidden p-0 gap-0 bg-white rounded-2xl"
         data-testid="product-modal"
       >
+        <DialogTitle className="sr-only">{product.name} - পণ্যের বিস্তারিত</DialogTitle>
+        <DialogDescription className="sr-only">
+          {product.name} এর সম্পূর্ণ বিবরণ, দাম {formatPrice(price)}, স্টক {product.stock || 0} টি
+        </DialogDescription>
+        
         {/* Custom Close Button */}
         <Button
           variant="ghost"

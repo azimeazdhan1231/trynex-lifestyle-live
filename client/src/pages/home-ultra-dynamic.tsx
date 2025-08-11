@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import UltraSimpleLayout from "@/components/ultra-simple-layout";
 import UltraDynamicProductModal from "@/components/ultra-dynamic-product-modal";
-import PerfectCustomizeModal from "@/components/perfect-customize-modal";
+import PerfectResponsiveCustomizeModal from "@/components/perfect-responsive-customize-modal";
 import UltraResponsiveProductCard from "@/components/ultra-responsive-product-card";
 import { useToast } from "@/hooks/use-toast";
 import { useCart } from "@/hooks/use-cart";
@@ -566,7 +566,7 @@ export default function HomeUltraDynamic() {
 
       {/* Customize Modal */}
       {customizeProduct && (
-        <PerfectCustomizeModal
+        <PerfectResponsiveCustomizeModal
           product={customizeProduct}
           isOpen={isCustomizeModalOpen}
           onClose={() => {
