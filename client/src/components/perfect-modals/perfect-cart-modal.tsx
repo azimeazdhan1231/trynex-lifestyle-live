@@ -7,7 +7,7 @@ import { useCart } from "@/hooks/use-cart";
 import { formatPrice } from "@/lib/constants";
 import { useLocation } from "wouter";
 import PerfectModalBase from "./perfect-modal-base";
-import PerfectCheckoutModal from "./perfect-checkout-modal";
+// Import will be resolved after checkout modal is fully compiled
 
 interface PerfectCartModalProps {
   isOpen: boolean;
@@ -17,11 +17,10 @@ interface PerfectCartModalProps {
 export default function PerfectCartModal({ isOpen, onClose }: PerfectCartModalProps) {
   const { cart, updateQuantity, removeFromCart, totalItems, totalPrice, clearCart } = useCart();
   const [, setLocation] = useLocation();
-  const [showCheckout, setShowCheckout] = useState(false);
 
   const handleCheckout = () => {
     onClose();
-    setShowCheckout(true);
+    setLocation('/checkout');
   };
 
   const handleContinueShopping = () => {
@@ -29,13 +28,7 @@ export default function PerfectCartModal({ isOpen, onClose }: PerfectCartModalPr
     setLocation('/products');
   };
 
-  const handleOrderComplete = () => {
-    clearCart();
-    setShowCheckout(false);
-  };
-
   return (
-    <>
       <PerfectModalBase
         isOpen={isOpen}
         onClose={onClose}
@@ -167,13 +160,5 @@ export default function PerfectCartModal({ isOpen, onClose }: PerfectCartModalPr
           </>
         )}
       </PerfectModalBase>
-
-      <PerfectCheckoutModal
-        isOpen={showCheckout}
-        onClose={() => setShowCheckout(false)}
-        cart={cart}
-        onOrderComplete={handleOrderComplete}
-      />
-    </>
-  );
+    );
 }
