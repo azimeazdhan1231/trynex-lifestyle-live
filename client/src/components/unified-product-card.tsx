@@ -58,11 +58,15 @@ export default function UnifiedProductCard({
 
   return (
     <Card 
-      className={`group cursor-pointer transition-all duration-300 hover:shadow-lg mobile-transition overflow-hidden product-card ${className}`}
+      className={`group cursor-pointer transition-all duration-500 hover:shadow-2xl hover:scale-[1.02] mobile-transition overflow-hidden product-card premium-card border-0 shadow-lg hover:shadow-xl transform-gpu ${className}`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       onClick={handleViewProduct}
       data-testid={`card-product-${product.id}`}
+      style={{ 
+        transition: 'all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1)',
+        background: 'linear-gradient(135deg, #ffffff 0%, #fafafa 100%)',
+      }}
     >
         <div className="relative">
           {/* Product Image */}

@@ -2,9 +2,11 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ArrowRight, Star, Gift, Sparkles, Heart, Shield, Truck, Users } from "lucide-react";
+import { useLocation } from "wouter";
 
 const PerfectHeroSection = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [, setLocation] = useLocation();
 
   const heroContent = [
     {
@@ -94,6 +96,8 @@ const PerfectHeroSection = () => {
               <Button 
                 size="lg" 
                 className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white px-8 py-6 text-lg rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
+                onClick={() => setLocation('/products')}
+                data-testid="button-shop-now"
               >
                 <Gift className="w-5 h-5 mr-2" />
                 এখনই কেনাকাটা শুরু করুন
@@ -103,6 +107,8 @@ const PerfectHeroSection = () => {
                 variant="outline" 
                 size="lg"
                 className="border-2 border-gray-300 hover:border-orange-500 hover:text-orange-500 px-8 py-6 text-lg rounded-full transition-all duration-300"
+                onClick={() => setLocation('/products')}
+                data-testid="button-custom-order"
               >
                 কাস্টম অর্ডার করুন
               </Button>
@@ -127,7 +133,7 @@ const PerfectHeroSection = () => {
                   প্রথম অর্ডারে ২০% ছাড়
                 </p>
                 <div className="space-y-2">
-                  <div className="text-3xl font-bold">৳৫০০+</div>
+                  <div className="text-3xl font-bold">৳২০০০+</div>
                   <div className="text-sm opacity-80">অর্ডারে ফ্রি ডেলিভারি</div>
                 </div>
               </div>
