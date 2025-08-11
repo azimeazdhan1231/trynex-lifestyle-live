@@ -165,8 +165,15 @@ export default function ImprovedCustomOrderForm() {
     }
 
     const orderData = {
-      ...formData,
+      customerName: formData.name,
+      phone: formData.whatsapp,
+      address: formData.address,
+      productName: formData.productName,
       totalPrice: 100, // Fixed advance payment
+      quantity: formData.quantity,
+      paymentMethod: formData.paymentMethod,
+      trxId: formData.trxId,
+      instructions: formData.customization,
       customImages: customImages.length,
       paymentScreenshot: paymentScreenshot ? paymentScreenshot.name : null,
     };

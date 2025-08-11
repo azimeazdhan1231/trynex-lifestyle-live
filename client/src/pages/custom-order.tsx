@@ -25,6 +25,8 @@ export default function CustomOrderPage() {
       <CheckoutModal
         isOpen={isCheckoutOpen}
         onClose={() => setIsCheckoutOpen(false)}
+        cart={cart}
+        onOrderComplete={() => setIsCheckoutOpen(false)}
       />
     </div>
   );
