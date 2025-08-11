@@ -93,7 +93,7 @@ export const apiRequest = async (
 
     // Add auth token - check both user and admin tokens
     const userToken = localStorage.getItem('authToken');
-    const adminToken = localStorage.getItem('adminToken');
+    const adminToken = localStorage.getItem('admin_token');
 
     // For admin endpoints, prefer admin token
     if (url.includes('/admin/') || url.includes('/api/products') || url.includes('/api/categories') || url.includes('/api/offers')) {
@@ -124,7 +124,8 @@ export const apiRequest = async (
       if (response.status === 401) {
         // Handle unauthorized
         if (url.includes('/admin/') || url.includes('/api/products') || url.includes('/api/categories')) {
-          localStorage.removeItem('adminToken');
+          localStorage.removeItem('admin_token');
+          localStorage.removeItem('admin_data');
           // Show admin login required
           console.error('Admin authentication required');
         } else {

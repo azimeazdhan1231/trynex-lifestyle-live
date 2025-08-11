@@ -42,8 +42,8 @@ export default function AdminLogin({ onLoginSuccess }: AdminLoginProps) {
 
       if (data.success) {
         // Store admin token in localStorage
-        localStorage.setItem('adminToken', data.token);
-        localStorage.setItem('adminUser', JSON.stringify(data.user || data.admin));
+        localStorage.setItem('admin_token', data.token);
+        localStorage.setItem('admin_data', JSON.stringify(data.user || data.admin));
         setIsLoggedIn(true);
         onLoginSuccess?.();
 
@@ -67,7 +67,7 @@ export default function AdminLogin({ onLoginSuccess }: AdminLoginProps) {
 
   useEffect(() => {
     const checkAdminAuth = async () => {
-      const token = localStorage.getItem('adminToken');
+      const token = localStorage.getItem('admin_token');
       if (!token) {
         setIsLoggedIn(false);
         return;
@@ -94,8 +94,8 @@ export default function AdminLogin({ onLoginSuccess }: AdminLoginProps) {
 
       // If we get here, auth failed
       console.log('Admin authentication failed, clearing tokens');
-      localStorage.removeItem('adminToken');
-      localStorage.removeItem('adminUser');
+      localStorage.removeItem('admin_token');
+      localStorage.removeItem('admin_data');
       setIsLoggedIn(false);
     };
 
