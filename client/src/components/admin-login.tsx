@@ -167,9 +167,9 @@ export default function AdminLogin({ onLoginSuccess }: AdminLoginProps) {
                 </Alert>
               )}
 
-              <Button 
-                type="submit" 
-                className="w-full h-11 bg-blue-600 hover:bg-blue-700" 
+              <Button
+                type="submit"
+                className="w-full h-11 bg-blue-600 hover:bg-blue-700"
                 disabled={isLoading}
               >
                 {isLoading ? "লগইন হচ্ছে..." : "লগইন করুন"}

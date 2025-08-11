@@ -139,7 +139,7 @@ export default function OrderManagement({ orders }: OrderManagementProps) {
                       </Select>
                     </TableCell>
                     <TableCell data-testid={`text-order-date-${order.id}`}>
-                        {formatDate(order.created_at ? (typeof order.created_at === 'string' ? order.created_at : new Date(order.created_at).toISOString()) : null)}
+                        {formatDate(order.created_at)}
                       </TableCell>
                     <TableCell>
                       <Button
