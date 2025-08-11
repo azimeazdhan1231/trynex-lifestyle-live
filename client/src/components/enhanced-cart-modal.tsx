@@ -8,6 +8,7 @@ import { ShoppingCart, Trash2, Plus, Minus, Package, CreditCard, X } from "lucid
 import { useCart } from "@/hooks/use-cart";
 import { formatPrice } from "@/lib/constants";
 import { useLocation } from "wouter";
+import DynamicCheckoutModal from "./dynamic-checkout-modal";
 
 interface EnhancedCartModalProps {
   isOpen: boolean;
@@ -17,10 +18,16 @@ interface EnhancedCartModalProps {
 export default function EnhancedCartModal({ isOpen, onClose }: EnhancedCartModalProps) {
   const { cart, updateQuantity, removeFromCart, totalItems, totalPrice, clearCart } = useCart();
   const [, setLocation] = useLocation();
+  const [showCheckout, setShowCheckout] = useState(false);
 
   const handleCheckout = () => {
     onClose();
-    setLocation('/checkout');
+    setShowCheckout(true);
+  };
+
+  const handleOrderComplete = () => {
+    clearCart();
+    setShowCheckout(false);
   };
 
   const handleContinueShopping = () => {
@@ -29,6 +36,7 @@ export default function EnhancedCartModal({ isOpen, onClose }: EnhancedCartModal
   };
 
   return (
+    <>
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl max-h-[85vh] p-0 gap-0 overflow-hidden">
         {/* Header */}
@@ -229,5 +237,14 @@ export default function EnhancedCartModal({ isOpen, onClose }: EnhancedCartModal
         </div>
       </DialogContent>
     </Dialog>
-  );
+
+    {/* Dynamic Checkout Modal */}
+    <DynamicCheckoutModal
+      isOpen={showCheckout}
+      onClose={() => setShowCheckout(false)}
+      cart={cart}
+      onOrderComplete={handleOrderComplete}
+    />
+  </>
+);
 }
