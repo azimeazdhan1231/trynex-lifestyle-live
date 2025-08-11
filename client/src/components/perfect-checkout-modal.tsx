@@ -1,53 +1,39 @@
 import { useState, useEffect } from "react";
-import PerfectModalBase from "./perfect-modal-base";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
-import { Badge } from "@/components/ui/badge";
+import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { 
-  ShoppingCart, 
-  MapPin, 
-  CreditCard, 
-  Phone, 
-  User, 
-  Package,
-  Truck,
-  AlertCircle,
-  CheckCircle
-} from "lucide-react";
+import { Separator } from "@/components/ui/separator";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { DISTRICTS } from "@/lib/constants";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
+import { DISTRICTS, THANAS_BY_DISTRICT, formatPrice, calculateDeliveryFee } from "@/lib/constants";
+import OrderSuccessModal from "@/components/order-success-modal";
+import { trackInitiateCheckout, trackPurchase } from "@/lib/analytics";
+import { ShoppingCart, MapPin, Phone, User, CreditCard, Package, Truck, AlertCircle, CheckCircle } from "lucide-react";
+import type { Order } from "@shared/schema";
 
 interface CartItem {
   id: string;
   name: string;
   price: number;
   quantity: number;
-  image?: string;
-  customization?: any;
+  image_url?: string;
 }
 
-interface PerfectCheckoutModalProps {
+interface CheckoutModalProps {
   isOpen: boolean;
   onClose: () => void;
-  cartItems: CartItem[];
-  total: number;
-  onPlaceOrder: (orderData: any) => Promise<void>;
+  cart: CartItem[];
+  onOrderComplete: () => void;
 }
 
-export default function PerfectCheckoutModal({
-  isOpen,
-  onClose,
-  cartItems,
-  total,
-  onPlaceOrder
-}: PerfectCheckoutModalProps) {
-  const { toast } = useToast();
-  const [isLoading, setIsLoading] = useState(false);
-  const [step, setStep] = useState(1);
+function PerfectCheckoutModal({ isOpen, onClose, cart, onOrderComplete }: CheckoutModalProps) {
+  const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState({
     customer_name: "",
     phone: "",
@@ -55,368 +41,366 @@ export default function PerfectCheckoutModal({
     thana: "",
     address: "",
     payment_number: "",
-    trx_id: ""
+    trx_id: "",
+    special_instructions: ""
   });
+  const [deliveryFee, setDeliveryFee] = useState(80);
+  const [availableThanas, setAvailableThanas] = useState<string[]>([]);
+  const [completedOrder, setCompletedOrder] = useState<Order | null>(null);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [deliveryFee, setDeliveryFee] = useState(0);
 
-  // Calculate delivery fee based on district
+  // Check if this is a custom order from URL parameters
+  const urlParams = new URLSearchParams(window.location.search);
+  const isCustomOrder = urlParams.get('customOrder') === 'true';
+  const customAdvancePayment = urlParams.get('advancePayment') ? parseInt(urlParams.get('advancePayment')!) : 100;
+
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  const subtotal = cart?.reduce((sum, item) => sum + (item.price * item.quantity), 0) || 0;
+  const totalPrice = subtotal + deliveryFee;
+  const finalPayment = isCustomOrder ? customAdvancePayment : totalPrice;
+
+  // Update delivery fee and available thanas when district changes
   useEffect(() => {
-    if (formData.district === "ঢাকা") {
-      setDeliveryFee(total >= 2000 ? 0 : 60);
+    if (formData.district) {
+      const fee = calculateDeliveryFee(formData.district);
+      setDeliveryFee(fee);
+      setAvailableThanas(THANAS_BY_DISTRICT[formData.district] || []);
+      setFormData(prev => ({ ...prev, thana: "" }));
     } else {
-      setDeliveryFee(total >= 2000 ? 0 : 120);
+      setAvailableThanas([]);
+      setDeliveryFee(80);
     }
-  }, [formData.district, total]);
+  }, [formData.district]);
 
-  const validateStep = (stepNumber: number) => {
+  const validateStep = (step: number): boolean => {
     const newErrors: Record<string, string> = {};
 
-    if (stepNumber === 1) {
+    if (step === 1) {
       if (!formData.customer_name.trim()) newErrors.customer_name = "নাম লিখুন";
       if (!formData.phone.trim()) newErrors.phone = "ফোন নম্বর লিখুন";
-      if (!/^01[3-9]\d{8}$/.test(formData.phone)) newErrors.phone = "সঠিক ফোন নম্বর লিখুন";
-      if (!formData.district) newErrors.district = "জেলা নির্বাচন করুন";
-      if (!formData.thana.trim()) newErrors.thana = "থানা লিখুন";
-      if (!formData.address.trim()) newErrors.address = "ঠিকানা লিখুন";
+      else if (!/^01[3-9]\d{8}$/.test(formData.phone.trim())) {
+        newErrors.phone = "সঠিক বাংলাদেশি ফোন নম্বর লিখুন";
+      }
     }
 
-    if (stepNumber === 2) {
+    if (step === 2) {
+      if (!formData.district) newErrors.district = "জেলা নির্বাচন করুন";
+      if (!formData.thana) newErrors.thana = "থানা নির্বাচন করুন";
+      if (!formData.address.trim()) newErrors.address = "বিস্তারিত ঠিকানা লিখুন";
+    }
+
+    if (step === 3) {
       if (!formData.payment_number.trim()) newErrors.payment_number = "পেমেন্ট নম্বর লিখুন";
-      if (!formData.trx_id.trim()) newErrors.trx_id = "লেনদেন আইডি লিখুন";
+      if (!formData.trx_id.trim()) newErrors.trx_id = "ট্রানজেকশন আইডি লিখুন";
     }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleNext = () => {
-    if (validateStep(step)) {
-      setStep(step + 1);
+  const handleNextStep = () => {
+    if (validateStep(currentStep)) {
+      setCurrentStep(prev => Math.min(prev + 1, 4));
     }
   };
 
-  const handlePrevious = () => {
-    setStep(step - 1);
-    setErrors({});
+  const handlePrevStep = () => {
+    setCurrentStep(prev => Math.max(prev - 1, 1));
   };
 
-  const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-    if (errors[field]) {
-      setErrors(prev => ({ ...prev, [field]: "" }));
-    }
-  };
+  const createOrderMutation = useMutation({
+    mutationFn: async (orderData: any) => {
+      const response = await apiRequest("POST", "/api/orders", orderData);
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Order creation failed: ${response.status} - ${errorText}`);
+      }
+      return await response.json();
+    },
+    onSuccess: (order) => {
+      setCompletedOrder(order);
+      setShowSuccessModal(true);
+      queryClient.invalidateQueries({ queryKey: ['/api/orders'] });
+      
+      // trackPurchase(order.tracking_number, order.total_amount, cart);
+      
+      toast({
+        title: "অর্ডার সফল হয়েছে!",
+        description: `ট্র্যাকিং নম্বর: ${order.tracking_number}`,
+      });
 
-  const handleSubmit = async () => {
-    if (!validateStep(2)) return;
-
-    setIsLoading(true);
-    try {
-      const orderData = {
-        ...formData,
-        items: cartItems.map(item => ({
-          ...item,
-          delivery_fee: deliveryFee / cartItems.length
-        })),
-        total: (total + deliveryFee).toString(),
-        delivery_fee: deliveryFee,
-        payment_info: {
-          payment_number: formData.payment_number,
-          trx_id: formData.trx_id,
-          payment_method: "bKash/Nagad",
-          amount_paid: total + deliveryFee
-        }
-      };
-
-      await onPlaceOrder(orderData);
+      onOrderComplete();
       onClose();
-    } catch (error) {
-      console.error("Order placement error:", error);
+    },
+    onError: (error: Error) => {
+      console.error('Order creation error:', error);
       toast({
         title: "অর্ডার সমস্যা",
-        description: "অর্ডার দিতে সমস্যা হয়েছে। আবার চেষ্টা করুন।",
+        description: "দয়া করে আবার চেষ্টা করুন বা সাপোর্টে যোগাযোগ করুন",
         variant: "destructive",
       });
-    } finally {
-      setIsLoading(false);
-    }
+    },
+  });
+
+  const handleSubmit = () => {
+    if (!validateStep(3)) return;
+
+    const orderData = {
+      items: cart,
+      customer_name: formData.customer_name,
+      phone: formData.phone,
+      address: `${formData.address}, ${formData.thana}, ${formData.district}`,
+      total_amount: finalPayment,
+      delivery_fee: deliveryFee,
+      payment_info: {
+        method: isCustomOrder ? "advance_payment" : "cash_on_delivery",
+        payment_number: formData.payment_number,
+        trx_id: formData.trx_id,
+        amount_paid: finalPayment
+      },
+      special_instructions: formData.special_instructions,
+      is_custom_order: isCustomOrder,
+      advance_payment_amount: isCustomOrder ? customAdvancePayment : null
+    };
+
+    // trackInitiateCheckout(totalPrice, cart.length);
+    createOrderMutation.mutate(orderData);
   };
 
-  const finalTotal = total + deliveryFee;
+  const stepTitles = [
+    "ব্যক্তিগত তথ্য",
+    "ডেলিভারি ঠিকানা", 
+    "পেমেন্ট তথ্য",
+    "অর্ডার সম্পূর্ণ করুন"
+  ];
 
-  return (
-    <PerfectModalBase
-      isOpen={isOpen}
-      onClose={onClose}
-      title="চেকআউট"
-      description="আপনার অর্ডার সম্পূর্ণ করুন"
-      maxWidth="4xl"
-      data-testid="modal-checkout"
-    >
-      <div className="space-y-6">
-        {/* Progress Steps */}
-        <div className="flex items-center justify-center space-x-4 mb-8">
-          <div className={`flex items-center ${step >= 1 ? 'text-blue-600' : 'text-gray-400'}`}>
-            <div className={`w-8 h-8 rounded-full flex items-center justify-center border-2 ${step >= 1 ? 'border-blue-600 bg-blue-600 text-white' : 'border-gray-300'}`}>
-              {step > 1 ? <CheckCircle className="w-5 h-5" /> : '1'}
+  const renderStepContent = () => {
+    switch (currentStep) {
+      case 1:
+        return (
+          <div className="space-y-6">
+            <div className="text-center pb-4">
+              <User className="w-12 h-12 mx-auto text-blue-500 mb-2" />
+              <h3 className="text-lg font-semibold text-gray-900">আপনার তথ্য দিন</h3>
+              <p className="text-gray-600">অর্ডার সম্পূর্ণ করতে প্রয়োজনীয় তথ্য প্রদান করুন</p>
             </div>
-            <span className="ml-2 font-medium">ব্যক্তিগত তথ্য</span>
-          </div>
-          
-          <div className={`w-12 h-1 ${step >= 2 ? 'bg-blue-600' : 'bg-gray-300'}`}></div>
-          
-          <div className={`flex items-center ${step >= 2 ? 'text-blue-600' : 'text-gray-400'}`}>
-            <div className={`w-8 h-8 rounded-full flex items-center justify-center border-2 ${step >= 2 ? 'border-blue-600 bg-blue-600 text-white' : 'border-gray-300'}`}>
-              {step > 2 ? <CheckCircle className="w-5 h-5" /> : '2'}
+
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="customer_name" className="text-gray-700 font-medium">পূর্ণ নাম *</Label>
+                <Input
+                  id="customer_name"
+                  placeholder="আপনার পূর্ণ নাম লিখুন"
+                  value={formData.customer_name}
+                  onChange={(e) => setFormData(prev => ({ ...prev, customer_name: e.target.value }))}
+                  className={`mt-1 ${errors.customer_name ? 'border-red-500' : ''}`}
+                  data-testid="input-customer-name"
+                />
+                {errors.customer_name && <p className="text-red-500 text-sm mt-1">{errors.customer_name}</p>}
+              </div>
+
+              <div>
+                <Label htmlFor="phone" className="text-gray-700 font-medium">ফোন নম্বর *</Label>
+                <Input
+                  id="phone"
+                  placeholder="01XXXXXXXXX"
+                  value={formData.phone}
+                  onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
+                  className={`mt-1 ${errors.phone ? 'border-red-500' : ''}`}
+                  data-testid="input-phone"
+                />
+                {errors.phone && <p className="text-red-500 text-sm mt-1">{errors.phone}</p>}
+              </div>
             </div>
-            <span className="ml-2 font-medium">পেমেন্ট তথ্য</span>
           </div>
-        </div>
+        );
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Form Section */}
-          <div className="lg:col-span-2 space-y-6">
-            
-            {/* Step 1: Personal Information */}
-            {step === 1 && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <User className="w-5 h-5 text-blue-600" />
-                    ব্যক্তিগত ও ঠিকানার তথ্য
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="customer_name">পূর্ণ নাম *</Label>
-                      <Input
-                        id="customer_name"
-                        value={formData.customer_name}
-                        onChange={(e) => handleInputChange('customer_name', e.target.value)}
-                        placeholder="আপনার পূর্ণ নাম"
-                        className={errors.customer_name ? 'border-red-500' : ''}
-                        data-testid="input-customer-name"
-                      />
-                      {errors.customer_name && (
-                        <span className="text-red-500 text-sm flex items-center gap-1 mt-1">
-                          <AlertCircle className="w-4 h-4" />
-                          {errors.customer_name}
-                        </span>
-                      )}
-                    </div>
+      case 2:
+        return (
+          <div className="space-y-6">
+            <div className="text-center pb-4">
+              <MapPin className="w-12 h-12 mx-auto text-green-500 mb-2" />
+              <h3 className="text-lg font-semibold text-gray-900">ডেলিভারি ঠিকানা</h3>
+              <p className="text-gray-600">পণ্য পৌঁছানোর ঠিকানা দিন</p>
+            </div>
 
-                    <div>
-                      <Label htmlFor="phone">ফোন নম্বর *</Label>
-                      <Input
-                        id="phone"
-                        value={formData.phone}
-                        onChange={(e) => handleInputChange('phone', e.target.value)}
-                        placeholder="01XXXXXXXXX"
-                        className={errors.phone ? 'border-red-500' : ''}
-                        data-testid="input-phone"
-                      />
-                      {errors.phone && (
-                        <span className="text-red-500 text-sm flex items-center gap-1 mt-1">
-                          <AlertCircle className="w-4 h-4" />
-                          {errors.phone}
-                        </span>
-                      )}
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-gray-700 font-medium">জেলা *</Label>
+                  <Select value={formData.district} onValueChange={(value) => setFormData(prev => ({ ...prev, district: value }))}>
+                    <SelectTrigger className={`mt-1 ${errors.district ? 'border-red-500' : ''}`} data-testid="select-district">
+                      <SelectValue placeholder="জেলা নির্বাচন করুন" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {DISTRICTS.map((district) => (
+                        <SelectItem key={district} value={district}>{district}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {errors.district && <p className="text-red-500 text-sm mt-1">{errors.district}</p>}
+                </div>
+
+                <div>
+                  <Label className="text-gray-700 font-medium">থানা *</Label>
+                  <Select value={formData.thana} onValueChange={(value) => setFormData(prev => ({ ...prev, thana: value }))} disabled={!formData.district}>
+                    <SelectTrigger className={`mt-1 ${errors.thana ? 'border-red-500' : ''}`} data-testid="select-thana">
+                      <SelectValue placeholder="থানা নির্বাচন করুন" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {availableThanas.map((thana) => (
+                        <SelectItem key={thana} value={thana}>{thana}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {errors.thana && <p className="text-red-500 text-sm mt-1">{errors.thana}</p>}
+                </div>
+              </div>
+
+              <div>
+                <Label htmlFor="address" className="text-gray-700 font-medium">বিস্তারিত ঠিকানা *</Label>
+                <Textarea
+                  id="address"
+                  placeholder="বাড়ির নম্বর, রাস্তার নাম, এলাকার নাম লিখুন"
+                  value={formData.address}
+                  onChange={(e) => setFormData(prev => ({ ...prev, address: e.target.value }))}
+                  className={`mt-1 ${errors.address ? 'border-red-500' : ''}`}
+                  rows={3}
+                  data-testid="textarea-address"
+                />
+                {errors.address && <p className="text-red-500 text-sm mt-1">{errors.address}</p>}
+              </div>
+
+              {/* Delivery Fee Display */}
+              <Card className="bg-blue-50 border-blue-200">
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center">
+                      <Truck className="w-5 h-5 text-blue-500 mr-2" />
+                      <span className="text-blue-700 font-medium">ডেলিভারি চার্জ</span>
                     </div>
+                    <Badge variant="secondary" className="bg-blue-100 text-blue-800">
+                      {formatPrice(deliveryFee)}
+                    </Badge>
                   </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="district">জেলা *</Label>
-                      <Select value={formData.district} onValueChange={(value) => handleInputChange('district', value)}>
-                        <SelectTrigger className={errors.district ? 'border-red-500' : ''} data-testid="select-district">
-                          <SelectValue placeholder="জেলা নির্বাচন করুন" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {DISTRICTS.map((district) => (
-                            <SelectItem key={district} value={district}>
-                              {district}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      {errors.district && (
-                        <span className="text-red-500 text-sm flex items-center gap-1 mt-1">
-                          <AlertCircle className="w-4 h-4" />
-                          {errors.district}
-                        </span>
-                      )}
-                    </div>
-
-                    <div>
-                      <Label htmlFor="thana">উপজেলা/থানা *</Label>
-                      <Input
-                        id="thana"
-                        value={formData.thana}
-                        onChange={(e) => handleInputChange('thana', e.target.value)}
-                        placeholder="উপজেলা/থানা নাম"
-                        className={errors.thana ? 'border-red-500' : ''}
-                        data-testid="input-thana"
-                      />
-                      {errors.thana && (
-                        <span className="text-red-500 text-sm flex items-center gap-1 mt-1">
-                          <AlertCircle className="w-4 h-4" />
-                          {errors.thana}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-
-                  <div>
-                    <Label htmlFor="address">বিস্তারিত ঠিকানা *</Label>
-                    <Input
-                      id="address"
-                      value={formData.address}
-                      onChange={(e) => handleInputChange('address', e.target.value)}
-                      placeholder="বাড়ি/রোড/এলাকার নাম"
-                      className={errors.address ? 'border-red-500' : ''}
-                      data-testid="input-address"
-                    />
-                    {errors.address && (
-                      <span className="text-red-500 text-sm flex items-center gap-1 mt-1">
-                        <AlertCircle className="w-4 h-4" />
-                        {errors.address}
-                      </span>
-                    )}
-                  </div>
-
-                  {/* Delivery Info */}
-                  <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Truck className="w-5 h-5 text-blue-600" />
-                      <span className="font-medium text-blue-800">ডেলিভারি তথ্য</span>
-                    </div>
-                    <div className="text-sm text-blue-700">
-                      <span>ডেলিভারি চার্জ: ৳{deliveryFee}</span>
-                      {total >= 2000 && (
-                        <span className="block text-green-600 font-medium">
-                          ২০০০ টাকার উপরে ফ্রি ডেলিভারি!
-                        </span>
-                      )}
-                    </div>
-                  </div>
-
-                  <Button onClick={handleNext} className="w-full" data-testid="button-next-step">
-                    পরবর্তী ধাপ
-                  </Button>
+                  <p className="text-sm text-blue-600 mt-1">
+                    {formData.district === "ঢাকা" ? "ঢাকার মধ্যে" : "ঢাকার বাইরে"} ডেলিভারি
+                  </p>
                 </CardContent>
               </Card>
-            )}
-
-            {/* Step 2: Payment Information */}
-            {step === 2 && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <CreditCard className="w-5 h-5 text-green-600" />
-                    পেমেন্ট তথ্য
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {/* Payment Instructions */}
-                  <div className="bg-green-50 p-4 rounded-lg border border-green-200">
-                    <h4 className="font-medium text-green-800 mb-2">পেমেন্ট নির্দেশনা:</h4>
-                    <ol className="list-decimal list-inside space-y-1 text-sm text-green-700">
-                      <li>bKash বা Nagad এ ৳{finalTotal} টাকা পাঠান: <strong>01765555593</strong></li>
-                      <li>পেমেন্ট সম্পূর্ণ করার পর তথ্য নিচে দিন</li>
-                      <li>আমরা যাচাই করে অর্ডার কনফার্ম করব</li>
-                    </ol>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="payment_number">পেমেন্ট করা নম্বর *</Label>
-                      <Input
-                        id="payment_number"
-                        value={formData.payment_number}
-                        onChange={(e) => handleInputChange('payment_number', e.target.value)}
-                        placeholder="01XXXXXXXXX"
-                        className={errors.payment_number ? 'border-red-500' : ''}
-                        data-testid="input-payment-number"
-                      />
-                      {errors.payment_number && (
-                        <span className="text-red-500 text-sm flex items-center gap-1 mt-1">
-                          <AlertCircle className="w-4 h-4" />
-                          {errors.payment_number}
-                        </span>
-                      )}
-                    </div>
-
-                    <div>
-                      <Label htmlFor="trx_id">লেনদেন আইডি (TrxID) *</Label>
-                      <Input
-                        id="trx_id"
-                        value={formData.trx_id}
-                        onChange={(e) => handleInputChange('trx_id', e.target.value)}
-                        placeholder="TrxID/Transaction ID"
-                        className={errors.trx_id ? 'border-red-500' : ''}
-                        data-testid="input-trx-id"
-                      />
-                      {errors.trx_id && (
-                        <span className="text-red-500 text-sm flex items-center gap-1 mt-1">
-                          <AlertCircle className="w-4 h-4" />
-                          {errors.trx_id}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="flex gap-3">
-                    <Button variant="outline" onClick={handlePrevious} className="flex-1" data-testid="button-previous">
-                      পূর্ববর্তী
-                    </Button>
-                    <Button 
-                      onClick={handleSubmit} 
-                      disabled={isLoading}
-                      className="flex-1 bg-green-600 hover:bg-green-700"
-                      data-testid="button-place-order"
-                    >
-                      {isLoading ? "অর্ডার দেওয়া হচ্ছে..." : "অর্ডার সম্পূর্ণ করুন"}
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
+            </div>
           </div>
+        );
 
-          {/* Order Summary */}
-          <div className="lg:col-span-1">
-            <Card className="sticky top-4">
+      case 3:
+        return (
+          <div className="space-y-6">
+            <div className="text-center pb-4">
+              <CreditCard className="w-12 h-12 mx-auto text-purple-500 mb-2" />
+              <h3 className="text-lg font-semibold text-gray-900">পেমেন্ট করুন</h3>
+              <p className="text-gray-600">
+                {isCustomOrder 
+                  ? `অ্যাডভান্স পেমেন্ট: ${formatPrice(customAdvancePayment)}`
+                  : "bKash/Nagad দিয়ে পেমেন্ট সম্পূর্ণ করুন"
+                }
+              </p>
+            </div>
+
+            {/* Payment Instructions */}
+            <Card className="bg-orange-50 border-orange-200">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-orange-800 text-base">পেমেন্ট নির্দেশনা</CardTitle>
+              </CardHeader>
+              <CardContent className="pt-0">
+                <div className="space-y-3 text-sm text-orange-700">
+                  <p><strong>bKash Personal:</strong> 01712345678</p>
+                  <p><strong>Nagad Personal:</strong> 01812345678</p>
+                  <div className="flex items-start space-x-2 mt-3">
+                    <AlertCircle className="w-4 h-4 mt-0.5 text-orange-600" />
+                    <div>
+                      <p className="font-medium">পেমেন্ট করার পদ্ধতি:</p>
+                      <ol className="list-decimal list-inside space-y-1 mt-1">
+                        <li>"Send Money" নির্বাচন করুন</li>
+                        <li>উপরের নম্বরে {formatPrice(finalPayment)} টাকা পাঠান</li>
+                        <li>Transaction ID কপি করুন</li>
+                        <li>নিচের ফর্মে তথ্য দিন</li>
+                      </ol>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="payment_number" className="text-gray-700 font-medium">যে নম্বর থেকে পেমেন্ট করেছেন *</Label>
+                <Input
+                  id="payment_number"
+                  placeholder="01XXXXXXXXX"
+                  value={formData.payment_number}
+                  onChange={(e) => setFormData(prev => ({ ...prev, payment_number: e.target.value }))}
+                  className={`mt-1 ${errors.payment_number ? 'border-red-500' : ''}`}
+                  data-testid="input-payment-number"
+                />
+                {errors.payment_number && <p className="text-red-500 text-sm mt-1">{errors.payment_number}</p>}
+              </div>
+
+              <div>
+                <Label htmlFor="trx_id" className="text-gray-700 font-medium">Transaction ID *</Label>
+                <Input
+                  id="trx_id"
+                  placeholder="যেমন: 8G5A7X9B1C"
+                  value={formData.trx_id}
+                  onChange={(e) => setFormData(prev => ({ ...prev, trx_id: e.target.value }))}
+                  className={`mt-1 ${errors.trx_id ? 'border-red-500' : ''}`}
+                  data-testid="input-transaction-id"
+                />
+                {errors.trx_id && <p className="text-red-500 text-sm mt-1">{errors.trx_id}</p>}
+              </div>
+
+              <div>
+                <Label htmlFor="special_instructions" className="text-gray-700 font-medium">বিশেষ নির্দেশনা (ঐচ্ছিক)</Label>
+                <Textarea
+                  id="special_instructions"
+                  placeholder="কোনো বিশেষ নির্দেশনা থাকলে লিখুন"
+                  value={formData.special_instructions}
+                  onChange={(e) => setFormData(prev => ({ ...prev, special_instructions: e.target.value }))}
+                  className="mt-1"
+                  rows={3}
+                  data-testid="textarea-special-instructions"
+                />
+              </div>
+            </div>
+          </div>
+        );
+
+      case 4:
+        return (
+          <div className="space-y-6">
+            <div className="text-center pb-4">
+              <CheckCircle className="w-12 h-12 mx-auto text-green-500 mb-2" />
+              <h3 className="text-lg font-semibold text-gray-900">অর্ডার সম্পূর্ণ করুন</h3>
+              <p className="text-gray-600">সব তথ্য চেক করে অর্ডার কনফার্ম করুন</p>
+            </div>
+
+            {/* Order Summary */}
+            <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <ShoppingCart className="w-5 h-5 text-purple-600" />
-                  অর্ডার সারাংশ
-                </CardTitle>
+                <CardTitle className="text-base">অর্ডার সামারি</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                {/* Cart Items */}
+                {/* Items */}
                 <div className="space-y-3">
-                  {cartItems.map((item, index) => (
-                    <div key={item.id || index} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                      {item.image && (
-                        <img
-                          src={item.image}
-                          alt={item.name}
-                          className="w-12 h-12 object-cover rounded-md border"
-                        />
-                      )}
-                      <div className="flex-1">
-                        <h5 className="text-sm font-medium text-gray-900 line-clamp-1">{item.name}</h5>
-                        <div className="text-xs text-gray-600 flex items-center gap-2">
-                          <span>৳{item.price}</span>
-                          <span>×</span>
-                          <span>{item.quantity}</span>
-                        </div>
+                  {cart.map((item) => (
+                    <div key={item.id} className="flex justify-between items-center py-2">
+                      <div>
+                        <p className="font-medium text-gray-900">{item.name}</p>
+                        <p className="text-sm text-gray-500">পরিমাণ: {item.quantity}</p>
                       </div>
-                      <div className="text-sm font-medium">
-                        ৳{item.price * item.quantity}
-                      </div>
+                      <p className="font-medium">{formatPrice(item.price * item.quantity)}</p>
                     </div>
                   ))}
                 </div>
@@ -426,31 +410,136 @@ export default function PerfectCheckoutModal({
                 {/* Totals */}
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
-                    <span>পণ্যের দাম:</span>
-                    <span>৳{total}</span>
+                    <span>সাবটোটাল:</span>
+                    <span>{formatPrice(subtotal)}</span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span>ডেলিভারি চার্জ:</span>
-                    <span>৳{deliveryFee}</span>
+                    <span>{formatPrice(deliveryFee)}</span>
                   </div>
+                  {isCustomOrder && (
+                    <div className="flex justify-between text-sm text-blue-600">
+                      <span>অ্যাডভান্স পেমেন্ট:</span>
+                      <span>{formatPrice(customAdvancePayment)}</span>
+                    </div>
+                  )}
                   <Separator />
-                  <div className="flex justify-between text-lg font-bold">
-                    <span>মোট:</span>
-                    <span className="text-green-600">৳{finalTotal}</span>
+                  <div className="flex justify-between font-semibold text-lg">
+                    <span>মোট প্রদেয় অর্থ:</span>
+                    <span className="text-green-600">{formatPrice(finalPayment)}</span>
                   </div>
                 </div>
-
-                {/* Free delivery badge */}
-                {total >= 2000 && (
-                  <Badge className="w-full justify-center bg-green-100 text-green-800 border-green-300">
-                    ফ্রি ডেলিভারি পেয়েছেন!
-                  </Badge>
-                )}
               </CardContent>
             </Card>
+
+            {/* Customer Info */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm">গ্রাহকের তথ্য</CardTitle>
+                </CardHeader>
+                <CardContent className="pt-0 space-y-2 text-sm">
+                  <p><strong>নাম:</strong> {formData.customer_name}</p>
+                  <p><strong>ফোন:</strong> {formData.phone}</p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm">ডেলিভারি ঠিকানা</CardTitle>
+                </CardHeader>
+                <CardContent className="pt-0 space-y-2 text-sm">
+                  <p>{formData.address}</p>
+                  <p>{formData.thana}, {formData.district}</p>
+                </CardContent>
+              </Card>
+            </div>
           </div>
-        </div>
-      </div>
-    </PerfectModalBase>
+        );
+
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <>
+      <Dialog open={isOpen} onOpenChange={onClose}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold text-gray-900">
+              অর্ডার সম্পূর্ণ করুন
+            </DialogTitle>
+            <DialogDescription>
+              {stepTitles[currentStep - 1]} - ধাপ {currentStep}/4
+            </DialogDescription>
+          </DialogHeader>
+
+          {/* Progress Bar */}
+          <div className="w-full bg-gray-200 rounded-full h-2 mb-6">
+            <div 
+              className="bg-gradient-to-r from-orange-500 to-red-500 h-2 rounded-full transition-all duration-500"
+              style={{ width: `${(currentStep / 4) * 100}%` }}
+            />
+          </div>
+
+          {/* Step Content */}
+          <div className="py-4">
+            {renderStepContent()}
+          </div>
+
+          {/* Navigation Buttons */}
+          <div className="flex justify-between pt-6 border-t">
+            <Button
+              variant="outline"
+              onClick={handlePrevStep}
+              disabled={currentStep === 1}
+              data-testid="button-prev-step"
+            >
+              পূর্ববর্তী
+            </Button>
+
+            {currentStep < 4 ? (
+              <Button
+                onClick={handleNextStep}
+                className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600"
+                data-testid="button-next-step"
+              >
+                পরবর্তী
+              </Button>
+            ) : (
+              <Button
+                onClick={handleSubmit}
+                disabled={createOrderMutation.isPending}
+                className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600"
+                data-testid="button-confirm-order"
+              >
+                {createOrderMutation.isPending ? (
+                  <div className="flex items-center">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    অর্ডার করা হচ্ছে...
+                  </div>
+                ) : (
+                  <>
+                    <Package className="w-4 h-4 mr-2" />
+                    অর্ডার কনফার্ম করুন
+                  </>
+                )}
+              </Button>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {showSuccessModal && completedOrder && (
+        <OrderSuccessModal
+          isOpen={showSuccessModal}
+          onClose={() => setShowSuccessModal(false)}
+          order={completedOrder}
+        />
+      )}
+    </>
   );
 }
+
+export default PerfectCheckoutModal;

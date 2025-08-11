@@ -10,6 +10,7 @@ import UltraSimpleLayout from "@/components/ultra-simple-layout";
 import UltraDynamicProductModal from "@/components/ultra-dynamic-product-modal";
 import PerfectResponsiveCustomizeModal from "@/components/perfect-responsive-customize-modal";
 import UltraResponsiveProductCard from "@/components/ultra-responsive-product-card";
+import PerfectHeroSection from "@/components/perfect-hero-section";
 import { useToast } from "@/hooks/use-toast";
 import { useCart } from "@/hooks/use-cart";
 import { 
@@ -67,100 +68,7 @@ const HeroSkeleton = memo(function HeroSkeleton() {
   );
 });
 
-// Enhanced Hero Section
-const HeroSection = memo(function HeroSection() {
-  const [currentSlide, setCurrentSlide] = useState(0);
-  
-  const heroSlides = [
-    {
-      title: "আপনার পছন্দের গিফট খুঁজে নিন",
-      subtitle: "বিশেষ ছাড় এবং কাস্টমাইজেশনের সুবিধা",
-      bg: "bg-gradient-to-br from-primary via-primary/90 to-orange-500",
-      image: "https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?w=800&h=600&fit=crop",
-    },
-    {
-      title: "কাস্টম ডিজাইনে বানান আপনার স্বপ্নের পণ্য", 
-      subtitle: "টি-শার্ট, মগ, ক্যাপ - সব কিছুতেই আপনার পছন্দের ডিজাইন",
-      bg: "bg-gradient-to-br from-purple-600 via-blue-600 to-primary",
-      image: "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=800&h=600&fit=crop",
-    },
-    {
-      title: "দ্রুত ডেলিভারি এবং সেরা দাম",
-      subtitle: "সারা বাংলাদেশে ১-৩ দিনের মধ্যে পৌঁছে দেওয়া",
-      bg: "bg-gradient-to-br from-green-600 via-emerald-600 to-teal-600",
-      image: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=800&h=600&fit=crop",
-    }
-  ];
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % heroSlides.length);
-    }, 5000);
-    return () => clearInterval(interval);
-  }, [heroSlides.length]);
-
-  const currentHero = heroSlides[currentSlide];
-
-  return (
-    <section className="relative overflow-hidden rounded-2xl mx-4 lg:mx-8 mb-12">
-      <div className={`${currentHero.bg} relative h-[500px] lg:h-[600px] flex items-center transition-all duration-1000`}>
-        {/* Background Pattern */}
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute inset-0" style={{
-            backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.2'%3E%3Ccircle cx='30' cy='30' r='4'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
-          }} />
-        </div>
-
-        {/* Hero Image */}
-        <div className="absolute right-0 top-0 w-1/2 h-full opacity-20 lg:opacity-40">
-          <img 
-            src={currentHero.image}
-            alt="Hero"
-            className="w-full h-full object-cover"
-          />
-        </div>
-
-        {/* Content */}
-        <div className="container mx-auto px-6 lg:px-12 relative z-10">
-          <div className="max-w-2xl text-white">
-            <h1 className="text-3xl lg:text-5xl xl:text-6xl font-bold leading-tight mb-6 animate-fade-in">
-              {currentHero.title}
-            </h1>
-            <p className="text-lg lg:text-xl opacity-90 mb-8 animate-fade-in-delay">
-              {currentHero.subtitle}
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 animate-fade-in-delay-2">
-              <Link href="/products">
-                <Button size="lg" className="bg-white text-primary hover:bg-gray-100 px-8 py-6 text-lg font-semibold rounded-xl shadow-xl">
-                  <ShoppingBag className="w-5 h-5 mr-2" />
-                  কেনাকাটা শুরু করুন
-                  <ArrowRight className="w-5 h-5 ml-2" />
-                </Button>
-              </Link>
-              <Button variant="outline" size="lg" className="border-white text-white hover:bg-white/10 px-8 py-6 text-lg rounded-xl">
-                <Gift className="w-5 h-5 mr-2" />
-                কাস্টম অর্ডার
-              </Button>
-            </div>
-          </div>
-        </div>
-
-        {/* Slide Indicators */}
-        <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex gap-2">
-          {heroSlides.map((_, index) => (
-            <button
-              key={index}
-              onClick={() => setCurrentSlide(index)}
-              className={`w-3 h-3 rounded-full transition-all duration-300 ${
-                index === currentSlide ? 'bg-white' : 'bg-white/40'
-              }`}
-            />
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-});
+// Hero section is now handled by PerfectHeroSection component
 
 // Features Section
 const FeaturesSection = memo(function FeaturesSection() {
@@ -444,7 +352,7 @@ export default function HomeUltraDynamic() {
       <div className="min-h-screen">
         {/* Hero Section */}
         <Suspense fallback={<HeroSkeleton />}>
-          <HeroSection />
+          <PerfectHeroSection />
         </Suspense>
 
         {/* Features Section */}

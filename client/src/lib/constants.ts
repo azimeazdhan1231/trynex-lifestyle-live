@@ -36,12 +36,14 @@ export const PRODUCT_CATEGORIES = [
   { id: "seasonal-gifts", name: "Seasonal Gifts", bengaliName: "মৌসুমী উপহার", icon: "🌟" },
 ];
 
+import { Clock, Package, Truck, CheckCircle, XCircle } from "lucide-react";
+
 export const ORDER_STATUSES = [
-  { id: "pending", name: "অপেক্ষমান", color: "text-yellow-600" },
-  { id: "processing", name: "প্রসেসিং", color: "text-blue-600" },
-  { id: "shipped", name: "পাঠানো হয়েছে", color: "text-purple-600" },
-  { id: "delivered", name: "ডেলিভার হয়েছে", color: "text-green-600" },
-  { id: "cancelled", name: "বাতিল", color: "text-red-600" }
+  { id: "pending", name: "অপেক্ষমান", label: "অপেক্ষমান", color: "text-yellow-600", icon: Clock },
+  { id: "processing", name: "প্রসেসিং", label: "প্রসেসিং", color: "text-blue-600", icon: Package },
+  { id: "shipped", name: "পাঠানো হয়েছে", label: "পাঠানো হয়েছে", color: "text-purple-600", icon: Truck },
+  { id: "delivered", name: "ডেলিভার হয়েছে", label: "ডেলিভার হয়েছে", color: "text-green-600", icon: CheckCircle },
+  { id: "cancelled", name: "বাতিল", label: "বাতিল", color: "text-red-600", icon: XCircle }
 ];
 
 export const formatPrice = (price: number | string): string => {
