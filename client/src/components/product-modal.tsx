@@ -1,1 +1,1 @@
-export { default } from "./product-modal-fixed";
+export { default } from "./enhanced-product-modal";
