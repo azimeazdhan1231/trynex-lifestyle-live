@@ -52,7 +52,7 @@ export default function TrackingPage() {
       return response.json();
     },
     enabled: !!searchId,
-    refetchInterval: 2000, // Refetch every 2 second for real-time updates
+    refetchInterval: 5000, // Refetch every 5 seconds for real-time updates
     refetchIntervalInBackground: true,
     retry: 3,
     retryDelay: 1000,
@@ -63,7 +63,7 @@ export default function TrackingPage() {
     if (searchId) {
       const interval = setInterval(() => {
         refetch();
-      }, 3000); // Reduced frequency to 3 seconds
+      }, 5000); // Refetch every 5 seconds
       return () => clearInterval(interval);
     }
   }, [searchId, refetch]);
@@ -177,14 +177,14 @@ export default function TrackingPage() {
                 <CardContent>
                   <div className="flex items-center gap-4">
                     {(() => {
-                      const StatusIcon = getStatusInfo(order.status).icon;
+                      const StatusIcon = getStatusInfo(order.status || "pending").icon;
                       return (
                         <>
-                          <div className={`p-3 rounded-full ${getStatusInfo(order.status).color}`}>
+                          <div className={`p-3 rounded-full ${getStatusInfo(order.status || "pending").color}`}>
                             <StatusIcon className="w-6 h-6 text-white" />
                           </div>
                           <div>
-                            <p className="text-xl font-semibold">{getStatusInfo(order.status).label}</p>
+                            <p className="text-xl font-semibold">{getStatusInfo(order.status || "pending").label}</p>
                             <p className="text-gray-600">আপনার অর্ডারের বর্তমান অবস্থা</p>
                           </div>
                         </>
@@ -229,7 +229,7 @@ export default function TrackingPage() {
                       <Calendar className="w-5 h-5 text-gray-500" />
                       <div>
                         <p className="text-sm text-gray-600">অর্ডার তারিখ</p>
-                        <p className="font-semibold">{formatDate(order.created_at || null)}</p>
+                        <p className="font-semibold">{formatDate(order.created_at ? order.created_at.toString() : null)}</p>
                       </div>
                     </div>
                   </div>
@@ -250,13 +250,14 @@ export default function TrackingPage() {
               </Card>
 
               {/* Order Instructions Alert for Customer */}
-              {order && order.items && Array.isArray(order.items) && order.items.some((item: any) => 
-                item.customization && (
-                  item.customization.customText || 
-                  item.customization.customImage || 
-                  item.customization.specialInstructions
-                )
-              ) && (
+              {order && order.items && Array.isArray(order.items) && order.items.some((item: any) => {
+                const hasCustomization = item.customization && (
+                  item.customization.text || 
+                  item.customization.special_instructions || 
+                  (item.customization.uploaded_images && Array.isArray(item.customization.uploaded_images) && item.customization.uploaded_images.length > 0)
+                );
+                return hasCustomization;
+              }) && (
                 <Card className="border-green-200 bg-green-50">
                   <CardContent className="p-4">
                     <div className="flex items-center gap-2 mb-2">
@@ -277,7 +278,8 @@ export default function TrackingPage() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    {orderItems.map((item: any, index: number) => (
+                    {orderItems.map((item: any, index: number) => {
+                      return (
                       <div key={index} className="border rounded-lg p-4">
                         <div className="flex justify-between items-start mb-3">
                           <div className="flex-1">
@@ -382,7 +384,8 @@ export default function TrackingPage() {
                           </div>
                         )}
                       </div>
-                    ))}
+                      );
+                    })}
 
                     <Separator />
 

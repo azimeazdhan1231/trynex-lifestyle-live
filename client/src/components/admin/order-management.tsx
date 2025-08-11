@@ -217,7 +217,7 @@ export default function OrderManagement({ orders }: OrderManagementProps) {
               </Card>
 
               {/* Order Items */}
-              <Card>
+              <Card data-testid="card-order-items">
                 <CardHeader>
                   <CardTitle className="flex items-center">
                     <Package className="h-5 w-5 mr-2" />
@@ -226,7 +226,8 @@ export default function OrderManagement({ orders }: OrderManagementProps) {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3">
-                    {Array.isArray(selectedOrder.items) && selectedOrder.items.map((item: any, index: number) => (
+                    {Array.isArray(selectedOrder.items) && selectedOrder.items.map((item: any, index: number) => {
+                      return (
                       <div key={index} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
                         <div>
                           <p className="font-medium" data-testid={`text-order-item-name-${index}`}>
@@ -240,7 +241,8 @@ export default function OrderManagement({ orders }: OrderManagementProps) {
                           {formatPrice(Number(item.price || 0) * (item.quantity || 0))}
                         </p>
                       </div>
-                    ))}
+                      );
+                    })}
                   </div>
                   <div className="mt-4 pt-4 border-t">
                     <div className="flex justify-between items-center">
@@ -278,15 +280,22 @@ export default function OrderManagement({ orders }: OrderManagementProps) {
               )}
 
               {/* Custom Instructions and Images from Order Items */}
-              {selectedOrder.items && Array.isArray(selectedOrder.items) && selectedOrder.items.some((item: any) => 
-                item.customization && (item.customization.special_instructions || item.customization.uploaded_images)
-              ) && (
-                <Card>
+              {selectedOrder.items && Array.isArray(selectedOrder.items) && selectedOrder.items.some((item: any) => {
+                const hasCustomization = item.customization && (
+                  item.customization.color || 
+                  item.customization.size || 
+                  item.customization.text || 
+                  item.customization.special_instructions || 
+                  (item.customization.uploaded_images && Array.isArray(item.customization.uploaded_images) && item.customization.uploaded_images.length > 0)
+                );
+                return hasCustomization;
+              }) && (
+                <Card data-testid="card-customization-details">
                   <CardHeader>
                     <CardTitle>কাস্টমাইজেশন বিস্তারিত</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-6">
-                    {(selectedOrder.items as any[]).map((item: any, itemIndex: number) => {
+                    {Array.isArray(selectedOrder.items) && selectedOrder.items.map((item: any, itemIndex: number) => {
                       if (!item.customization) return null;
                       
                       const customization = item.customization;

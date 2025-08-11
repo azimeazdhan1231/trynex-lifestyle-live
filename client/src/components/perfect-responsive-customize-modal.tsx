@@ -193,7 +193,7 @@ export default function PerfectResponsiveCustomizeModal({
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent 
-        className="max-w-6xl w-[95vw] h-[90vh] p-0 gap-0 bg-white rounded-xl overflow-hidden"
+        className="max-w-6xl w-[95vw] max-h-[95vh] h-auto p-0 gap-0 bg-white rounded-xl overflow-hidden flex flex-col"
         data-testid="customize-modal"
       >
         <DialogTitle className="sr-only">{product.name} কাস্টমাইজ করুন</DialogTitle>
@@ -225,7 +225,7 @@ export default function PerfectResponsiveCustomizeModal({
         </div>
 
         {/* Modal Body - Flex Container */}
-        <div className="flex flex-1 min-h-0">
+        <div className="flex flex-1 min-h-0 overflow-hidden">
           
           {/* Product Preview - Left Side - Fixed Width */}
           <div className="w-80 flex-shrink-0 p-4 bg-gray-50 border-r">
