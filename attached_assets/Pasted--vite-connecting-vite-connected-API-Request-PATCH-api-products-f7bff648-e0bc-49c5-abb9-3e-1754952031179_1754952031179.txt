@@ -1,0 +1,44 @@
+[vite] connecting...
+[vite] connected.
+API Request: PATCH /api/products/f7bff648-e0bc-49c5-abb9-3e569145b6f7 
+Object {body: {…}}
+API Error: 401 Unauthorized {"error":"Access token required"}
+at t.value (https://92726bbc-568b-44a5-885a-8348354343d0-00-2optbyonjbxcg.pike.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:17465)
+at new t (https://92726bbc-568b-44a5-885a-8348354343d0-00-2optbyonjbxcg.pike.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:12630)
+at t.value (https://92726bbc-568b-44a5-885a-8348354343d0-00-2optbyonjbxcg.pike.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:32766)
+at https://92726bbc-568b-44a5-885a-8348354343d0-00-2optbyonjbxcg.pike.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:34400
+Network error: 
+Error {}
+
+at t.value (https://92726bbc-568b-44a5-885a-8348354343d0-00-2optbyonjbxcg.pike.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:17465)
+at new t (https://92726bbc-568b-44a5-885a-8348354343d0-00-2optbyonjbxcg.pike.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:12630)
+at t.value (https://92726bbc-568b-44a5-885a-8348354343d0-00-2optbyonjbxcg.pike.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:32766)
+at https://92726bbc-568b-44a5-885a-8348354343d0-00-2optbyonjbxcg.pike.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:34400
+API Request: PATCH /api/products/f7bff648-e0bc-49c5-abb9-3e569145b6f7 
+Object {body: {…}}
+API Error: 401 Unauthorized {"error":"Access token required"}
+at t.value (https://92726bbc-568b-44a5-885a-8348354343d0-00-2optbyonjbxcg.pike.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:17465)
+at new t (https://92726bbc-568b-44a5-885a-8348354343d0-00-2optbyonjbxcg.pike.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:12630)
+at t.value (https://92726bbc-568b-44a5-885a-8348354343d0-00-2optbyonjbxcg.pike.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:32766)
+at https://92726bbc-568b-44a5-885a-8348354343d0-00-2optbyonjbxcg.pike.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:34400
+Network error: 
+Error {}
+
+at t.value (https://92726bbc-568b-44a5-885a-8348354343d0-00-2optbyonjbxcg.pike.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:17465)
+at new t (https://92726bbc-568b-44a5-885a-8348354343d0-00-2optbyonjbxcg.pike.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:12630)
+at t.value (https://92726bbc-568b-44a5-885a-8348354343d0-00-2optbyonjbxcg.pike.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:32766)
+at https://92726bbc-568b-44a5-885a-8348354343d0-00-2optbyonjbxcg.pike.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:34400
+API Request: PATCH /api/products/f7bff648-e0bc-49c5-abb9-3e569145b6f7 
+Object {body: {…}}
+API Error: 401 Unauthorized {"error":"Access token required"}
+at t.value (https://92726bbc-568b-44a5-885a-8348354343d0-00-2optbyonjbxcg.pike.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:17465)
+at new t (https://92726bbc-568b-44a5-885a-8348354343d0-00-2optbyonjbxcg.pike.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:12630)
+at t.value (https://92726bbc-568b-44a5-885a-8348354343d0-00-2optbyonjbxcg.pike.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:32766)
+at https://92726bbc-568b-44a5-885a-8348354343d0-00-2optbyonjbxcg.pike.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:34400
+Network error: 
+Error {}
+message: "HTTP error! status: 401"
+stack: "Error: HTTP error! status: 401↵ at apiRequest (https://92726bbc-568b-44a5-885a-8348354343d0-00-2optbyonjbxcg.pike.replit.dev/src/lib/queryClient.ts:92:13)"
+get stack: ƒ ()
+set stack: ƒ ()
+[[Prototype]]: Object
