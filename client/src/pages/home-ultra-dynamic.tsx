@@ -8,7 +8,8 @@ import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import UltraSimpleLayout from "@/components/ultra-simple-layout";
 import UltraDynamicProductModal from "@/components/ultra-dynamic-product-modal";
-import PerfectResponsiveCustomizeModal from "@/components/perfect-responsive-customize-modal";
+import EnhancedCustomizeModal from "@/components/enhanced-customize-modal";
+import CustomOrderCheckout from "@/components/custom-order-checkout";
 import UltraResponsiveProductCard from "@/components/ultra-responsive-product-card";
 import PerfectHeroSection from "@/components/perfect-hero-section";
 import { useToast } from "@/hooks/use-toast";
@@ -272,6 +273,7 @@ export default function HomeUltraDynamic() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [customizeProduct, setCustomizeProduct] = useState<Product | null>(null);
   const [isCustomizeModalOpen, setIsCustomizeModalOpen] = useState(false);
+  const [isCustomOrderCheckoutOpen, setIsCustomOrderCheckoutOpen] = useState(false);
   
   const { toast } = useToast();
   const { addToCart } = useCart();
@@ -330,14 +332,17 @@ export default function HomeUltraDynamic() {
   }, []);
 
   const handleCustomizeAddToCart = useCallback(async (product: Product, customization: any) => {
-    // Add customized product to cart
+    // Add customized product to cart with custom images
     addToCart({
       id: product.id,
       name: product.name,
       price: Number(product.price),
       image_url: product.image_url || undefined,
       quantity: customization.quantity || 1,
-      customization: customization,
+      customization: {
+        ...customization,
+        custom_images: customization.uploaded_images || [], // Ensure custom images are included
+      },
     });
     
     toast({
@@ -346,6 +351,20 @@ export default function HomeUltraDynamic() {
       duration: 3000,
     });
   }, [addToCart, toast]);
+
+  const handleDirectCustomOrder = useCallback(async (product: Product, customOrderData: any) => {
+    // Store custom order data and open custom order checkout
+    localStorage.setItem('pendingCustomOrder', JSON.stringify(customOrderData));
+    
+    // Open custom order checkout modal
+    setIsCustomOrderCheckoutOpen(true);
+    
+    toast({
+      title: "কাস্টম অর্ডার প্রস্তুত!",
+      description: "এখন আপনার তথ্য দিয়ে অর্ডার সম্পূর্ণ করুন",
+      duration: 3000,
+    });
+  }, [toast]);
 
   return (
     <UltraSimpleLayout>
@@ -473,17 +492,22 @@ export default function HomeUltraDynamic() {
       />
 
       {/* Customize Modal */}
-      {customizeProduct && (
-        <PerfectResponsiveCustomizeModal
-          product={customizeProduct}
-          isOpen={isCustomizeModalOpen}
-          onClose={() => {
-            setIsCustomizeModalOpen(false);
-            setCustomizeProduct(null);
-          }}
-          onAddToCart={handleCustomizeAddToCart}
-        />
-      )}
+      <EnhancedCustomizeModal
+        product={customizeProduct}
+        isOpen={isCustomizeModalOpen}
+        onClose={() => {
+          setIsCustomizeModalOpen(false);
+          setCustomizeProduct(null);
+        }}
+        onAddToCart={handleCustomizeAddToCart}
+        onDirectOrder={handleDirectCustomOrder}
+      />
+
+      {/* Custom Order Checkout Modal */}
+      <CustomOrderCheckout
+        isOpen={isCustomOrderCheckoutOpen}
+        onClose={() => setIsCustomOrderCheckoutOpen(false)}
+      />
     </UltraSimpleLayout>
   );
 }

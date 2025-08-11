@@ -148,11 +148,28 @@ function PerfectCheckoutModal({ isOpen, onClose, cart, onOrderComplete }: Checko
   const handleSubmit = () => {
     if (!validateStep(3)) return;
 
+    // Extract custom images from cart items
+    const allCustomImages: string[] = [];
+    let customInstructions = '';
+    
+    cart.forEach(item => {
+      if (item.customization) {
+        if (item.customization.custom_images && Array.isArray(item.customization.custom_images)) {
+          allCustomImages.push(...item.customization.custom_images);
+        }
+        if (item.customization.instructions) {
+          customInstructions += `${item.name}: ${item.customization.instructions}\n`;
+        }
+      }
+    });
+
     const orderData = {
       items: cart,
       customer_name: formData.customer_name,
       phone: formData.phone,
-      address: `${formData.address}, ${formData.thana}, ${formData.district}`,
+      district: formData.district,
+      thana: formData.thana,
+      address: formData.address,
       total_amount: finalPayment,
       delivery_fee: deliveryFee,
       payment_info: {
@@ -161,7 +178,8 @@ function PerfectCheckoutModal({ isOpen, onClose, cart, onOrderComplete }: Checko
         trx_id: formData.trx_id,
         amount_paid: finalPayment
       },
-      special_instructions: formData.special_instructions,
+      custom_instructions: customInstructions + (formData.special_instructions || ''),
+      custom_images: allCustomImages,
       is_custom_order: isCustomOrder,
       advance_payment_amount: isCustomOrder ? customAdvancePayment : null
     };

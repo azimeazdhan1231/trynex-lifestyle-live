@@ -10,7 +10,7 @@ import { useCart } from "@/hooks/use-cart";
 import MobileOptimizedLayout from "@/components/mobile-optimized-layout";
 import UnifiedProductCard from "@/components/unified-product-card";
 import UltraDynamicProductModal from "@/components/ultra-dynamic-product-modal";
-import PerfectCustomizeModal from "@/components/perfect-customize-modal";
+import EnhancedCustomizeModal from "@/components/enhanced-customize-modal";
 import ComprehensiveProductLoading from "@/components/comprehensive-product-loading";
 import EnhancedFilterSystem from "@/components/enhanced-filter-system";
 import { ProgressiveLoader, PerformanceErrorBoundary, PerformanceMonitor } from "@/components/enhanced-loading-system";
@@ -198,7 +198,10 @@ export default function ProductsPage() {
         price: Number(product.price),
         image: product.image_url || '',
         quantity: customization.quantity || 1,
-        customization // Include customization data
+        customization: {
+          ...customization,
+          custom_images: customization.uploaded_images || [], // Ensure custom images are included
+        }
       });
 
       toast({
@@ -425,18 +428,16 @@ export default function ProductsPage() {
         onCustomize={handleCustomize}
       />
 
-      {/* Perfect Customize Modal */}
-      {selectedProduct && (
-        <PerfectCustomizeModal
-          product={selectedProduct}
-          isOpen={isCustomizeModalOpen}
-          onClose={() => {
-            setIsCustomizeModalOpen(false);
-            setSelectedProduct(null);
-          }}
-          onAddToCart={handleCustomizeAddToCart}
-        />
-      )}
+      {/* Enhanced Customize Modal */}
+      <EnhancedCustomizeModal
+        product={selectedProduct}
+        isOpen={isCustomizeModalOpen}
+        onClose={() => {
+          setIsCustomizeModalOpen(false);
+          setSelectedProduct(null);
+        }}
+        onAddToCart={handleCustomizeAddToCart}
+      />
     </MobileOptimizedLayout>
   );
 }

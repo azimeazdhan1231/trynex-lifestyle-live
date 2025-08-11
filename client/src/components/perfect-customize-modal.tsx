@@ -43,6 +43,7 @@ interface PerfectCustomizeModalProps {
   onClose: () => void;
   product: Product;
   onAddToCart: (product: any, customization: any) => Promise<void>;
+  onDirectOrder?: (product: any, customization: any) => Promise<void>;
 }
 
 interface CustomizationData {
@@ -59,7 +60,8 @@ export default function PerfectCustomizeModal({
   isOpen,
   onClose,
   product,
-  onAddToCart
+  onAddToCart,
+  onDirectOrder
 }: PerfectCustomizeModalProps) {
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -167,6 +169,75 @@ ${customization.special_instructions ? `বিশেষ নির্দেশন
 দয়া করে আমাকে সাহায্য করুন।`;
 
     return `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+  };
+
+  const handleDirectOrder = async () => {
+    if (!customization.color && !customization.text && customization.uploaded_images.length === 0) {
+      toast({
+        title: "কাস্টমাইজেশন প্রয়োজন",
+        description: "অন্তত একটি কাস্টমাইজেশন অপশন নির্বাচন করুন",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      // Convert files to base64 for storage
+      const imagePromises = customization.uploaded_images.map(file => {
+        return new Promise<string>((resolve) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result as string);
+          reader.readAsDataURL(file);
+        });
+      });
+
+      const base64Images = await Promise.all(imagePromises);
+
+      const customOrderData = {
+        productId: product.id,
+        productName: product.name,
+        productPrice: productPrice,
+        productImage: product.image_url,
+        quantity: customization.quantity,
+        totalAmount: totalPrice,
+        advancePayment: 100,
+        customization: {
+          color: customization.color,
+          size: customization.size,
+          text: customization.text,
+          font: customization.font,
+          instructions: customization.special_instructions,
+          uploaded_images: base64Images,
+          color_name: customization.color ? colors.find(c => c.value === customization.color)?.name : '',
+          font_name: customization.font ? fonts.find(f => f.value === customization.font)?.name : '',
+          timestamp: new Date().toISOString()
+        }
+      };
+
+      // Store in localStorage for checkout process
+      localStorage.setItem('pendingCustomOrder', JSON.stringify(customOrderData));
+      
+      if (onDirectOrder) {
+        await onDirectOrder(product, customOrderData);
+      }
+      
+      toast({
+        title: "কাস্টম অর্ডার প্রস্তুত!",
+        description: "এখন আপনার তথ্য দিয়ে অর্ডার সম্পূর্ণ করুন",
+      });
+
+      onClose();
+    } catch (error) {
+      console.error('Error preparing custom order:', error);
+      toast({
+        title: "ত্রুটি",
+        description: "কাস্টম অর্ডার প্রস্তুত করতে সমস্যা হয়েছে",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleAddToCart = async () => {
@@ -514,13 +585,13 @@ ${customization.special_instructions ? `বিশেষ নির্দেশন
 
               <div className="flex flex-col sm:flex-row gap-3">
                 <Button
-                  onClick={handleAddToCart}
+                  onClick={handleDirectOrder}
                   disabled={isLoading}
-                  className="flex-1 bg-green-600 hover:bg-green-700 text-white py-3"
-                  data-testid="button-add-custom-to-cart"
+                  className="flex-1 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white py-3"
+                  data-testid="button-direct-custom-order"
                 >
-                  <Package className="w-5 h-5 mr-2" />
-                  {isLoading ? "যোগ করা হচ্ছে..." : `কার্টে যোগ করুন (৳${totalPrice})`}
+                  <CheckCircle className="w-5 h-5 mr-2" />
+                  {isLoading ? "অর্ডার করা হচ্ছে..." : "সরাসরি অর্ডার করুন (১০০৳ অ্যাডভান্স)"}
                 </Button>
 
                 <Button
@@ -532,6 +603,13 @@ ${customization.special_instructions ? `বিশেষ নির্দেশন
                   <MessageCircle className="w-5 h-5 mr-2" />
                   হোয়াটসঅ্যাপে অর্ডার
                 </Button>
+              </div>
+              
+              {/* Advanced Payment Info */}
+              <div className="mt-3 p-3 bg-green-50 rounded-lg border-l-4 border-green-500">
+                <p className="text-sm text-green-700">
+                  <strong>অ্যাডভান্স পেমেন্ট:</strong> ১০০৳ • <strong>বাকি:</strong> ৳{totalPrice - 100} (ডেলিভারিতে)
+                </p>
               </div>
             </CardContent>
           </Card>

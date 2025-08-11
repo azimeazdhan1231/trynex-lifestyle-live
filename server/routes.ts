@@ -836,14 +836,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const orderDataForDB = {
         tracking_id: trackingId,
         customer_name: orderData.customer_name,
-        district: orderData.district,
-        thana: orderData.thana,
+        district: orderData.district || "ঢাকা",
+        thana: orderData.thana || "ঢাকা",
         address: orderData.address || "",
         phone: orderData.phone,
         payment_info: orderData.payment_info ? JSON.stringify(orderData.payment_info) : null,
         status: "pending",
         items: typeof orderData.items === 'string' ? orderData.items : JSON.stringify(orderData.items),
-        total: orderData.total.toString(),
+        total: (orderData.total_amount || orderData.total || 0).toString(),
+        delivery_fee: orderData.delivery_fee || 60,
         custom_instructions: orderData.custom_instructions || null,
         custom_images: orderData.custom_images ? JSON.stringify(orderData.custom_images) : null,
         user_id: orderData.user_id || null

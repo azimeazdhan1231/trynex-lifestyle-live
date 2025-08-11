@@ -7,7 +7,16 @@ export interface CartItem {
   image_url?: string;
   image?: string;
   quantity: number;
-  customization?: any;
+  customization?: {
+    color?: string;
+    size?: string;
+    text?: string;
+    font?: string;
+    instructions?: string;
+    custom_images?: string[];
+    uploaded_images?: string[];
+    [key: string]: any;
+  };
 }
 
 interface UseCartReturn {
