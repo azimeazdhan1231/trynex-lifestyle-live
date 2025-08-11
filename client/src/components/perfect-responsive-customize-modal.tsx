@@ -4,11 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-
 import { 
   X,
   Palette, 
@@ -22,11 +21,9 @@ import {
   AlertCircle,
   CheckCircle,
   MessageCircle,
-  Zap,
-  Star,
   ShoppingCart,
-  Eye,
-  Trash2
+  Trash2,
+  Star
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { formatPrice } from "@/lib/constants";
@@ -96,10 +93,10 @@ export default function PerfectResponsiveCustomizeModal({
   ];
 
   const sizes = [
-    { name: "ছোট (S)", value: "S" },
-    { name: "মাঝারি (M)", value: "M" },
-    { name: "বড় (L)", value: "L" },
-    { name: "অতিরিক্ত বড় (XL)", value: "XL" },
+    { name: "ছোট", value: "S" },
+    { name: "মাঝারি", value: "M" },
+    { name: "বড়", value: "L" },
+    { name: "অতিরিক্ত বড়", value: "XL" },
     { name: "XXL", value: "XXL" }
   ];
 
@@ -119,7 +116,7 @@ export default function PerfectResponsiveCustomizeModal({
     if (files.length === 0) return;
 
     const validFiles = files.filter(file => {
-      const isValid = file.type.startsWith('image/') && file.size <= 5 * 1024 * 1024; // 5MB limit
+      const isValid = file.type.startsWith('image/') && file.size <= 5 * 1024 * 1024;
       if (!isValid) {
         toast({
           title: "ফাইল সমস্যা",
@@ -136,7 +133,6 @@ export default function PerfectResponsiveCustomizeModal({
         uploaded_images: [...prev.uploaded_images, ...validFiles]
       }));
 
-      // Create preview URLs
       const newUrls = validFiles.map(file => URL.createObjectURL(file));
       setImageUrls(prev => [...prev, ...newUrls]);
 
@@ -197,7 +193,7 @@ export default function PerfectResponsiveCustomizeModal({
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent 
-        className="max-w-4xl w-[95vw] max-h-[95vh] p-0 gap-0 bg-white rounded-2xl overflow-hidden"
+        className="max-w-5xl w-[96vw] max-h-[96vh] p-0 gap-0 bg-white rounded-xl overflow-hidden"
         data-testid="customize-modal"
       >
         <DialogTitle className="sr-only">{product.name} কাস্টমাইজ করুন</DialogTitle>
@@ -205,15 +201,15 @@ export default function PerfectResponsiveCustomizeModal({
           {product.name} এর জন্য রং, সাইজ, টেক্সট এবং ইমেজ কাস্টমাইজেশন অপশন
         </DialogDescription>
 
-        {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b bg-gradient-to-r from-primary/5 to-orange-500/5">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-gradient-to-br from-primary/20 to-orange-500/20 rounded-xl flex items-center justify-center">
-              <Palette className="w-6 h-6 text-primary" />
+        {/* Modal Header */}
+        <div className="flex items-center justify-between p-4 border-b bg-gradient-to-r from-primary/5 to-orange-500/5">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-gradient-to-br from-primary/20 to-orange-500/20 rounded-lg flex items-center justify-center">
+              <Palette className="w-5 h-5 text-primary" />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-gray-900">কাস্টমাইজ করুন</h2>
-              <p className="text-gray-600 text-sm">{product.name}</p>
+              <h2 className="text-lg font-bold text-gray-900">কাস্টমাইজ করুন</h2>
+              <p className="text-gray-600 text-sm truncate max-w-48">{product.name}</p>
             </div>
           </div>
           
@@ -221,165 +217,136 @@ export default function PerfectResponsiveCustomizeModal({
             variant="ghost"
             size="sm"
             onClick={onClose}
-            className="w-10 h-10 p-0 rounded-full hover:bg-gray-100"
+            className="w-8 h-8 p-0 rounded-full hover:bg-gray-100"
             data-testid="button-close-customize-modal"
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 h-4" />
           </Button>
         </div>
 
-        <div className="flex flex-col lg:flex-row h-full max-h-[calc(95vh-100px)]">
-          {/* Left Side - Product Preview */}
-          <div className="lg:w-2/5 p-6 bg-gray-50 border-r">
-            <div className="space-y-4 h-full flex flex-col">
-              {/* Product Image */}
-              <div className="flex-1">
-                <Card className="overflow-hidden h-full">
-                  <div className="aspect-square bg-white rounded-lg overflow-hidden relative">
+        {/* Modal Body */}
+        <div className="flex flex-col h-full max-h-[calc(96vh-120px)]">
+          {/* Content Area */}
+          <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
+            
+            {/* Product Preview - Left Side */}
+            <div className="lg:w-1/3 p-4 bg-gray-50 border-r">
+              <div className="h-full flex flex-col">
+                <div className="flex-1 mb-4">
+                  <div className="aspect-square bg-white rounded-lg overflow-hidden border">
                     <img
                       src={product.image_url || "/placeholder.jpg"}
                       alt={product.name}
                       className="w-full h-full object-cover"
                     />
-                    {/* Preview overlay for customizations */}
-                    <div className="absolute inset-0 bg-black/5 flex items-center justify-center">
-                      <div className="text-center">
-                        <Eye className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                        <p className="text-sm text-gray-500">প্রিভিউ</p>
-                      </div>
-                    </div>
                   </div>
-                </Card>
-              </div>
-
-              {/* Price Info */}
-              <Card className="bg-gradient-to-r from-primary/5 to-primary/10 border-primary/20">
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="text-2xl font-bold text-primary">
+                </div>
+                
+                {/* Price Display */}
+                <Card className="bg-gradient-to-r from-primary/5 to-primary/10 border-primary/20">
+                  <CardContent className="p-3">
+                    <div className="text-center">
+                      <div className="text-xl font-bold text-primary mb-1">
                         {formatPrice(totalPrice)}
                       </div>
                       {customization.quantity > 1 && (
-                        <div className="text-sm text-gray-600">
+                        <div className="text-xs text-gray-600">
                           {formatPrice(price)} × {customization.quantity}
                         </div>
                       )}
+                      <Badge className="bg-orange-500 text-xs mt-2">
+                        কাস্টম অর্ডার
+                      </Badge>
                     </div>
-                    <Badge className="bg-orange-500">
-                      কাস্টম অর্ডার
-                    </Badge>
-                  </div>
-                </CardContent>
-              </Card>
+                  </CardContent>
+                </Card>
+              </div>
             </div>
-          </div>
 
-          {/* Right Side - Customization Options */}
-          <div className="lg:w-3/5 flex flex-col">
-            <div className="flex-1 p-6 overflow-y-auto">
-              <div className="space-y-8">
-                {/* Color Selection */}
-                <div className="space-y-4">
-                  <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 bg-gradient-to-br from-red-400 to-pink-500 rounded-lg flex items-center justify-center">
-                      <Palette className="w-4 h-4 text-white" />
-                    </div>
-                    <h3 className="text-lg font-semibold">রং বেছে নিন</h3>
-                  </div>
+            {/* Customization Options - Right Side */}
+            <div className="lg:w-2/3 flex flex-col">
+              <div className="flex-1 p-4 overflow-y-auto">
+                <div className="space-y-6">
                   
-                  <div className="grid grid-cols-4 sm:grid-cols-8 gap-3">
-                    {colors.map((color) => (
-                      <button
-                        key={color.value}
-                        onClick={() => setCustomization(prev => ({ ...prev, color: color.value }))}
-                        className={`group relative w-12 h-12 rounded-xl border-2 transition-all duration-200 ${
-                          customization.color === color.value 
-                            ? 'border-primary shadow-lg scale-110' 
-                            : 'border-gray-200 hover:border-gray-300'
-                        }`}
-                        data-testid={`color-${color.value}`}
-                      >
-                        <div 
-                          className="w-full h-full rounded-lg"
-                          style={{ backgroundColor: color.hex }}
-                        />
-                        {customization.color === color.value && (
-                          <CheckCircle className="absolute -top-1 -right-1 w-5 h-5 text-primary bg-white rounded-full" />
-                        )}
-                        <div className="absolute -bottom-6 left-1/2 transform -translate-x-1/2 text-xs text-gray-600 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-                          {color.name}
-                        </div>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <Separator />
-
-                {/* Size Selection */}
-                <div className="space-y-4">
-                  <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 bg-gradient-to-br from-blue-400 to-purple-500 rounded-lg flex items-center justify-center">
-                      <Shirt className="w-4 h-4 text-white" />
+                  {/* Color Selection */}
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2">
+                      <Palette className="w-4 h-4 text-primary" />
+                      <h3 className="font-semibold text-gray-900">রং বেছে নিন</h3>
                     </div>
-                    <h3 className="text-lg font-semibold">সাইজ</h3>
-                  </div>
-                  
-                  <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-                    {sizes.map((size) => (
-                      <button
-                        key={size.value}
-                        onClick={() => setCustomization(prev => ({ ...prev, size: size.value }))}
-                        className={`p-3 rounded-xl border-2 text-center transition-all duration-200 ${
-                          customization.size === size.value 
-                            ? 'border-primary bg-primary/5 shadow-md' 
-                            : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
-                        }`}
-                        data-testid={`size-${size.value}`}
-                      >
-                        <div className="font-semibold">{size.value}</div>
-                        <div className="text-xs text-gray-600">{size.name}</div>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <Separator />
-
-                {/* Text Customization */}
-                <div className="space-y-4">
-                  <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 bg-gradient-to-br from-green-400 to-emerald-500 rounded-lg flex items-center justify-center">
-                      <Type className="w-4 h-4 text-white" />
+                    <div className="grid grid-cols-8 gap-2">
+                      {colors.map((color) => (
+                        <button
+                          key={color.value}
+                          onClick={() => setCustomization(prev => ({ ...prev, color: color.value }))}
+                          className={`relative w-10 h-10 rounded-lg border-2 transition-all duration-200 ${
+                            customization.color === color.value 
+                              ? 'border-primary shadow-md scale-110' 
+                              : 'border-gray-200 hover:border-gray-300'
+                          }`}
+                          data-testid={`color-${color.value}`}
+                          title={color.name}
+                        >
+                          <div 
+                            className="w-full h-full rounded-md"
+                            style={{ backgroundColor: color.hex }}
+                          />
+                          {customization.color === color.value && (
+                            <CheckCircle className="absolute -top-1 -right-1 w-4 h-4 text-primary bg-white rounded-full" />
+                          )}
+                        </button>
+                      ))}
                     </div>
-                    <h3 className="text-lg font-semibold">টেক্সট যোগ করুন</h3>
                   </div>
-                  
-                  <div className="space-y-4">
-                    <div>
-                      <Label htmlFor="custom-text" className="text-sm font-medium">
-                        আপনার টেক্সট লিখুন
-                      </Label>
+
+                  <Separator />
+
+                  {/* Size Selection */}
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2">
+                      <Shirt className="w-4 h-4 text-primary" />
+                      <h3 className="font-semibold text-gray-900">সাইজ</h3>
+                    </div>
+                    <div className="grid grid-cols-5 gap-2">
+                      {sizes.map((size) => (
+                        <button
+                          key={size.value}
+                          onClick={() => setCustomization(prev => ({ ...prev, size: size.value }))}
+                          className={`p-2 rounded-lg border-2 text-center transition-all duration-200 ${
+                            customization.size === size.value 
+                              ? 'border-primary bg-primary/5 shadow-md' 
+                              : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                          }`}
+                          data-testid={`size-${size.value}`}
+                        >
+                          <div className="font-bold text-sm">{size.value}</div>
+                          <div className="text-xs text-gray-600">{size.name}</div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <Separator />
+
+                  {/* Text Customization */}
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2">
+                      <Type className="w-4 h-4 text-primary" />
+                      <h3 className="font-semibold text-gray-900">টেক্সট যোগ করুন</h3>
+                    </div>
+                    <div className="space-y-3">
                       <Input
-                        id="custom-text"
                         value={customization.text}
                         onChange={(e) => setCustomization(prev => ({ ...prev, text: e.target.value }))}
                         placeholder="উদাহরণ: My Custom Text"
-                        className="mt-1"
+                        className="text-sm"
                         data-testid="input-custom-text"
                       />
-                    </div>
-
-                    <div>
-                      <Label htmlFor="font-select" className="text-sm font-medium">
-                        ফন্ট স্টাইল
-                      </Label>
                       <Select 
                         value={customization.font} 
                         onValueChange={(value) => setCustomization(prev => ({ ...prev, font: value }))}
                       >
-                        <SelectTrigger className="mt-1" data-testid="select-font">
+                        <SelectTrigger className="text-sm" data-testid="select-font">
                           <SelectValue placeholder="ফন্ট বেছে নিন" />
                         </SelectTrigger>
                         <SelectContent>
@@ -392,165 +359,155 @@ export default function PerfectResponsiveCustomizeModal({
                       </Select>
                     </div>
                   </div>
-                </div>
 
-                <Separator />
+                  <Separator />
 
-                {/* Image Upload */}
-                <div className="space-y-4">
-                  <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 bg-gradient-to-br from-orange-400 to-red-500 rounded-lg flex items-center justify-center">
-                      <ImageIcon className="w-4 h-4 text-white" />
+                  {/* Image Upload */}
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2">
+                      <ImageIcon className="w-4 h-4 text-primary" />
+                      <h3 className="font-semibold text-gray-900">ছবি আপলোড</h3>
                     </div>
-                    <h3 className="text-lg font-semibold">ছবি আপলোড</h3>
-                  </div>
-                  
-                  <div className="space-y-4">
-                    <Button
-                      variant="outline"
-                      onClick={() => fileInputRef.current?.click()}
-                      className="w-full h-20 border-2 border-dashed border-gray-300 hover:border-primary/50 hover:bg-primary/5"
-                      data-testid="button-upload-image"
-                    >
-                      <div className="text-center">
-                        <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                        <div className="text-sm">ছবি আপলোড করুন</div>
-                        <div className="text-xs text-gray-500">PNG, JPG (সর্বোচ্চ ৫MB)</div>
-                      </div>
-                    </Button>
+                    <div className="space-y-3">
+                      <Button
+                        variant="outline"
+                        onClick={() => fileInputRef.current?.click()}
+                        className="w-full h-16 border-2 border-dashed border-gray-300 hover:border-primary/50 hover:bg-primary/5"
+                        data-testid="button-upload-image"
+                      >
+                        <div className="text-center">
+                          <Upload className="w-6 h-6 text-gray-400 mx-auto mb-1" />
+                          <div className="text-sm">ছবি আপলোড করুন</div>
+                          <div className="text-xs text-gray-500">PNG, JPG (সর্বোচ্চ ৫MB)</div>
+                        </div>
+                      </Button>
 
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      multiple
-                      accept="image/*"
-                      onChange={handleFileUpload}
-                      className="hidden"
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        multiple
+                        accept="image/*"
+                        onChange={handleFileUpload}
+                        className="hidden"
+                      />
+
+                      {imageUrls.length > 0 && (
+                        <div className="grid grid-cols-3 gap-2">
+                          {imageUrls.map((url, index) => (
+                            <div key={index} className="relative group">
+                              <img
+                                src={url}
+                                alt={`Upload ${index + 1}`}
+                                className="w-full aspect-square object-cover rounded-lg border"
+                              />
+                              <Button
+                                variant="destructive"
+                                size="sm"
+                                onClick={() => removeImage(index)}
+                                className="absolute -top-1 -right-1 w-6 h-6 p-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                              >
+                                <Trash2 className="w-3 h-3" />
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <Separator />
+
+                  {/* Special Instructions */}
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2">
+                      <MessageCircle className="w-4 h-4 text-primary" />
+                      <h3 className="font-semibold text-gray-900">বিশেষ নির্দেশনা</h3>
+                    </div>
+                    <Textarea
+                      value={customization.special_instructions}
+                      onChange={(e) => setCustomization(prev => ({ ...prev, special_instructions: e.target.value }))}
+                      placeholder="কোন বিশেষ নির্দেশনা থাকলে এখানে লিখুন..."
+                      rows={2}
+                      className="resize-none text-sm"
+                      data-testid="textarea-special-instructions"
                     />
+                  </div>
 
-                    {/* Uploaded Images Preview */}
-                    {imageUrls.length > 0 && (
-                      <div className="grid grid-cols-3 gap-3">
-                        {imageUrls.map((url, index) => (
-                          <div key={index} className="relative group">
-                            <img
-                              src={url}
-                              alt={`Upload ${index + 1}`}
-                              className="w-full aspect-square object-cover rounded-lg border"
-                            />
-                            <Button
-                              variant="destructive"
-                              size="sm"
-                              onClick={() => removeImage(index)}
-                              className="absolute -top-2 -right-2 w-8 h-8 p-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
-                          </div>
-                        ))}
+                  <Separator />
+
+                  {/* Quantity */}
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2">
+                      <Package className="w-4 h-4 text-primary" />
+                      <h3 className="font-semibold text-gray-900">পরিমাণ</h3>
+                    </div>
+                    <div className="flex items-center justify-center gap-4">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleQuantityChange(customization.quantity - 1)}
+                        disabled={customization.quantity <= 1}
+                        className="w-10 h-10 p-0 rounded-full"
+                        data-testid="button-decrease-quantity"
+                      >
+                        <Minus className="w-4 h-4" />
+                      </Button>
+                      
+                      <div className="text-center min-w-[60px]">
+                        <div className="text-xl font-bold">{customization.quantity}</div>
+                        <div className="text-xs text-gray-500">পিস</div>
                       </div>
+                      
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleQuantityChange(customization.quantity + 1)}
+                        className="w-10 h-10 p-0 rounded-full"
+                        data-testid="button-increase-quantity"
+                      >
+                        <Plus className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Footer Actions */}
+              <div className="border-t p-4 bg-gray-50">
+                <div className="flex gap-3">
+                  <Button
+                    variant="outline"
+                    onClick={onClose}
+                    className="flex-1"
+                    disabled={isLoading}
+                  >
+                    বাতিল
+                  </Button>
+                  
+                  <Button
+                    onClick={handleSubmit}
+                    disabled={isLoading}
+                    className="flex-1 bg-gradient-to-r from-primary to-orange-500 hover:from-primary/90 hover:to-orange-500/90"
+                    data-testid="button-add-to-cart-customized"
+                  >
+                    {isLoading ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                        যোগ করা হচ্ছে...
+                      </>
+                    ) : (
+                      <>
+                        <ShoppingCart className="w-4 h-4 mr-2" />
+                        কার্টে যোগ করুন ({formatPrice(totalPrice)})
+                      </>
                     )}
-                  </div>
+                  </Button>
                 </div>
-
-                <Separator />
-
-                {/* Special Instructions */}
-                <div className="space-y-4">
-                  <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 bg-gradient-to-br from-purple-400 to-indigo-500 rounded-lg flex items-center justify-center">
-                      <MessageCircle className="w-4 h-4 text-white" />
-                    </div>
-                    <h3 className="text-lg font-semibold">বিশেষ নির্দেশনা</h3>
-                  </div>
-                  
-                  <Textarea
-                    value={customization.special_instructions}
-                    onChange={(e) => setCustomization(prev => ({ ...prev, special_instructions: e.target.value }))}
-                    placeholder="কোন বিশেষ নির্দেশনা থাকলে এখানে লিখুন..."
-                    rows={3}
-                    className="resize-none"
-                    data-testid="textarea-special-instructions"
-                  />
-                </div>
-
-                <Separator />
-
-                {/* Quantity */}
-                <div className="space-y-4">
-                  <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 bg-gradient-to-br from-teal-400 to-cyan-500 rounded-lg flex items-center justify-center">
-                      <Package className="w-4 h-4 text-white" />
-                    </div>
-                    <h3 className="text-lg font-semibold">পরিমাণ</h3>
-                  </div>
-                  
-                  <div className="flex items-center gap-4">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleQuantityChange(customization.quantity - 1)}
-                      disabled={customization.quantity <= 1}
-                      className="w-12 h-12 p-0 rounded-full"
-                      data-testid="button-decrease-quantity"
-                    >
-                      <Minus className="w-4 h-4" />
-                    </Button>
-                    
-                    <div className="flex-1 text-center">
-                      <div className="text-2xl font-bold">{customization.quantity}</div>
-                      <div className="text-sm text-gray-500">পিস</div>
-                    </div>
-                    
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleQuantityChange(customization.quantity + 1)}
-                      className="w-12 h-12 p-0 rounded-full"
-                      data-testid="button-increase-quantity"
-                    >
-                      <Plus className="w-4 h-4" />
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Footer Actions */}
-            <div className="border-t p-6 bg-gray-50">
-              <div className="flex gap-4">
-                <Button
-                  variant="outline"
-                  onClick={onClose}
-                  className="flex-1"
-                  disabled={isLoading}
-                >
-                  বাতিল
-                </Button>
                 
-                <Button
-                  onClick={handleSubmit}
-                  disabled={isLoading}
-                  className="flex-1 bg-gradient-to-r from-primary to-orange-500 hover:from-primary/90 hover:to-orange-500/90"
-                  data-testid="button-add-to-cart-customized"
-                >
-                  {isLoading ? (
-                    <>
-                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
-                      যোগ করা হচ্ছে...
-                    </>
-                  ) : (
-                    <>
-                      <ShoppingCart className="w-4 h-4 mr-2" />
-                      কার্টে যোগ করুন ({formatPrice(totalPrice)})
-                    </>
-                  )}
-                </Button>
-              </div>
-              
-              <div className="flex items-center justify-center mt-4 text-sm text-gray-500">
-                <AlertCircle className="w-4 h-4 mr-1" />
-                কাস্টম অর্ডার ৩-৫ কার্যদিবসে প্রস্তুত হবে
+                <div className="flex items-center justify-center mt-3 text-xs text-gray-500">
+                  <AlertCircle className="w-3 h-3 mr-1" />
+                  কাস্টম অর্ডার ৩-৫ কার্যদিবসে প্রস্তুত হবে
+                </div>
               </div>
             </div>
           </div>
