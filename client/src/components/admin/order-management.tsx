@@ -71,9 +71,9 @@ export default function OrderManagement({ orders }: OrderManagementProps) {
     updateOrderStatusMutation.mutate({ orderId, status: newStatus });
   };
 
-  const formatDate = (dateString: string | null) => {
-    if (!dateString) return "";
-    const date = new Date(dateString);
+  const formatDate = (dateInput: string | Date | null) => {
+    if (!dateInput) return "";
+    const date = typeof dateInput === 'string' ? new Date(dateInput) : dateInput;
     return date.toLocaleString('bn-BD', {
       year: 'numeric',
       month: 'long',
@@ -139,7 +139,7 @@ export default function OrderManagement({ orders }: OrderManagementProps) {
                       </Select>
                     </TableCell>
                     <TableCell data-testid={`text-order-date-${order.id}`}>
-                      {formatDate(order.created_at ? order.created_at.toISOString() : null)}
+                      {formatDate(order.created_at)}
                     </TableCell>
                     <TableCell>
                       <Button
@@ -462,7 +462,7 @@ export default function OrderManagement({ orders }: OrderManagementProps) {
                       {ORDER_STATUSES[selectedOrder.status as keyof typeof ORDER_STATUSES] || selectedOrder.status}
                     </Badge>
                     <p className="text-sm text-gray-600">
-                      অর্ডার তারিখ: {formatDate(selectedOrder.created_at ? selectedOrder.created_at.toISOString() : null)}
+                      অর্ডার তারিখ: {formatDate(selectedOrder.created_at)}
                     </p>
                   </div>
                 </CardContent>
