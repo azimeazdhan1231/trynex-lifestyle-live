@@ -9,7 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useCart } from "@/hooks/use-cart";
 import MobileOptimizedLayout from "@/components/mobile-optimized-layout";
 import UnifiedProductCard from "@/components/unified-product-card";
-import UltraLargeProductModal from "@/components/ultra-large-product-modal";
+import UltraDynamicProductModal from "@/components/ultra-dynamic-product-modal";
 import PerfectCustomizeModal from "@/components/perfect-customize-modal";
 import ComprehensiveProductLoading from "@/components/comprehensive-product-loading";
 import EnhancedFilterSystem from "@/components/enhanced-filter-system";
@@ -412,20 +412,18 @@ export default function ProductsPage() {
 
       </div>
 
-      {/* Ultra Large Product Details Modal */}
-      {selectedProduct && (
-        <UltraLargeProductModal
-          product={selectedProduct}
-          isOpen={isProductModalOpen}
-          onClose={() => {
-            console.log("📱 Closing product modal");
-            setIsProductModalOpen(false);
-            setSelectedProduct(null);
-          }}
-          onAddToCart={handleAddToCart}
-          onCustomize={handleCustomize}
-        />
-      )}
+      {/* Ultra Dynamic Product Details Modal */}
+      <UltraDynamicProductModal
+        isOpen={isProductModalOpen}
+        onClose={() => {
+          console.log("📱 Closing product modal");
+          setIsProductModalOpen(false);
+          setSelectedProduct(null);
+        }}
+        product={selectedProduct}
+        onAddToCart={handleAddToCart}
+        onCustomize={handleCustomize}
+      />
 
       {/* Perfect Customize Modal */}
       {selectedProduct && (
