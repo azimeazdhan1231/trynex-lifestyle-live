@@ -71,7 +71,7 @@ export default function OrderManagement({ orders }: OrderManagementProps) {
     updateOrderStatusMutation.mutate({ orderId, status: newStatus });
   };
 
-  const formatDate = (dateInput: string | Date | null) => {
+  const formatDate = (dateInput: string | Date | null | undefined) => {
     if (!dateInput) return "";
     const date = typeof dateInput === 'string' ? new Date(dateInput) : dateInput;
     return date.toLocaleString('bn-BD', {
@@ -139,8 +139,8 @@ export default function OrderManagement({ orders }: OrderManagementProps) {
                       </Select>
                     </TableCell>
                     <TableCell data-testid={`text-order-date-${order.id}`}>
-                      {formatDate(order.created_at)}
-                    </TableCell>
+                        {formatDate(order.created_at ? (typeof order.created_at === 'string' ? order.created_at : new Date(order.created_at).toISOString()) : null)}
+                      </TableCell>
                     <TableCell>
                       <Button
                         variant="outline"
@@ -297,18 +297,18 @@ export default function OrderManagement({ orders }: OrderManagementProps) {
                   <CardContent className="space-y-6">
                     {Array.isArray(selectedOrder.items) && selectedOrder.items.map((item: any, itemIndex: number) => {
                       if (!item.customization) return null;
-                      
+
                       const customization = item.customization;
                       const hasCustomizations = customization.color || customization.size || 
                         customization.text || customization.special_instructions || 
                         (customization.uploaded_images && customization.uploaded_images.length > 0);
-                      
+
                       if (!hasCustomizations) return null;
-                      
+
                       return (
                         <div key={itemIndex} className="border rounded-lg p-4 bg-gray-50">
                           <h4 className="font-semibold text-lg mb-3">{item.name}</h4>
-                          
+
                           {/* Customization Details */}
                           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4 text-sm">
                             {customization.color && (
@@ -333,21 +333,21 @@ export default function OrderManagement({ orders }: OrderManagementProps) {
                                 </div>
                               </div>
                             )}
-                            
+
                             {customization.size && (
                               <div>
                                 <span className="text-gray-600">সাইজ:</span>
                                 <span className="font-medium ml-1">{customization.size}</span>
                               </div>
                             )}
-                            
+
                             {customization.text && (
                               <div className="col-span-2">
                                 <span className="text-gray-600">টেক্সট:</span>
                                 <span className="font-medium ml-1">"{customization.text}"</span>
                               </div>
                             )}
-                            
+
                             {customization.font && customization.font !== 'default' && (
                               <div>
                                 <span className="text-gray-600">ফন্ট:</span>
@@ -355,7 +355,7 @@ export default function OrderManagement({ orders }: OrderManagementProps) {
                               </div>
                             )}
                           </div>
-                          
+
                           {/* Special Instructions */}
                           {customization.special_instructions && (
                             <div className="mb-4">
@@ -365,7 +365,7 @@ export default function OrderManagement({ orders }: OrderManagementProps) {
                               </p>
                             </div>
                           )}
-                          
+
                           {/* Custom Uploaded Images */}
                           {customization.uploaded_images && Array.isArray(customization.uploaded_images) && customization.uploaded_images.length > 0 && (
                             <div>
@@ -393,9 +393,9 @@ export default function OrderManagement({ orders }: OrderManagementProps) {
                                       );
                                     }
                                   }
-                                  
+
                                   if (!imageUrl) return null;
-                                  
+
                                   return (
                                     <div key={imageIndex} className="relative group">
                                       <img
@@ -416,7 +416,7 @@ export default function OrderManagement({ orders }: OrderManagementProps) {
                                           <p className="text-xs text-gray-500">ছবি লোড করা যায়নি</p>
                                         </div>
                                       </div>
-                                      
+
                                       {/* Image preview on hover */}
                                       <div className="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center">
                                         <Button
@@ -433,7 +433,7 @@ export default function OrderManagement({ orders }: OrderManagementProps) {
                                   );
                                 })}
                               </div>
-                              
+
                               {/* Note about image storage */}
                               <div className="mt-3 p-2 bg-yellow-50 border border-yellow-200 rounded text-xs text-yellow-800">
                                 <AlertTriangle className="w-3 h-3 inline mr-1" />

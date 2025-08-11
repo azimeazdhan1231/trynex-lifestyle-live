@@ -1116,27 +1116,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Admin authentication
   app.post('/api/admin/login', async (req, res) => {
     try {
-      const { username, password } = req.body;
+      const { username, password, email } = req.body;
+      
+      // Support both username and email fields
+      const loginField = username || email;
 
-      // In a real app, you would hash and compare passwords
-      if (username === 'admin' && password === 'admin123') {
+      console.log('Admin login attempt:', { loginField, password: password ? '[PROVIDED]' : '[MISSING]' });
+
+      // Admin credentials
+      const ADMIN_USERNAME = 'admin';
+      const ADMIN_EMAIL = 'admin@trynex.com';
+      const ADMIN_PASSWORD = 'admin123';
+
+      if ((loginField === ADMIN_USERNAME || loginField === ADMIN_EMAIL) && password === ADMIN_PASSWORD) {
         const token = jwt.sign(
-          { id: 'admin', username: 'admin', role: 'admin' },
+          { id: 'admin', username: 'admin', email: ADMIN_EMAIL, role: 'admin' },
           JWT_SECRET,
           { expiresIn: '24h' }
         );
 
+        console.log('Admin login successful, token generated');
+
         res.json({
           success: true,
           token,
-          user: { id: 'admin', username: 'admin', role: 'admin' }
+          user: { id: 'admin', username: 'admin', email: ADMIN_EMAIL, role: 'admin' },
+          admin: { id: 'admin', username: 'admin', email: ADMIN_EMAIL, role: 'admin' }
         });
       } else {
-        res.status(401).json({ error: 'Invalid credentials' });
+        console.log('Admin login failed: Invalid credentials');
+        res.status(401).json({ 
+          success: false,
+          error: 'Invalid credentials',
+          message: 'ভুল ইমেইল বা পাসওয়ার্ড'
+        });
       }
     } catch (error) {
       console.error('Admin login error:', error);
-      res.status(500).json({ error: 'Login failed' });
+      res.status(500).json({ 
+        success: false,
+        error: 'Login failed',
+        message: 'সার্ভার এরর'
+      });
     }
   });
 

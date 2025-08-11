@@ -1,5 +1,4 @@
-
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -7,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Eye, EyeOff, Shield, Lock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useQueryClient } from '@tanstack/react-query'; // Assuming you are using react-query
 
 interface AdminLoginProps {
   onLoginSuccess: () => void;
@@ -21,6 +21,8 @@ export default function AdminLogin({ onLoginSuccess }: AdminLoginProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const { toast } = useToast();
+  const [isLoggedIn, setIsLoggedIn] = useState(false); // State to track login status
+  const queryClient = useQueryClient(); // Initialize queryClient
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,22 +35,25 @@ export default function AdminLogin({ onLoginSuccess }: AdminLoginProps) {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(credentials),
+        body: JSON.stringify({ username: credentials.email, password: credentials.password }),
       });
 
       const data = await response.json();
 
       if (data.success) {
-        // Store admin token
-        localStorage.setItem("admin_token", data.token);
-        localStorage.setItem("admin_data", JSON.stringify(data.admin));
-        
-        toast({
-          title: "লগইন সফল",
-          description: "স্বাগতম এডমিন প্যানেলে",
-        });
+        // Store admin token in localStorage
+        localStorage.setItem('adminToken', data.token);
+        localStorage.setItem('adminUser', JSON.stringify(data.user || data.admin));
+        setIsLoggedIn(true);
+        onLoginSuccess?.();
 
-        onLoginSuccess();
+        // Invalidate queries to refresh data with new token
+        queryClient.invalidateQueries();
+
+        toast({
+          title: "সফল",
+          description: "এডমিন লগইন সফল হয়েছে।",
+        });
       } else {
         setError(data.message || "লগইন ব্যর্থ");
       }
@@ -59,6 +64,44 @@ export default function AdminLogin({ onLoginSuccess }: AdminLoginProps) {
       setIsLoading(false);
     }
   };
+
+  useEffect(() => {
+    const checkAdminAuth = async () => {
+      const token = localStorage.getItem('adminToken');
+      if (!token) {
+        setIsLoggedIn(false);
+        return;
+      }
+
+      try {
+        const response = await fetch('/api/admin/verify', {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success) {
+            setIsLoggedIn(true);
+            console.log('Admin authentication verified');
+            return;
+          }
+        }
+      } catch (error) {
+        console.error('Admin auth check failed:', error);
+      }
+
+      // If we get here, auth failed
+      console.log('Admin authentication failed, clearing tokens');
+      localStorage.removeItem('adminToken');
+      localStorage.removeItem('adminUser');
+      setIsLoggedIn(false);
+    };
+
+    checkAdminAuth();
+  }, []);
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 flex items-center justify-center p-4">
@@ -95,7 +138,7 @@ export default function AdminLogin({ onLoginSuccess }: AdminLoginProps) {
                   className="h-11"
                 />
               </div>
-              
+
               <div className="space-y-2">
                 <Label htmlFor="password">পাসওয়ার্ড</Label>
                 <div className="relative">
@@ -132,7 +175,7 @@ export default function AdminLogin({ onLoginSuccess }: AdminLoginProps) {
                 {isLoading ? "লগইন হচ্ছে..." : "লগইন করুন"}
               </Button>
             </form>
-            
+
             <div className="mt-6 text-center text-sm text-gray-600">
               <p>ডিফল্ট ক্রেডেনশিয়াল:</p>
               <p className="font-mono bg-gray-100 p-2 rounded mt-2">

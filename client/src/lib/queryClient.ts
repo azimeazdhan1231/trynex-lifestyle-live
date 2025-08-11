@@ -26,7 +26,7 @@ export const queryClient = new QueryClient({
             headers['Authorization'] = `Bearer ${token}`;
           }
 
-          const response = await fetch(url, { 
+          const response = await fetch(url, {
             signal: signal, // Only use the provided signal, no custom timeout
             credentials: 'include', // Include credentials for auth endpoints
             headers
@@ -69,48 +69,91 @@ export const queryClient = new QueryClient({
   },
 });
 
-export async function apiRequest(
-  method: "GET" | "POST" | "PUT" | "DELETE" | "PATCH",
+export const apiRequest = async (
+  method: string,
   url: string,
-  body?: any
-): Promise<Response> {
-  const token = localStorage.getItem("auth_token");
-  const adminToken = localStorage.getItem("admin_token");
+  data?: any,
+  options: RequestOptions = {}
+): Promise<any> => {
+  const { skipLoading = false, timeout = 30000 } = options;
 
-  const headers: Record<string, string> = {
-    "Content-Type": "application/json",
-  };
+  console.log(`API Request: ${method} ${url}`, data ? { body: data } : '');
 
-  // Use admin token for admin endpoints, regular token for user endpoints
-  if (url.includes('/admin/') && adminToken) {
-    headers["Authorization"] = `Bearer ${adminToken}`;
-  } else if (token) {
-    headers["Authorization"] = `Bearer ${token}`;
+  if (!skipLoading) {
+    setIsLoading(true);
   }
 
-  const config: RequestInit = {
-    method,
-    headers,
-  };
-
-  if (body && method !== "GET") {
-    config.body = JSON.stringify(body);
-  }
-
-  console.log(`API Request: ${method} ${url}`, body ? { body } : {});
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeout);
 
   try {
+    const headers: HeadersInit = {
+      'Content-Type': 'application/json',
+    };
+
+    // Add auth token - check both user and admin tokens
+    const userToken = localStorage.getItem('authToken');
+    const adminToken = localStorage.getItem('adminToken');
+
+    // For admin endpoints, prefer admin token
+    if (url.includes('/admin/') || url.includes('/api/products') || url.includes('/api/categories') || url.includes('/api/offers')) {
+      if (adminToken) {
+        headers.Authorization = `Bearer ${adminToken}`;
+      }
+    } else if (userToken) {
+      headers.Authorization = `Bearer ${userToken}`;
+    }
+
+    const config: RequestInit = {
+      method,
+      headers,
+      signal: controller.signal,
+    };
+
+    if (data && ['POST', 'PUT', 'PATCH'].includes(method.toUpperCase())) {
+      config.body = JSON.stringify(data);
+    }
+
     const response = await fetch(url, config);
+    clearTimeout(timeoutId);
 
     if (!response.ok) {
       const errorText = await response.text();
       console.error(`API Error: ${response.status} ${response.statusText}`, errorText);
+
+      if (response.status === 401) {
+        // Handle unauthorized
+        if (url.includes('/admin/') || url.includes('/api/products') || url.includes('/api/categories')) {
+          localStorage.removeItem('adminToken');
+          // Show admin login required
+          console.error('Admin authentication required');
+        } else {
+          localStorage.removeItem('authToken');
+          // Don't redirect on admin endpoints
+          if (!url.includes('/admin/')) {
+            window.location.href = '/auth';
+          }
+        }
+      }
+
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
-    return response;
-  } catch (error) {
-    console.error("Network error:", error);
+    const result = await response.json();
+    return result;
+  } catch (error: any) {
+    clearTimeout(timeoutId);
+
+    if (error.name === 'AbortError') {
+      console.error('Request timeout');
+      throw new Error('Request timeout');
+    }
+
+    console.error('Network error:', error);
     throw error;
+  } finally {
+    if (!skipLoading) {
+      setIsLoading(false);
+    }
   }
-}
+};
