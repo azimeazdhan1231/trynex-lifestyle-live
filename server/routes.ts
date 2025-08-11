@@ -1113,26 +1113,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Authentication middleware
-  const authenticateAdmin = (req: express.Request, res: express.Response, next: express.NextFunction) => {
-    const token = req.headers.authorization?.replace('Bearer ', '');
-
-    if (!token) {
-      return res.status(401).json({ error: 'No token provided' });
-    }
-
-    try {
-      const decoded = jwt.verify(token, JWT_SECRET) as any;
-      if (decoded.role !== 'admin') {
-        return res.status(403).json({ error: 'Admin access required' });
-      }
-      req.user = decoded; // Assuming req.user is defined in Express type definitions
-      next();
-    } catch (error) {
-      return res.status(401).json({ error: 'Invalid token' });
-    }
-  };
-
   // Admin authentication
   app.post('/api/admin/login', async (req, res) => {
     try {
@@ -1157,6 +1137,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Admin login error:', error);
       res.status(500).json({ error: 'Login failed' });
+    }
+  });
+
+  // Admin verification endpoint
+  app.get('/api/admin/verify', authenticateAdmin, async (req, res) => {
+    try {
+      res.json({
+        success: true,
+        admin: req.user
+      });
+    } catch (error) {
+      console.error('Admin verification error:', error);
+      res.status(500).json({ error: 'Verification failed' });
     }
   });
 
@@ -1287,8 +1280,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Product management endpoints
-  app.post('/api/products', async (req, res) => {
+  // JWT Secret for authentication
+  const JWT_SECRET = process.env.JWT_SECRET_KEY || process.env.JWT_SECRET || "trynex_secret_key_2025";
+
+  // Authentication middleware
+  const authenticateAdmin = (req: any, res: any, next: any) => {
+    const token = req.headers.authorization?.replace('Bearer ', '');
+
+    if (!token) {
+      return res.status(401).json({ error: 'Access token required' });
+    }
+
+    try {
+      const decoded = jwt.verify(token, JWT_SECRET) as any;
+      if (decoded.role !== 'admin') {
+        return res.status(403).json({ error: 'Admin access required' });
+      }
+      req.user = decoded;
+      next();
+    } catch (error) {
+      return res.status(401).json({ error: 'Invalid token' });
+    }
+  };
+
+  // Product management endpoints - with admin authentication
+  app.post('/api/products', authenticateAdmin, async (req, res) => {
     try {
       console.log('🆕 Creating product with data:', req.body);
       
@@ -1336,7 +1352,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.patch('/api/products/:id', async (req, res) => {
+  app.patch('/api/products/:id', authenticateAdmin, async (req, res) => {
     try {
       const { id } = req.params;
       console.log(`🔄 Updating product ${id} with data:`, req.body);
@@ -1464,7 +1480,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete('/api/products/:id', async (req, res) => {
+  app.delete('/api/products/:id', authenticateAdmin, async (req, res) => {
     try {
       const { id } = req.params;
       console.log(`Deleting product ${id}`);
