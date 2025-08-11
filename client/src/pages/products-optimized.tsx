@@ -327,7 +327,9 @@ export default function ProductsOptimized() {
               setShowCustomizeModal(false);
               setSelectedProduct(null);
             }}
-            onAddToCart={handleAddToCart}
+            onAddToCart={async (product: Product, customization: any) => {
+              handleAddToCart(product);
+            }}
           />
         )}
 

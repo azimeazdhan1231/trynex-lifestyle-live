@@ -42,7 +42,7 @@ interface PerfectCustomizeModalProps {
   isOpen: boolean;
   onClose: () => void;
   product: Product;
-  onAddToCart: (product: Product, customization: any) => Promise<void>;
+  onAddToCart: (product: any, customization: any) => Promise<void>;
 }
 
 interface CustomizationData {
