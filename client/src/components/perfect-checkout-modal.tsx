@@ -23,6 +23,7 @@ interface CartItem {
   price: number;
   quantity: number;
   image_url?: string;
+  customization?: any;
 }
 
 interface CheckoutModalProps {
@@ -65,7 +66,7 @@ function PerfectCheckoutModal({ isOpen, onClose, cart, onOrderComplete }: Checko
   // Update delivery fee and available thanas when district changes
   useEffect(() => {
     if (formData.district) {
-      const fee = calculateDeliveryFee(formData.district);
+      const fee = calculateDeliveryFee(formData.district, "outside");
       setDeliveryFee(fee);
       setAvailableThanas(THANAS_BY_DISTRICT[formData.district] || []);
       setFormData(prev => ({ ...prev, thana: "" }));
@@ -483,7 +484,7 @@ function PerfectCheckoutModal({ isOpen, onClose, cart, onOrderComplete }: Checko
   return (
     <>
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-5xl max-h-[95vh] w-[95vw] md:w-[90vw] lg:w-[85vw] overflow-y-auto p-6 rounded-lg">
           <DialogHeader>
             <DialogTitle className="text-xl font-bold text-gray-900">
               অর্ডার সম্পূর্ণ করুন

@@ -50,7 +50,7 @@ export default function EnhancedCartModal({ isOpen, onClose }: EnhancedCartModal
   if (items.length === 0) {
     return (
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-4xl w-[95vw] md:w-[90vw] lg:w-[85vw] rounded-lg">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <ShoppingCart className="w-5 h-5" />
@@ -79,7 +79,7 @@ export default function EnhancedCartModal({ isOpen, onClose }: EnhancedCartModal
   return (
     <>
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-5xl max-h-[95vh] w-[95vw] md:w-[90vw] lg:w-[85vw] overflow-y-auto p-6 rounded-lg">
           <DialogHeader>
             <DialogTitle className="flex items-center justify-between">
               <div className="flex items-center gap-2">
@@ -100,15 +100,15 @@ export default function EnhancedCartModal({ isOpen, onClose }: EnhancedCartModal
 
           <div className="space-y-4">
             {/* Cart Items */}
-            <div className="space-y-3 max-h-96 overflow-y-auto">
+            <div className="space-y-4 max-h-[50vh] overflow-y-auto">
               {items.map((item: any) => (
                 <Card key={`${item.id}-${JSON.stringify(item.customization)}`} className="border">
-                  <CardContent className="p-4">
-                    <div className="flex items-center gap-4">
+                  <CardContent className="p-6">
+                    <div className="flex items-center gap-6">
                       <img
                         src={item.image_url || item.image}
                         alt={item.name}
-                        className="w-16 h-16 object-cover rounded-lg border"
+                        className="w-24 h-24 md:w-28 md:h-28 object-cover rounded-lg border"
                         onError={(e) => {
                           const target = e.target as HTMLImageElement;
                           target.src = '/placeholder-product.png';

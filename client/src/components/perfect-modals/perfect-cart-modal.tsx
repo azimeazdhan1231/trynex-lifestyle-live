@@ -33,7 +33,7 @@ export default function PerfectCartModal({ isOpen, onClose }: PerfectCartModalPr
         isOpen={isOpen}
         onClose={onClose}
         title="আপনার কার্ট"
-        maxWidth="max-w-lg"
+        maxWidth="max-w-4xl"
       >
         {cart.length === 0 ? (
           /* Empty Cart */
@@ -58,47 +58,47 @@ export default function PerfectCartModal({ isOpen, onClose }: PerfectCartModalPr
         ) : (
           <>
             {/* Cart Items */}
-            <div className="p-4 space-y-3 flex-1">
+            <div className="space-y-4 flex-1">
               {cart.map((item) => (
-                <div key={item.id} className="flex gap-3 p-3 bg-gray-50 rounded-lg">
+                <div key={item.id} className="flex gap-4 p-4 bg-gray-50 rounded-lg border">
                   <img
                     src={item.image_url}
                     alt={item.name}
-                    className="w-12 h-12 object-cover rounded"
+                    className="w-20 h-20 md:w-24 md:h-24 object-cover rounded-lg"
                   />
                   <div className="flex-1 min-w-0">
-                    <h4 className="font-medium text-sm line-clamp-1">{item.name}</h4>
-                    <div className="flex items-center justify-between mt-1">
-                      <span className="font-bold text-orange-600 text-sm">
+                    <h4 className="font-medium text-base md:text-lg mb-2">{item.name}</h4>
+                    <div className="flex items-center justify-between mt-2">
+                      <span className="font-bold text-orange-600 text-lg">
                         {formatPrice(item.price)}
                       </span>
-                      <div className="flex items-center gap-1">
+                      <div className="flex items-center gap-2">
                         <Button
                           variant="outline"
                           size="sm"
-                          className="w-6 h-6 p-0"
+                          className="w-8 h-8 p-0"
                           onClick={() => updateQuantity(item.id, Math.max(0, item.quantity - 1))}
                         >
-                          <Minus className="w-3 h-3" />
+                          <Minus className="w-4 h-4" />
                         </Button>
-                        <span className="w-6 text-center text-xs font-medium">
+                        <span className="w-10 text-center text-sm font-medium px-2 py-1 bg-white rounded border">
                           {item.quantity}
                         </span>
                         <Button
                           variant="outline"
                           size="sm"
-                          className="w-6 h-6 p-0"
+                          className="w-8 h-8 p-0"
                           onClick={() => updateQuantity(item.id, item.quantity + 1)}
                         >
-                          <Plus className="w-3 h-3" />
+                          <Plus className="w-4 h-4" />
                         </Button>
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="w-6 h-6 p-0 text-red-500 hover:text-red-700 hover:bg-red-50 ml-1"
+                          className="w-8 h-8 p-0 text-red-500 hover:text-red-700 hover:bg-red-50 ml-2"
                           onClick={() => removeFromCart(item.id)}
                         >
-                          <Trash2 className="w-3 h-3" />
+                          <Trash2 className="w-4 h-4" />
                         </Button>
                       </div>
                     </div>

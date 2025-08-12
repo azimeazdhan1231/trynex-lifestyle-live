@@ -17,7 +17,7 @@ export default function PerfectModalBase({
   onClose,
   children,
   title,
-  maxWidth = "max-w-md",
+  maxWidth = "max-w-2xl",
   className = ""
 }: PerfectModalBaseProps) {
   return (
@@ -25,21 +25,25 @@ export default function PerfectModalBase({
       <DialogContent 
         className={`
           ${maxWidth} 
-          max-h-[90vh] 
+          max-h-[95vh] 
           w-[95vw] 
+          md:w-[90vw] 
+          lg:w-[85vw] 
+          xl:w-[80vw] 
           p-0 
           gap-0 
           overflow-hidden 
           border-0 
           shadow-2xl 
+          rounded-lg 
           ${className}
         `}
         aria-describedby="modal-description"
       >
         {/* Fixed Header */}
         {title && (
-          <div className="flex items-center justify-between p-4 border-b bg-white sticky top-0 z-10">
-            <h2 className="text-lg font-semibold text-gray-900">{title}</h2>
+          <div className="flex items-center justify-between p-4 md:p-6 border-b bg-white sticky top-0 z-10">
+            <h2 className="text-lg md:text-xl lg:text-2xl font-semibold text-gray-900">{title}</h2>
             <Button
               variant="ghost"
               size="sm"
@@ -52,7 +56,7 @@ export default function PerfectModalBase({
         )}
         
         {/* Scrollable Content */}
-        <div className="overflow-y-auto max-h-[calc(90vh-64px)] flex flex-col">
+        <div className="overflow-y-auto max-h-[calc(95vh-80px)] flex flex-col p-4 md:p-6">
           {children}
         </div>
         

@@ -95,7 +95,7 @@ export default function PerfectOrderSuccessModal({
       onClose={onClose}
       title="অর্ডার সফল হয়েছে! 🎉"
       description="আপনার অর্ডারটি সফলভাবে সম্পন্ন হয়েছে"
-      maxWidth="4xl"
+      maxWidth="5xl"
       data-testid="modal-order-success"
     >
       <div className="space-y-6">
