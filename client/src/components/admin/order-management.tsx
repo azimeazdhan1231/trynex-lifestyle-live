@@ -284,8 +284,9 @@ export default function OrderManagement({ orders }: OrderManagementProps) {
                 const hasCustomization = item.customization && (
                   item.customization.color || 
                   item.customization.size || 
-                  item.customization.text || 
-                  item.customization.special_instructions || 
+                  item.customization.customText || 
+                  item.customization.specialInstructions || 
+                  item.customization.customImage ||
                   (item.customization.uploaded_images && Array.isArray(item.customization.uploaded_images) && item.customization.uploaded_images.length > 0)
                 );
                 return hasCustomization;
@@ -341,10 +342,10 @@ export default function OrderManagement({ orders }: OrderManagementProps) {
                               </div>
                             )}
 
-                            {customization.text && (
+                            {(customization.text || customization.customText) && (
                               <div className="col-span-2">
-                                <span className="text-gray-600">টেক্সট:</span>
-                                <span className="font-medium ml-1">"{customization.text}"</span>
+                                <span className="text-gray-600">কাস্টম টেক্সট:</span>
+                                <span className="font-medium ml-1">"{customization.text || customization.customText}"</span>
                               </div>
                             )}
 
@@ -357,12 +358,22 @@ export default function OrderManagement({ orders }: OrderManagementProps) {
                           </div>
 
                           {/* Special Instructions */}
-                          {customization.special_instructions && (
+                          {(customization.special_instructions || customization.specialInstructions) && (
                             <div className="mb-4">
                               <h5 className="font-medium text-gray-800 mb-2">বিশেষ নির্দেশনা:</h5>
                               <p className="text-gray-700 bg-white p-3 rounded border">
-                                {customization.special_instructions}
+                                {customization.special_instructions || customization.specialInstructions}
                               </p>
+                            </div>
+                          )}
+
+                          {/* Custom Image */}
+                          {customization.customImage && (
+                            <div className="mb-4">
+                              <h5 className="font-medium text-gray-800 mb-2">কাস্টম ইমেজ:</h5>
+                              <div className="bg-gray-100 p-3 rounded border">
+                                <p className="text-sm text-gray-600">✅ ছবি আপলোড করা হয়েছে</p>
+                              </div>
                             </div>
                           )}
 

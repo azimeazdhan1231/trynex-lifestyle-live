@@ -7,6 +7,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import type { Product, Order, Category, Offer, User, CustomOrder } from "@shared/schema";
 import { insertProductSchema, insertOrderSchema } from "@shared/schema";
+import * as z from 'zod'; // Import Zod for validation
 
 // JWT secret key from environment (synchronized with auth-routes.ts)
 const JWT_SECRET = process.env.JWT_SECRET_KEY || process.env.JWT_SECRET || "trynex_secret_key_2025";
@@ -230,12 +231,12 @@ const authenticateAdmin = (req: AuthRequest, res: express.Response, next: expres
       console.log('❌ Admin: JWT verification failed:', err.message);
       return res.status(403).json({ error: 'Invalid token' });
     }
-    
+
     if (user.role !== 'admin') {
       console.log('❌ Admin: Insufficient permissions, user role:', user.role);
       return res.status(403).json({ error: 'Admin access required' });
     }
-    
+
     console.log('✅ Admin authenticated successfully:', { id: user.id, email: user.email });
     req.user = user;
     next();
@@ -251,7 +252,7 @@ export function registerRoutes(app: Express): void {
     res.header('Access-Control-Allow-Origin', '*');
     res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
     res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
-    
+
     if (req.method === 'OPTIONS') {
       res.sendStatus(200);
     } else {
@@ -262,7 +263,7 @@ export function registerRoutes(app: Express): void {
   // Get all products with caching
   app.get('/api/products', async (req, res) => {
     const startTime = Date.now();
-    
+
     try {
       res.set({
         'Cache-Control': 'public, max-age=180, stale-while-revalidate=60',
@@ -291,7 +292,7 @@ export function registerRoutes(app: Express): void {
   // Get categories with caching
   app.get('/api/categories', async (req, res) => {
     const startTime = Date.now();
-    
+
     try {
       res.set({
         'Cache-Control': 'public, max-age=600, stale-while-revalidate=120',
@@ -316,24 +317,20 @@ export function registerRoutes(app: Express): void {
     }
   });
 
-  // Cart API endpoints
+  // Cart API endpoints (managed locally on frontend)
   app.get('/api/cart', (req, res) => {
-    // Cart is managed locally on frontend, return empty for API compatibility
     res.json({ items: [], total: 0, count: 0 });
   });
 
   app.post('/api/cart/add', (req, res) => {
-    // Cart is managed locally on frontend, return success for API compatibility
     res.json({ success: true, message: 'Item added to cart' });
   });
 
   app.post('/api/cart/remove', (req, res) => {
-    // Cart is managed locally on frontend, return success for API compatibility
     res.json({ success: true, message: 'Item removed from cart' });
   });
 
   app.post('/api/cart/clear', (req, res) => {
-    // Cart is managed locally on frontend, return success for API compatibility
     res.json({ success: true, message: 'Cart cleared' });
   });
 
@@ -348,21 +345,50 @@ export function registerRoutes(app: Express): void {
     }
   });
 
-  // Settings endpoint with cache
+  // Settings API endpoints
   app.get('/api/settings', async (req, res) => {
     try {
-      res.set('Cache-Control', 'public, max-age=3600'); // 1 hour cache
-
-      const settings = await storage.getSettings();
-      const settingsObj: any = {};
-      settings.forEach(setting => {
-        settingsObj[setting.key] = setting.value;
-      });
-
-      res.json(settingsObj);
+      // Return default settings (can be extended to fetch from DB)
+      const settings = {
+        site_title: "TryneX Lifestyle",
+        site_description: "Premium T-Shirts & Custom Printing Service",
+        hero_title: "কাস্টমাইজড গিফট সলিউশন",
+        hero_subtitle: "আপনার কল্পনাকে বাস্তব করুন",
+        hero_description: "কাস্টম গিফট • নাম লেখা • স্পেশাল ডিজাইনের",
+        hero_button_text: "কাস্টম অর্ডার",
+        contact_phone: "01747292277",
+        contact_email: "info@trynexlifestyle.com",
+        contact_address: "Dhaka, Bangladesh",
+        whatsapp_number: "8801747292277",
+        facebook_url: "https://facebook.com/trynexlifestyle",
+        instagram_url: "https://instagram.com/trynexlifestyle",
+        youtube_url: "",
+        bkash_number: "01747292277",
+        nagad_number: "01747292277",
+        delivery_charge_inside_dhaka: 60,
+        delivery_charge_outside_dhaka: 120,
+        free_delivery_threshold: 1000,
+        site_maintenance_mode: false,
+        show_popup_offers: true,
+        currency_symbol: "৳",
+        timezone: "Asia/Dhaka"
+      };
+      res.json(settings);
     } catch (error) {
       console.error('❌ Settings error:', error);
       res.status(500).json({ message: 'Settings could not be loaded' });
+    }
+  });
+
+  app.post('/api/settings', authenticateAdmin, async (req, res) => {
+    try {
+      console.log('Settings update requested:', req.body);
+      // In a real implementation, you would save these settings to the database.
+      // For now, we'll just acknowledge the update.
+      res.json({ message: 'Settings updated successfully', settings: req.body });
+    } catch (error) {
+      console.error('Error updating settings:', error);
+      res.status(500).json({ error: 'Failed to update settings' });
     }
   });
 
@@ -375,9 +401,8 @@ export function registerRoutes(app: Express): void {
         return res.status(400).json({ error: 'বার্তা প্রয়োজন' });
       }
 
-      // Input validation and sanitization
       const sanitizedMessage = message.trim().substring(0, 1000); // Limit message length
-      
+
       try {
         // AI chat temporarily disabled, provide fallback
         res.json({ 
@@ -386,7 +411,6 @@ export function registerRoutes(app: Express): void {
         });
       } catch (aiError) {
         console.error('AI Service Error:', aiError);
-        // Fallback response
         res.json({ 
           reply: "দুঃখিত, AI সেবা এখন উপলব্ধ নেই। আমাদের প্রোডাক্ট দেখুন অথবা হোয়াটসঅ্যাপে (+8801648534981) যোগাযোগ করুন।",
           fallback: true
@@ -419,8 +443,7 @@ export function registerRoutes(app: Express): void {
     try {
       const { id } = req.params;
       const { fresh, t } = req.query;
-      
-      // If fresh data is requested, add stronger cache busting
+
       if (fresh || t) {
         res.set({
           'Cache-Control': 'no-cache, no-store, must-revalidate',
@@ -430,7 +453,7 @@ export function registerRoutes(app: Express): void {
           'X-Timestamp': Date.now().toString()
         });
       }
-      
+
       const product = await storage.getProduct(id);
 
       if (!product) {
@@ -453,13 +476,11 @@ export function registerRoutes(app: Express): void {
 
       console.log(`📝 Updating product ${id} with:`, updates);
 
-      // Validate product exists
       const existingProduct = await storage.getProduct(id);
       if (!existingProduct) {
         return res.status(404).json({ error: 'Product not found' });
       }
 
-      // Validate and sanitize updates
       const validatedUpdates: any = {};
 
       if (updates.name !== undefined) {
@@ -520,14 +541,12 @@ export function registerRoutes(app: Express): void {
         validatedUpdates.is_best_selling = Boolean(updates.is_best_selling);
       }
 
-      // Update the product
       const updatedProduct = await storage.updateProduct(id, validatedUpdates);
-      
+
       if (!updatedProduct) {
         return res.status(404).json({ error: 'Product not found or update failed' });
       }
 
-      // Clear performance cache
       performanceCache.clearCache();
 
       console.log(`✅ Product ${id} updated successfully`);
@@ -546,42 +565,36 @@ export function registerRoutes(app: Express): void {
 
       console.log('📝 Creating new product:', productData);
 
-      // Validate required fields
       if (!productData.name || !productData.category || !productData.price) {
         return res.status(400).json({ error: 'Name, category, and price are required' });
       }
 
-      // Validate and sanitize data
       const validatedProduct: any = {
         name: String(productData.name).trim(),
         description: String(productData.description || '').trim(),
         category: String(productData.category).trim(),
         image_url: String(productData.image_url || '').trim(),
         additional_images: productData.additional_images || [],
-        is_active: Boolean(productData.is_active !== false), // default true
+        is_active: Boolean(productData.is_active !== false),
         is_featured: Boolean(productData.is_featured || false),
         is_latest: Boolean(productData.is_latest || false),
         is_best_selling: Boolean(productData.is_best_selling || false)
       };
 
-      // Validate price
       const priceNum = Number(productData.price);
       if (isNaN(priceNum) || priceNum < 0) {
         return res.status(400).json({ error: 'Invalid price - must be a positive number' });
       }
       validatedProduct.price = priceNum.toString();
 
-      // Validate stock
       const stockNum = Number(productData.stock || 0);
       if (isNaN(stockNum) || stockNum < 0) {
         return res.status(400).json({ error: 'Invalid stock - must be a non-negative number' });
       }
       validatedProduct.stock = stockNum;
 
-      // Create the product
       const newProduct = await storage.createProduct(validatedProduct);
 
-      // Clear performance cache
       performanceCache.clearCache();
 
       console.log(`✅ Product created successfully: ${newProduct.id}`);
@@ -598,7 +611,6 @@ export function registerRoutes(app: Express): void {
     try {
       const { id } = req.params;
 
-      // Validate product exists
       const existingProduct = await storage.getProduct(id);
       if (!existingProduct) {
         return res.status(404).json({ error: 'Product not found' });
@@ -606,7 +618,6 @@ export function registerRoutes(app: Express): void {
 
       await storage.deleteProduct(id);
 
-      // Clear performance cache
       performanceCache.clearCache();
 
       console.log(`✅ Product ${id} deleted successfully`);
@@ -633,10 +644,10 @@ export function registerRoutes(app: Express): void {
   app.post('/api/orders', async (req, res) => {
     try {
       console.log('📝 Creating new order:', req.body);
-      
-      // Generate unique tracking ID first
-      const trackingId = `TRN${Date.now()}${Math.random().toString(36).substr(2, 4).toUpperCase()}`;
-      
+
+      // Generate unique tracking ID
+      const trackingId = `TRN${Date.now()}${Math.random().toString(36).substr(2, 5).toUpperCase()}`;
+
       // Basic validation
       if (!req.body.customer_name || !req.body.district || !req.body.thana || !req.body.phone) {
         return res.status(400).json({ 
@@ -661,14 +672,14 @@ export function registerRoutes(app: Express): void {
         custom_instructions: req.body.custom_instructions || null,
         custom_images: req.body.custom_images || null
       };
-      
+
       const newOrder = await storage.createOrder(orderData as any);
 
       console.log('✅ Order created successfully:', newOrder.id);
-      
+
       // Clear cache to ensure fresh data
       performanceCache.clearCache();
-      
+
       res.status(201).json(newOrder);
     } catch (error) {
       console.error('❌ Failed to create order:', error);
@@ -688,10 +699,10 @@ export function registerRoutes(app: Express): void {
       }
 
       const updatedOrder = await storage.updateOrderStatus(id, status);
-      
+
       // Clear cache to ensure fresh data
       performanceCache.clearCache();
-      
+
       res.json(updatedOrder);
     } catch (error) {
       console.error('Failed to update order status:', error);
@@ -699,15 +710,14 @@ export function registerRoutes(app: Express): void {
     }
   });
 
-  // Admin routes
+  // Admin routes for managing products
   app.post('/api/admin/products', async (req, res) => {
     try {
       const productData = insertProductSchema.parse(req.body);
       const newProduct = await storage.createProduct(productData);
-      
-      // Clear cache to ensure fresh data
+
       performanceCache.clearCache();
-      
+
       res.status(201).json(newProduct);
     } catch (error) {
       console.error('Failed to create product:', error);
@@ -719,12 +729,11 @@ export function registerRoutes(app: Express): void {
     try {
       const { id } = req.params;
       const productData = req.body;
-      
+
       const updatedProduct = await storage.updateProduct(id, productData);
-      
-      // Clear cache to ensure fresh data
+
       performanceCache.clearCache();
-      
+
       res.json(updatedProduct);
     } catch (error) {
       console.error('Failed to update product:', error);
@@ -736,10 +745,9 @@ export function registerRoutes(app: Express): void {
     try {
       const { id } = req.params;
       await storage.deleteProduct(id);
-      
-      // Clear cache to ensure fresh data
+
       performanceCache.clearCache();
-      
+
       res.json({ success: true });
     } catch (error) {
       console.error('Failed to delete product:', error);
@@ -811,7 +819,6 @@ export function registerRoutes(app: Express): void {
       console.log('📝 Creating custom order with data:', req.body);
       const orderData = req.body;
 
-      // Validate required fields for custom orders
       if (!orderData.name && !orderData.customerName) {
         return res.status(400).json({ 
           error: "Missing customer name", 

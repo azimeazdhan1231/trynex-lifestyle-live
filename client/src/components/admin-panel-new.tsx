@@ -29,6 +29,7 @@ import CategoryManagement from "@/components/admin/category-management";
 import OrderManagement from "@/components/admin/order-management";
 import OfferManagement from "@/components/admin/offer-management";
 import PromoCodeManagement from "@/components/admin/promo-code-management";
+import SiteSettingsManagement from "@/components/admin/site-settings-management";
 
 // Order status translations
 const ORDER_STATUSES = {
@@ -148,7 +149,7 @@ export default function AdminPanelNew({ onLogout }: AdminPanelProps) {
             <div className="flex items-center">
               <h1 className="text-xl font-bold text-gray-900">এডমিন ড্যাশবোর্ড</h1>
             </div>
-            
+
             <div className="flex items-center space-x-4">
               {/* Mobile menu button */}
               <button
@@ -158,7 +159,7 @@ export default function AdminPanelNew({ onLogout }: AdminPanelProps) {
               >
                 {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
               </button>
-              
+
               {/* Logout button */}
               <Button
                 variant="outline"
@@ -198,7 +199,8 @@ export default function AdminPanelNew({ onLogout }: AdminPanelProps) {
                   { value: "categories", label: "ক্যাটেগরি", icon: Tag },
                   { value: "orders", label: "অর্ডার", icon: ShoppingCart },
                   { value: "offers", label: "অফার", icon: Gift },
-                  { value: "promo-codes", label: "প্রোমো কোড", icon: Award }
+                  { value: "promo-codes", label: "প্রমো কোড", icon: Award },
+                  { value: "site-settings", label: "সাইট সেটিংস", icon: Settings },
                 ].map(({ value, label, icon: Icon }) => (
                   <Button
                     key={value}
@@ -313,7 +315,7 @@ export default function AdminPanelNew({ onLogout }: AdminPanelProps) {
                       </div>
                       <AlertTriangle className="h-5 w-5 text-red-500" />
                     </div>
-                    
+
                     <div className="flex items-center justify-between p-3 bg-yellow-50 rounded-lg">
                       <div>
                         <p className="font-medium text-yellow-700">কম স্টক</p>
@@ -554,6 +556,11 @@ export default function AdminPanelNew({ onLogout }: AdminPanelProps) {
           {/* Promo Codes Tab */}
           <TabsContent value="promo-codes">
             <PromoCodeManagement promoCodes={promoCodes} />
+          </TabsContent>
+
+          {/* Site Settings Tab */}
+          <TabsContent value="site-settings">
+            <SiteSettingsManagement />
           </TabsContent>
         </Tabs>
       </div>
