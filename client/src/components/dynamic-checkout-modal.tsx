@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
-import { DISTRICTS, THANAS_BY_DISTRICT, formatPrice, calculateDeliveryFee } from "@/lib/constants";
+import { DISTRICTS, THANAS_BY_DISTRICT, formatPrice, calculateDeliveryFee, BKASH_NUMBER, NAGAD_NUMBER } from "@/lib/constants";
 import DynamicOrderSuccessModal from "./dynamic-order-success-modal";
 import { trackInitiateCheckout, trackPurchase } from "@/lib/analytics";
 import { 
@@ -392,8 +392,8 @@ export default function DynamicCheckoutModal({ isOpen, onClose, cart, onOrderCom
               </CardHeader>
               <CardContent className="pt-0">
                 <div className={cn("space-y-2 text-orange-700", isMobile ? "text-sm" : "text-sm")}>
-                  <p><strong>bKash Personal:</strong> 01712345678</p>
-                  <p><strong>Nagad Personal:</strong> 01812345678</p>
+                  <p><strong>bKash Personal:</strong> {BKASH_NUMBER}</p>
+                  <p><strong>Nagad Personal:</strong> {NAGAD_NUMBER}</p>
                   <div className="flex items-start space-x-2 mt-3">
                     <AlertCircle className="w-4 h-4 mt-0.5 text-orange-600 shrink-0" />
                     <div>

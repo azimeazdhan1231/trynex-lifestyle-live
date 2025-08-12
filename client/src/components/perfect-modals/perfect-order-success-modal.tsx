@@ -38,7 +38,6 @@ export default function PerfectOrderSuccessModal({
     <PerfectModalBase
       isOpen={isOpen}
       onClose={onClose}
-      showCloseButton={false}
       className="max-w-md"
     >
       <div className="text-center space-y-6 p-6">
@@ -101,8 +100,9 @@ export default function PerfectOrderSuccessModal({
                 পরবর্তী ধাপ
               </p>
               <p className="text-sm text-blue-700">
-                আমরা শীঘ্রই আপনার সাথে যোগাযোগ করব। 
-                অর্ডার ট্র্যাক করতে ট্র্যাকিং আইডি সংরক্ষণ করুন।
+                • আমরা ২৪ ঘন্টার মধ্যে আপনার সাথে যোগাযোগ করব।<br/>
+                • অর্ডার ট্র্যাক করতে ট্র্যাকিং আইডি: <strong>{orderData.tracking_id}</strong> সংরক্ষণ করুন।<br/>
+                • সাহায্যের জন্য যোগাযোগ করুন: <strong>01747292277</strong>
               </p>
             </div>
           </div>
@@ -111,7 +111,7 @@ export default function PerfectOrderSuccessModal({
         {/* Action Buttons */}
         <div className="space-y-3">
           <Button
-            onClick={() => window.open(`https://wa.me/8801712345678?text=আমার অর্ডার: ${orderData.tracking_id}`, '_blank')}
+            onClick={() => window.open(`https://wa.me/8801747292277?text=আমার অর্ডার: ${orderData.tracking_id}`, '_blank')}
             className="w-full bg-green-600 hover:bg-green-700 text-white"
           >
             <Phone className="w-4 h-4 mr-2" />

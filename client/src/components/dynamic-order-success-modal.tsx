@@ -92,7 +92,7 @@ export default function DynamicOrderSuccessModal({
   };
 
   const createWhatsAppUrl = (message: string) => {
-    const phoneNumber = "8801765555593";
+    const phoneNumber = "8801747292277";
     return `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
   };
 
@@ -289,7 +289,7 @@ export default function DynamicOrderSuccessModal({
                 {orderData.status === 'pending' ? 'অপেক্ষমাণ' : orderData.status}
               </Badge>
               <span className="text-xs text-blue-700">
-                আমরা আপনার অর্ডার প্রক্রিয়া করছি
+                আমরা ২৪ ঘন্টার মধ্যে আপনার সাথে যোগাযোগ করব
               </span>
             </div>
           </CardContent>
@@ -338,7 +338,8 @@ export default function DynamicOrderSuccessModal({
 
         {/* Help Text */}
         <div className="text-center text-xs text-gray-600 pt-4 border-t border-gray-200">
-          কোন সমস্যা হলে আমাদের সাথে যোগাযোগ করুন। আপনার অর্ডার ট্র্যাকিং নম্বর সংরক্ষণ করুন।
+          <p className="mb-1">কোন সমস্যা হলে আমাদের সাথে যোগাযোগ করুন: <strong>01747292277</strong></p>
+          <p>আপনার অর্ডার ট্র্যাকিং নম্বর: <strong>{orderData.tracking_id}</strong> সংরক্ষণ করুন।</p>
         </div>
       </div>
     </DynamicResponsiveModal>

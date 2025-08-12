@@ -1,4 +1,4 @@
-export const WHATSAPP_NUMBER = "+8801940689487";
+export const WHATSAPP_NUMBER = "+8801747292277";
 export const COMPANY_NAME = "TryneX Shop";
 export const COMPANY_TAGLINE = "আপনার পছন্দের গিফট শপ";
 
@@ -98,7 +98,7 @@ export const THANAS_BY_DISTRICT: Record<string, string[]> = {
     "গৌরীপুর", "গফরগাঁও", "ঈশ্বরগঞ্জ", "হালুয়াঘাট", "ফুলবাড়ীয়া", "ধোবাউড়া"
   ]
 };
-export const PHONE_NUMBER = "+8801940689487";
+export const PHONE_NUMBER = "+8801747292277";
 export const BKASH_NUMBER = "01747292277";
 export const NAGAD_NUMBER = "01747292277";
 export const FACEBOOK_PAGE = "https://www.facebook.com/profile.php?id=61576151563336";
