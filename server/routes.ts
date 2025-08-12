@@ -802,6 +802,86 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Custom Orders endpoints  
+  app.post('/api/custom-orders', async (req, res) => {
+    try {
+      console.log('Creating custom order with data:', req.body);
+      
+      // Set proper CORS headers
+      res.header('Access-Control-Allow-Origin', '*');
+      res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+      res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+      
+      const orderData = req.body;
+      
+      // Map the frontend data to the expected schema format
+      const customOrderData = {
+        productId: orderData.productId,
+        productName: "কাস্টম পণ্য",
+        customerName: orderData.customerName,
+        customerPhone: orderData.customerPhone,
+        customerEmail: orderData.customerEmail,
+        customerAddress: orderData.customerAddress || "ঢাকা",
+        customizationData: JSON.stringify(orderData.customizationData),
+        totalPrice: parseFloat(orderData.totalPrice || "0"),
+        advancePayment: 100, // Default advance payment
+        status: orderData.status || "pending_advance_payment",
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
+      
+      const customOrder = await storage.createCustomOrder(customOrderData);
+      console.log('Custom order created successfully:', customOrder.id);
+      
+      res.status(201).json({ 
+        success: true,
+        id: customOrder.id,
+        data: customOrder,
+        message: "কাস্টম অর্ডার সফলভাবে তৈরি হয়েছে"
+      });
+    } catch (error: any) {
+      console.error('Failed to create custom order:', error);
+      res.status(500).json({ 
+        success: false,
+        error: error.message || 'Failed to create custom order' 
+      });
+    }
+  });
+
+  app.get('/api/custom-orders', async (req, res) => {
+    try {
+      const customOrders = await storage.getCustomOrders();
+      res.json(customOrders);
+    } catch (error: any) {
+      console.error('Failed to fetch custom orders:', error);
+      res.status(500).json({ error: 'Failed to fetch custom orders' });
+    }
+  });
+
+  app.get('/api/custom-orders/:id', async (req, res) => {
+    try {
+      const customOrder = await storage.getCustomOrder(req.params.id);
+      if (!customOrder) {
+        return res.status(404).json({ error: 'Custom order not found' });
+      }
+      res.json(customOrder);
+    } catch (error: any) {
+      console.error('Failed to fetch custom order:', error);
+      res.status(500).json({ error: 'Failed to fetch custom order' });
+    }
+  });
+
+  app.patch('/api/custom-orders/:id', async (req, res) => {
+    try {
+      const { status } = req.body;
+      const customOrder = await storage.updateCustomOrderStatus(req.params.id, status);
+      res.json(customOrder);
+    } catch (error: any) {
+      console.error('Failed to update custom order:', error);
+      res.status(500).json({ error: 'Failed to update custom order' });
+    }
+  });
+
   // Health check
   app.get('/api/health', (req, res) => {
     res.json({
@@ -867,65 +947,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Custom orders endpoint (updated to match schema)
-  app.post("/api/custom-orders", async (req, res) => {
-    try {
-      console.log('Creating custom order with data:', req.body);
-      const orderData = req.body;
 
-      // Validate required fields for custom orders
-      if (!orderData.customerName || !orderData.phone || !orderData.address) {
-        return res.status(400).json({ 
-          error: "Missing required fields", 
-          required: ["customerName", "phone", "address"]
-        });
-      }
-
-      // Generate tracking ID for custom order
-      const trackingId = `CUSTOM${Date.now()}${Math.floor(Math.random() * 1000)}`;
-
-      // Prepare custom order data
-      const customOrderData = {
-        tracking_id: trackingId,
-        customer_name: orderData.customerName,
-        district: orderData.district || "ঢাকা", // Default district
-        thana: orderData.thana || "ঢাকা", // Default thana
-        address: orderData.address,
-        phone: orderData.phone,
-        payment_info: orderData.paymentMethod ? JSON.stringify({ method: orderData.paymentMethod, trx_id: orderData.trxId }) : null,
-        status: "pending",
-        items: JSON.stringify([{
-          productId: orderData.productId,
-          productName: orderData.productName || "কাস্টম পণ্য",
-          productPrice: orderData.productPrice || 0,
-          quantity: orderData.quantity || 1,
-          customization: {
-            size: orderData.selectedSize,
-            color: orderData.selectedColor,
-            printArea: orderData.selectedPrintArea,
-            customText: orderData.customText,
-            instructions: orderData.instructions
-          }
-        }]),
-        total: (orderData.totalPrice || orderData.totalAmount || 0).toString(),
-        custom_instructions: orderData.instructions || orderData.custom_instructions || "",
-        custom_images: orderData.customImages ? JSON.stringify(orderData.customImages) : null
-      };
-
-      const customOrder = await storage.createOrder(customOrderData);
-      console.log('✅ Custom order created successfully:', customOrder.tracking_id);
-
-      res.status(201).json({ 
-        success: true, 
-        order: customOrder,
-        tracking_id: customOrder.tracking_id,
-        message: "কাস্টম অর্ডার সফলভাবে তৈরি হয়েছে"
-      });
-    } catch (error) {
-      console.error("❌ Custom order creation error:", error);
-      res.status(500).json({ error: "Failed to create custom order", details: (error as Error).message });
-    }
-  });
 
   app.get('/api/orders', async (req, res) => {
     try {

@@ -3,13 +3,13 @@ import postgres from "postgres";
 import { eq, desc, and, like } from "drizzle-orm";
 import { 
   products, orders, offers, admins, categories, promoCodes, analytics, siteSettings,
-  users, userCarts, userOrders,
+  users, userCarts, userOrders, customOrders,
   type Product, type InsertProduct, type Order, type InsertOrder, 
   type Offer, type InsertOffer, type Admin, type InsertAdmin,
   type Category, type InsertCategory, type PromoCode, type InsertPromoCode,
   type Analytics, type InsertAnalytics, type SiteSettings, type InsertSiteSettings,
   type User, type UpsertUser, type UserCart, type InsertUserCart,
-  type UserOrder, type InsertUserOrder
+  type UserOrder, type InsertUserOrder, type CustomOrder, type InsertCustomOrder
 } from "@shared/schema";
 
 // Direct Supabase connection
@@ -316,6 +316,49 @@ export class SupabaseStorage {
   async createAdmin(admin: InsertAdmin): Promise<Admin> {
     const result = await db.insert(admins).values([admin]).returning();
     return result[0];
+  }
+
+  // Custom Orders
+  async getCustomOrders(): Promise<CustomOrder[]> {
+    try {
+      return await db.select().from(customOrders).orderBy(desc(customOrders.createdAt));
+    } catch (error) {
+      console.error('Error fetching custom orders:', error);
+      return [];
+    }
+  }
+
+  async getCustomOrder(id: string): Promise<CustomOrder | undefined> {
+    try {
+      const result = await db.select().from(customOrders).where(eq(customOrders.id, id)).limit(1);
+      return result[0];
+    } catch (error) {
+      console.error('Error fetching custom order:', error);
+      return undefined;
+    }
+  }
+
+  async createCustomOrder(customOrderData: InsertCustomOrder): Promise<CustomOrder> {
+    try {
+      const result = await db.insert(customOrders).values(customOrderData).returning();
+      return result[0];
+    } catch (error) {
+      console.error('Error creating custom order:', error);
+      throw new Error('Failed to create custom order');
+    }
+  }
+
+  async updateCustomOrderStatus(id: string, status: string): Promise<CustomOrder> {
+    try {
+      const result = await db.update(customOrders).set({ 
+        status, 
+        updatedAt: new Date() 
+      }).where(eq(customOrders.id, id)).returning();
+      return result[0];
+    } catch (error) {
+      console.error('Error updating custom order status:', error);
+      throw new Error('Failed to update custom order status');
+    }
   }
 }
 

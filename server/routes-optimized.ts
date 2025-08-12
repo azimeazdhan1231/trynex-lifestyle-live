@@ -263,13 +263,82 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Custom Orders - Simplified for now
+  // Custom Orders endpoints
   app.get('/api/custom-orders', async (req, res) => {
     try {
-      // Return empty array for now - can be implemented later
-      res.json([]);
+      const customOrders = await supabaseStorage.getCustomOrders();
+      res.json(customOrders);
     } catch (error) {
       console.error('❌ Error fetching custom orders:', error);
       res.status(500).json({ message: 'কাস্টম অর্ডার লোড করতে সমস্যা হয়েছে' });
+    }
+  });
+
+  app.post('/api/custom-orders', async (req, res) => {
+    try {
+      console.log('Creating custom order with data:', req.body);
+      
+      // Set proper JSON content type and CORS headers
+      res.setHeader('Content-Type', 'application/json');
+      res.header('Access-Control-Allow-Origin', '*');
+      res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+      res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+      
+      const orderData = req.body;
+      
+      // Map the frontend data to the expected schema format
+      const customOrderData = {
+        productId: orderData.productId,
+        customerName: orderData.customerName,
+        customerPhone: orderData.customerPhone,
+        customerEmail: orderData.customerEmail,
+        customerAddress: orderData.customerAddress || "ঢাকা",
+        customizationData: orderData.customizationData,
+        totalPrice: parseFloat(orderData.totalPrice || "0"),
+        status: orderData.status || "pending_advance_payment",
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
+      
+      const customOrder = await supabaseStorage.createCustomOrder(customOrderData);
+      console.log('Custom order created successfully:', customOrder.id);
+      
+      res.status(201).json({ 
+        success: true,
+        id: customOrder.id,
+        data: customOrder,
+        message: "কাস্টম অর্ডার সফলভাবে তৈরি হয়েছে"
+      });
+    } catch (error: any) {
+      console.error('Failed to create custom order:', error);
+      res.status(500).json({ 
+        success: false,
+        error: error.message || 'Failed to create custom order' 
+      });
+    }
+  });
+
+  app.get('/api/custom-orders/:id', async (req, res) => {
+    try {
+      const customOrder = await supabaseStorage.getCustomOrder(req.params.id);
+      if (!customOrder) {
+        return res.status(404).json({ error: 'Custom order not found' });
+      }
+      res.json(customOrder);
+    } catch (error: any) {
+      console.error('Failed to fetch custom order:', error);
+      res.status(500).json({ error: 'Failed to fetch custom order' });
+    }
+  });
+
+  app.patch('/api/custom-orders/:id', async (req, res) => {
+    try {
+      const { status } = req.body;
+      const customOrder = await supabaseStorage.updateCustomOrderStatus(req.params.id, status);
+      res.json(customOrder);
+    } catch (error: any) {
+      console.error('Failed to update custom order:', error);
+      res.status(500).json({ error: 'Failed to update custom order' });
     }
   });
 

@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion";
 import UltraSimpleLayout from "@/components/ultra-simple-layout";
 import UltraDynamicProductModal from "@/components/ultra-dynamic-product-modal";
-import EnhancedCustomizeModal from "@/components/enhanced-customize-modal";
+import EnhancedCustomizeModal from "@/components/enhanced-customize-modal-fixed";
 import CustomOrderCheckout from "@/components/custom-order-checkout";
 import { useToast } from "@/hooks/use-toast";
 import { useCart } from "@/hooks/use-cart";
@@ -933,18 +933,20 @@ export default function HomeProfessionalEcommerce() {
         onCustomize={handleCustomize}
       />
 
-      <EnhancedCustomizeModal
-        isOpen={!!customizeProduct}
-        onClose={() => setCustomizeProduct(null)}
-        product={customizeProduct}
-        onAddToCart={async (customProduct, customization) => {
-          const price = typeof customProduct.price === 'string' ? parseFloat(customProduct.price) : customProduct.price;
-          const image_url = customProduct.image_url || undefined;
-          addToCart({ ...customProduct, price, image_url, quantity: 1 });
-          setCustomizeProduct(null);
-          setShowCustomCheckout(true);
-        }}
-      />
+      {customizeProduct && (
+        <EnhancedCustomizeModal
+          isOpen={true}
+          onClose={() => setCustomizeProduct(null)}
+          product={customizeProduct}
+          onAddToCart={async (customProduct: any, customization: any) => {
+            const price = typeof customProduct.price === 'string' ? parseFloat(customProduct.price) : customProduct.price;
+            const image_url = customProduct.image_url || undefined;
+            addToCart({ ...customProduct, price, image_url, quantity: 1 });
+            setCustomizeProduct(null);
+            setShowCustomCheckout(true);
+          }}
+        />
+      )}
 
       <CustomOrderCheckout
         isOpen={showCustomCheckout}

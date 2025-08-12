@@ -104,10 +104,10 @@ export default function PerfectOrderSuccessModal({
           <div className="inline-flex items-center justify-center w-20 h-20 bg-green-100 rounded-full mb-4">
             <CheckCircle className="w-12 h-12 text-green-600" />
           </div>
-          <h3 className="text-2xl font-bold text-gray-900 mb-2">
+          <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
             অভিনন্দন! আপনার অর্ডার গৃহীত হয়েছে
           </h3>
-          <div className="text-gray-600 space-y-1">
+          <div className="text-gray-600 dark:text-gray-300 space-y-1">
             <span>আমরা শীঘ্রই আপনার সাথে যোগাযোগ করব</span>
           </div>
         </div>
@@ -144,30 +144,30 @@ export default function PerfectOrderSuccessModal({
           {/* Customer Information */}
           <Card>
             <CardContent className="p-6">
-              <h4 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+              <h4 className="font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
                 <MapPin className="w-5 h-5 text-blue-600" />
                 গ্রাহক তথ্য
               </h4>
               <div className="space-y-3">
                 <div className="flex justify-between">
-                  <span className="text-gray-600">নাম:</span>
-                  <span className="font-medium">{orderData.customer_name}</span>
+                  <span className="text-gray-600 dark:text-gray-300">নাম:</span>
+                  <span className="font-medium text-gray-900 dark:text-white">{orderData.customer_name}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">ফোন:</span>
-                  <span className="font-medium">{orderData.phone}</span>
+                  <span className="text-gray-600 dark:text-gray-300">ফোন:</span>
+                  <span className="font-medium text-gray-900 dark:text-white">{orderData.phone}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">জেলা:</span>
-                  <span className="font-medium">{orderData.district}</span>
+                  <span className="text-gray-600 dark:text-gray-300">জেলা:</span>
+                  <span className="font-medium text-gray-900 dark:text-white">{orderData.district}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">থানা:</span>
-                  <span className="font-medium">{orderData.thana}</span>
+                  <span className="text-gray-600 dark:text-gray-300">থানা:</span>
+                  <span className="font-medium text-gray-900 dark:text-white">{orderData.thana}</span>
                 </div>
                 <div>
-                  <span className="text-gray-600 block mb-1">ঠিকানা:</span>
-                  <span className="font-medium text-sm">{orderData.address}</span>
+                  <span className="text-gray-600 dark:text-gray-300 block mb-1">ঠিকানা:</span>
+                  <span className="font-medium text-sm text-gray-900 dark:text-white">{orderData.address}</span>
                 </div>
               </div>
             </CardContent>
@@ -176,27 +176,27 @@ export default function PerfectOrderSuccessModal({
           {/* Payment Information */}
           <Card>
             <CardContent className="p-6">
-              <h4 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+              <h4 className="font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
                 <CreditCard className="w-5 h-5 text-green-600" />
                 পেমেন্ট তথ্য
               </h4>
               <div className="space-y-3">
                 <div className="flex justify-between">
-                  <span className="text-gray-600">পেমেন্ট মাধ্যম:</span>
-                  <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                  <span className="text-gray-600 dark:text-gray-300">পেমেন্ট মাধ্যম:</span>
+                  <Badge variant="outline" className="bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-300 border-green-200 dark:border-green-800">
                     {orderData.payment_info.payment_method}
                   </Badge>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">নম্বর:</span>
-                  <span className="font-medium">{orderData.payment_info.payment_number}</span>
+                  <span className="text-gray-600 dark:text-gray-300">নম্বর:</span>
+                  <span className="font-medium text-gray-900 dark:text-white">{orderData.payment_info.payment_number}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">লেনদেন আইডি:</span>
-                  <span className="font-medium font-mono text-sm">{orderData.payment_info.trx_id}</span>
+                  <span className="text-gray-600 dark:text-gray-300">লেনদেন আইডি:</span>
+                  <span className="font-medium font-mono text-sm text-gray-900 dark:text-white">{orderData.payment_info.trx_id}</span>
                 </div>
                 <div className="flex justify-between text-lg font-semibold">
-                  <span className="text-gray-600">মোট পেমেন্ট:</span>
+                  <span className="text-gray-600 dark:text-gray-300">মোট পেমেন্ট:</span>
                   <span className="text-green-600">৳{orderData.payment_info.amount_paid}</span>
                 </div>
               </div>
@@ -207,7 +207,7 @@ export default function PerfectOrderSuccessModal({
         {/* Order Items */}
         <Card>
           <CardContent className="p-6">
-            <h4 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+            <h4 className="font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
               <Gift className="w-5 h-5 text-purple-600" />
               অর্ডার আইটেম
             </h4>
@@ -222,15 +222,15 @@ export default function PerfectOrderSuccessModal({
                     />
                   )}
                   <div className="flex-1">
-                    <h5 className="font-medium text-gray-900">{item.name}</h5>
-                    <div className="text-sm text-gray-600 flex items-center gap-4 mt-1">
+                    <h5 className="font-medium text-gray-900 dark:text-white">{item.name}</h5>
+                    <div className="text-sm text-gray-600 dark:text-gray-300 flex items-center gap-4 mt-1">
                       <span>পরিমাণ: {item.quantity}</span>
                       <span>দাম: ৳{item.price}</span>
                       {item.delivery_fee && <span>ডেলিভারি: ৳{item.delivery_fee}</span>}
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="font-semibold text-gray-900">
+                    <div className="font-semibold text-gray-900 dark:text-white">
                       ৳{(item.price * item.quantity + (item.delivery_fee || 0))}
                     </div>
                   </div>
@@ -241,7 +241,7 @@ export default function PerfectOrderSuccessModal({
             <Separator className="my-4" />
             
             <div className="flex justify-between items-center text-xl font-bold">
-              <span>সর্বমোট:</span>
+              <span className="text-gray-900 dark:text-white">সর্বমোট:</span>
               <span className="text-green-600">৳{orderData.total}</span>
             </div>
           </CardContent>
@@ -301,7 +301,7 @@ export default function PerfectOrderSuccessModal({
         </div>
 
         {/* Help Text */}
-        <div className="text-center text-sm text-gray-600 pt-4 border-t border-gray-200">
+        <div className="text-center text-sm text-gray-600 dark:text-gray-300 pt-4 border-t border-gray-200 dark:border-gray-700">
           <span>কোন সমস্যা হলে আমাদের সাথে যোগাযোগ করুন। আপনার অর্ডার ট্র্যাকিং নম্বর সংরক্ষণ করুন।</span>
         </div>
       </div>

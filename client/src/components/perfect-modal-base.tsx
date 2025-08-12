@@ -57,9 +57,9 @@ export default function PerfectModalBase({
           gap-0 
           rounded-2xl 
           border-2 
-          border-gray-200 
+          border-gray-200 dark:border-gray-700 
           shadow-2xl 
-          bg-white
+          bg-white dark:bg-gray-900
           ${className}
         `}
         aria-describedby={description ? "modal-description" : undefined}
@@ -67,11 +67,11 @@ export default function PerfectModalBase({
         <DialogHeader className="px-6 py-4 border-b border-gray-100 bg-gray-50/50 rounded-t-2xl">
           <div className="flex items-center justify-between">
             <div className="flex-1">
-              <DialogTitle className="text-xl sm:text-2xl font-bold text-gray-900 mb-1">
+              <DialogTitle className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mb-1">
                 {title}
               </DialogTitle>
               {description && (
-                <DialogDescription id="modal-description" className="text-sm text-gray-600">
+                <DialogDescription id="modal-description" className="text-sm text-gray-600 dark:text-gray-300">
                   {description}
                 </DialogDescription>
               )}

@@ -93,7 +93,7 @@ export default function DynamicResponsiveModal({
           !isMobile && "fixed left-[50%] top-[50%] translate-x-[-50%] translate-y-[-50%]",
           
           // Background and styling
-          "bg-white dark:bg-gray-900",
+          "bg-gray-900 text-white border-gray-700",
           isMobile ? "rounded-none" : "rounded-xl",
           
           // Animations
@@ -112,7 +112,7 @@ export default function DynamicResponsiveModal({
         {/* Header */}
         <DialogHeader 
           className={cn(
-            "px-4 py-4 border-b border-gray-200 bg-gray-50/50",
+            "px-4 py-4 border-b border-gray-600 bg-gray-800/50",
             isMobile ? "px-4 py-3" : "px-6 py-4",
             isMobile ? "rounded-none" : "rounded-t-xl"
           )}
@@ -121,7 +121,7 @@ export default function DynamicResponsiveModal({
             <div className="flex-1 min-w-0">
               <DialogTitle 
                 className={cn(
-                  "font-bold text-gray-900 mb-1 truncate",
+                  "font-bold text-gray-900 dark:text-white mb-1 truncate",
                   isMobile ? "text-lg" : "text-xl sm:text-2xl"
                 )}
               >
@@ -130,7 +130,7 @@ export default function DynamicResponsiveModal({
               {description && (
                 <DialogDescription 
                   className={cn(
-                    "text-gray-600",
+                    "text-gray-600 dark:text-gray-300",
                     isMobile ? "text-xs" : "text-sm"
                   )}
                 >
