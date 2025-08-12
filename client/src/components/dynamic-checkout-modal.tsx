@@ -90,16 +90,28 @@ export default function DynamicCheckoutModal({ isOpen, onClose, cart, onOrderCom
 
   // Update delivery fee and available thanas when district changes
   useEffect(() => {
-    if (formData.district) {
+    if (formData.district && THANAS_BY_DISTRICT[formData.district]) {
       const fee = calculateDeliveryFee(formData.district, subtotal);
       setDeliveryFee(fee);
-      setAvailableThanas(THANAS_BY_DISTRICT[formData.district] || []);
+      setAvailableThanas(THANAS_BY_DISTRICT[formData.district]);
+      // Clear thana selection when district changes
+      if (formData.thana && !THANAS_BY_DISTRICT[formData.district].includes(formData.thana)) {
+        setFormData(prev => ({ ...prev, thana: "" }));
+      }
+      // Clear any district-related errors
+      setErrors(prev => ({...prev, district: ""}));
+    } else if (formData.district) {
+      // If district is selected but no thanas available, clear thana
+      setAvailableThanas([]);
       setFormData(prev => ({ ...prev, thana: "" }));
+      setDeliveryFee(calculateDeliveryFee(formData.district, subtotal));
     } else {
+      // No district selected
       setAvailableThanas([]);
       setDeliveryFee(80);
+      setFormData(prev => ({ ...prev, thana: "" }));
     }
-  }, [formData.district]);
+  }, [formData.district, subtotal]);
 
   const validateStep = (step: number): boolean => {
     const newErrors: Record<string, string> = {};
@@ -114,7 +126,7 @@ export default function DynamicCheckoutModal({ isOpen, onClose, cart, onOrderCom
 
     if (step === 2) {
       if (!formData.district) newErrors.district = "জেলা নির্বাচন করুন";
-      if (!formData.thana) newErrors.thana = "থানা নির্বাচন করুন";
+      if (!formData.thana && availableThanas.length > 0) newErrors.thana = "থানা নির্বাচন করুন";
       if (!formData.address.trim()) newErrors.address = "বিস্তারিত ঠিকানা লিখুন";
     }
 
@@ -194,13 +206,13 @@ export default function DynamicCheckoutModal({ isOpen, onClose, cart, onOrderCom
       district: formData.district,
       thana: formData.thana,
       address: formData.address,
-      total_amount: finalPayment,
-      delivery_fee: deliveryFee,
+      total: finalPayment.toString(), // Convert to string as expected by backend
       payment_info: {
         method: isCustomOrder ? "advance_payment" : "cash_on_delivery",
         payment_number: formData.payment_number,
         trx_id: formData.trx_id,
-        amount_paid: finalPayment
+        amount_paid: finalPayment,
+        delivery_fee: deliveryFee
       },
       custom_instructions: customInstructions + (formData.special_instructions || ''),
       custom_images: allCustomImages,
@@ -318,9 +330,15 @@ export default function DynamicCheckoutModal({ isOpen, onClose, cart, onOrderCom
 
                 <div>
                   <Label className="text-gray-700 font-medium">থানা *</Label>
-                  <Select value={formData.thana} onValueChange={(value) => setFormData(prev => ({ ...prev, thana: value }))} disabled={!formData.district}>
+                  <Select value={formData.thana} onValueChange={(value) => setFormData(prev => ({ ...prev, thana: value }))} disabled={!formData.district || availableThanas.length === 0}>
                     <SelectTrigger className={cn("mt-1", errors.thana && "border-red-500")} data-testid="select-thana">
-                      <SelectValue placeholder="থানা নির্বাচন করুন" />
+                      <SelectValue placeholder={
+                        !formData.district 
+                          ? "প্রথমে জেলা নির্বাচন করুন" 
+                          : availableThanas.length === 0
+                          ? "এই জেলায় থানা পাওয়া যায়নি"
+                          : "থানা নির্বাচন করুন"
+                      } />
                     </SelectTrigger>
                     <SelectContent>
                       {availableThanas.map((thana) => (
@@ -329,6 +347,9 @@ export default function DynamicCheckoutModal({ isOpen, onClose, cart, onOrderCom
                     </SelectContent>
                   </Select>
                   {errors.thana && <p className="text-red-500 text-sm mt-1">{errors.thana}</p>}
+                  {formData.district && availableThanas.length === 0 && (
+                    <p className="text-amber-600 text-sm mt-1">এই জেলার জন্য থানা তথ্য পাওয়া যায়নি</p>
+                  )}
                 </div>
               </div>
 
@@ -617,7 +638,7 @@ export default function DynamicCheckoutModal({ isOpen, onClose, cart, onOrderCom
             thana: completedOrder.thana,
             address: completedOrder.address || '',
             items: cart,
-            total: completedOrder.total_amount?.toString() || '0',
+            total: completedOrder.total?.toString() || '0',
             delivery_fee: deliveryFee,
             payment_info: {
               payment_method: formData.payment_number ? "bKash/Nagad" : "Mobile Banking",

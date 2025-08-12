@@ -94,10 +94,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       console.log(`✅ Order created: ${order.tracking_id}`);
       
+      // Return the complete order object for frontend compatibility
       res.status(201).json({
+        ...order,
+        tracking_number: order.tracking_id, // For compatibility with existing frontend code
         success: true,
-        tracking_id: order.tracking_id,
-        order_id: order.id,
         message: 'অর্ডার সফলভাবে তৈরি হয়েছে'
       });
     } catch (error) {

@@ -65,16 +65,28 @@ function PerfectCheckoutModal({ isOpen, onClose, cart, onOrderComplete }: Checko
 
   // Update delivery fee and available thanas when district changes
   useEffect(() => {
-    if (formData.district) {
+    if (formData.district && THANAS_BY_DISTRICT[formData.district]) {
       const fee = calculateDeliveryFee(formData.district, subtotal);
       setDeliveryFee(fee);
-      setAvailableThanas(THANAS_BY_DISTRICT[formData.district] || []);
+      setAvailableThanas(THANAS_BY_DISTRICT[formData.district]);
+      // Clear thana selection when district changes
+      if (formData.thana && !THANAS_BY_DISTRICT[formData.district].includes(formData.thana)) {
+        setFormData(prev => ({ ...prev, thana: "" }));
+      }
+      // Clear any district-related errors
+      setErrors(prev => ({...prev, district: ""}));
+    } else if (formData.district) {
+      // If district is selected but no thanas available, clear thana
+      setAvailableThanas([]);
       setFormData(prev => ({ ...prev, thana: "" }));
+      setDeliveryFee(calculateDeliveryFee(formData.district, subtotal));
     } else {
+      // No district selected
       setAvailableThanas([]);
       setDeliveryFee(80);
+      setFormData(prev => ({ ...prev, thana: "" }));
     }
-  }, [formData.district]);
+  }, [formData.district, subtotal]);
 
   const validateStep = (step: number): boolean => {
     const newErrors: Record<string, string> = {};
@@ -89,7 +101,7 @@ function PerfectCheckoutModal({ isOpen, onClose, cart, onOrderComplete }: Checko
 
     if (step === 2) {
       if (!formData.district) newErrors.district = "জেলা নির্বাচন করুন";
-      if (!formData.thana) newErrors.thana = "থানা নির্বাচন করুন";
+      if (!formData.thana && availableThanas.length > 0) newErrors.thana = "থানা নির্বাচন করুন";
       if (!formData.address.trim()) newErrors.address = "বিস্তারিত ঠিকানা লিখুন";
     }
 
