@@ -571,19 +571,19 @@ const MobileOptimizedFeaturesSection = memo(function MobileOptimizedFeaturesSect
               whileHover={{ y: -3 }}
               className="group"
             >
-              <Card className="text-center border-0 shadow-md hover:shadow-xl transition-all duration-300 bg-white/90 backdrop-blur-sm h-full">
-                <CardContent className="p-4 sm:p-6 lg:p-8">
+              <Card className="text-center border border-gray-100 shadow-sm hover:shadow-md hover:border-primary/20 transition-all duration-300 bg-white h-full">
+                <CardContent className="p-4 sm:p-5 lg:p-6">
                   <motion.div 
-                    className={`w-12 h-12 sm:w-16 sm:h-16 lg:w-20 lg:h-20 mx-auto mb-3 sm:mb-4 lg:mb-6 bg-gradient-to-br ${feature.color} rounded-xl sm:rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-lg`}
-                    whileHover={{ rotate: 360 }}
-                    transition={{ duration: 0.6 }}
+                    className="w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 mx-auto mb-3 sm:mb-4 lg:mb-6 bg-gray-50 border border-gray-100 rounded-lg flex items-center justify-center group-hover:bg-primary/5 group-hover:border-primary/20 transition-all duration-300"
+                    whileHover={{ scale: 1.05 }}
+                    transition={{ duration: 0.2 }}
                   >
-                    <feature.icon className="w-6 h-6 sm:w-8 sm:h-8 lg:w-10 lg:h-10 text-white" />
+                    <feature.icon className={`w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8 text-gray-600 group-hover:text-primary transition-colors duration-300`} />
                   </motion.div>
-                  <h3 className="font-bold text-gray-900 mb-2 sm:mb-3 text-sm sm:text-base lg:text-lg">
+                  <h3 className="font-semibold text-gray-800 mb-2 text-sm sm:text-base lg:text-lg leading-tight">
                     {feature.title}
                   </h3>
-                  <p className="text-gray-600 text-xs sm:text-sm lg:text-base leading-relaxed">
+                  <p className="text-gray-500 text-xs sm:text-sm leading-relaxed">
                     {feature.description}
                   </p>
                 </CardContent>

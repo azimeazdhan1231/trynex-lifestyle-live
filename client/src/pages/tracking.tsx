@@ -460,14 +460,14 @@ export default function OrderTracking() {
                         {item.image_url && (
                           <img 
                             src={item.image_url} 
-                            alt={item.name}
+                            alt={item.name || item.productName || 'পণ্য'}
                             className="w-16 h-16 object-cover rounded-lg border"
                           />
                         )}
                         <div className="flex-1">
-                          <h4 className="font-medium">{item.name}</h4>
-                          <p className="text-sm text-gray-600">পরিমাণ: {item.quantity}টি</p>
-                          <p className="text-sm font-medium text-green-600">৳{parseFloat(item.price.toString()).toLocaleString()}</p>
+                          <h4 className="font-medium">{item.name || item.productName || 'পণ্যের নাম'}</h4>
+                          <p className="text-sm text-gray-600">পরিমাণ: {item.quantity || 1}টি</p>
+                          <p className="text-sm font-medium text-green-600">৳{parseFloat((item.price || item.productPrice || 0).toString()).toLocaleString()}</p>
                         </div>
                         {item.customization && (
                           <Badge variant="outline" className="text-xs">
