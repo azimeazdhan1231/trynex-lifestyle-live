@@ -9,7 +9,6 @@ import { useToast } from "@/hooks/use-toast";
 import { useMutation } from "@tanstack/react-query";
 import MobileOptimizedLayout from "@/components/mobile-optimized-layout";
 import { useCart } from "@/hooks/use-cart";
-import Header from "@/components/header";
 import { 
   Upload, 
   Phone, 
@@ -175,9 +174,8 @@ export default function CustomOrderForm() {
   const { totalItems } = useCart();
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Header cartCount={totalItems} onCartOpen={() => {}} />
-      <div className="pt-16 min-h-screen bg-gradient-to-br from-green-50 to-blue-50 py-8 px-4">
+    <MobileOptimizedLayout>
+      <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 py-8 px-4">
         <div className="max-w-2xl mx-auto">
         <Card className="shadow-xl border-0">
           <CardHeader className="bg-gradient-to-r from-green-500 to-blue-500 text-white rounded-t-lg">
@@ -441,6 +439,6 @@ export default function CustomOrderForm() {
         </Card>
         </div>
       </div>
-    </div>
+    </MobileOptimizedLayout>
   );
 }
