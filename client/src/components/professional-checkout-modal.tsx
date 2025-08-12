@@ -161,8 +161,8 @@ export default function ProfessionalCheckoutModal({
   if (currentStep === 'summary') {
     return (
       <Dialog open={isOpen} onOpenChange={handleCloseModal}>
-        <DialogContent className="sm:max-w-lg max-h-[95vh] p-0 overflow-hidden">
-          <DialogHeader className="border-b p-6 pb-4">
+        <DialogContent className="w-[95vw] max-w-3xl h-[90vh] max-h-[900px] p-0 flex flex-col">
+          <DialogHeader className="flex-shrink-0 border-b p-4">
             <DialogTitle className="flex items-center gap-2">
               <Package className="w-5 h-5 text-green-600" />
               অর্ডার সারাংশ
@@ -172,7 +172,7 @@ export default function ProfessionalCheckoutModal({
             </DialogDescription>
           </DialogHeader>
 
-          <div className="p-6 space-y-4 overflow-y-auto">
+          <div className="flex-1 min-h-0 overflow-y-auto p-4 space-y-4">
             {/* Order Items */}
             <div className="space-y-3">
               <h3 className="font-semibold text-gray-900 flex items-center gap-2">
@@ -265,8 +265,8 @@ export default function ProfessionalCheckoutModal({
   if (currentStep === 'details') {
     return (
       <Dialog open={isOpen} onOpenChange={handleCloseModal}>
-        <DialogContent className="sm:max-w-2xl max-h-[95vh] p-0 overflow-hidden">
-          <DialogHeader className="border-b p-6 pb-4">
+        <DialogContent className="w-[95vw] max-w-4xl h-[95vh] max-h-[950px] p-0 flex flex-col">
+          <DialogHeader className="flex-shrink-0 border-b p-4">
             <DialogTitle className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <User className="w-5 h-5 text-green-600" />
@@ -286,7 +286,7 @@ export default function ProfessionalCheckoutModal({
             </DialogDescription>
           </DialogHeader>
 
-          <div className="p-6 space-y-6 overflow-y-auto">
+          <div className="flex-1 min-h-0 overflow-y-auto p-4 space-y-6">
             {/* Personal Information */}
             <div className="space-y-4">
               <h3 className="font-semibold text-gray-900 flex items-center gap-2">
@@ -486,8 +486,8 @@ export default function ProfessionalCheckoutModal({
       onOrderComplete();
       handleCloseModal();
     }}>
-      <DialogContent className="sm:max-w-md max-h-[90vh] p-0">
-        <DialogHeader className="p-6 pb-4 text-center">
+      <DialogContent className="w-[95vw] max-w-2xl h-[70vh] max-h-[700px] p-0 flex flex-col">
+        <DialogHeader className="flex-shrink-0 p-4 text-center">
           <DialogTitle className="flex flex-col items-center gap-3">
             <div className="bg-green-100 p-3 rounded-full">
               <CheckCircle className="w-8 h-8 text-green-600" />
@@ -499,7 +499,8 @@ export default function ProfessionalCheckoutModal({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="p-6 pt-0 text-center space-y-6">
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-center space-y-6 px-4">
           <div className="space-y-3">
             <h3 className="font-semibold text-gray-900">পরবর্তী করণীয়</h3>
             <div className="text-sm text-gray-600 space-y-2">
@@ -530,6 +531,7 @@ export default function ProfessionalCheckoutModal({
           >
             সম্পন্ন
           </Button>
+          </div>
         </div>
       </DialogContent>
     </Dialog>

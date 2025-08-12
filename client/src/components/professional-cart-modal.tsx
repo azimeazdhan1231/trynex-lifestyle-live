@@ -21,7 +21,7 @@ import {
   ArrowRight
 } from "lucide-react";
 import { formatPrice } from "@/lib/constants";
-// import ProfessionalCheckoutModal from "./professional-checkout-modal";
+import ProfessionalCheckoutModal from "./professional-checkout-modal";
 
 interface ProfessionalCartModalProps {
   isOpen: boolean;
@@ -86,11 +86,8 @@ ${itemsText}
 
   const handleCheckout = () => {
     if (items.length === 0) return;
-    // Temporarily show toast instead of opening checkout
-    toast({
-      title: "চেকআউট বৈশিষ্ট্য",
-      description: "চেকআউট বৈশিষ্ট্য শীঘ্রই উপলব্ধ হবে। এখনও হোয়াটসঅ্যাপে অর্ডার করুন।",
-    });
+    onClose();
+    setIsCheckoutOpen(true);
   };
 
   const handleQuantityChange = (id: string, newQuantity: number) => {
@@ -404,8 +401,8 @@ ${itemsText}
         </DialogContent>
       </Dialog>
 
-      {/* Professional Checkout Modal - Temporarily disabled */}
-      {/*<ProfessionalCheckoutModal
+      {/* Professional Checkout Modal */}
+      <ProfessionalCheckoutModal
         isOpen={isCheckoutOpen}
         onClose={() => setIsCheckoutOpen(false)}
         cartItems={items}
@@ -414,7 +411,7 @@ ${itemsText}
           clearCart();
           setIsCheckoutOpen(false);
         }}
-      />*/}
+      />
     </>
   );
 }
