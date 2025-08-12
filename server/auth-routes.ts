@@ -3,7 +3,7 @@ import { storage } from "./simple-storage";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
-const JWT_SECRET = process.env.JWT_SECRET || "trynex_secret_key_2025";
+const JWT_SECRET = process.env.JWT_SECRET_KEY || process.env.JWT_SECRET || "trynex_secret_key_2025";
 
 export function setupAuthRoutes(app: Express) {
   // Register endpoint
@@ -106,9 +106,12 @@ export function setupAuthRoutes(app: Express) {
   // Admin login endpoint
   app.post('/api/admin/login', async (req, res) => {
     try {
-      const { email, password } = req.body;
+      const { email, password, username } = req.body;
+      
+      // Support both email and username fields
+      const loginField = email || username;
 
-      if (!email || !password) {
+      if (!loginField || !password) {
         return res.status(400).json({ 
           success: false, 
           message: 'ইমেইল এবং পাসওয়ার্ড দিন' 
@@ -117,9 +120,10 @@ export function setupAuthRoutes(app: Express) {
 
       // Check admin credentials - hardcoded for now
       const ADMIN_EMAIL = "admin@trynex.com";
+      const ADMIN_USERNAME = "admin";
       const ADMIN_PASSWORD = "admin123";
 
-      if (email !== ADMIN_EMAIL || password !== ADMIN_PASSWORD) {
+      if ((loginField !== ADMIN_EMAIL && loginField !== ADMIN_USERNAME) || password !== ADMIN_PASSWORD) {
         return res.status(401).json({ 
           success: false, 
           message: 'ভুল ইমেইল বা পাসওয়ার্ড' 
@@ -130,6 +134,7 @@ export function setupAuthRoutes(app: Express) {
       const token = jwt.sign(
         { 
           id: 'admin', 
+          username: 'admin',
           email: ADMIN_EMAIL, 
           role: 'admin' 
         }, 

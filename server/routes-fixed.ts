@@ -8,8 +8,8 @@ import jwt from "jsonwebtoken";
 import type { Product, Order, Category, Offer, User, CustomOrder } from "@shared/schema";
 import { insertProductSchema, insertOrderSchema } from "@shared/schema";
 
-// JWT secret key from environment
-const JWT_SECRET = process.env.JWT_SECRET_KEY || "default-secret-key";
+// JWT secret key from environment (synchronized with auth-routes.ts)
+const JWT_SECRET = process.env.JWT_SECRET_KEY || process.env.JWT_SECRET || "trynex_secret_key_2025";
 
 // High-performance multi-layer cache system
 interface CacheEntry<T> {
@@ -200,13 +200,43 @@ const authenticateToken = (req: AuthRequest, res: express.Response, next: expres
   const token = authHeader && authHeader.split(' ')[1];
 
   if (!token) {
+    console.log('❌ No token provided in header');
     return res.status(401).json({ error: 'Access token required' });
   }
 
   jwt.verify(token, JWT_SECRET, (err: any, user: any) => {
     if (err) {
+      console.log('❌ JWT verification failed:', err.message);
       return res.status(403).json({ error: 'Invalid token' });
     }
+    console.log('✅ Token verified successfully:', { id: user.id, role: user.role });
+    req.user = user;
+    next();
+  });
+};
+
+// Admin-specific authentication middleware
+const authenticateAdmin = (req: AuthRequest, res: express.Response, next: express.NextFunction) => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+
+  if (!token) {
+    console.log('❌ Admin: No token provided');
+    return res.status(401).json({ error: 'Access token required' });
+  }
+
+  jwt.verify(token, JWT_SECRET, (err: any, user: any) => {
+    if (err) {
+      console.log('❌ Admin: JWT verification failed:', err.message);
+      return res.status(403).json({ error: 'Invalid token' });
+    }
+    
+    if (user.role !== 'admin') {
+      console.log('❌ Admin: Insufficient permissions, user role:', user.role);
+      return res.status(403).json({ error: 'Admin access required' });
+    }
+    
+    console.log('✅ Admin authenticated successfully:', { id: user.id, email: user.email });
     req.user = user;
     next();
   });
@@ -416,7 +446,7 @@ export function registerRoutes(app: Express): void {
   });
 
   // Update product by ID (PATCH endpoint for admin panel)
-  app.patch('/api/products/:id', authenticateToken, async (req: AuthRequest, res) => {
+  app.patch('/api/products/:id', authenticateAdmin, async (req: AuthRequest, res) => {
     try {
       const { id } = req.params;
       const updates = req.body;
@@ -498,7 +528,7 @@ export function registerRoutes(app: Express): void {
       }
 
       // Clear performance cache
-      performanceCache.clearAll();
+      performanceCache.clearCache();
 
       console.log(`✅ Product ${id} updated successfully`);
       res.json(updatedProduct);
@@ -552,7 +582,7 @@ export function registerRoutes(app: Express): void {
       const newProduct = await storage.createProduct(validatedProduct);
 
       // Clear performance cache
-      performanceCache.clearAll();
+      performanceCache.clearCache();
 
       console.log(`✅ Product created successfully: ${newProduct.id}`);
       res.status(201).json(newProduct);
@@ -577,7 +607,7 @@ export function registerRoutes(app: Express): void {
       await storage.deleteProduct(id);
 
       // Clear performance cache
-      performanceCache.clearAll();
+      performanceCache.clearCache();
 
       console.log(`✅ Product ${id} deleted successfully`);
       res.json({ message: 'Product deleted successfully', id });

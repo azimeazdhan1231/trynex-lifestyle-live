@@ -10,6 +10,9 @@ import type { Product, Order, Category, Offer, User, CustomOrder } from "@shared
 import { insertProductSchema, insertOrderSchema } from "@shared/schema";
 // Removed non-existent imports
 
+// JWT Secret for authentication (shared across all operations)
+const JWT_SECRET = process.env.JWT_SECRET_KEY || process.env.JWT_SECRET || "trynex_secret_key_2025";
+
 // High-performance multi-layer cache system
 interface CacheEntry<T> {
   data: T;
@@ -1033,8 +1036,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Verify JWT token
-      const JWT_SECRET = process.env.JWT_SECRET || "trynex_secret_key_2025";
-
       try {
         const decoded: any = jwt.verify(token, JWT_SECRET);
         const userOrders = await storage.getUserOrders(decoded.id);
@@ -1048,25 +1049,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // JWT Secret for authentication
-  const JWT_SECRET = process.env.JWT_SECRET_KEY || process.env.JWT_SECRET || "trynex_secret_key_2025";
+
 
   // Authentication middleware
   const authenticateAdmin = (req: any, res: any, next: any) => {
     const token = req.headers.authorization?.replace('Bearer ', '');
 
     if (!token) {
+      console.log('❌ No token provided');
       return res.status(401).json({ error: 'Access token required' });
     }
 
     try {
       const decoded = jwt.verify(token, JWT_SECRET) as any;
+      console.log('🔍 Token decoded:', { id: decoded.id, role: decoded.role, email: decoded.email });
+      
       if (decoded.role !== 'admin') {
+        console.log('❌ Not admin role:', decoded.role);
         return res.status(403).json({ error: 'Admin access required' });
       }
       req.user = decoded;
+      console.log('✅ Admin authenticated successfully');
       next();
     } catch (error) {
+      console.log('❌ Token verification failed:', error.message);
       return res.status(401).json({ error: 'Invalid token' });
     }
   };
@@ -1136,53 +1142,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Admin authentication
-  app.post('/api/admin/login', async (req, res) => {
-    try {
-      const { username, password, email } = req.body;
-      
-      // Support both username and email fields
-      const loginField = username || email;
-
-      console.log('Admin login attempt:', { loginField, password: password ? '[PROVIDED]' : '[MISSING]' });
-
-      // Admin credentials
-      const ADMIN_USERNAME = 'admin';
-      const ADMIN_EMAIL = 'admin@trynex.com';
-      const ADMIN_PASSWORD = 'admin123';
-
-      if ((loginField === ADMIN_USERNAME || loginField === ADMIN_EMAIL) && password === ADMIN_PASSWORD) {
-        const token = jwt.sign(
-          { id: 'admin', username: 'admin', email: ADMIN_EMAIL, role: 'admin' },
-          JWT_SECRET,
-          { expiresIn: '24h' }
-        );
-
-        console.log('Admin login successful, token generated');
-
-        res.json({
-          success: true,
-          token,
-          user: { id: 'admin', username: 'admin', email: ADMIN_EMAIL, role: 'admin' },
-          admin: { id: 'admin', username: 'admin', email: ADMIN_EMAIL, role: 'admin' }
-        });
-      } else {
-        console.log('Admin login failed: Invalid credentials');
-        res.status(401).json({ 
-          success: false,
-          error: 'Invalid credentials',
-          message: 'ভুল ইমেইল বা পাসওয়ার্ড'
-        });
-      }
-    } catch (error) {
-      console.error('Admin login error:', error);
-      res.status(500).json({ 
-        success: false,
-        error: 'Login failed',
-        message: 'সার্ভার এরর'
-      });
-    }
-  });
+  // Admin authentication routes are handled in auth-routes.ts
 
   // Admin verification endpoint
   app.get('/api/admin/verify', authenticateAdmin, async (req, res) => {
