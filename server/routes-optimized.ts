@@ -1,6 +1,6 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
-import { storage } from "./simple-storage";
+import { storage } from "./clean-storage";
 import { setupAuthRoutes } from "./auth-routes";
 import { 
   insertOrderSchema, insertProductSchema, insertOfferSchema,
@@ -209,95 +209,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Custom Orders API
+  // Custom Orders - Simplified for now
   app.get('/api/custom-orders', async (req, res) => {
     try {
-      res.set('Cache-Control', 'public, max-age=30'); // 30 seconds
-      
-      const customOrders = await storage.getCustomOrders();
-      
-      console.log(`✅ Fetched ${customOrders.length} custom orders`);
-      
-      res.json(customOrders);
+      // Return empty array for now - can be implemented later
+      res.json([]);
     } catch (error) {
       console.error('❌ Error fetching custom orders:', error);
       res.status(500).json({ message: 'কাস্টম অর্ডার লোড করতে সমস্যা হয়েছে' });
-    }
-  });
-
-  app.get('/api/custom-orders/:id', async (req, res) => {
-    try {
-      const customOrder = await storage.getCustomOrder(req.params.id);
-      
-      if (!customOrder) {
-        return res.status(404).json({ message: 'কাস্টম অর্ডার পাওয়া যায়নি' });
-      }
-      
-      res.json(customOrder);
-    } catch (error) {
-      console.error('❌ Error fetching custom order:', error);
-      res.status(500).json({ message: 'কাস্টম অর্ডার লোড করতে সমস্যা হয়েছে' });
-    }
-  });
-
-  app.post('/api/custom-orders', async (req, res) => {
-    try {
-      const orderData = req.body;
-      
-      // Process and serialize custom images
-      const customImagesData = JSON.stringify(orderData.customImages || []);
-      
-      const customOrderData = {
-        productId: orderData.productId,
-        customerName: orderData.customerName,
-        customerPhone: orderData.phone,
-        customerEmail: orderData.email || null,
-        customerAddress: orderData.address,
-        customizationData: {
-          productName: orderData.productName,
-          productPrice: orderData.productPrice,
-          quantity: orderData.quantity,
-          selectedSize: orderData.selectedSize,
-          selectedColor: orderData.selectedColor,
-          customImages: orderData.customImages || [],
-          instructions: orderData.instructions || '',
-          hasCustomImages: orderData.hasCustomImages || false,
-          imageCount: orderData.imageCount || 0
-        },
-        totalPrice: orderData.totalPrice.toString(),
-        status: 'pending'
-      };
-      
-      const customOrder = await storage.createCustomOrder(customOrderData);
-      
-      console.log(`✅ Created custom order #${customOrder.id} for ${customOrder.customerName}`);
-      
-      res.json({
-        success: true,
-        customOrder,
-        message: 'কাস্টম অর্ডার সফলভাবে তৈরি হয়েছে'
-      });
-    } catch (error) {
-      console.error('❌ Error creating custom order:', error);
-      res.status(500).json({ message: 'কাস্টম অর্ডার তৈরি করতে সমস্যা হয়েছে' });
-    }
-  });
-
-  app.patch('/api/custom-orders/:id/status', async (req, res) => {
-    try {
-      const { status } = req.body;
-      const customOrder = await storage.updateCustomOrderStatus(req.params.id, status);
-      
-      console.log(`✅ Custom order #${req.params.id} status updated to: ${status}`);
-      
-      res.json({
-        success: true,
-        customOrder,
-        message: 'কাস্টম অর্ডার স্ট্যাটাস আপডেট হয়েছে'
-      });
-    } catch (error) {
-      console.error('❌ Error updating custom order status:', error);
-      res.status(500).json({ message: 'কাস্টম অর্ডার স্ট্যাটাস আপডেট করতে সমস্যা হয়েছে' });
     }
   });
 
@@ -307,14 +226,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.set('Cache-Control', 'public, max-age=60'); // 1 minute
       
       const settings = await storage.getSettings();
-      
-      // Convert settings array to object for easier access
-      const settingsObj: any = {};
-      settings.forEach(setting => {
-        settingsObj[setting.key] = setting.value;
-      });
-      
-      res.json(settingsObj);
+      res.json(settings);
     } catch (error) {
       console.error('❌ Error fetching settings:', error);
       res.status(500).json({ message: 'Settings could not be loaded' });

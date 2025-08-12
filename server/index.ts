@@ -2,7 +2,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 import express, { type Request, Response, NextFunction } from "express";
-import { registerRoutes } from "./routes-fixed";
+import { registerRoutes } from "./routes-optimized";
 import { setupVite, serveStatic, log } from "./vite";
 import cors from "cors";
 import { createServer } from "http";
