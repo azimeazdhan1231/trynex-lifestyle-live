@@ -16,7 +16,7 @@ const Home = lazy(() => import("./pages/home-ultra-dynamic"));
 const Product = lazy(() => import("./pages/product-enhanced"));
 const Products = lazy(() => import("./pages/products"));
 const Contact = lazy(() => import("./pages/contact"));
-const Tracking = lazy(() => import("./pages/tracking-enhanced"));
+const OrderTracking = lazy(() => import("./pages/tracking"));
 const Admin = lazy(() => import("./pages/admin"));
 const Offers = lazy(() => import("./pages/offers"));
 const Profile = lazy(() => import("./pages/profile"));
@@ -64,7 +64,7 @@ function Router() {
         <Route path="/about" component={About} />
         <Route path="/blog" component={BlogPage} />
         <Route path="/admin" component={Admin} />
-        <Route path="/tracking" component={Tracking} />
+        <Route path="/tracking" component={OrderTracking} />
 
         <Route path="/custom-order" component={CustomOrderForm} />
         <Route path="/return-policy-old" component={ReturnPolicy} />

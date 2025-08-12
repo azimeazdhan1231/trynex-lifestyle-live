@@ -27,6 +27,7 @@ export default function Header({ cartCount, onCartOpen }: HeaderProps) {
     { name: "পণ্য", href: "/products" },
     { name: "কাস্টমাইজেশন", href: "/products?customize=true" },
     { name: "কাস্টম অর্ডার", href: "/custom-order" },
+    { name: "ট্র্যাকিং", href: "/tracking" },
     { name: "অফার", href: "/offers" },
     { name: "যোগাযোগ", href: "/contact" },
   ];
