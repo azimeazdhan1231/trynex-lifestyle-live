@@ -57,13 +57,12 @@ export default function ProductManagement({ products, categories }: ProductManag
       return apiRequest("POST", "/api/products", data);
     },
     onSuccess: () => {
-      // More aggressive cache invalidation
-      queryClient.invalidateQueries({ queryKey: ["/api/products"] });
-      queryClient.refetchQueries({ queryKey: ["/api/products"] });
-      // Force immediate refetch to update UI
-      setTimeout(() => {
-        queryClient.refetchQueries({ queryKey: ["/api/products"] });
-      }, 100);
+      // Safe cache invalidation
+      queryClient.invalidateQueries({ 
+        queryKey: ["/api/products"],
+        exact: false 
+      });
+      
       setIsDialogOpen(false);
       resetForm();
       toast({
@@ -86,13 +85,12 @@ export default function ProductManagement({ products, categories }: ProductManag
       return apiRequest("PATCH", `/api/products/${id}`, data);
     },
     onSuccess: () => {
-      // More aggressive cache invalidation
-      queryClient.invalidateQueries({ queryKey: ["/api/products"] });
-      queryClient.refetchQueries({ queryKey: ["/api/products"] });
-      // Force immediate refetch to update UI
-      setTimeout(() => {
-        queryClient.refetchQueries({ queryKey: ["/api/products"] });
-      }, 100);
+      // Safe cache invalidation without concurrent requests
+      queryClient.invalidateQueries({ 
+        queryKey: ["/api/products"],
+        exact: false 
+      });
+      
       setIsDialogOpen(false);
       setEditingProduct(null);
       resetForm();
@@ -116,13 +114,12 @@ export default function ProductManagement({ products, categories }: ProductManag
       return apiRequest("DELETE", `/api/products/${id}`);
     },
     onSuccess: () => {
-      // More aggressive cache invalidation
-      queryClient.invalidateQueries({ queryKey: ["/api/products"] });
-      queryClient.refetchQueries({ queryKey: ["/api/products"] });
-      // Force immediate refetch to update UI
-      setTimeout(() => {
-        queryClient.refetchQueries({ queryKey: ["/api/products"] });
-      }, 100);
+      // Safe cache invalidation
+      queryClient.invalidateQueries({ 
+        queryKey: ["/api/products"],
+        exact: false 
+      });
+      
       toast({
         title: "সফল",
         description: "পণ্য সফলভাবে মুছে ফেলা হয়েছে।",
