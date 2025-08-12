@@ -219,13 +219,29 @@ ${customization.special_instructions ? `বিশেষ নির্দেশন
       localStorage.setItem('pendingCustomOrder', JSON.stringify(customOrderData));
       
       if (onDirectOrder) {
-        await onDirectOrder(product, customOrderData);
+        try {
+          const result = await onDirectOrder(product, customOrderData);
+          
+          // Show success message
+          toast({
+            title: "✅ কাস্টম অর্ডার সফল হয়েছে!",
+            description: "আমরা শীঘ্রই আপনার সাথে যোগাযোগ করব।",
+            duration: 6000
+          });
+        } catch (error) {
+          console.error('Direct order error:', error);
+          toast({
+            title: "অর্ডার ত্রুটি",
+            description: "কাস্টম অর্ডার প্রক্রিয়াকরণে সমস্যা হয়েছে",
+            variant: "destructive"
+          });
+        }
+      } else {
+        toast({
+          title: "কাস্টম অর্ডার প্রস্তুত!",
+          description: "এখন আপনার তথ্য দিয়ে অর্ডার সম্পূর্ণ করুন",
+        });
       }
-      
-      toast({
-        title: "কাস্টম অর্ডার প্রস্তুত!",
-        description: "এখন আপনার তথ্য দিয়ে অর্ডার সম্পূর্ণ করুন",
-      });
 
       onClose();
     } catch (error) {

@@ -97,6 +97,36 @@ export default function AdminPanelNew({ onLogout }: AdminPanelProps) {
     }
   };
 
+  // Handle order details view
+  const handleViewOrderDetails = (order: Order) => {
+    setSelectedOrder(order);
+    setOrderDetailsOpen(true);
+  };
+
+  // Parse order items safely
+  const parseOrderItems = (items: any) => {
+    if (typeof items === 'string') {
+      try {
+        return JSON.parse(items);
+      } catch {
+        return [{ productName: items, quantity: 1, productPrice: 0 }];
+      }
+    }
+    return Array.isArray(items) ? items : [];
+  };
+
+  // Parse payment info safely
+  const parsePaymentInfo = (paymentInfo: any) => {
+    if (typeof paymentInfo === 'string') {
+      try {
+        return JSON.parse(paymentInfo);
+      } catch {
+        return {};
+      }
+    }
+    return paymentInfo || {};
+  };
+
   // Loading state
   if (ordersLoading || productsLoading || categoriesLoading) {
     return (
@@ -309,7 +339,211 @@ export default function AdminPanelNew({ onLogout }: AdminPanelProps) {
 
           {/* Orders Tab */}
           <TabsContent value="orders">
-            <OrderManagement orders={orders} />
+            <div className="space-y-6">
+              <div className="flex justify-between items-center">
+                <h3 className="text-lg font-semibold">অর্ডার ম্যানেজমেন্ট</h3>
+                <Badge variant="outline" className="text-sm">
+                  মোট: {orders.length} টি অর্ডার
+                </Badge>
+              </div>
+
+              {/* Orders Table */}
+              <Card>
+                <CardContent className="p-0">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>ট্র্যাকিং আইডি</TableHead>
+                        <TableHead>গ্রাহক</TableHead>
+                        <TableHead>পণ্যসমূহ</TableHead>
+                        <TableHead>মোট</TableHead>
+                        <TableHead>স্ট্যাটাস</TableHead>
+                        <TableHead>অ্যাকশন</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {orders.map((order) => {
+                        const orderItems = parseOrderItems(order.items);
+                        return (
+                          <TableRow key={order.id}>
+                            <TableCell className="font-medium">
+                              {order.tracking_id}
+                            </TableCell>
+                            <TableCell>
+                              <div>
+                                <p className="font-medium">{order.customer_name}</p>
+                                <p className="text-sm text-gray-500">{order.phone}</p>
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <div className="max-w-xs">
+                                {orderItems.map((item: any, idx: number) => (
+                                  <div key={idx} className="text-sm">
+                                    {item.productName || item.name} × {item.quantity}
+                                    {item.customization && (
+                                      <Badge variant="outline" className="ml-1 text-xs">
+                                        কাস্টম
+                                      </Badge>
+                                    )}
+                                  </div>
+                                ))}
+                              </div>
+                            </TableCell>
+                            <TableCell className="font-medium">
+                              {formatPrice(Number(order.total))}
+                            </TableCell>
+                            <TableCell>
+                              <Badge variant={order.status === "delivered" ? "default" : "secondary"}>
+                                {ORDER_STATUSES[order.status as keyof typeof ORDER_STATUSES] || order.status}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleViewOrderDetails(order)}
+                              >
+                                <Eye className="h-4 w-4 mr-1" />
+                                বিস্তারিত
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Order Details Dialog */}
+            <Dialog open={orderDetailsOpen} onOpenChange={setOrderDetailsOpen}>
+              <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle>অর্ডার বিস্তারিত</DialogTitle>
+                  <DialogDescription>
+                    ট্র্যাকিং আইডি: {selectedOrder?.tracking_id}
+                  </DialogDescription>
+                </DialogHeader>
+
+                {selectedOrder && (
+                  <div className="space-y-6">
+                    {/* Customer Info */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <Card>
+                        <CardHeader>
+                          <CardTitle className="text-base">গ্রাহকের তথ্য</CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-2">
+                          <p><strong>নাম:</strong> {selectedOrder.customer_name}</p>
+                          <p><strong>ফোন:</strong> {selectedOrder.phone}</p>
+                          <p><strong>ঠিকানা:</strong> {selectedOrder.address}</p>
+                          <p><strong>জেলা:</strong> {selectedOrder.district}</p>
+                          <p><strong>থানা:</strong> {selectedOrder.thana}</p>
+                        </CardContent>
+                      </Card>
+
+                      <Card>
+                        <CardHeader>
+                          <CardTitle className="text-base">অর্ডার তথ্য</CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-2">
+                          <p><strong>স্ট্যাটাস:</strong> 
+                            <Badge className="ml-2">
+                              {ORDER_STATUSES[selectedOrder.status as keyof typeof ORDER_STATUSES] || selectedOrder.status}
+                            </Badge>
+                          </p>
+                          <p><strong>মোট মূল্য:</strong> {formatPrice(Number(selectedOrder.total))}</p>
+                          <p><strong>অর্ডারের তারিখ:</strong> {new Date(selectedOrder.created_at || '').toLocaleDateString('bn-BD')}</p>
+                          {selectedOrder.custom_instructions && (
+                            <div>
+                              <strong>বিশেষ নির্দেশনা:</strong>
+                              <p className="mt-1 p-2 bg-gray-50 rounded text-sm">{selectedOrder.custom_instructions}</p>
+                            </div>
+                          )}
+                        </CardContent>
+                      </Card>
+                    </div>
+
+                    {/* Order Items */}
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="text-base">অর্ডারকৃত পণ্য</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-3">
+                          {parseOrderItems(selectedOrder.items).map((item: any, idx: number) => (
+                            <div key={idx} className="flex justify-between items-center p-3 border rounded">
+                              <div>
+                                <p className="font-medium">{item.productName || item.name}</p>
+                                <p className="text-sm text-gray-600">পরিমাণ: {item.quantity}</p>
+                                {item.customization && (
+                                  <div className="mt-1">
+                                    <Badge variant="outline" className="text-xs">কাস্টমাইজড</Badge>
+                                    <p className="text-xs text-gray-500 mt-1">
+                                      {typeof item.customization === 'string' 
+                                        ? item.customization 
+                                        : JSON.stringify(item.customization)
+                                      }
+                                    </p>
+                                  </div>
+                                )}
+                              </div>
+                              <p className="font-medium">{formatPrice(item.productPrice * item.quantity)}</p>
+                            </div>
+                          ))}
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    {/* Payment Info */}
+                    {selectedOrder.payment_info && (
+                      <Card>
+                        <CardHeader>
+                          <CardTitle className="text-base">পেমেন্ট তথ্য</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="space-y-2">
+                            {Object.entries(parsePaymentInfo(selectedOrder.payment_info)).map(([key, value]) => (
+                              <p key={key}>
+                                <strong>{key}:</strong> {String(value)}
+                              </p>
+                            ))}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    )}
+
+                    {/* Custom Images */}
+                    {selectedOrder.custom_images && (
+                      <Card>
+                        <CardHeader>
+                          <CardTitle className="text-base">কাস্টম ইমেজ</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                            {JSON.parse(selectedOrder.custom_images).map((image: string, idx: number) => (
+                              <img
+                                key={idx}
+                                src={image}
+                                alt={`Custom ${idx + 1}`}
+                                className="w-full h-32 object-cover rounded border"
+                              />
+                            ))}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    )}
+                  </div>
+                )}
+
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setOrderDetailsOpen(false)}>
+                    বন্ধ করুন
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
           </TabsContent>
 
           {/* Offers Tab */}

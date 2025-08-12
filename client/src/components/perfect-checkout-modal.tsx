@@ -66,7 +66,7 @@ function PerfectCheckoutModal({ isOpen, onClose, cart, onOrderComplete }: Checko
   // Update delivery fee and available thanas when district changes
   useEffect(() => {
     if (formData.district) {
-      const fee = calculateDeliveryFee(formData.district, "outside");
+      const fee = calculateDeliveryFee(formData.district, subtotal);
       setDeliveryFee(fee);
       setAvailableThanas(THANAS_BY_DISTRICT[formData.district] || []);
       setFormData(prev => ({ ...prev, thana: "" }));
@@ -126,12 +126,18 @@ function PerfectCheckoutModal({ isOpen, onClose, cart, onOrderComplete }: Checko
       setShowSuccessModal(true);
       queryClient.invalidateQueries({ queryKey: ['/api/orders'] });
       
-      // trackPurchase(order.tracking_number, order.total_amount, cart);
+      // Note: Cart clearing is handled by parent component
       
       toast({
-        title: "অর্ডার সফল হয়েছে!",
-        description: `ট্র্যাকিং নম্বর: ${order.tracking_number}`,
+        title: "✅ অর্ডার সফল হয়েছে!",
+        description: `ট্র্যাকিং আইডি: ${order.tracking_id || order.id}\n\nআমরা শীঘ্রই আপনার সাথে যোগাযোগ করব।`,
+        duration: 8000,
       });
+
+      // Auto redirect to tracking page after 3 seconds
+      setTimeout(() => {
+        window.location.href = `/tracking?id=${order.tracking_id || order.id}`;
+      }, 3000);
 
       onOrderComplete();
       onClose();
@@ -165,24 +171,28 @@ function PerfectCheckoutModal({ isOpen, onClose, cart, onOrderComplete }: Checko
     });
 
     const orderData = {
-      items: cart,
+      items: JSON.stringify(cart.map(item => ({
+        productId: item.id,
+        productName: item.name,
+        productPrice: item.price,
+        quantity: item.quantity,
+        customization: item.customization || null
+      }))),
       customer_name: formData.customer_name,
       phone: formData.phone,
       district: formData.district,
       thana: formData.thana,
       address: formData.address,
-      total_amount: finalPayment,
-      delivery_fee: deliveryFee,
-      payment_info: {
+      total: finalPayment.toString(),
+      payment_info: JSON.stringify({
         method: isCustomOrder ? "advance_payment" : "cash_on_delivery",
         payment_number: formData.payment_number,
         trx_id: formData.trx_id,
         amount_paid: finalPayment
-      },
+      }),
       custom_instructions: customInstructions + (formData.special_instructions || ''),
-      custom_images: allCustomImages,
-      is_custom_order: isCustomOrder,
-      advance_payment_amount: isCustomOrder ? customAdvancePayment : null
+      custom_images: allCustomImages.length > 0 ? JSON.stringify(allCustomImages) : null,
+      status: "pending"
     };
 
     // trackInitiateCheckout(totalPrice, cart.length);

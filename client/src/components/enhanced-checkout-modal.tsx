@@ -152,13 +152,32 @@ export default function EnhancedCheckoutModal({ isOpen, onClose, onSuccess }: En
       
       // Clear cart and notify success
       clearCart();
+      
+      // Create comprehensive success notification
       toast({
-        title: "অর্ডার সফল!",
-        description: `আপনার অর্ডার সফলভাবে সাবমিট হয়েছে। ট্র্যাকিং আইডি: ${result.tracking_id}`,
+        title: "✅ অর্ডার সফল হয়েছে!",
+        description: `আপনার অর্ডার সফলভাবে প্রক্রিয়াকরণ হয়েছে।`,
       });
 
-      // Call success callback
-      onSuccess?.(result.id);
+      // Show detailed success modal with order info
+      setTimeout(() => {
+        toast({
+          title: "📦 অর্ডার নিশ্চিতকরণ",
+          description: `ট্র্যাকিং আইডি: ${result.tracking_id || result.id}\nঅর্ডার নম্বর: ${result.order_number || result.id}\n\nআমরা শীঘ্রই আপনার সাথে যোগাযোগ করব।`,
+          duration: 8000
+        });
+      }, 1000);
+
+      // Call success callback and redirect
+      if (onSuccess) {
+        onSuccess(result.tracking_id || result.id);
+      } else {
+        // Auto redirect to tracking page after 2 seconds
+        setTimeout(() => {
+          window.location.href = `/tracking?id=${result.tracking_id || result.id}`;
+        }, 2000);
+      }
+      
       onClose();
 
     } catch (error: any) {

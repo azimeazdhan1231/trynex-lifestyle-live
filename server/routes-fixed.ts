@@ -795,6 +795,83 @@ export function registerRoutes(app: Express): void {
     }
   });
 
+  // Custom Orders API
+  app.get('/api/custom-orders', async (req, res) => {
+    try {
+      const customOrders = await storage.getCustomOrders();
+      res.json(customOrders);
+    } catch (error) {
+      console.error('Failed to fetch custom orders:', error);
+      res.status(500).json({ error: 'Failed to fetch custom orders' });
+    }
+  });
+
+  app.post('/api/custom-orders', async (req, res) => {
+    try {
+      console.log('📝 Creating custom order with data:', req.body);
+      const orderData = req.body;
+
+      // Validate required fields for custom orders
+      if (!orderData.name && !orderData.customerName) {
+        return res.status(400).json({ 
+          error: "Missing customer name", 
+          required: ["name or customerName"]
+        });
+      }
+
+      if (!orderData.whatsapp && !orderData.phone) {
+        return res.status(400).json({ 
+          error: "Missing phone number", 
+          required: ["whatsapp or phone"]
+        });
+      }
+
+      // Generate tracking ID for custom order
+      const trackingId = `CUSTOM${Date.now()}${Math.floor(Math.random() * 1000)}`;
+
+      // Map CustomOrderForm data to regular order structure
+      const customOrderData = {
+        tracking_id: trackingId,
+        customer_name: orderData.name || orderData.customerName,
+        district: orderData.district || "ঢাকা", // Default district
+        thana: orderData.thana || "ঢাকা", // Default thana
+        address: orderData.address,
+        phone: orderData.whatsapp || orderData.phone,
+        payment_info: orderData.paymentMethod ? 
+          JSON.stringify({ 
+            method: orderData.paymentMethod, 
+            trx_id: orderData.trxId,
+            payment_screenshot: orderData.paymentScreenshot 
+          }) : null,
+        status: "pending",
+        items: JSON.stringify([{
+          productId: orderData.productId || `custom-${Date.now()}`,
+          productName: orderData.productName || "কাস্টম পণ্য",
+          productPrice: orderData.totalPrice || 0,
+          quantity: orderData.quantity || 1,
+          customization: orderData.customization || ""
+        }]),
+        total: (orderData.totalPrice || 0).toString(),
+        custom_instructions: orderData.customization || "",
+        custom_images: orderData.customImages ? JSON.stringify(orderData.customImages) : null
+      };
+
+      const customOrder = await storage.createOrder(customOrderData);
+      console.log('✅ Custom order created successfully:', customOrder.tracking_id);
+
+      res.status(201).json({ 
+        success: true, 
+        order: customOrder,
+        tracking_id: customOrder.tracking_id,
+        id: customOrder.id,
+        message: "কাস্টম অর্ডার সফলভাবে তৈরি হয়েছে"
+      });
+    } catch (error) {
+      console.error("❌ Custom order creation error:", error);
+      res.status(500).json({ error: "Failed to create custom order", details: (error as Error).message });
+    }
+  });
+
   // Health check endpoint
   app.get('/api/health', (req, res) => {
     res.json({ 
