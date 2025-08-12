@@ -91,12 +91,14 @@ export default function ProfessionalCheckoutModal({
       // Create order object
       const orderData = {
         customer_name: formData.name,
-        customer_phone: formData.phone,
-        customer_email: formData.email,
-        delivery_address: `${formData.address}, ${formData.upazila ? formData.upazila + ', ' : ''}${formData.district}`,
-        payment_method: formData.paymentMethod,
-        delivery_type: formData.deliveryType,
-        special_instructions: formData.specialInstructions,
+        phone: formData.phone,
+        district: formData.district,
+        thana: formData.upazila || formData.district,
+        address: formData.address,
+        payment_info: {
+          method: formData.paymentMethod,
+          type: formData.deliveryType
+        },
         items: cartItems.map(item => ({
           product_id: item.id,
           product_name: item.name,
@@ -104,10 +106,10 @@ export default function ProfessionalCheckoutModal({
           unit_price: item.price,
           total_price: item.price * item.quantity
         })),
-        subtotal: cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0),
-        delivery_charge: totalAmount - cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0),
+        total: totalAmount,
         total_amount: totalAmount,
-        order_status: 'pending'
+        delivery_fee: totalAmount - cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0),
+        custom_instructions: formData.specialInstructions
       };
 
       // Submit order to API
