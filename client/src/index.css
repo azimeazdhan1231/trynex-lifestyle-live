@@ -122,6 +122,66 @@ html { scroll-behavior: smooth; }
   }
 }
 
+/* Modal Mobile Fixes */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.touch-manipulation {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Improved Modal Responsive Styles */
+@media (max-width: 640px) {
+  [data-testid="product-modal"] {
+    margin: 0 !important;
+    max-height: 100vh !important;
+    border-radius: 0 !important;
+  }
+  
+  [data-testid="product-modal"] > div:first-child {
+    flex-direction: column !important;
+  }
+  
+  .modal-image-section {
+    min-height: 35vh !important;
+    max-height: 40vh !important;
+  }
+  
+  .modal-details-section {
+    flex: 1 !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+}
+
+/* Fix dialog overlay on mobile */
+@media (max-width: 640px) {
+  [data-radix-dialog-overlay] {
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 50 !important;
+  }
+  
+  [data-radix-dialog-content] {
+    position: fixed !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    transform: none !important;
+    border-radius: 0 !important;
+    max-width: none !important;
+    max-height: none !important;
+  }
+}
+
 /* Performance Optimizations */
 .gpu-accelerated {
   transform: translateZ(0);

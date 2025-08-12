@@ -54,18 +54,18 @@ const ProductImageViewer = memo(({
   const [isZoomed, setIsZoomed] = useState(false);
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-2 sm:space-y-4">
       {/* Main Image */}
       <div className="relative group">
         <div 
-          className="aspect-square bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl overflow-hidden cursor-zoom-in"
+          className="aspect-square bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg sm:rounded-xl md:rounded-2xl overflow-hidden cursor-zoom-in touch-manipulation"
           onClick={() => setIsZoomed(!isZoomed)}
         >
           <img
             src={images[selectedIndex] || "/placeholder.jpg"}
             alt={productName}
-            className={`w-full h-full object-cover transition-all duration-500 ${
-              isZoomed ? 'scale-150' : 'scale-100 hover:scale-105'
+            className={`w-full h-full object-cover transition-all duration-300 ${
+              isZoomed ? 'scale-150' : 'scale-100 active:scale-105 md:hover:scale-105'
             }`}
             loading="eager"
           />
@@ -75,10 +75,10 @@ const ProductImageViewer = memo(({
         <Button
           variant="secondary"
           size="sm"
-          className="absolute top-4 right-4 bg-black/20 hover:bg-black/40 backdrop-blur-sm border-0"
+          className="absolute top-2 right-2 sm:top-4 sm:right-4 bg-black/30 hover:bg-black/50 backdrop-blur-sm border-0 w-8 h-8 sm:w-10 sm:h-10 p-0"
           onClick={() => setIsZoomed(!isZoomed)}
         >
-          <Maximize2 className="w-4 h-4 text-white" />
+          <Maximize2 className="w-3 h-3 sm:w-4 sm:h-4 text-white" />
         </Button>
 
         {/* Navigation for multiple images */}
@@ -87,18 +87,18 @@ const ProductImageViewer = memo(({
             <Button
               variant="ghost"
               size="sm"
-              className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-black/20 hover:bg-black/40 backdrop-blur-sm text-white"
+              className="absolute left-1 sm:left-2 top-1/2 transform -translate-y-1/2 bg-black/30 hover:bg-black/50 backdrop-blur-sm text-white w-8 h-8 sm:w-10 sm:h-10 p-0 touch-manipulation"
               onClick={() => onImageSelect(selectedIndex > 0 ? selectedIndex - 1 : images.length - 1)}
             >
-              <ChevronLeft className="w-4 h-4" />
+              <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5" />
             </Button>
             <Button
               variant="ghost"
               size="sm"
-              className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-black/20 hover:bg-black/40 backdrop-blur-sm text-white"
+              className="absolute right-1 sm:right-2 top-1/2 transform -translate-y-1/2 bg-black/30 hover:bg-black/50 backdrop-blur-sm text-white w-8 h-8 sm:w-10 sm:h-10 p-0 touch-manipulation"
               onClick={() => onImageSelect(selectedIndex < images.length - 1 ? selectedIndex + 1 : 0)}
             >
-              <ChevronRight className="w-4 h-4" />
+              <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" />
             </Button>
           </>
         )}
@@ -106,15 +106,15 @@ const ProductImageViewer = memo(({
 
       {/* Image Thumbnails */}
       {images.length > 1 && (
-        <div className="flex gap-2 justify-center">
+        <div className="flex gap-1 sm:gap-2 justify-center overflow-x-auto scrollbar-hide">
           {images.map((image, index) => (
             <button
               key={index}
               onClick={() => onImageSelect(index)}
-              className={`w-16 h-16 rounded-lg overflow-hidden border-2 transition-all ${
+              className={`flex-shrink-0 w-12 h-12 sm:w-16 sm:h-16 rounded-md sm:rounded-lg overflow-hidden border-2 transition-all touch-manipulation ${
                 index === selectedIndex 
                   ? 'border-primary shadow-lg' 
-                  : 'border-gray-200 hover:border-gray-300'
+                  : 'border-gray-200 active:border-gray-400 md:hover:border-gray-300'
               }`}
             >
               <img
@@ -256,7 +256,7 @@ export default function UltraDynamicProductModal({
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent 
-        className="max-w-6xl w-[95vw] h-[95vh] overflow-hidden p-0 gap-0 bg-white rounded-2xl"
+        className="max-w-6xl w-[calc(100vw-16px)] sm:w-[calc(100vw-32px)] md:w-[90vw] lg:w-[85vw] h-[calc(100vh-16px)] sm:h-[calc(100vh-32px)] md:h-[90vh] overflow-hidden p-0 gap-0 bg-white rounded-none sm:rounded-xl md:rounded-2xl"
         data-testid="product-modal"
       >
         <DialogTitle className="sr-only">{product.name} - পণ্যের বিস্তারিত</DialogTitle>
@@ -269,16 +269,16 @@ export default function UltraDynamicProductModal({
           variant="ghost"
           size="sm"
           onClick={onClose}
-          className="absolute top-4 right-4 z-50 bg-black/10 hover:bg-black/20 backdrop-blur-sm rounded-full w-10 h-10 p-0"
+          className="absolute top-2 right-2 sm:top-4 sm:right-4 z-50 bg-black/20 hover:bg-black/30 backdrop-blur-sm rounded-full w-8 h-8 sm:w-10 sm:h-10 p-0 text-white"
           data-testid="button-close-modal"
         >
-          <X className="w-5 h-5" />
+          <X className="w-4 h-4 sm:w-5 sm:h-5" />
         </Button>
 
         {/* Modal Content */}
-        <div className="flex flex-col lg:flex-row h-full">
-          {/* Left Side - Product Images */}
-          <div className="flex-1 p-6 bg-gradient-to-br from-gray-50 to-white">
+        <div className="flex flex-col md:flex-row h-full touch-manipulation">
+          {/* Top/Left Side - Product Images */}
+          <div className="flex-1 p-3 sm:p-4 md:p-6 bg-gradient-to-br from-gray-50 to-white min-h-[35vh] md:min-h-full modal-image-section">
             <ProductImageViewer
               images={images}
               selectedIndex={selectedImageIndex}
@@ -287,67 +287,68 @@ export default function UltraDynamicProductModal({
             />
           </div>
 
-          {/* Right Side - Product Details */}
-          <div className="flex-1 p-6 bg-white overflow-y-auto">
-            <div className="space-y-6">
+          {/* Bottom/Right Side - Product Details */}
+          <div className="flex-1 p-3 sm:p-4 md:p-6 bg-white overflow-y-auto scrollbar-hide modal-details-section">
+            <div className="space-y-4 md:space-y-6 pb-4 sm:pb-6">
               {/* Product Title & Badges */}
-              <div className="space-y-3">
-                <div className="flex flex-wrap gap-2 mb-3">
+              <div className="space-y-2 sm:space-y-3">
+                <div className="flex flex-wrap gap-1 sm:gap-2 mb-2 sm:mb-3">
                   {product.is_featured && (
-                    <Badge className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white">
-                      <Star className="w-3 h-3 mr-1" />
+                    <Badge className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white text-xs px-2 py-1">
+                      <Star className="w-2.5 h-2.5 sm:w-3 sm:h-3 mr-1" />
                       ফিচার্ড
                     </Badge>
                   )}
                   {product.is_latest && (
-                    <Badge className="bg-gradient-to-r from-blue-500 to-purple-600 text-white">
-                      <Zap className="w-3 h-3 mr-1" />
+                    <Badge className="bg-gradient-to-r from-blue-500 to-purple-600 text-white text-xs px-2 py-1">
+                      <Zap className="w-2.5 h-2.5 sm:w-3 sm:h-3 mr-1" />
                       নতুন
                     </Badge>
                   )}
                   {product.is_best_selling && (
-                    <Badge className="bg-gradient-to-r from-green-500 to-emerald-600 text-white">
-                      <Award className="w-3 h-3 mr-1" />
+                    <Badge className="bg-gradient-to-r from-green-500 to-emerald-600 text-white text-xs px-2 py-1">
+                      <Award className="w-2.5 h-2.5 sm:w-3 sm:h-3 mr-1" />
                       বেস্ট সেলার
                     </Badge>
                   )}
                 </div>
 
-                <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 leading-tight">
+                <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 leading-tight">
                   {product.name}
                 </h1>
 
                 {/* Rating & Reviews */}
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2 sm:gap-4 text-sm sm:text-base">
                   <div className="flex items-center gap-1">
                     {[...Array(5)].map((_, i) => (
-                      <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                      <Star key={i} className="w-3 h-3 sm:w-4 sm:h-4 fill-yellow-400 text-yellow-400" />
                     ))}
-                    <span className="text-sm text-gray-600 ml-1">4.8</span>
+                    <span className="text-xs sm:text-sm text-gray-600 ml-1">4.8</span>
                   </div>
-                  <span className="text-sm text-gray-500">•</span>
-                  <span className="text-sm text-gray-600">৮৫+ রিভিউ</span>
+                  <span className="text-xs sm:text-sm text-gray-500">•</span>
+                  <span className="text-xs sm:text-sm text-gray-600">৮৫+ রিভিউ</span>
                 </div>
               </div>
 
               {/* Price Section */}
               <Card className="bg-gradient-to-r from-primary/5 to-primary/10 border-primary/20">
-                <CardContent className="p-4">
+                <CardContent className="p-3 sm:p-4">
                   <div className="flex items-center justify-between">
                     <div>
-                      <div className="text-3xl font-bold text-primary">
+                      <div className="text-2xl sm:text-3xl font-bold text-primary">
                         {formatPrice(totalPrice)}
                       </div>
                       {quantity > 1 && (
-                        <div className="text-sm text-gray-600">
+                        <div className="text-xs sm:text-sm text-gray-600">
                           {formatPrice(price)} × {quantity}
                         </div>
                       )}
                     </div>
                     <div className="text-right">
-                      <div className="flex items-center gap-2 text-sm text-green-600">
-                        <Shield className="w-4 h-4" />
-                        সেরা দাম নিশ্চয়তা
+                      <div className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm text-green-600">
+                        <Shield className="w-3 h-3 sm:w-4 sm:h-4" />
+                        <span className="hidden sm:inline">সেরা দাম নিশ্চয়তা</span>
+                        <span className="sm:hidden">নিশ্চিত দাম</span>
                       </div>
                     </div>
                   </div>
@@ -355,9 +356,9 @@ export default function UltraDynamicProductModal({
               </Card>
 
               {/* Stock Status */}
-              <div className="flex items-center gap-2">
-                <Package className="w-4 h-4 text-green-600" />
-                <span className={`text-sm font-medium ${
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                <Package className="w-3 h-3 sm:w-4 sm:h-4 text-green-600" />
+                <span className={`text-xs sm:text-sm font-medium ${
                   product.stock && product.stock > 0 
                     ? 'text-green-600' 
                     : 'text-red-600'
@@ -370,24 +371,24 @@ export default function UltraDynamicProductModal({
               </div>
 
               {/* Quantity Selector */}
-              <div className="space-y-3">
-                <label className="text-sm font-medium text-gray-700">পরিমাণ:</label>
-                <div className="flex items-center gap-3">
+              <div className="space-y-2 sm:space-y-3">
+                <label className="text-xs sm:text-sm font-medium text-gray-700">পরিমাণ:</label>
+                <div className="flex items-center gap-2 sm:gap-3">
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => handleQuantityChange(quantity - 1)}
                     disabled={quantity <= 1}
-                    className="w-10 h-10 p-0"
+                    className="w-8 h-8 sm:w-10 sm:h-10 p-0 touch-manipulation"
                     data-testid="button-decrease-quantity"
                   >
-                    <Minus className="w-4 h-4" />
+                    <Minus className="w-3 h-3 sm:w-4 sm:h-4" />
                   </Button>
                   <Input
                     type="number"
                     value={quantity}
                     onChange={(e) => handleQuantityChange(parseInt(e.target.value) || 1)}
-                    className="w-20 text-center"
+                    className="w-16 sm:w-20 text-center text-sm sm:text-base"
                     min="1"
                     max={product.stock || 999}
                     data-testid="input-quantity"
@@ -397,10 +398,10 @@ export default function UltraDynamicProductModal({
                     size="sm"
                     onClick={() => handleQuantityChange(quantity + 1)}
                     disabled={product.stock ? quantity >= product.stock : false}
-                    className="w-10 h-10 p-0"
+                    className="w-8 h-8 sm:w-10 sm:h-10 p-0 touch-manipulation"
                     data-testid="button-increase-quantity"
                   >
-                    <Plus className="w-4 h-4" />
+                    <Plus className="w-3 h-3 sm:w-4 sm:h-4" />
                   </Button>
                 </div>
               </div>
@@ -408,25 +409,26 @@ export default function UltraDynamicProductModal({
               <Separator />
 
               {/* Action Buttons */}
-              <div className="space-y-3">
-                <div className="flex gap-3">
+              <div className="space-y-2 sm:space-y-3">
+                <div className="flex gap-2 sm:gap-3">
                   <Button
                     onClick={handleAddToCart}
                     disabled={product.stock === 0}
-                    className="flex-1 h-12 text-base font-medium bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70"
+                    className="flex-1 h-10 sm:h-12 text-sm sm:text-base font-medium bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 touch-manipulation"
                     data-testid="button-add-to-cart"
                   >
-                    <ShoppingCart className="w-5 h-5 mr-2" />
-                    কার্টে যোগ করুন
+                    <ShoppingCart className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2" />
+                    <span className="hidden sm:inline">কার্টে যোগ করুন</span>
+                    <span className="sm:hidden">কার্টে যোগ</span>
                   </Button>
                   
                   <Button
                     variant="outline"
                     onClick={toggleFavorite}
-                    className="w-12 h-12 p-0"
+                    className="w-10 h-10 sm:w-12 sm:h-12 p-0 touch-manipulation"
                     data-testid="button-toggle-favorite"
                   >
-                    <Heart className={`w-5 h-5 ${isFavorite ? 'fill-red-500 text-red-500' : ''}`} />
+                    <Heart className={`w-4 h-4 sm:w-5 sm:h-5 ${isFavorite ? 'fill-red-500 text-red-500' : ''}`} />
                   </Button>
                 </div>
 
@@ -434,32 +436,33 @@ export default function UltraDynamicProductModal({
                   <Button
                     variant="outline"
                     onClick={handleCustomize}
-                    className="w-full h-12 text-base font-medium border-2 border-orange-500 text-orange-600 hover:bg-orange-50"
+                    className="w-full h-10 sm:h-12 text-sm sm:text-base font-medium border-2 border-orange-500 text-orange-600 hover:bg-orange-50 touch-manipulation"
                     data-testid="button-customize"
                   >
-                    <Palette className="w-5 h-5 mr-2" />
+                    <Palette className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2" />
                     কাস্টমাইজ করুন
                   </Button>
                 )}
 
-                <div className="flex gap-3">
+                <div className="flex gap-2 sm:gap-3">
                   <Button
                     variant="outline"
                     onClick={handleWhatsAppOrder}
-                    className="flex-1 h-12 text-base font-medium border-green-500 text-green-600 hover:bg-green-50"
+                    className="flex-1 h-10 sm:h-12 text-sm sm:text-base font-medium border-green-500 text-green-600 hover:bg-green-50 touch-manipulation"
                     data-testid="button-whatsapp-order"
                   >
-                    <MessageCircle className="w-5 h-5 mr-2" />
-                    WhatsApp অর্ডার
+                    <MessageCircle className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2" />
+                    <span className="hidden sm:inline">WhatsApp অর্ডার</span>
+                    <span className="sm:hidden">WhatsApp</span>
                   </Button>
                   
                   <Button
                     variant="outline"
                     onClick={handleShare}
-                    className="w-12 h-12 p-0"
+                    className="w-10 h-10 sm:w-12 sm:h-12 p-0 touch-manipulation"
                     data-testid="button-share"
                   >
-                    <Share2 className="w-5 h-5" />
+                    <Share2 className="w-4 h-4 sm:w-5 sm:h-5" />
                   </Button>
                 </div>
               </div>
@@ -468,9 +471,9 @@ export default function UltraDynamicProductModal({
 
               {/* Product Description */}
               {product.description && (
-                <div className="space-y-3">
-                  <h3 className="text-lg font-semibold text-gray-900">পণ্যের বিবরণ</h3>
-                  <p className="text-gray-700 leading-relaxed">
+                <div className="space-y-2 sm:space-y-3">
+                  <h3 className="text-base sm:text-lg font-semibold text-gray-900">পণ্যের বিবরণ</h3>
+                  <p className="text-sm sm:text-base text-gray-700 leading-relaxed">
                     {product.description}
                   </p>
                 </div>
@@ -478,45 +481,52 @@ export default function UltraDynamicProductModal({
 
               {/* Delivery Info */}
               <Card className="bg-blue-50 border-blue-200">
-                <CardContent className="p-4 space-y-3">
-                  <h4 className="font-semibold text-blue-900 flex items-center gap-2">
-                    <Truck className="w-5 h-5" />
+                <CardContent className="p-3 sm:p-4 space-y-2 sm:space-y-3">
+                  <h4 className="text-sm sm:text-base font-semibold text-blue-900 flex items-center gap-1.5 sm:gap-2">
+                    <Truck className="w-4 h-4 sm:w-5 sm:h-5" />
                     ডেলিভারি তথ্য
                   </h4>
-                  <div className="space-y-2 text-sm text-blue-800">
-                    <div className="flex items-center gap-2">
-                      <Clock className="w-4 h-4" />
-                      ঢাকার ভিতরে: ১-২ কার্যদিবস
+                  <div className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm text-blue-800">
+                    <div className="flex items-center gap-1.5 sm:gap-2">
+                      <Clock className="w-3 h-3 sm:w-4 sm:h-4" />
+                      <span className="hidden sm:inline">ঢাকার ভিতরে: ১-২ কার্যদিবস</span>
+                      <span className="sm:hidden">ঢাকায়: ১-২ দিন</span>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <MapPin className="w-4 h-4" />
-                      ঢাকার বাইরে: ৩-৫ কার্যদিবস
+                    <div className="flex items-center gap-1.5 sm:gap-2">
+                      <MapPin className="w-3 h-3 sm:w-4 sm:h-4" />
+                      <span className="hidden sm:inline">ঢাকার বাইরে: ৩-৫ কার্যদিবস</span>
+                      <span className="sm:hidden">বাইরে: ৩-৫ দিন</span>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Phone className="w-4 h-4" />
-                      অর্ডার নিশ্চিতকরণ কল পাবেন
+                    <div className="flex items-center gap-1.5 sm:gap-2">
+                      <Phone className="w-3 h-3 sm:w-4 sm:h-4" />
+                      <span className="hidden sm:inline">অর্ডার নিশ্চিতকরণ কল পাবেন</span>
+                      <span className="sm:hidden">কল নিশ্চিতকরণ</span>
                     </div>
                   </div>
                 </CardContent>
               </Card>
 
               {/* Features */}
-              <div className="grid grid-cols-2 gap-3 text-sm">
-                <div className="flex items-center gap-2 text-gray-600">
-                  <Shield className="w-4 h-4 text-green-500" />
-                  ১০০% অরিজিনাল
+              <div className="grid grid-cols-2 gap-2 sm:gap-3 text-xs sm:text-sm">
+                <div className="flex items-center gap-1.5 sm:gap-2 text-gray-600">
+                  <Shield className="w-3 h-3 sm:w-4 sm:h-4 text-green-500" />
+                  <span className="hidden sm:inline">১০০% অরিজিনাল</span>
+                  <span className="sm:hidden">অরিজিনাল</span>
                 </div>
-                <div className="flex items-center gap-2 text-gray-600">
-                  <Award className="w-4 h-4 text-blue-500" />
-                  মান নিশ্চয়তা
+                <div className="flex items-center gap-1.5 sm:gap-2 text-gray-600">
+                  <Award className="w-3 h-3 sm:w-4 sm:h-4 text-blue-500" />
+                  <span className="hidden sm:inline">মান নিশ্চয়তা</span>
+                  <span className="sm:hidden">মান</span>
                 </div>
-                <div className="flex items-center gap-2 text-gray-600">
-                  <Truck className="w-4 h-4 text-orange-500" />
-                  দ্রুত ডেলিভারি
+                <div className="flex items-center gap-1.5 sm:gap-2 text-gray-600">
+                  <Truck className="w-3 h-3 sm:w-4 sm:h-4 text-orange-500" />
+                  <span className="hidden sm:inline">দ্রুত ডেলিভারি</span>
+                  <span className="sm:hidden">দ্রুত</span>
                 </div>
-                <div className="flex items-center gap-2 text-gray-600">
-                  <MessageCircle className="w-4 h-4 text-green-500" />
-                  WhatsApp সাপোর্ট
+                <div className="flex items-center gap-1.5 sm:gap-2 text-gray-600">
+                  <MessageCircle className="w-3 h-3 sm:w-4 sm:h-4 text-green-500" />
+                  <span className="hidden sm:inline">WhatsApp সাপোর্ট</span>
+                  <span className="sm:hidden">সাপোর্ট</span>
                 </div>
               </div>
             </div>
