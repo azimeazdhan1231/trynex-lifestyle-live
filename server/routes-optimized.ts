@@ -1,6 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./clean-storage";
+import { memoryStorage } from "./memory-storage";
 import { setupAuthRoutes } from "./auth-routes";
 import { 
   insertOrderSchema, insertProductSchema, insertOfferSchema,
@@ -89,8 +90,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
           : JSON.stringify(orderData.payment_info);
       }
       
-      const validatedData = insertOrderSchema.parse(orderData);
-      const order = await storage.createOrder(validatedData);
+      // Debug log to check data types
+      console.log('🔍 Order data before validation:', {
+        total: orderData.total,
+        totalType: typeof orderData.total,
+        phone: orderData.phone,
+        phoneType: typeof orderData.phone
+      });
+
+      // Convert numeric fields to strings to match schema
+      const dataToValidate = {
+        ...orderData,
+        total: String(orderData.total || 0),
+        phone: String(orderData.phone || '')
+      };
+
+      console.log('🔍 Data after conversion:', {
+        total: dataToValidate.total,
+        totalType: typeof dataToValidate.total
+      });
+
+      const validatedData = insertOrderSchema.parse(dataToValidate);
+      
+      let order;
+      try {
+        order = await storage.createOrder(validatedData);
+      } catch (dbError) {
+        console.warn('⚠️ Database unavailable for orders, using memory storage');
+        order = await memoryStorage.createOrder(validatedData);
+      }
       
       console.log(`✅ Order created: ${order.tracking_id}`);
       

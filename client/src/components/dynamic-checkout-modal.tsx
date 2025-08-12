@@ -319,9 +319,11 @@ export default function DynamicCheckoutModal({ isOpen, onClose, cart, onOrderCom
                     <SelectTrigger className={cn("mt-1", errors.district && "border-red-500")} data-testid="select-district">
                       <SelectValue placeholder="জেলা নির্বাচন করুন" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="z-[9999]">
                       {DISTRICTS.map((district) => (
-                        <SelectItem key={district} value={district}>{district}</SelectItem>
+                        <SelectItem key={district} value={district}>
+                          {district}
+                        </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
@@ -340,9 +342,11 @@ export default function DynamicCheckoutModal({ isOpen, onClose, cart, onOrderCom
                           : "থানা নির্বাচন করুন"
                       } />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="z-[9999]">
                       {availableThanas.map((thana) => (
-                        <SelectItem key={thana} value={thana}>{thana}</SelectItem>
+                        <SelectItem key={thana} value={thana}>
+                          {thana}
+                        </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
