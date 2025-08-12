@@ -73,15 +73,10 @@ export const apiRequest = async (
   method: string,
   url: string,
   data?: any,
-  options: RequestOptions = {}
+  timeout: number = 30000
 ): Promise<any> => {
-  const { skipLoading = false, timeout = 30000 } = options;
 
   console.log(`API Request: ${method} ${url}`, data ? { body: data } : '');
-
-  if (!skipLoading) {
-    setIsLoading(true);
-  }
 
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeout);
@@ -152,9 +147,5 @@ export const apiRequest = async (
 
     console.error('Network error:', error);
     throw error;
-  } finally {
-    if (!skipLoading) {
-      setIsLoading(false);
-    }
   }
 };
