@@ -153,13 +153,13 @@ export default function ProductGrid({ onAddToCart }: ProductGridProps) {
         </div>
 
         {/* Product Filter */}
-        <div className="flex flex-wrap justify-center gap-4 mb-8">
+        <div className="flex flex-wrap justify-center gap-2 sm:gap-3 md:gap-4 mb-6 sm:mb-8">
           {PRODUCT_CATEGORIES.map((category) => (
             <Button
               key={category.id}
               variant={selectedCategory === category.id ? "default" : "outline"}
               onClick={() => setSelectedCategory(category.id)}
-              className="rounded-full font-medium"
+              className="rounded-full font-medium text-xs sm:text-sm px-3 sm:px-4 py-1.5 sm:py-2 touch-manipulation"
             >
               {category.name}
             </Button>
@@ -172,9 +172,9 @@ export default function ProductGrid({ onAddToCart }: ProductGridProps) {
             <p className="text-gray-500 text-lg">কোন পণ্য পাওয়া যায়নি</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-4 md:gap-6">
             {products.map((product) => (
-              <Card key={product.id} className="overflow-hidden hover:shadow-lg transition-all duration-300 cursor-pointer group">
+              <Card key={product.id} className="overflow-hidden hover:shadow-lg active:scale-[0.98] md:hover:scale-[1.02] transition-all duration-200 cursor-pointer group touch-manipulation">
                 <div 
                   className="aspect-square overflow-hidden relative"
                   onClick={() => {
@@ -185,15 +185,16 @@ export default function ProductGrid({ onAddToCart }: ProductGridProps) {
                   <img
                     src={product.image_url || "https://images.unsplash.com/photo-1544787219-7f47ccb76574?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"}
                     alt={product.name}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    className="w-full h-full object-cover group-active:scale-105 md:group-hover:scale-105 transition-transform duration-300"
+                    loading="lazy"
                   />
-                  <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all duration-300 flex items-center justify-center">
-                    <Eye className="w-8 h-8 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  <div className="absolute inset-0 bg-black bg-opacity-0 group-active:bg-opacity-20 md:group-hover:bg-opacity-30 transition-all duration-300 flex items-center justify-center">
+                    <Eye className="w-6 h-6 sm:w-8 sm:h-8 text-white opacity-0 group-active:opacity-100 md:group-hover:opacity-100 transition-opacity duration-300" />
                   </div>
                 </div>
-                <CardContent className="p-4">
+                <CardContent className="p-2 sm:p-3 md:p-4">
                   <h4 
-                    className="font-semibold text-lg mb-2 text-gray-800 hover:text-primary transition-colors cursor-pointer"
+                    className="font-semibold text-sm sm:text-base md:text-lg mb-1 sm:mb-2 text-gray-800 hover:text-primary transition-colors cursor-pointer line-clamp-2"
                     onClick={() => {
                       handleProductClick(product);
                       trackProductView(product);
@@ -201,26 +202,32 @@ export default function ProductGrid({ onAddToCart }: ProductGridProps) {
                   >
                     {product.name}
                   </h4>
-                  <div className="flex items-center justify-between mb-4">
-                    <span className="text-2xl font-bold text-primary">{formatPrice(product.price)}</span>
-                    <Badge variant={product.stock > 0 ? "secondary" : "destructive"}>
+                  <div className="flex items-start justify-between mb-2 sm:mb-3 md:mb-4 gap-1">
+                    <span className="text-lg sm:text-xl md:text-2xl font-bold text-primary">{formatPrice(product.price)}</span>
+                    <Badge variant={product.stock > 0 ? "secondary" : "destructive"} className="text-xs shrink-0">
                       স্টক: {product.stock}
                     </Badge>
                   </div>
-                  <div className="space-y-2">
+                  <div className="space-y-1.5 sm:space-y-2">
                     <Button
                       onClick={(e) => {
                         e.stopPropagation();
                         handleAddToCart(product);
                       }}
                       disabled={product.stock === 0}
-                      className="w-full"
+                      className="w-full text-xs sm:text-sm h-8 sm:h-9 touch-manipulation"
                       variant={product.stock === 0 ? "secondary" : "default"}
+                      size="sm"
                     >
-                      <ShoppingCart className="w-4 h-4 mr-2" />
-                      {product.stock === 0 ? "স্টক নেই" : "কার্টে যোগ করুন"}
+                      <ShoppingCart className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                      {product.stock === 0 ? "স্টক নেই" : (
+                        <>
+                          <span className="hidden sm:inline">কার্টে যোগ করুন</span>
+                          <span className="sm:hidden">কার্ট</span>
+                        </>
+                      )}
                     </Button>
-                    <div className="grid grid-cols-2 gap-2">
+                    <div className="grid grid-cols-2 gap-1 sm:gap-2">
                       <Button
                         onClick={(e) => {
                           e.stopPropagation();
@@ -228,9 +235,11 @@ export default function ProductGrid({ onAddToCart }: ProductGridProps) {
                         }}
                         variant="outline"
                         size="sm"
+                        className="text-xs h-7 sm:h-8 touch-manipulation"
                       >
-                        <Eye className="w-4 h-4 mr-1" />
-                        দেখুন
+                        <Eye className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+                        <span className="hidden sm:inline">দেখুন</span>
+                        <span className="sm:hidden">দেখুন</span>
                       </Button>
                       <Button
                         onClick={(e) => {
@@ -238,11 +247,12 @@ export default function ProductGrid({ onAddToCart }: ProductGridProps) {
                           handleWhatsAppOrder(product);
                         }}
                         variant="outline"
-                        className="bg-green-500 text-white hover:bg-green-600 border-green-500"
+                        className="bg-green-500 text-white hover:bg-green-600 border-green-500 text-xs h-7 sm:h-8 touch-manipulation"
                         size="sm"
                       >
-                        <MessageCircle className="w-4 h-4 mr-1" />
-                        WhatsApp
+                        <MessageCircle className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+                        <span className="hidden sm:inline">WhatsApp</span>
+                        <span className="sm:hidden">WA</span>
                       </Button>
                     </div>
                   </div>

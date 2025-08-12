@@ -10,6 +10,7 @@ import DebugInfo from "@/components/debug-info";
 import ErrorBoundary from "@/components/error-boundary";
 // import { PerformanceOptimizer } from './components/PerformanceOptimizer';
 import { UltraPerformanceLoader } from './components/ultra-performance-loader';
+import MobileResponsiveEnhancement from './components/mobile-responsive-enhancement';
 
 // Dynamic imports for better code splitting
 const Home = lazy(() => import("./pages/home-professional-ecommerce"));
@@ -100,6 +101,7 @@ function App() {
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
         <TooltipProvider>
+          <MobileResponsiveEnhancement />
           <div className="font-bengali">
             <Suspense fallback={null}>
               {/* <PerformanceOptimizer /> */}

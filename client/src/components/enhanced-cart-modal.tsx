@@ -79,7 +79,7 @@ export default function EnhancedCartModal({ isOpen, onClose }: EnhancedCartModal
   return (
     <>
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="max-w-5xl max-h-[95vh] w-[95vw] md:w-[90vw] lg:w-[85vw] overflow-y-auto p-6 rounded-lg">
+        <DialogContent className="max-w-5xl max-h-[95vh] w-[calc(100vw-8px)] sm:w-[95vw] md:w-[90vw] lg:w-[85vw] overflow-y-auto p-3 sm:p-6 rounded-none sm:rounded-lg touch-manipulation">
           <DialogHeader>
             <DialogTitle className="flex items-center justify-between">
               <div className="flex items-center gap-2">
@@ -90,10 +90,10 @@ export default function EnhancedCartModal({ isOpen, onClose }: EnhancedCartModal
                 variant="ghost"
                 size="sm"
                 onClick={onClose}
-                className="h-6 w-6 p-0"
+                className="h-8 w-8 sm:h-6 sm:w-6 p-0 min-w-[44px] min-h-[44px] sm:min-w-auto sm:min-h-auto touch-manipulation flex items-center justify-center"
                 data-testid="button-close-cart"
               >
-                <X className="w-4 h-4" />
+                <X className="w-5 h-5 sm:w-4 sm:h-4" />
               </Button>
             </DialogTitle>
           </DialogHeader>
@@ -103,12 +103,12 @@ export default function EnhancedCartModal({ isOpen, onClose }: EnhancedCartModal
             <div className="space-y-4 max-h-[50vh] overflow-y-auto">
               {items.map((item: any) => (
                 <Card key={`${item.id}-${JSON.stringify(item.customization)}`} className="border">
-                  <CardContent className="p-6">
-                    <div className="flex items-center gap-6">
+                  <CardContent className="p-3 sm:p-4 md:p-6">
+                    <div className="flex items-center gap-3 sm:gap-6">
                       <img
                         src={item.image_url || item.image}
                         alt={item.name}
-                        className="w-24 h-24 md:w-28 md:h-28 object-cover rounded-lg border"
+                        className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 lg:w-28 lg:h-28 object-cover rounded-lg border"
                         onError={(e) => {
                           const target = e.target as HTMLImageElement;
                           target.src = '/placeholder-product.png';

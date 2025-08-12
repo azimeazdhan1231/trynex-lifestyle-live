@@ -38,16 +38,12 @@ const DialogContent = React.forwardRef<
     <DialogPrimitive.Content
       ref={ref}
       className={cn(
-        "fixed inset-0 left-[50%] top-[50%] z-50 grid w-[calc(100vw-16px)] sm:w-[calc(100vw-32px)] md:w-[min(calc(100vw-48px),90vw)] lg:w-[min(calc(100vw-64px),85vw)] xl:w-[min(calc(100vw-80px),80vw)] 2xl:w-[min(calc(100vw-96px),75vw)] max-w-[1400px] translate-x-[-50%] translate-y-[-50%] gap-4 border bg-background p-3 sm:p-4 md:p-6 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] rounded-lg max-h-[calc(100vh-32px)] sm:max-h-[calc(100vh-48px)] md:max-h-[calc(100vh-64px)] overflow-y-auto overflow-x-hidden",
+        "fixed inset-0 left-[50%] top-[50%] z-50 grid w-[calc(100vw-8px)] sm:w-[calc(100vw-32px)] md:w-[min(calc(100vw-48px),90vw)] lg:w-[min(calc(100vw-64px),85vw)] xl:w-[min(calc(100vw-80px),80vw)] 2xl:w-[min(calc(100vw-96px),75vw)] max-w-[1400px] translate-x-[-50%] translate-y-[-50%] gap-4 border bg-background p-2 sm:p-4 md:p-6 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] rounded-lg max-h-[calc(100vh-16px)] sm:max-h-[calc(100vh-48px)] md:max-h-[calc(100vh-64px)] overflow-y-auto overflow-x-hidden touch-manipulation",
         className
       )}
       {...props}
     >
       {children}
-      <DialogPrimitive.Close className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground">
-        <X className="h-4 w-4" />
-        <span className="sr-only">Close</span>
-      </DialogPrimitive.Close>
     </DialogPrimitive.Content>
   </DialogPortal>
 ))

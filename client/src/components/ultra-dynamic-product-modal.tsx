@@ -256,7 +256,7 @@ export default function UltraDynamicProductModal({
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent 
-        className="max-w-6xl w-[calc(100vw-16px)] sm:w-[calc(100vw-32px)] md:w-[90vw] lg:w-[85vw] h-[calc(100vh-16px)] sm:h-[calc(100vh-32px)] md:h-[90vh] overflow-hidden p-0 gap-0 bg-white rounded-none sm:rounded-xl md:rounded-2xl"
+        className="max-w-6xl w-[calc(100vw-8px)] sm:w-[calc(100vw-32px)] md:w-[90vw] lg:w-[85vw] h-[calc(100vh-8px)] sm:h-[calc(100vh-32px)] md:h-[90vh] overflow-hidden p-0 gap-0 bg-white rounded-none sm:rounded-xl md:rounded-2xl touch-manipulation"
         data-testid="product-modal"
       >
         <DialogTitle className="sr-only">{product.name} - পণ্যের বিস্তারিত</DialogTitle>
@@ -269,10 +269,10 @@ export default function UltraDynamicProductModal({
           variant="ghost"
           size="sm"
           onClick={onClose}
-          className="absolute top-2 right-2 sm:top-4 sm:right-4 z-50 bg-black/20 hover:bg-black/30 backdrop-blur-sm rounded-full w-8 h-8 sm:w-10 sm:h-10 p-0 text-white"
+          className="absolute top-2 right-2 sm:top-4 sm:right-4 z-50 bg-black/20 hover:bg-black/30 active:bg-black/40 backdrop-blur-sm rounded-full w-10 h-10 sm:w-12 sm:h-12 p-0 text-white touch-manipulation min-w-[44px] min-h-[44px]"
           data-testid="button-close-modal"
         >
-          <X className="w-4 h-4 sm:w-5 sm:h-5" />
+          <X className="w-5 h-5 sm:w-6 sm:h-6" />
         </Button>
 
         {/* Modal Content */}

@@ -79,10 +79,10 @@ export default function Header({ cartCount, onCartOpen }: HeaderProps) {
                 variant="ghost"
                 size="sm"
                 onClick={() => setIsSearchOpen(true)}
-                className="p-2 text-gray-700 hover:text-primary transition-colors"
+                className="p-1.5 sm:p-2 text-gray-700 hover:text-primary transition-colors touch-manipulation min-w-[40px] min-h-[40px] sm:min-w-[44px] sm:min-h-[44px] flex items-center justify-center"
                 data-testid="button-search"
               >
-                <Search className="h-5 w-5" />
+                <Search className="h-4 w-4 sm:h-5 sm:w-5" />
               </Button>
 
               {/* Cart Button - Enhanced */}
@@ -90,21 +90,21 @@ export default function Header({ cartCount, onCartOpen }: HeaderProps) {
                 variant="ghost"
                 size="sm"
                 onClick={() => setIsCartOpen(true)}
-                className="relative p-2 text-gray-700 hover:text-primary transition-all duration-200 hover:bg-primary/10 rounded-lg min-w-[44px] min-h-[44px] flex items-center justify-center"
+                className="relative p-1.5 sm:p-2 text-gray-700 hover:text-primary transition-all duration-200 hover:bg-primary/10 rounded-lg min-w-[40px] min-h-[40px] sm:min-w-[44px] sm:min-h-[44px] flex items-center justify-center touch-manipulation"
                 data-testid="button-cart"
               >
-                <ShoppingCart className="h-5 w-5" />
+                <ShoppingCart className="h-4 w-4 sm:h-5 sm:w-5" />
                 {cartCount > 0 && (
-                  <span className="absolute -top-0.5 -right-0.5 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center font-semibold shadow-lg text-[10px] leading-none">
+                  <span className="absolute -top-0.5 -right-0.5 bg-red-500 text-white text-xs rounded-full h-3.5 w-3.5 sm:h-4 sm:w-4 flex items-center justify-center font-semibold shadow-lg text-[9px] sm:text-[10px] leading-none">
                     {cartCount > 99 ? '99+' : cartCount}
                   </span>
                 )}
               </Button>
 
               {/* Contact Button */}
-              <Button asChild variant="outline" size="sm" className="text-xs sm:text-sm px-3 py-2 hidden md:flex ml-2">
+              <Button asChild variant="outline" size="sm" className="text-xs sm:text-sm px-2 sm:px-3 py-1.5 sm:py-2 hidden md:flex ml-1 sm:ml-2 touch-manipulation">
                 <Link href="/contact">
-                  <Phone className="mr-2 h-4 w-4" />
+                  <Phone className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
                   <span>যোগাযোগ</span>
                 </Link>
               </Button>
@@ -115,10 +115,10 @@ export default function Header({ cartCount, onCartOpen }: HeaderProps) {
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="lg:hidden p-1.5 sm:p-2 text-gray-700 hover:text-primary transition-colors"
+                    className="lg:hidden p-1.5 sm:p-2 text-gray-700 hover:text-primary transition-colors touch-manipulation min-w-[40px] min-h-[40px] sm:min-w-[44px] sm:min-h-[44px] flex items-center justify-center"
                     data-testid="button-mobile-menu"
                   >
-                    <Menu className="h-5 w-5 sm:h-6 sm:w-6" />
+                    <Menu className="h-4 w-4 sm:h-5 sm:w-5" />
                   </Button>
                 </SheetTrigger>
                 <SheetContent side="right" className="w-full max-w-sm">
