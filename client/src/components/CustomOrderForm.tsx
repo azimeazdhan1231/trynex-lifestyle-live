@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation } from "@tanstack/react-query";
-import Header from "@/components/header";
+import MobileOptimizedLayout from "@/components/mobile-optimized-layout";
 import { useCart } from "@/hooks/use-cart";
 import { 
   Upload, 

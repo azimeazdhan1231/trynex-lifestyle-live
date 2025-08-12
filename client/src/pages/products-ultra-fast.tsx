@@ -8,7 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Search, Filter, Grid3X3, List, ChevronLeft, ChevronRight, Star, Heart, ShoppingCart, Zap } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { formatPrice } from "@/lib/constants";
-import Header from "@/components/header";
+import MobileOptimizedLayout from "@/components/mobile-optimized-layout";
 import type { Product } from "@shared/schema";
 
 // Lazy load heavy components

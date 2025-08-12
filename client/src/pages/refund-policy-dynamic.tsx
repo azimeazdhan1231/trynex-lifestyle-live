@@ -3,21 +3,20 @@ import { RotateCcw, FileText, AlertCircle, CheckCircle } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import Header from "@/components/header";
-import { useCart } from "@/hooks/use-cart";
+import MobileOptimizedLayout from "@/components/mobile-optimized-layout";
+
 import { COMPANY_NAME } from "@/lib/constants";
 import type { Page } from "@shared/schema";
 
 export default function RefundPolicyDynamic() {
-  const { cartCount, openCart } = useCart();
 
   const { data: page, isLoading } = useQuery({
     queryKey: ["/api/pages/refund-policy"],
   });
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Header cartCount={cartCount} onCartOpen={openCart} />
+    <MobileOptimizedLayout>
+      <div className="min-h-screen bg-gray-50">
       
       {/* Hero Section */}
       <section className="pt-20 pb-16 bg-gradient-to-br from-green-500 via-green-600 to-emerald-700">
@@ -157,6 +156,7 @@ export default function RefundPolicyDynamic() {
           </div>
         </div>
       </footer>
-    </div>
+      </div>
+    </MobileOptimizedLayout>
   );
 }

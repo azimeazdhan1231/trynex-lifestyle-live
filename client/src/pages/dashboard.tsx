@@ -21,7 +21,7 @@ import {
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { formatPrice } from "@/lib/constants";
-import Header from "@/components/header";
+import MobileOptimizedLayout from "@/components/mobile-optimized-layout";
 import { useLocation } from "wouter";
 
 interface UserData {

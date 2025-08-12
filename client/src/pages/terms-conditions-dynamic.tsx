@@ -3,21 +3,20 @@ import { Shield, FileText, AlertCircle } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import Header from "@/components/header";
-import { useCart } from "@/hooks/use-cart";
+import MobileOptimizedLayout from "@/components/mobile-optimized-layout";
+
 import { COMPANY_NAME } from "@/lib/constants";
 import type { Page } from "@shared/schema";
 
 export default function TermsConditionsDynamic() {
-  const { cartCount, openCart } = useCart();
 
   const { data: page, isLoading } = useQuery({
     queryKey: ["/api/pages/terms-conditions"],
   });
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Header cartCount={cartCount} onCartOpen={openCart} />
+    <MobileOptimizedLayout>
+      <div className="min-h-screen bg-gray-50">
       
       {/* Hero Section */}
       <section className="pt-20 pb-16 bg-gradient-to-br from-primary via-primary/90 to-primary/80">
@@ -113,6 +112,7 @@ export default function TermsConditionsDynamic() {
           </div>
         </div>
       </footer>
-    </div>
+      </div>
+    </MobileOptimizedLayout>
   );
 }
