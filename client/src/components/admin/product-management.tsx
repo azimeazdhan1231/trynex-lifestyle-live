@@ -42,7 +42,7 @@ export default function ProductManagement({ products, categories }: ProductManag
     name: "",
     price: "",
     image_url: "",
-    category: "",
+    category: "no-category",
     stock: 0,
     description: "",
     is_featured: false,
@@ -137,7 +137,7 @@ export default function ProductManagement({ products, categories }: ProductManag
     setEditingProduct(product);
     setFormData({
       name: product.name,
-      price: product.price,
+      price: product.price.toString(), // Ensure price is converted to string for form input
       image_url: product.image_url || "",
       category: product.category || "no-category",
       stock: product.stock,
@@ -150,13 +150,32 @@ export default function ProductManagement({ products, categories }: ProductManag
   };
 
   const handleSubmit = () => {
+    // Validate form data before submitting
+    if (!formData.name.trim()) {
+      toast({
+        title: "ত্রুটি",
+        description: "পণ্যের নাম আবশ্যক।",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!formData.price || parseFloat(formData.price) <= 0) {
+      toast({
+        title: "ত্রুটি",
+        description: "বৈধ দাম প্রদান করুন।",
+        variant: "destructive",
+      });
+      return;
+    }
+
     const productData: InsertProduct = {
-      name: formData.name,
-      price: formData.price,
-      image_url: formData.image_url || null,
+      name: formData.name.trim(),
+      price: parseFloat(formData.price).toString(), // Convert to string for numeric field
+      image_url: formData.image_url?.trim() || null,
       category: formData.category === "no-category" ? null : formData.category || null,
       stock: formData.stock,
-      description: formData.description || null,
+      description: formData.description?.trim() || null,
       is_featured: formData.is_featured,
       is_latest: formData.is_latest,
       is_best_selling: formData.is_best_selling,

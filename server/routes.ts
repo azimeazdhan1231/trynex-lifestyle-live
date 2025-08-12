@@ -1048,6 +1048,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // JWT Secret for authentication
+  const JWT_SECRET = process.env.JWT_SECRET_KEY || process.env.JWT_SECRET || "trynex_secret_key_2025";
+
+  // Authentication middleware
+  const authenticateAdmin = (req: any, res: any, next: any) => {
+    const token = req.headers.authorization?.replace('Bearer ', '');
+
+    if (!token) {
+      return res.status(401).json({ error: 'Access token required' });
+    }
+
+    try {
+      const decoded = jwt.verify(token, JWT_SECRET) as any;
+      if (decoded.role !== 'admin') {
+        return res.status(403).json({ error: 'Admin access required' });
+      }
+      req.user = decoded;
+      next();
+    } catch (error) {
+      return res.status(401).json({ error: 'Invalid token' });
+    }
+  };
+
   // Setup Gift Categories API
   app.post('/api/setup-gift-categories', async (req, res) => {
     try {
@@ -1104,7 +1127,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       await Promise.all(updatePromises);
       
       // Clear cache to force refresh
-      cache.clearAll();
+      performanceCache.clearCache();
 
       res.json({ success: true, message: 'Gift categories setup completed', categories: giftCategories });
     } catch (error) {
@@ -1300,29 +1323,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ error: 'Failed to delete category' });
     }
   });
-
-  // JWT Secret for authentication
-  const JWT_SECRET = process.env.JWT_SECRET_KEY || process.env.JWT_SECRET || "trynex_secret_key_2025";
-
-  // Authentication middleware
-  const authenticateAdmin = (req: any, res: any, next: any) => {
-    const token = req.headers.authorization?.replace('Bearer ', '');
-
-    if (!token) {
-      return res.status(401).json({ error: 'Access token required' });
-    }
-
-    try {
-      const decoded = jwt.verify(token, JWT_SECRET) as any;
-      if (decoded.role !== 'admin') {
-        return res.status(403).json({ error: 'Admin access required' });
-      }
-      req.user = decoded;
-      next();
-    } catch (error) {
-      return res.status(401).json({ error: 'Invalid token' });
-    }
-  };
 
   // Product management endpoints - with admin authentication
   app.post('/api/products', authenticateAdmin, async (req, res) => {
