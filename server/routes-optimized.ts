@@ -165,6 +165,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Update order status endpoint
+  app.patch('/api/orders/:id/status', async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { status } = req.body;
+      
+      if (!status) {
+        return res.status(400).json({ error: 'Status is required' });
+      }
+      
+      console.log(`📝 Updating order ${id} status to: ${status}`);
+      
+      const updatedOrder = await supabaseStorage.updateOrderStatus(id, status);
+      
+      console.log(`✅ Order ${id} status updated successfully to ${status}`);
+      res.json({ success: true, order: updatedOrder });
+    } catch (error) {
+      console.error('❌ Order status update error:', error);
+      res.status(500).json({ 
+        error: 'Failed to update order status',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
   // Get single order with enhanced details
   app.get('/api/orders/:id', async (req, res) => {
     try {

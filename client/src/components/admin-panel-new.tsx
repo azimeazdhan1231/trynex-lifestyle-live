@@ -128,6 +128,31 @@ export default function AdminPanelNew({ onLogout }: AdminPanelProps) {
     return paymentInfo || {};
   };
 
+  // Handle order status change
+  const updateOrderStatusMutation = useMutation({
+    mutationFn: async ({ orderId, status }: { orderId: string; status: string }) => {
+      return apiRequest("PATCH", `/api/orders/${orderId}/status`, { status });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/orders"] });
+      toast({
+        title: "সফল",
+        description: "অর্ডার স্ট্যাটাস সফলভাবে আপডেট করা হয়েছে।",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "ত্রুটি",
+        description: error.message || "অর্ডার স্ট্যাটাস আপডেট করতে সমস্যা হয়েছে।",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleStatusChange = (orderId: string, newStatus: string) => {
+    updateOrderStatusMutation.mutate({ orderId, status: newStatus });
+  };
+
   // Loading state
   if (ordersLoading || productsLoading || categoriesLoading) {
     return (
@@ -382,25 +407,38 @@ export default function AdminPanelNew({ onLogout }: AdminPanelProps) {
                             </TableCell>
                             <TableCell>
                               <div className="max-w-xs">
-                                {orderItems.map((item: any, idx: number) => (
-                                  <div key={idx} className="text-sm">
-                                    {item.productName || item.name} × {item.quantity}
+                                {orderItems.length > 0 ? orderItems.map((item: any, idx: number) => (
+                                  <div key={idx} className="text-sm mb-1">
+                                    <div className="font-medium">{item.productName || item.name || 'কাস্টম আইটেম'}</div>
+                                    <div className="text-gray-500">পরিমাণ: {item.quantity || 1} | দাম: ৳{item.productPrice || item.price || 0}</div>
                                     {item.customization && (
                                       <Badge variant="outline" className="ml-1 text-xs">
                                         কাস্টম
                                       </Badge>
                                     )}
                                   </div>
-                                ))}
+                                )) : <span className="text-gray-500">কোনো পণ্য পাওয়া যায়নি</span>}
                               </div>
                             </TableCell>
                             <TableCell className="font-medium">
                               {formatPrice(Number(order.total))}
                             </TableCell>
                             <TableCell>
-                              <Badge variant={order.status === "delivered" ? "default" : "secondary"}>
-                                {ORDER_STATUSES[order.status as keyof typeof ORDER_STATUSES] || order.status}
-                              </Badge>
+                              <Select
+                                value={order.status || "pending"}
+                                onValueChange={(newStatus) => handleStatusChange(order.id, newStatus)}
+                              >
+                                <SelectTrigger className="w-32">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="pending">অপেক্ষমান</SelectItem>
+                                  <SelectItem value="processing">প্রক্রিয়াধীন</SelectItem>
+                                  <SelectItem value="shipped">পাঠানো হয়েছে</SelectItem>
+                                  <SelectItem value="delivered">ডেলিভার হয়েছে</SelectItem>
+                                  <SelectItem value="cancelled">বাতিল</SelectItem>
+                                </SelectContent>
+                              </Select>
                             </TableCell>
                             <TableCell>
                               <Button
@@ -452,14 +490,34 @@ export default function AdminPanelNew({ onLogout }: AdminPanelProps) {
                         <CardHeader>
                           <CardTitle className="text-base">অর্ডার তথ্য</CardTitle>
                         </CardHeader>
-                        <CardContent className="space-y-2">
-                          <p><strong>ট্র্যাকিং আইডি:</strong> <span className="font-mono text-blue-600">{selectedOrder.tracking_id}</span></p>
-                          <p><strong>স্ট্যাটাস:</strong> 
-                            <Badge className="ml-2">
-                              {ORDER_STATUSES[selectedOrder.status as keyof typeof ORDER_STATUSES] || selectedOrder.status}
-                            </Badge>
-                          </p>
-                          <p><strong>মোট মূল্য:</strong> {formatPrice(Number(selectedOrder.total))}</p>
+                        <CardContent className="space-y-3">
+                          <div>
+                            <strong>ট্র্যাকিং আইডি:</strong> 
+                            <span className="font-mono text-blue-600 bg-blue-50 px-2 py-1 rounded ml-2">
+                              {selectedOrder.tracking_id}
+                            </span>
+                          </div>
+                          
+                          <div className="flex items-center gap-2">
+                            <strong>স্ট্যাটাস:</strong>
+                            <Select
+                              value={selectedOrder.status || "pending"}
+                              onValueChange={(newStatus) => handleStatusChange(selectedOrder.id, newStatus)}
+                            >
+                              <SelectTrigger className="w-40">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="pending">অপেক্ষমান</SelectItem>
+                                <SelectItem value="processing">প্রক্রিয়াধীন</SelectItem>
+                                <SelectItem value="shipped">পাঠানো হয়েছে</SelectItem>
+                                <SelectItem value="delivered">ডেলিভার হয়েছে</SelectItem>
+                                <SelectItem value="cancelled">বাতিল</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          
+                          <p><strong>মোট মূল্য:</strong> <span className="text-green-600 font-semibold">{formatPrice(Number(selectedOrder.total))}</span></p>
                           <p><strong>অর্ডারের তারিখ:</strong> {new Date(selectedOrder.created_at || '').toLocaleDateString('bn-BD')}</p>
                           {selectedOrder.custom_instructions && (
                             <div>
@@ -524,25 +582,48 @@ export default function AdminPanelNew({ onLogout }: AdminPanelProps) {
                     {selectedOrder.custom_images && (
                       <Card>
                         <CardHeader>
-                          <CardTitle className="text-base">কাস্টম ইমেজ</CardTitle>
+                          <CardTitle className="text-base flex items-center gap-2">
+                            <ImageIcon className="w-4 h-4" />
+                            কাস্টম ইমেজ
+                          </CardTitle>
                         </CardHeader>
                         <CardContent>
-                          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                             {(() => {
                               try {
                                 const images = typeof selectedOrder.custom_images === 'string' 
                                   ? JSON.parse(selectedOrder.custom_images) 
                                   : selectedOrder.custom_images;
-                                return Array.isArray(images) ? images.map((image: string, idx: number) => (
-                                  <img
-                                    key={idx}
-                                    src={image}
-                                    alt={`Custom ${idx + 1}`}
-                                    className="w-full h-32 object-cover rounded border"
-                                  />
-                                )) : null;
+                                
+                                if (Array.isArray(images) && images.length > 0) {
+                                  return images.map((image: string, idx: number) => (
+                                    <div key={idx} className="relative group">
+                                      <img
+                                        src={image}
+                                        alt={`কাস্টম ইমেজ ${idx + 1}`}
+                                        className="w-full h-32 object-cover rounded-lg border border-gray-200 hover:border-blue-300 transition-colors cursor-pointer"
+                                        onClick={() => window.open(image, '_blank')}
+                                      />
+                                      <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 rounded-lg transition-opacity flex items-center justify-center">
+                                        <Eye className="w-6 h-6 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                                      </div>
+                                    </div>
+                                  ));
+                                } else {
+                                  return (
+                                    <div className="col-span-full text-center py-4">
+                                      <ImageIcon className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+                                      <p className="text-gray-500 text-sm">কোনো কাস্টম ইমেজ নেই</p>
+                                    </div>
+                                  );
+                                }
                               } catch (error) {
-                                return <p className="text-gray-500 text-sm">ইমেজ লোড করতে সমস্যা হয়েছে</p>;
+                                return (
+                                  <div className="col-span-full text-center py-4">
+                                    <AlertTriangle className="w-8 h-8 text-red-400 mx-auto mb-2" />
+                                    <p className="text-red-500 text-sm">ইমেজ লোড করতে সমস্যা হয়েছে</p>
+                                  </div>
+                                );
                               }
                             })()}
                           </div>

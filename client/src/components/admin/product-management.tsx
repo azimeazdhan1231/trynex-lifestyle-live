@@ -425,37 +425,51 @@ export default function ProductManagement({ products, categories }: ProductManag
                 />
               </div>
 
-              <div className="space-y-3">
-                <div className="flex items-center space-x-2">
+              {/* Product Features Section */}
+              <div className="space-y-3 p-4 bg-gray-50 rounded-lg">
+                <h4 className="font-medium text-gray-900">পণ্যের বৈশিষ্ট্য</h4>
+                
+                <div className="flex items-center justify-between">
+                  <div className="space-y-1">
+                    <Label htmlFor="is_featured" className="text-sm font-medium">ফিচার্ড পণ্য</Label>
+                    <p className="text-xs text-gray-600">হোম পেজে বিশেষভাবে প্রদর্শিত হবে</p>
+                  </div>
                   <Switch
                     id="is_featured"
                     checked={formData.is_featured}
                     onCheckedChange={(checked) => setFormData({ ...formData, is_featured: checked })}
                     data-testid="switch-product-featured"
                   />
-                  <Label htmlFor="is_featured">ফিচার্ড পণ্য</Label>
                 </div>
 
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center justify-between">
+                  <div className="space-y-1">
+                    <Label htmlFor="is_latest" className="text-sm font-medium">নতুন পণ্য</Label>
+                    <p className="text-xs text-gray-600">নতুন পণ্য হিসেবে চিহ্নিত হবে</p>
+                  </div>
                   <Switch
                     id="is_latest"
                     checked={formData.is_latest}
                     onCheckedChange={(checked) => setFormData({ ...formData, is_latest: checked })}
                     data-testid="switch-product-latest"
                   />
-                  <Label htmlFor="is_latest">নতুন পণ্য</Label>
                 </div>
 
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center justify-between">
+                  <div className="space-y-1">
+                    <Label htmlFor="is_best_selling" className="text-sm font-medium">বেস্ট সেলার</Label>
+                    <p className="text-xs text-gray-600">জনপ্রিয় পণ্য হিসেবে প্রদর্শিত হবে</p>
+                  </div>
                   <Switch
                     id="is_best_selling"
                     checked={formData.is_best_selling}
                     onCheckedChange={(checked) => setFormData({ ...formData, is_best_selling: checked })}
                     data-testid="switch-product-bestselling"
                   />
-                  <Label htmlFor="is_best_selling">বেস্ট সেলার</Label>
                 </div>
               </div>
+
+
             </div>
           </div>
 
