@@ -307,6 +307,151 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Products API
+  app.get('/api/products', async (req, res) => {
+    try {
+      console.log('🔍 Fetching products from Supabase...');
+      res.set('Cache-Control', 'public, max-age=300'); // 5 minutes
+      
+      const products = await supabaseStorage.getProducts();
+      console.log(`✅ Products fetched successfully: ${products.length} products`);
+      
+      res.json(products);
+    } catch (error) {
+      console.error('❌ Error fetching products:', error);
+      res.status(500).json({ message: 'পণ্য লোড করতে সমস্যা হয়েছে' });
+    }
+  });
+
+  // Get single product
+  app.get('/api/products/:id', async (req, res) => {
+    try {
+      const product = await supabaseStorage.getProduct(req.params.id);
+      
+      if (!product) {
+        return res.status(404).json({ message: 'পণ্য পাওয়া যায়নি' });
+      }
+      
+      res.json(product);
+    } catch (error) {
+      console.error('❌ Error fetching product:', error);
+      res.status(500).json({ message: 'পণ্য লোড করতে সমস্যা হয়েছে' });
+    }
+  });
+
+  // Create product
+  app.post('/api/products', async (req, res) => {
+    try {
+      const productData = {
+        ...req.body,
+        price: String(req.body.price), // Ensure price is string
+        created_at: new Date(),
+        updated_at: new Date()
+      };
+      
+      const validatedData = insertProductSchema.parse(productData);
+      const product = await supabaseStorage.createProduct(validatedData);
+      
+      console.log('✅ Product created successfully:', product.name);
+      res.status(201).json({
+        success: true,
+        product,
+        message: 'পণ্য সফলভাবে যোগ করা হয়েছে'
+      });
+    } catch (error) {
+      console.error('❌ Error creating product:', error);
+      res.status(500).json({ message: 'পণ্য তৈরি করতে সমস্যা হয়েছে' });
+    }
+  });
+
+  // Update product - This was missing!
+  app.patch('/api/products/:id', async (req, res) => {
+    try {
+      const { id } = req.params;
+      const updates = req.body;
+
+      console.log(`📝 Updating product ${id} with:`, updates);
+
+      // Validate and sanitize the update data
+      const validatedUpdates: any = {};
+
+      if (updates.name !== undefined) {
+        validatedUpdates.name = String(updates.name).trim();
+      }
+      if (updates.description !== undefined) {
+        validatedUpdates.description = String(updates.description || '').trim();
+      }
+      if (updates.price !== undefined) {
+        const priceNum = Number(updates.price);
+        if (isNaN(priceNum) || priceNum < 0) {
+          return res.status(400).json({ error: 'Invalid price - must be a positive number' });
+        }
+        validatedUpdates.price = priceNum.toString();
+      }
+      if (updates.stock !== undefined) {
+        const stockNum = Number(updates.stock);
+        if (isNaN(stockNum) || stockNum < 0) {
+          return res.status(400).json({ error: 'Invalid stock - must be a non-negative number' });
+        }
+        validatedUpdates.stock = stockNum;
+      }
+      if (updates.category !== undefined) {
+        validatedUpdates.category = String(updates.category).trim();
+      }
+      if (updates.image_url !== undefined) {
+        validatedUpdates.image_url = String(updates.image_url || '').trim();
+      }
+      if (updates.is_featured !== undefined) {
+        validatedUpdates.is_featured = Boolean(updates.is_featured);
+      }
+      if (updates.is_latest !== undefined) {
+        validatedUpdates.is_latest = Boolean(updates.is_latest);
+      }
+      if (updates.is_best_selling !== undefined) {
+        validatedUpdates.is_best_selling = Boolean(updates.is_best_selling);
+      }
+
+      validatedUpdates.updated_at = new Date();
+
+      const updatedProduct = await supabaseStorage.updateProduct(id, validatedUpdates);
+
+      if (!updatedProduct) {
+        return res.status(404).json({ error: 'পণ্য পাওয়া যায়নি' });
+      }
+
+      console.log(`✅ Product ${id} updated successfully`);
+      res.json({
+        success: true,
+        product: updatedProduct,
+        message: 'পণ্য সফলভাবে আপডেট হয়েছে'
+      });
+
+    } catch (error) {
+      console.error('❌ Failed to update product:', error);
+      res.status(500).json({ error: 'পণ্য আপডেট করতে সমস্যা হয়েছে' });
+    }
+  });
+
+  // Delete product
+  app.delete('/api/products/:id', async (req, res) => {
+    try {
+      const success = await supabaseStorage.deleteProduct(req.params.id);
+      
+      if (!success) {
+        return res.status(404).json({ message: 'পণ্য পাওয়া যায়নি' });
+      }
+      
+      console.log(`✅ Product ${req.params.id} deleted successfully`);
+      res.json({
+        success: true,
+        message: 'পণ্য সফলভাবে মুছে ফেলা হয়েছে'
+      });
+    } catch (error) {
+      console.error('❌ Error deleting product:', error);
+      res.status(500).json({ message: 'পণ্য মুছতে সমস্যা হয়েছে' });
+    }
+  });
+
   // Health check endpoint
   app.get('/api/health', (req, res) => {
     res.json({
