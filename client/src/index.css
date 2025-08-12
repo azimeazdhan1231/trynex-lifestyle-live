@@ -317,6 +317,49 @@ html {
   scroll-padding-top: 80px;
 }
 
+/* Remove all unnecessary margins and padding */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  line-height: 1.5;
+}
+
+/* Tight professional layout */
+.professional-layout {
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+}
+
+/* Remove default spacing */
+.no-space {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* Compact sections */
+.compact-section {
+  padding: 1rem 0;
+}
+
+@media (min-width: 640px) {
+  .compact-section {
+    padding: 1.5rem 0;
+  }
+}
+
+@media (min-width: 1024px) {
+  .compact-section {
+    padding: 2rem 0;
+  }
+}
+
 /* Optimized backdrop blur */
 .backdrop-blur-optimized {
   backdrop-filter: blur(8px);
