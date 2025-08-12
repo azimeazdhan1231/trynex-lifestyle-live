@@ -1,6 +1,6 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
-import { storage } from "./clean-storage";
+import { supabaseStorage } from "./supabase-storage";
 import { memoryStorage } from "./memory-storage";
 import { setupAuthRoutes } from "./auth-routes";
 import { 
@@ -32,9 +32,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       let products;
       
       if (category && category !== 'all') {
-        products = await storage.getProductsByCategory(category);
+        products = await supabaseStorage.getProductsByCategory(category);
       } else {
-        products = await storage.getProducts();
+        products = await supabaseStorage.getProducts();
       }
       
       // Add performance metrics
@@ -55,7 +55,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       res.set('Cache-Control', 'public, max-age=600'); // 10 minutes
       
-      const product = await storage.getProduct(req.params.id);
+      const product = await supabaseStorage.getProduct(req.params.id);
       if (!product) {
         return res.status(404).json({ message: 'পণ্য পাওয়া যায়নি' });
       }
@@ -114,9 +114,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       let order;
       try {
-        order = await storage.createOrder(validatedData);
+        order = await supabaseStorage.createOrder(validatedData);
       } catch (dbError) {
-        console.warn('⚠️ Database unavailable for orders, using memory storage');
+        console.warn('⚠️ Supabase unavailable for orders, using memory storage');
         order = await memoryStorage.createOrder(validatedData);
       }
       
@@ -253,7 +253,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       res.set('Cache-Control', 'public, max-age=60'); // 1 minute
       
-      const settings = await storage.getSettings();
+      const settings = await supabaseStorage.getSettings();
       res.json(settings);
     } catch (error) {
       console.error('❌ Error fetching settings:', error);

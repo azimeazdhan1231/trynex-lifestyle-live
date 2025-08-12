@@ -13,32 +13,26 @@ import {
   type UserOrder, type InsertUserOrder
 } from "@shared/schema";
 
-// Use the environment DATABASE_URL with fallback
-let connectionString = process.env.DATABASE_URL;
+// Load environment variables first
+dotenv.config();
 
-// If not found, try to load from .env file
-if (!connectionString) {
-  try {
-    // Load dotenv manually if not already loaded
-    dotenv.config();
-    connectionString = process.env.DATABASE_URL;
-  } catch (e) {
-    console.warn('Could not load dotenv:', e);
-  }
+// Use the Supabase connection string
+const connectionString = process.env.DATABASE_URL || "postgresql://postgres.lxhhgdqfxmeohayceshb:Amiomito1Amiomito1@aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres";
+
+if (!connectionString.includes('supabase')) {
+  console.error("❌ DATABASE_URL must be a valid Supabase connection string");
 }
 
-if (!connectionString) {
-  console.error("❌ DATABASE_URL environment variable is not set");
-  // Use a default connection string for development
-  connectionString = "postgresql://user:password@localhost:5432/database";
-}
-
-// Optimized postgres client
+// Optimized postgres client for Supabase
 const client = postgres(connectionString, {
-  max: 5,
+  host: 'aws-0-ap-southeast-1.pooler.supabase.com',
+  port: 6543,
+  database: 'postgres',
+  max: 10,
   idle_timeout: 20,
-  connect_timeout: 10,
+  connect_timeout: 30,
   prepare: false,
+  ssl: { rejectUnauthorized: false },
   transform: {
     undefined: null
   }

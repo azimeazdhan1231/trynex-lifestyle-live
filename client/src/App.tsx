@@ -66,6 +66,8 @@ function Router() {
         <Route path="/blog" component={BlogPage} />
         <Route path="/admin" component={Admin} />
         <Route path="/tracking" component={OrderTracking} />
+        <Route path="/track/:id" component={() => import("./pages/track-order-page").then(m => m.default)} />
+        <Route path="/track" component={() => import("./pages/track-order-page").then(m => m.default)} />
 
         <Route path="/custom-order" component={CustomOrderForm} />
         <Route path="/return-policy-old" component={ReturnPolicy} />
