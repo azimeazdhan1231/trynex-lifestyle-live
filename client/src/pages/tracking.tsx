@@ -210,25 +210,25 @@ export default function OrderTracking() {
   return (
     <MobileOptimizedLayout>
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
-        <div className="max-w-4xl mx-auto px-4 py-8">
+        <div className="max-w-2xl md:max-w-4xl lg:max-w-5xl xl:max-w-6xl mx-auto px-4 py-4 md:py-8">
           {/* Header */}
           <div className="text-center mb-8">
             <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-500 to-green-500 rounded-full mb-4">
               <Search className="w-8 h-8 text-white" />
             </div>
-            <h1 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-2">অর্ডার ট্র্যাকিং</h1>
-            <p className="text-gray-600 text-lg">আপনার অর্ডারের সর্বশেষ অবস্থা জানুন</p>
+            <h1 className="text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-bold text-gray-900 mb-2">অর্ডার ট্র্যাকিং</h1>
+            <p className="text-gray-600 text-base md:text-lg lg:text-xl">আপনার অর্ডারের সর্বশেষ অবস্থা জানুন</p>
           </div>
 
           {/* Search Section */}
           <Card className="shadow-xl border-0 mb-8 bg-white/80 backdrop-blur-sm">
             <CardHeader className="bg-gradient-to-r from-blue-500 to-green-500 text-white rounded-t-lg">
-              <CardTitle className="text-center text-xl flex items-center justify-center gap-2">
-                <Search className="w-5 h-5" />
+              <CardTitle className="text-center text-lg md:text-xl lg:text-2xl flex items-center justify-center gap-2">
+                <Search className="w-5 h-5 md:w-6 md:h-6" />
                 ট্র্যাকিং আইডি দিয়ে খোঁজ করুন
               </CardTitle>
             </CardHeader>
-            <CardContent className="p-6">
+            <CardContent className="p-4 md:p-6 lg:p-8">
               <form onSubmit={handleSearch} className="flex flex-col sm:flex-row gap-4">
                 <div className="flex-1">
                   <Input
@@ -236,7 +236,7 @@ export default function OrderTracking() {
                     value={trackingId}
                     onChange={(e) => setTrackingId(e.target.value)}
                     placeholder="ট্র্যাকিং আইডি লিখুন (যেমন: TRN1234567890123)"
-                    className="h-12 text-lg border-2 border-gray-200 focus:border-blue-500"
+                    className="h-12 md:h-14 text-base md:text-lg lg:text-xl border-2 border-gray-200 focus:border-blue-500"
                   />
                   <p className="text-sm text-gray-500 mt-2">
                     ট্র্যাকিং আইডি আপনার অর্ডার কনফার্মেশন SMS বা ইমেইলে পাবেন
@@ -244,7 +244,7 @@ export default function OrderTracking() {
                 </div>
                 <Button 
                   type="submit" 
-                  className="h-12 px-8 bg-gradient-to-r from-blue-500 to-green-500 hover:from-blue-600 hover:to-green-600"
+                  className="h-12 md:h-14 px-6 md:px-8 lg:px-10 text-base md:text-lg lg:text-xl bg-gradient-to-r from-blue-500 to-green-500 hover:from-blue-600 hover:to-green-600"
                   disabled={isLoading}
                 >
                   {isLoading ? (

@@ -1,5 +1,5 @@
 import React from "react";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription } from "@/components/ui/dialog";
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -57,9 +57,9 @@ export default function PerfectModalBase({
         </div>
         
         {/* Hidden description for accessibility */}
-        <div id="modal-description" className="sr-only">
+        <DialogDescription className="sr-only">
           Modal content
-        </div>
+        </DialogDescription>
       </DialogContent>
     </Dialog>
   );
