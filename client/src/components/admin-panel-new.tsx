@@ -284,9 +284,12 @@ export default function AdminPanelNew({ onLogout }: AdminPanelProps) {
                   <div className="space-y-3">
                     {orders.slice(0, 5).map((order) => (
                       <div key={order.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                        <div>
+                        <div className="flex-1">
                           <p className="font-medium" data-testid={`text-order-customer-${order.id}`}>
                             {order.customer_name}
+                          </p>
+                          <p className="text-xs text-blue-600 font-mono" data-testid={`text-order-tracking-${order.id}`}>
+                            {order.tracking_id}
                           </p>
                           <p className="text-sm text-gray-600" data-testid={`text-order-total-${order.id}`}>
                             {formatPrice(Number(order.total))}
@@ -450,6 +453,7 @@ export default function AdminPanelNew({ onLogout }: AdminPanelProps) {
                           <CardTitle className="text-base">অর্ডার তথ্য</CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-2">
+                          <p><strong>ট্র্যাকিং আইডি:</strong> <span className="font-mono text-blue-600">{selectedOrder.tracking_id}</span></p>
                           <p><strong>স্ট্যাটাস:</strong> 
                             <Badge className="ml-2">
                               {ORDER_STATUSES[selectedOrder.status as keyof typeof ORDER_STATUSES] || selectedOrder.status}
@@ -524,14 +528,23 @@ export default function AdminPanelNew({ onLogout }: AdminPanelProps) {
                         </CardHeader>
                         <CardContent>
                           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                            {JSON.parse(selectedOrder.custom_images).map((image: string, idx: number) => (
-                              <img
-                                key={idx}
-                                src={image}
-                                alt={`Custom ${idx + 1}`}
-                                className="w-full h-32 object-cover rounded border"
-                              />
-                            ))}
+                            {(() => {
+                              try {
+                                const images = typeof selectedOrder.custom_images === 'string' 
+                                  ? JSON.parse(selectedOrder.custom_images) 
+                                  : selectedOrder.custom_images;
+                                return Array.isArray(images) ? images.map((image: string, idx: number) => (
+                                  <img
+                                    key={idx}
+                                    src={image}
+                                    alt={`Custom ${idx + 1}`}
+                                    className="w-full h-32 object-cover rounded border"
+                                  />
+                                )) : null;
+                              } catch (error) {
+                                return <p className="text-gray-500 text-sm">ইমেজ লোড করতে সমস্যা হয়েছে</p>;
+                              }
+                            })()}
                           </div>
                         </CardContent>
                       </Card>

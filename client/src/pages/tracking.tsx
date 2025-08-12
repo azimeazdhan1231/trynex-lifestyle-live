@@ -127,24 +127,24 @@ export default function OrderTracking() {
 
   // Live order tracking query with auto-refresh
   const { 
-    data: order, 
+    data: trackingResponse, 
     isLoading, 
     error, 
     refetch,
     isFetching 
-  } = useQuery<Order>({
-    queryKey: ["/api/orders", searchId, lastUpdate.getTime()],
+  } = useQuery<{success: boolean, order: Order}>({
+    queryKey: ["/api/orders/track", searchId, lastUpdate.getTime()],
     queryFn: async () => {
       if (!searchId) throw new Error("No tracking ID provided");
-      const response = await fetch(`/api/orders/${searchId}`, {
+      const response = await fetch(`/api/orders/track/${searchId}`, {
         headers: {
           'Cache-Control': 'no-cache',
           'Pragma': 'no-cache'
         }
       });
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ error: 'Order not found' }));
-        throw new Error(errorData.error || 'অর্ডার খুঁজে পাওয়া যায়নি');
+        const errorData = await response.json().catch(() => ({ message: 'Order not found' }));
+        throw new Error(errorData.message || 'অর্ডার খুঁজে পাওয়া যায়নি');
       }
       return response.json();
     },
@@ -152,6 +152,8 @@ export default function OrderTracking() {
     refetchInterval: 30000, // Auto-refresh every 30 seconds
     refetchIntervalInBackground: true,
   });
+
+  const order = trackingResponse?.order;
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();

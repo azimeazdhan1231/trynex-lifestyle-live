@@ -163,9 +163,20 @@ export class SupabaseStorage {
     }
   }
 
-  async getOrder(trackingId: string): Promise<Order | undefined> {
-    const result = await db.select().from(orders).where(eq(orders.tracking_id, trackingId)).limit(1);
+  async getOrder(id: string): Promise<Order | undefined> {
+    const result = await db.select().from(orders).where(eq(orders.id, id)).limit(1);
     return result[0];
+  }
+
+  async getOrderByTrackingId(trackingId: string): Promise<Order | undefined> {
+    try {
+      console.log(`🔍 Searching for order with tracking ID: ${trackingId}`);
+      const result = await db.select().from(orders).where(eq(orders.tracking_id, trackingId)).limit(1);
+      return result[0];
+    } catch (error) {
+      console.error('❌ Error fetching order by tracking ID:', error);
+      return undefined;
+    }
   }
 
   async getOrdersByStatus(status: string): Promise<Order[]> {
