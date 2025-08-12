@@ -5,8 +5,8 @@ import { Badge } from '@/components/ui/badge';
 import { Search, ShoppingCart, User, Menu, X, Phone, MapPin } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { useCart } from '@/hooks/use-cart-bulletproof';
-import CartModalBulletproof from './cart-modal-bulletproof';
+import { useCart } from '@/hooks/use-cart';
+import EnhancedCartModal from './enhanced-cart-modal';
 import UserRegistration from './user-registration';
 import UserLogin from './user-login';
 import SearchBar from './search-bar';
@@ -311,7 +311,7 @@ export default function EnhancedHeader() {
       </header>
 
       {/* Modals */}
-      <CartModalBulletproof isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
+      <EnhancedCartModal isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
 
       <UserRegistration
         isOpen={showRegistration}

@@ -1,19 +1,9 @@
 import { useState, useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
 import { useCart } from "@/hooks/use-cart";
-import { 
-  Search, Package, CheckCircle, Clock, Truck, 
-  User, Phone, MapPin, Calendar, Hash, Banknote,
-  Settings
-} from "lucide-react";
-import type { Order } from "@shared/schema";
-import { formatPrice } from "@/lib/constants";
+import LiveOrderTracking from "@/components/live-order-tracking";
+import MobileOptimizedLayout from "@/components/mobile-optimized-layout";
 
 const statusMap = {
   pending: { label: "অপেক্ষমান", color: "bg-yellow-500", icon: Clock },

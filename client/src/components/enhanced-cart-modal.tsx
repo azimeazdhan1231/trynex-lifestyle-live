@@ -1,14 +1,17 @@
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
+import React from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { ShoppingCart, Trash2, Plus, Minus, Package, CreditCard, X } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { useCart } from "@/hooks/use-cart";
+import { useToast } from "@/hooks/use-toast";
+import { 
+  ShoppingCart, Plus, Minus, Trash2, 
+  ShoppingBag, X, Heart
+} from "lucide-react";
 import { formatPrice } from "@/lib/constants";
-import { useLocation } from "wouter";
-import DynamicCheckoutModal from "./dynamic-checkout-modal";
+import EnhancedCheckoutModal from "./enhanced-checkout-modal";
 
 interface EnhancedCartModalProps {
   isOpen: boolean;
@@ -16,235 +19,255 @@ interface EnhancedCartModalProps {
 }
 
 export default function EnhancedCartModal({ isOpen, onClose }: EnhancedCartModalProps) {
-  const { cart, updateQuantity, removeFromCart, totalItems, totalPrice, clearCart } = useCart();
-  const [, setLocation] = useLocation();
-  const [showCheckout, setShowCheckout] = useState(false);
+  const { cart: items, totalPrice, totalItems, updateQuantity, removeFromCart, clearCart } = useCart();
+  const { toast } = useToast();
+  const [isCheckoutOpen, setIsCheckoutOpen] = React.useState(false);
+
+  const deliveryCharge = totalPrice > 1000 ? 0 : 60;
+  const finalTotal = totalPrice + deliveryCharge;
+
+  const handleRemoveItem = (id: string) => {
+    removeFromCart(id);
+    toast({
+      title: "পণ্য সরানো হয়েছে",
+      description: "পণ্যটি আপনার কার্ট থেকে সরিয়ে দেওয়া হয়েছে",
+    });
+  };
+
+  const handleClearCart = () => {
+    clearCart();
+    toast({
+      title: "কার্ট খালি করা হয়েছে",
+      description: "সব পণ্য কার্ট থেকে সরানো হয়েছে",
+    });
+  };
 
   const handleCheckout = () => {
     onClose();
-    setShowCheckout(true);
+    setIsCheckoutOpen(true);
   };
 
-  const handleOrderComplete = () => {
-    clearCart();
-    setShowCheckout(false);
-  };
-
-  const handleContinueShopping = () => {
-    onClose();
-    setLocation('/products');
-  };
+  if (items.length === 0) {
+    return (
+      <Dialog open={isOpen} onOpenChange={onClose}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <ShoppingCart className="w-5 h-5" />
+              আপনার কার্ট
+            </DialogTitle>
+          </DialogHeader>
+          
+          <div className="text-center py-12">
+            <ShoppingBag className="w-20 h-20 text-gray-300 mx-auto mb-6" />
+            <h3 className="text-xl font-semibold text-gray-700 mb-3">কার্ট খালি</h3>
+            <p className="text-gray-500 mb-6">আপনার কার্টে কোনো পণ্য নেই</p>
+            <Button 
+              onClick={onClose}
+              className="bg-primary hover:bg-primary/90"
+              data-testid="button-continue-shopping"
+            >
+              <ShoppingBag className="w-4 h-4 mr-2" />
+              কেনাকাটা শুরু করুন
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
 
   return (
     <>
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[85vh] p-0 gap-0 overflow-hidden">
-        {/* Header */}
-        <DialogHeader className="px-6 py-4 border-b bg-white sticky top-0 z-10">
-          <div className="flex items-center justify-between">
-            <DialogTitle className="flex items-center gap-2 text-xl font-bold">
-              <ShoppingCart className="w-6 h-6 text-orange-500" />
-              আপনার কার্ট
-              {totalItems > 0 && (
-                <Badge className="bg-orange-500 text-white ml-2">
-                  {totalItems}টি পণ্য
-                </Badge>
-              )}
-            </DialogTitle>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onClose}
-              className="p-2 hover:bg-gray-100 rounded-full"
-            >
-              <X className="w-5 h-5" />
-            </Button>
-          </div>
-        </DialogHeader>
-
-        {/* Cart Content */}
-        <div className="flex flex-col h-full max-h-[calc(85vh-120px)]">
-          {cart.length === 0 ? (
-            /* Empty Cart State */
-            <div className="flex-1 flex items-center justify-center p-8">
-              <div className="text-center">
-                <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <ShoppingCart className="w-12 h-12 text-gray-400" />
-                </div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                  আপনার কার্ট খালি
-                </h3>
-                <p className="text-gray-600 mb-6">
-                  কিছু পণ্য যোগ করুন এবং কেনাকাটা শুরু করুন
-                </p>
-                <Button
-                  onClick={handleContinueShopping}
-                  className="bg-orange-500 hover:bg-orange-600"
-                >
-                  <Package className="w-4 h-4 mr-2" />
-                  কেনাকাটা করুন
-                </Button>
+      <Dialog open={isOpen} onOpenChange={onClose}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <ShoppingCart className="w-6 h-6" />
+                আপনার কার্ট ({totalItems} টি পণ্য)
               </div>
-            </div>
-          ) : (
-            <>
-              {/* Cart Items */}
-              <ScrollArea className="flex-1 px-6">
-                <div className="py-4 space-y-4">
-                  {cart.map((item, index) => (
-                    <div key={`${item.id}-${index}`}>
-                      <div className="flex items-start gap-4 p-4 bg-gray-50 rounded-lg">
-                        {/* Product Image */}
-                        <div className="w-16 h-16 bg-white rounded-lg overflow-hidden flex-shrink-0 border">
-                          <img
-                            src={item.image_url || '/placeholder-product.jpg'}
-                            alt={item.name}
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onClose}
+                className="h-6 w-6 p-0"
+                data-testid="button-close-cart"
+              >
+                <X className="w-4 h-4" />
+              </Button>
+            </DialogTitle>
+          </DialogHeader>
 
-                        {/* Product Details */}
-                        <div className="flex-1 min-w-0">
-                          <h4 className="font-medium text-gray-900 line-clamp-2">
-                            {item.name}
-                          </h4>
-                          
-                          {/* Customization Badge */}
-                          {item.customization && Object.keys(item.customization).length > 0 && (
-                            <Badge variant="secondary" className="mt-1 text-xs">
+          <div className="space-y-4">
+            {/* Cart Items */}
+            <div className="space-y-3 max-h-96 overflow-y-auto">
+              {items.map((item: any) => (
+                <Card key={`${item.id}-${JSON.stringify(item.customization)}`} className="border">
+                  <CardContent className="p-4">
+                    <div className="flex items-center gap-4">
+                      <img
+                        src={item.image_url || item.image}
+                        alt={item.name}
+                        className="w-16 h-16 object-cover rounded-lg border"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.src = '/placeholder-product.png';
+                        }}
+                      />
+                      
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-semibold text-gray-900 truncate">{item.name}</h4>
+                        <p className="text-sm text-gray-600">{formatPrice(item.price)}</p>
+                        
+                        {item.customization && (
+                          <div className="mt-2">
+                            <Badge variant="outline" className="text-xs">
                               কাস্টমাইজড
                             </Badge>
-                          )}
-                          
-                          {/* Price */}
-                          <div className="flex items-center justify-between mt-2">
-                            <span className="font-bold text-orange-600">
-                              {formatPrice(item.price)}
-                            </span>
-                            
-                            {/* Quantity Controls */}
-                            <div className="flex items-center gap-2">
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="w-8 h-8 p-0"
-                                onClick={() => updateQuantity(item.id, Math.max(0, item.quantity - 1))}
-                              >
-                                <Minus className="w-3 h-3" />
-                              </Button>
-                              
-                              <span className="w-8 text-center text-sm font-medium">
-                                {item.quantity}
-                              </span>
-                              
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="w-8 h-8 p-0"
-                                onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                              >
-                                <Plus className="w-3 h-3" />
-                              </Button>
-                              
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="w-8 h-8 p-0 text-red-500 hover:text-red-700 hover:bg-red-50 ml-2"
-                                onClick={() => removeFromCart(item.id)}
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </Button>
+                            <div className="text-xs text-blue-600 mt-1 space-y-0.5">
+                              {item.customization.text && (
+                                <p><strong>টেক্সট:</strong> {item.customization.text}</p>
+                              )}
+                              {item.customization.color && (
+                                <p><strong>রং:</strong> {item.customization.color}</p>
+                              )}
+                              {item.customization.size && (
+                                <p><strong>সাইজ:</strong> {item.customization.size}</p>
+                              )}
                             </div>
                           </div>
-                          
-                          {/* Item Total */}
-                          <div className="text-right mt-1">
-                            <span className="text-sm text-gray-600">
-                              মোট: <span className="font-semibold">{formatPrice(item.price * item.quantity)}</span>
-                            </span>
-                          </div>
+                        )}
+                      </div>
+
+                      <div className="flex flex-col items-end gap-2">
+                        <div className="flex items-center gap-2 border rounded-lg p-1">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => updateQuantity(item.id, Math.max(1, item.quantity - 1))}
+                            disabled={item.quantity <= 1}
+                            className="h-6 w-6 p-0"
+                            data-testid={`button-decrease-${item.id}`}
+                          >
+                            <Minus className="w-3 h-3" />
+                          </Button>
+                          <span className="w-8 text-center text-sm font-medium">{item.quantity}</span>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                            className="h-6 w-6 p-0"
+                            data-testid={`button-increase-${item.id}`}
+                          >
+                            <Plus className="w-3 h-3" />
+                          </Button>
+                        </div>
+
+                        <div className="text-right">
+                          <p className="font-bold text-sm">{formatPrice(item.price * item.quantity)}</p>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleRemoveItem(item.id)}
+                            className="text-red-600 hover:text-red-700 h-6 p-1"
+                            data-testid={`button-remove-${item.id}`}
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </Button>
                         </div>
                       </div>
                     </div>
-                  ))}
-                </div>
-              </ScrollArea>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
 
-              {/* Cart Summary & Actions */}
-              <div className="border-t bg-white p-6 space-y-4">
-                {/* Summary */}
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">মোট পণ্য:</span>
-                    <span className="font-medium">{totalItems}টি</span>
-                  </div>
-                  
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">সাব-টোটাল:</span>
-                    <span className="font-medium">{formatPrice(totalPrice)}</span>
-                  </div>
-                  
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">ডেলিভারি চার্জ:</span>
-                    <span className="font-medium text-orange-600">ফ্রি</span>
-                  </div>
-                  
-                  <Separator />
-                  
-                  <div className="flex justify-between text-lg font-bold">
-                    <span>মোট:</span>
-                    <span className="text-orange-600">{formatPrice(totalPrice)}</span>
-                  </div>
+            <Separator />
+
+            {/* Cart Summary */}
+            <Card className="bg-gray-50">
+              <CardContent className="p-4 space-y-3">
+                <div className="flex justify-between text-sm">
+                  <span>পণ্যের মূল্য:</span>
+                  <span>{formatPrice(totalPrice)}</span>
+                </div>
+                
+                <div className="flex justify-between text-sm">
+                  <span>ডেলিভারি চার্জ:</span>
+                  <span className={deliveryCharge === 0 ? "text-green-600" : ""}>
+                    {deliveryCharge === 0 ? "ফ্রি ডেলিভারি!" : formatPrice(deliveryCharge)}
+                  </span>
                 </div>
 
-                {/* Action Buttons */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <Button
-                    variant="outline"
-                    onClick={handleContinueShopping}
-                    className="border-orange-500 text-orange-600 hover:bg-orange-50"
-                  >
-                    <Package className="w-4 h-4 mr-2" />
-                    আরো কিনুন
-                  </Button>
-                  
-                  <Button
-                    onClick={handleCheckout}
-                    className="bg-orange-500 hover:bg-orange-600 text-white"
-                  >
-                    <CreditCard className="w-4 h-4 mr-2" />
-                    চেকআউট করুন
-                  </Button>
-                </div>
-
-                {/* Clear Cart */}
-                {cart.length > 0 && (
-                  <div className="text-center pt-2">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={clearCart}
-                      className="text-red-500 hover:text-red-700 hover:bg-red-50 text-xs"
-                    >
-                      <Trash2 className="w-3 h-3 mr-1" />
-                      কার্ট খালি করুন
-                    </Button>
+                {totalPrice < 1000 && (
+                  <div className="text-xs text-orange-600 bg-orange-50 p-2 rounded">
+                    আরও {formatPrice(1000 - totalPrice)} কিনলে ফ্রি ডেলিভারি পাবেন!
                   </div>
                 )}
-              </div>
-            </>
-          )}
-        </div>
-      </DialogContent>
-    </Dialog>
 
-    {/* Dynamic Checkout Modal */}
-    <DynamicCheckoutModal
-      isOpen={showCheckout}
-      onClose={() => setShowCheckout(false)}
-      cart={cart}
-      onOrderComplete={handleOrderComplete}
-    />
-  </>
-);
+                <Separator />
+
+                <div className="flex justify-between text-lg font-bold">
+                  <span>সর্বমোট:</span>
+                  <span className="text-green-600">{formatPrice(finalTotal)}</span>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Action Buttons */}
+            <div className="space-y-3">
+              <div className="grid grid-cols-2 gap-3">
+                <Button
+                  variant="outline"
+                  onClick={onClose}
+                  className="border-gray-300"
+                  data-testid="button-continue-shopping"
+                >
+                  <ShoppingBag className="w-4 h-4 mr-2" />
+                  আরো কিনুন
+                </Button>
+                
+                <Button
+                  variant="outline"
+                  onClick={handleClearCart}
+                  className="border-red-300 text-red-600 hover:bg-red-50"
+                  data-testid="button-clear-cart"
+                >
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  কার্ট খালি করুন
+                </Button>
+              </div>
+
+              <Button
+                onClick={handleCheckout}
+                className="w-full bg-green-600 hover:bg-green-700 text-white py-3 text-lg font-semibold"
+                data-testid="button-proceed-checkout"
+              >
+                <ShoppingCart className="w-5 h-5 mr-2" />
+                চেকআউট করুন ({formatPrice(finalTotal)})
+              </Button>
+
+              <div className="text-center">
+                <p className="text-xs text-gray-500 flex items-center justify-center gap-1">
+                  <Heart className="w-3 h-3 text-red-500" />
+                  ১০০% নিরাপদ ও সুরক্ষিত লেনদেন
+                </p>
+              </div>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Enhanced Checkout Modal */}
+      <EnhancedCheckoutModal
+        isOpen={isCheckoutOpen}
+        onClose={() => setIsCheckoutOpen(false)}
+        onSuccess={(orderId) => {
+          setIsCheckoutOpen(false);
+          // Navigate to tracking or order success page
+          window.location.href = `/tracking?id=${orderId}`;
+        }}
+      />
+    </>
+  );
 }

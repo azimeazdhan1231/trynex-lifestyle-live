@@ -16,7 +16,7 @@ const Home = lazy(() => import("./pages/home-ultra-dynamic"));
 const Product = lazy(() => import("./pages/product-enhanced"));
 const Products = lazy(() => import("./pages/products"));
 const Contact = lazy(() => import("./pages/contact"));
-const Tracking = lazy(() => import("./pages/tracking"));
+const Tracking = lazy(() => import("./pages/tracking-enhanced"));
 const Admin = lazy(() => import("./pages/admin"));
 const Offers = lazy(() => import("./pages/offers"));
 const Profile = lazy(() => import("./pages/profile"));

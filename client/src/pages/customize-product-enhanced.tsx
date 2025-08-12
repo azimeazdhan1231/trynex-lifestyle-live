@@ -21,7 +21,7 @@ interface CustomizationData {
   text?: string;
   fontSize?: number;
   color?: string;
-  position?: { x: number; y: number };
+  position: { x: number; y: number };
   image?: File | null;
   instructions?: string;
 }
@@ -158,8 +158,8 @@ export default function CustomizeProductEnhanced() {
                       <div
                         className="absolute pointer-events-none"
                         style={{
-                          left: `${customization.position.x}%`,
-                          top: `${customization.position.y}%`,
+                          left: `${customization.position?.x || 50}%`,
+                          top: `${customization.position?.y || 50}%`,
                           transform: 'translate(-50%, -50%)',
                           fontSize: `${customization.fontSize}px`,
                           color: customization.color,
@@ -176,8 +176,8 @@ export default function CustomizeProductEnhanced() {
                       <div
                         className="absolute"
                         style={{
-                          left: `${customization.position.x}%`,
-                          top: `${customization.position.y}%`,
+                          left: `${customization.position?.x || 50}%`,
+                          top: `${customization.position?.y || 50}%`,
                           transform: 'translate(-50%, -50%)',
                           width: '100px',
                           height: '100px',
@@ -332,10 +332,10 @@ export default function CustomizeProductEnhanced() {
                         type="number"
                         min="0"
                         max="100"
-                        value={customization.position.x}
+                        value={customization.position?.x || 50}
                         onChange={(e) => setCustomization(prev => ({
                           ...prev,
-                          position: { ...prev.position, x: Number(e.target.value) }
+                          position: { x: Number(e.target.value), y: prev.position?.y || 50 }
                         }))}
                       />
                     </div>
@@ -347,10 +347,10 @@ export default function CustomizeProductEnhanced() {
                         type="number"
                         min="0"
                         max="100"
-                        value={customization.position.y}
+                        value={customization.position?.y || 50}
                         onChange={(e) => setCustomization(prev => ({
                           ...prev,
-                          position: { ...prev.position, y: Number(e.target.value) }
+                          position: { x: prev.position?.x || 50, y: Number(e.target.value) }
                         }))}
                       />
                     </div>
