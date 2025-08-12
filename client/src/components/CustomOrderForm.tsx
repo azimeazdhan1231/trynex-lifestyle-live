@@ -9,6 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useMutation } from "@tanstack/react-query";
 import MobileOptimizedLayout from "@/components/mobile-optimized-layout";
 import { useCart } from "@/hooks/use-cart";
+import Header from "@/components/header";
 import { 
   Upload, 
   Phone, 
