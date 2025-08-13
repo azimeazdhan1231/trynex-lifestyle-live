@@ -50,6 +50,7 @@ export default function ProfessionalCheckoutModal({
   const { toast } = useToast();
   const [currentStep, setCurrentStep] = useState<'summary' | 'details' | 'success'>('summary');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [orderResult, setOrderResult] = useState<{ order_id: string; tracking_id?: string } | null>(null);
   
   // Form data
   const [formData, setFormData] = useState({
@@ -123,10 +124,14 @@ export default function ProfessionalCheckoutModal({
 
       if (response.ok) {
         const result = await response.json();
+        setOrderResult({
+          order_id: result.order_id || result.id,
+          tracking_id: result.tracking_id || result.order_id || result.id
+        });
         setCurrentStep('success');
         toast({
           title: "অর্ডার সফল হয়েছে",
-          description: `আপনার অর্ডার আইডি: ${result.order_id}`,
+          description: `আপনার অর্ডার আইডি: ${result.order_id || result.id}`,
         });
       } else {
         throw new Error('Order submission failed');
@@ -145,6 +150,7 @@ export default function ProfessionalCheckoutModal({
 
   const handleCloseModal = () => {
     setCurrentStep('summary');
+    setOrderResult(null);
     setFormData({
       name: '',
       phone: '',
@@ -503,6 +509,34 @@ export default function ProfessionalCheckoutModal({
 
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center space-y-6 px-4">
+          {/* Order ID Display */}
+          {orderResult && (
+            <Card className="bg-green-50 border-green-200">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="font-semibold text-green-800 text-sm">অর্ডার আইডি</span>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      navigator.clipboard.writeText(orderResult.tracking_id || orderResult.order_id);
+                      toast({
+                        title: "কপি হয়েছে!",
+                        description: "অর্ডার আইডি কপি করা হয়েছে",
+                      });
+                    }}
+                    className="h-6 px-2 text-green-700 hover:text-green-800"
+                  >
+                    কপি করুন
+                  </Button>
+                </div>
+                <p className="text-lg font-bold text-green-600 break-all">
+                  {orderResult.tracking_id || orderResult.order_id}
+                </p>
+              </CardContent>
+            </Card>
+          )}
+
           <div className="space-y-3">
             <h3 className="font-semibold text-gray-900">পরবর্তী করণীয়</h3>
             <div className="text-sm text-gray-600 space-y-2">
@@ -518,9 +552,23 @@ export default function ProfessionalCheckoutModal({
                 <Phone className="w-4 h-4 text-blue-600" />
                 <span className="font-semibold text-blue-800 text-sm">সাপোর্ট</span>
               </div>
-              <p className="text-xs text-blue-700">
+              <p className="text-xs text-blue-700 mb-2">
                 কোন সমস্যা হলে: +8801765555593
               </p>
+              {orderResult && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    const message = `আসসালামু আলাইকুম! আমার অর্ডার সম্পর্কে জানতে চাই।\nঅর্ডার আইডি: ${orderResult.tracking_id || orderResult.order_id}\nনাম: ${formData.name}\nফোন: ${formData.phone}`;
+                    const whatsappUrl = `https://wa.me/8801765555593?text=${encodeURIComponent(message)}`;
+                    window.open(whatsappUrl, '_blank');
+                  }}
+                  className="w-full text-xs"
+                >
+                  হোয়াটসঅ্যাপে যোগাযোগ
+                </Button>
+              )}
             </CardContent>
           </Card>
 
