@@ -553,7 +553,7 @@ export default function ProfessionalCheckoutModal({
                 <span className="font-semibold text-blue-800 text-sm">সাপোর্ট</span>
               </div>
               <p className="text-xs text-blue-700 mb-2">
-                কোন সমস্যা হলে: 01747292277
+                কোন সমস্যা হলে: +8801765555593
               </p>
               {orderResult && (
                 <Button
@@ -561,7 +561,7 @@ export default function ProfessionalCheckoutModal({
                   size="sm"
                   onClick={() => {
                     const message = `আসসালামু আলাইকুম! আমার অর্ডার সম্পর্কে জানতে চাই।\nঅর্ডার আইডি: ${orderResult.tracking_id || orderResult.order_id}\nনাম: ${formData.name}\nফোন: ${formData.phone}`;
-                    const whatsappUrl = `https://wa.me/8801747292277?text=${encodeURIComponent(message)}`;
+                    const whatsappUrl = `https://wa.me/8801765555593?text=${encodeURIComponent(message)}`;
                     window.open(whatsappUrl, '_blank');
                   }}
                   className="w-full text-xs"

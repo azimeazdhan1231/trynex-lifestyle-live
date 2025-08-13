@@ -3,10 +3,6 @@ import { motion } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { formatPrice } from "@/lib/constants";
-import { useCart } from "@/hooks/use-cart";
-import { useToast } from "@/hooks/use-toast";
-import { useLocation } from 'wouter';
 import { 
   Star, 
   ShoppingCart, 
@@ -15,9 +11,11 @@ import {
   Package,
   Palette,
   Zap,
-  TrendingUp,
-  ShoppingBag
+  TrendingUp
 } from "lucide-react";
+import { formatPrice } from "@/lib/constants";
+import { useCart } from "@/hooks/use-cart";
+import { useToast } from "@/hooks/use-toast";
 import type { Product } from "@shared/schema";
 
 interface ModernProductCardProps {
@@ -39,11 +37,9 @@ const ModernProductCard = memo(function ModernProductCard({
   const [isFavorite, setIsFavorite] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
-  const [isWishlist, setIsWishlist] = useState(false);
-
+  
   const { addToCart } = useCart();
   const { toast } = useToast();
-  const [, navigate] = useLocation();
 
   const price = typeof product.price === 'string' ? parseFloat(product.price) : product.price;
   const stock = product.stock || 0;
@@ -79,14 +75,14 @@ const ModernProductCard = memo(function ModernProductCard({
     const customizableTypes = ['t-shirt', 'tshirt', 'mug', 'photo canvas', 'canvas'];
     const productName = product.name?.toLowerCase() || '';
     const productCategory = product.category?.toLowerCase() || '';
-
+    
     const isCustomizable = customizableTypes.some(type => 
       productName.includes(type) || productCategory.includes(type)
     );
-
+    
     if (isCustomizable) {
       // Navigate to customize page with product data
-      navigate(`/customize/${product.id}?productId=${product.id}&name=${encodeURIComponent(product.name)}`);
+      window.location.href = `/customize?productId=${product.id}`;
     } else {
       toast({
         title: "কাস্টমাইজেশন উপলব্ধ নয়",
@@ -94,13 +90,13 @@ const ModernProductCard = memo(function ModernProductCard({
         variant: "destructive"
       });
     }
-  }, [product, toast, navigate]);
+  }, [product, toast]);
 
   const toggleFavorite = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     setIsFavorite(!isFavorite);
-
+    
     toast({
       title: isFavorite ? "পছন্দের তালিকা থেকে সরানো হয়েছে" : "পছন্দের তালিকায় যোগ করা হয়েছে",
       description: product.name,
@@ -155,7 +151,7 @@ const ModernProductCard = memo(function ModernProductCard({
               onLoad={() => setImageLoaded(true)}
               onError={() => setImageError(true)}
             />
-
+            
             {/* Gradient overlay on hover */}
             <div className={`absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent transition-opacity duration-300 ${
               isHovered ? 'opacity-100' : 'opacity-0'
@@ -205,7 +201,7 @@ const ModernProductCard = memo(function ModernProductCard({
               >
                 <Heart className={`w-4 h-4 ${isFavorite ? 'fill-current' : ''}`} />
               </motion.button>
-
+              
               <motion.button
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.95 }}
@@ -266,80 +262,14 @@ const ModernProductCard = memo(function ModernProductCard({
                   </span>
                 )}
               </div>
-
-              {/* Customize/Order buttons */}
-              <div className="flex flex-col gap-2">
-                {/* Show customize button for customizable products */}
-                {(product.name.toLowerCase().includes('t-shirt') || 
-                  product.name.toLowerCase().includes('tshirt') || 
-                  product.name.toLowerCase().includes('টি-শার্ট') ||
-                  product.name.toLowerCase().includes('mug') || 
-                  product.name.toLowerCase().includes('মগ') ||
-                  product.name.toLowerCase().includes('canvas') || 
-                  product.name.toLowerCase().includes('ক্যানভাস')) ? (
-                  <Button
-                    onClick={handleCustomize}
-                    className="w-full bg-gradient-to-r from-orange-500 to-red-500 text-white hover:from-orange-600 hover:to-red-600 transition-all duration-300"
-                  >
-                    <Palette className="w-4 h-4 mr-2" />
-                    কাস্টমাইজ করুন
-                  </Button>
-                ) : (
-                  <Button
-                    onClick={(e: React.MouseEvent) => { // Added event type for consistency
-                      e.preventDefault();
-                      e.stopPropagation();
-                      // Placeholder for handleDirectOrder if it exists elsewhere
-                      // For now, just calling addToCart as a fallback if direct order logic is missing
-                      if (!isOutOfStock) {
-                        addToCart({
-                          id: product.id,
-                          name: product.name,
-                          price: price,
-                          image_url: product.image_url || '',
-                          quantity: 1
-                        });
-                        toast({
-                          title: "কার্টে যোগ করা হয়েছে",
-                          description: `${product.name} সফলভাবে কার্টে যোগ করা হয়েছে`,
-                          duration: 2000,
-                        });
-                      }
-                    }}
-                    className="w-full bg-gradient-to-r from-green-600 to-blue-600 text-white hover:from-green-700 hover:to-blue-700 transition-all duration-300"
-                  >
-                    <ShoppingBag className="w-4 h-4 mr-2" />
-                    অর্ডার করুন
-                  </Button>
+              
+              <div className="flex items-center gap-1">
+                {isTrending && (
+                  <div className="flex items-center gap-1 text-orange-500">
+                    <Zap className="w-3 h-3" />
+                    <span className="text-xs font-medium">হট</span>
+                  </div>
                 )}
-
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setIsWishlist(!isWishlist)}
-                    className="flex-1"
-                  >
-                    <Heart className={`w-4 h-4 ${isWishlist ? 'fill-red-500 text-red-500' : ''}`} />
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleViewDetails}
-                    className="flex-1"
-                  >
-                    <Eye className="w-4 h-4" />
-                    দেখুন
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => addToCart(product)}
-                    className="flex-1"
-                  >
-                    <ShoppingCart className="w-4 h-4" />
-                  </Button>
-                </div>
               </div>
             </div>
           </CardContent>

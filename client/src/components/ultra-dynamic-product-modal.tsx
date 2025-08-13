@@ -69,7 +69,7 @@ const ProductImageViewer = memo(({
             loading="eager"
           />
         </div>
-
+        
         {/* Zoom Toggle */}
         <Button
           variant="secondary"
@@ -153,7 +153,7 @@ export default function UltraDynamicProductModal({
 
   const price = typeof product.price === 'string' ? parseFloat(product.price) : product.price;
   const totalPrice = price * quantity;
-
+  
   // Create image array (main image + additional if available)
   const images = [product.image_url].filter(Boolean) as string[];
   if (images.length === 0) {
@@ -174,28 +174,16 @@ export default function UltraDynamicProductModal({
   };
 
   const handleCustomizeProduct = () => {
-    // Check if product is customizable
-    const customizableTypes = ['t-shirt', 'tshirt', 'টি-শার্ট', 'মগ', 'mug', 'canvas', 'ক্যানভাস'];
-    const productName = product.name?.toLowerCase() || '';
-    const isCustomizable = customizableTypes.some(type =>
-      productName.includes(type)
-    );
-
-    if (isCustomizable) {
-      // Close modal and redirect to customize page
-      onClose();
-      window.location.href = `/customize/${product.id}`;
-    } else {
-      toast({
-        title: "কাস্টমাইজেশন উপলব্ধ নয়",
-        description: "এই পণ্যটি কাস্টমাইজ করা যায় না",
-        variant: "destructive"
-      });
+    if (onCustomize) {
+      onCustomize(product);
     }
   };
 
   const handleCustomize = () => {
-    handleCustomizeProduct();
+    if (onCustomize) {
+      onCustomize(product);
+      onClose();
+    }
   };
 
   const handleWhatsAppOrder = () => {
@@ -260,7 +248,7 @@ export default function UltraDynamicProductModal({
         <DialogDescription className="sr-only">
           {product.name} এর সম্পূর্ণ বিবরণ, দাম {formatPrice(price)}, স্টক {product.stock || 0} টি
         </DialogDescription>
-
+        
         {/* Custom Close Button */}
         <Button
           variant="ghost"
@@ -408,30 +396,19 @@ export default function UltraDynamicProductModal({
               {/* Action Buttons */}
               <div className="space-y-2 sm:space-y-3">
                 <div className="flex gap-2 sm:gap-3">
-                  {(() => {
-                    const customizableTypes = ['t-shirt', 'tshirt', 'টি-শার্ট', 'মগ', 'mug', 'canvas', 'ক্যানভাস'];
-                    const productName = product.name?.toLowerCase() || '';
-                    const isCustomizable = customizableTypes.some(type =>
-                      productName.includes(type)
-                    );
-
-                    return isCustomizable && (
-                      <Button
-                        className="flex-1 h-10 sm:h-12 text-sm sm:text-base font-medium bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white touch-manipulation"
-                        onClick={() => {
-                          console.log('Customizing product:', product.id, product.name);
-                          onClose();
-                          window.location.href = `/customize/${product.id}?productId=${product.id}&name=${encodeURIComponent(product.name)}`;
-                        }}
-                        data-testid="button-customize"
-                      >
-                        <Palette className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2" />
-                        <span className="hidden sm:inline">কাস্টমাইজ করুন</span>
-                        <span className="sm:hidden">কাস্টমাইজ</span>
-                      </Button>
-                    );
-                  })()}
-
+                  {onCustomize && (
+                    <Button
+                      onClick={handleCustomizeProduct}
+                      disabled={product.stock === 0}
+                      className="flex-1 h-10 sm:h-12 text-sm sm:text-base font-medium bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white touch-manipulation"
+                      data-testid="button-customize"
+                    >
+                      <Palette className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2" />
+                      <span className="hidden sm:inline">কাস্টমাইজ করুন</span>
+                      <span className="sm:hidden">কাস্টমাইজ</span>
+                    </Button>
+                  )}
+                  
                   <Button
                     variant="outline"
                     onClick={toggleFavorite}
@@ -453,7 +430,7 @@ export default function UltraDynamicProductModal({
                     <span className="hidden sm:inline">WhatsApp অর্ডার</span>
                     <span className="sm:hidden">WhatsApp</span>
                   </Button>
-
+                  
                   <Button
                     variant="outline"
                     onClick={handleShare}
