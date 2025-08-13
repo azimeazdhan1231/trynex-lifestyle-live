@@ -89,8 +89,26 @@ const PerfectResponsiveProductCard = memo(function PerfectResponsiveProductCard(
   const handleCustomize = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    onCustomize(product);
-  }, [product, onCustomize]);
+    // Only allow customization for specific product types
+    const customizableTypes = ['t-shirt', 'tshirt', 'mug', 'photo canvas', 'canvas'];
+    const productName = product.name?.toLowerCase() || '';
+    const productCategory = product.category?.toLowerCase() || '';
+    
+    const isCustomizable = customizableTypes.some(type => 
+      productName.includes(type) || productCategory.includes(type)
+    );
+    
+    if (isCustomizable) {
+      // Navigate to customize page with product data
+      window.location.href = `/customize?productId=${product.id}`;
+    } else {
+      toast({
+        title: "কাস্টমাইজেশন উপলব্ধ নয়",
+        description: "এই পণ্যটি কাস্টমাইজ করা যায় না",
+        variant: "destructive"
+      });
+    }
+  }, [product, toast]);
 
   const handleToggleFavorite = useCallback((e: React.MouseEvent) => {
     e.preventDefault();

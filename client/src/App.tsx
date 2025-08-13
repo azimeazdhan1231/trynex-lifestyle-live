@@ -70,6 +70,8 @@ function Router() {
         <Route path="/track" component={OrderTracking} />
 
         <Route path="/custom-order" component={CustomOrderForm} />
+        <Route path="/customize" component={CustomizeProduct} />
+        <Route path="/customize/:id" component={CustomizeProduct} />
         <Route path="/return-policy-old" component={ReturnPolicy} />
         <Route path="/terms-conditions-old" component={TermsConditionsDynamic} />
         <Route path="/terms-conditions" component={Terms} />

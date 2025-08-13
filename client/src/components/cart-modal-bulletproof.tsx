@@ -1,12 +1,16 @@
 import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { ShoppingCart, Plus, Minus, Trash2, Palette } from "lucide-react";
+import { ShoppingCart, Plus, Minus, Trash2, Palette, Upload, CreditCard, ChevronDown, ChevronUp } from "lucide-react";
 import { formatPrice } from "@/lib/constants";
 import { useCart } from "@/hooks/use-cart-bulletproof";
 import CheckoutModal from "@/components/checkout-modal";
-import PerfectCustomizeModal from "@/components/perfect-customize-modal";
+
 import type { Product } from "@shared/schema";
 
 interface CartModalProps {
@@ -16,9 +20,8 @@ interface CartModalProps {
 
 export default function CartModalBulletproof({ isOpen, onClose }: CartModalProps) {
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
-  const [isCustomizeOpen, setIsCustomizeOpen] = useState(false);
-  const [selectedItemForCustomize, setSelectedItemForCustomize] = useState<Product | null>(null);
-  const [selectedCartItemId, setSelectedCartItemId] = useState<string>('');
+  const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
+  const [customizationData, setCustomizationData] = useState<Record<string, any>>({});
   const { cart, updateQuantity, removeFromCart, totalItems, totalPrice, clearCart, isLoaded, refreshCart, updateCartItemCustomization } = useCart();
 
   // Force cart refresh when modal opens
@@ -44,34 +47,41 @@ export default function CartModalBulletproof({ isOpen, onClose }: CartModalProps
     }
   };
 
-  const handleCustomizeCartItem = (cartItem: any) => {
-    // Convert cart item to product format for customize modal
-    const productForCustomize: Product = {
-      id: cartItem.id.split('-')[0], // Remove unique cart identifier
-      name: cartItem.name.replace(' (কাস্টমাইজড)', ''), // Remove customized suffix
-      price: cartItem.price.toString(),
-      image_url: cartItem.image_url || cartItem.image,
-      description: '',
-      category: '',
-      stock: 10,
-      created_at: new Date(),
-      is_featured: false,
-      is_latest: false,
-      is_best_selling: false
-    };
-    
-    setSelectedItemForCustomize(productForCustomize);
-    setSelectedCartItemId(cartItem.id);
-    setIsCustomizeOpen(true);
+  const toggleItemExpansion = (itemId: string) => {
+    const newExpandedItems = new Set(expandedItems);
+    if (newExpandedItems.has(itemId)) {
+      newExpandedItems.delete(itemId);
+    } else {
+      newExpandedItems.add(itemId);
+    }
+    setExpandedItems(newExpandedItems);
   };
 
-  const handleCustomizeAddToCart = (product: Product, customization: any) => {
-    // Update existing cart item with new customization
-    updateCartItemCustomization(selectedCartItemId, customization);
-    setIsCustomizeOpen(false);
-    setSelectedItemForCustomize(null);
-    setSelectedCartItemId('');
+  const handleInlineCustomization = (itemId: string, field: string, value: string) => {
+    const currentData = customizationData[itemId] || {};
+    const updatedData = { ...currentData, [field]: value };
+    setCustomizationData(prev => ({ ...prev, [itemId]: updatedData }));
+    
+    // Update cart item immediately
+    updateCartItemCustomization(itemId, updatedData);
   };
+
+  const handleFileUpload = (itemId: string, file: File) => {
+    // Handle file upload for customization
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const result = e.target?.result as string;
+      handleInlineCustomization(itemId, 'customImage', result);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const isItemCustomizable = (itemName: string) => {
+    const customizableTypes = ['t-shirt', 'tshirt', 'mug', 'photo canvas', 'canvas'];
+    return customizableTypes.some(type => itemName.toLowerCase().includes(type));
+  };
+
+
 
   if (!isLoaded) {
     return (
@@ -172,16 +182,22 @@ export default function CartModalBulletproof({ isOpen, onClose }: CartModalProps
                           </div>
                         )}
 
-                        {/* Customize Button */}
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleCustomizeCartItem(item)}
-                          className="mt-2 h-8 px-3 text-xs bg-blue-50 hover:bg-blue-100 border-blue-200 text-blue-700"
-                        >
-                          <Palette className="w-3 h-3 mr-1" />
-                          কাস্টমাইজ করুন
-                        </Button>
+                        {/* Customize Section Toggle */}
+                        {isItemCustomizable(item.name) && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => toggleItemExpansion(item.id)}
+                            className="mt-2 h-8 px-3 text-xs bg-blue-50 hover:bg-blue-100 border-blue-200 text-blue-700"
+                          >
+                            <Palette className="w-3 h-3 mr-1" />
+                            কাস্টমাইজ করুন
+                            {expandedItems.has(item.id) ? 
+                              <ChevronUp className="w-3 h-3 ml-1" /> : 
+                              <ChevronDown className="w-3 h-3 ml-1" />
+                            }
+                          </Button>
+                        )}
                       </div>
 
                       {/* Quantity Controls */}
@@ -223,6 +239,68 @@ export default function CartModalBulletproof({ isOpen, onClose }: CartModalProps
                           {formatPrice(item.price * item.quantity)}
                         </p>
                       </div>
+                      
+                      {/* Inline Customization Section */}
+                      {expandedItems.has(item.id) && isItemCustomizable(item.name) && (
+                        <div className="col-span-full mt-4">
+                          <Card className="bg-gradient-to-br from-blue-50 to-purple-50 border-blue-200">
+                            <CardContent className="p-4">
+                              <h4 className="text-sm font-semibold text-blue-800 mb-3 flex items-center">
+                                <Palette className="w-4 h-4 mr-2" />
+                                আপনার পছন্দ মতো কাস্টমাইজ করুন
+                              </h4>
+                              
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                  <Label className="text-xs font-medium text-gray-700">কাস্টম টেক্সট/নির্দেশনা</Label>
+                                  <Textarea
+                                    placeholder="আপনার পছন্দমতো লেখা বা নির্দেশনা দিন..."
+                                    className="text-xs h-20"
+                                    value={customizationData[item.id]?.customInstructions || ''}
+                                    onChange={(e) => handleInlineCustomization(item.id, 'customInstructions', e.target.value)}
+                                  />
+                                </div>
+                                
+                                <div className="space-y-2">
+                                  <Label className="text-xs font-medium text-gray-700">ছবি আপলোড করুন</Label>
+                                  <div className="border-2 border-dashed border-blue-300 rounded-lg p-3 text-center">
+                                    <input
+                                      type="file"
+                                      id={`file-upload-${item.id}`}
+                                      accept="image/*"
+                                      className="hidden"
+                                      onChange={(e) => {
+                                        const file = e.target.files?.[0];
+                                        if (file) handleFileUpload(item.id, file);
+                                      }}
+                                    />
+                                    <label 
+                                      htmlFor={`file-upload-${item.id}`} 
+                                      className="cursor-pointer flex flex-col items-center"
+                                    >
+                                      <Upload className="w-6 h-6 text-blue-500 mb-1" />
+                                      <span className="text-xs text-blue-600">ছবি যোগ করুন</span>
+                                    </label>
+                                  </div>
+                                </div>
+                              </div>
+
+                              {/* Advance Payment Info */}
+                              <div className="mt-4 p-3 bg-orange-50 rounded-lg border border-orange-200">
+                                <div className="flex items-center mb-2">
+                                  <CreditCard className="w-4 h-4 text-orange-600 mr-2" />
+                                  <span className="text-sm font-semibold text-orange-800">অগ্রিম পেমেন্ট প্রয়োজন</span>
+                                </div>
+                                <div className="text-xs text-orange-700 space-y-1">
+                                  <p>কাস্টমাইজেশনের জন্য ১০০ টাকা অগ্রিম প্রদান করুন</p>
+                                  <p className="font-medium">bKash/Nagad: <span className="bg-orange-200 px-2 py-1 rounded">01747292277</span></p>
+                                  <p className="text-xs italic">অগ্রিম প্রদানের পর আমরা আপনার কাস্টমাইজেশন শুরু করব।</p>
+                                </div>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -277,19 +355,7 @@ export default function CartModalBulletproof({ isOpen, onClose }: CartModalProps
         }}
       />
 
-      {/* Customize Modal */}
-      {selectedItemForCustomize && (
-        <PerfectCustomizeModal
-          isOpen={isCustomizeOpen}
-          onClose={() => {
-            setIsCustomizeOpen(false);
-            setSelectedItemForCustomize(null);
-            setSelectedCartItemId('');
-          }}
-          product={selectedItemForCustomize}
-          onAddToCart={handleCustomizeAddToCart}
-        />
-      )}
+
     </>
   );
 }

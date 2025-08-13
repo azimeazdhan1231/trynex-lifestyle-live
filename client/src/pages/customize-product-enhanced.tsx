@@ -29,7 +29,11 @@ interface CustomizationData {
 export default function CustomizeProductEnhanced() {
   const [, params] = useRoute("/customize/:id");
   const [, setLocation] = useLocation();
-  const productId = params?.id;
+  const location = useLocation()[0];
+  
+  // Get productId from URL params (both route params and query params)
+  const urlParams = new URLSearchParams(location.split('?')[1] || '');
+  const productId = params?.id || urlParams.get('productId');
   
   const [customization, setCustomization] = useState<CustomizationData>({
     fontSize: 16,
@@ -424,6 +428,29 @@ export default function CustomizeProductEnhanced() {
                           position: { x: prev.position?.x || 50, y: Number(e.target.value) }
                         }))}
                       />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Advance Payment Information */}
+              <Card className="bg-gradient-to-br from-orange-50 to-yellow-50 border-orange-200">
+                <CardContent className="p-4">
+                  <div className="flex items-center mb-3">
+                    <Zap className="w-5 h-5 text-orange-600 mr-2" />
+                    <span className="text-lg font-bold text-orange-800">অগ্রিম পেমেন্ট তথ্য</span>
+                  </div>
+                  <div className="space-y-2 text-sm text-orange-700">
+                    <p className="font-medium">কাস্টমাইজেশনের জন্য ১০০ টাকা অগ্রিম প্রদান করুন</p>
+                    <div className="bg-orange-100 p-3 rounded-lg border border-orange-300">
+                      <p className="font-bold text-center text-orange-900">
+                        bKash/Nagad: <span className="bg-orange-200 px-3 py-1 rounded-full text-lg">01747292277</span>
+                      </p>
+                    </div>
+                    <div className="text-xs space-y-1 pt-2">
+                      <p>• অগ্রিম পেমেন্ট করার পর আমরা আপনার কাস্টমাইজেশন কাজ শুরু করব</p>
+                      <p>• পেমেন্ট সম্পূর্ণ হওয়ার পর ২৪-৪৮ ঘন্টার মধ্যে আপনার কাস্টম পণ্য তৈরি হবে</p>
+                      <p>• বাকি টাকা ডেলিভারির সময় প্রদান করবেন</p>
                     </div>
                   </div>
                 </CardContent>
