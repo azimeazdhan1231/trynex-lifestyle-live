@@ -34,11 +34,19 @@ const FeaturedProductsSection = () => {
 
   // Categorize products
   const categorizedProducts = useMemo(() => {
+    const featured = products.filter(p => p.is_featured).slice(0, 8);
+    const trending = products.filter(p => p.is_best_selling).slice(0, 8);
+    const latest = products.filter(p => p.is_latest).slice(0, 8);
+    const popular = products.sort((a, b) => (b.stock || 0) - (a.stock || 0)).slice(0, 8);
+    
+    // If no products in specific categories, show all products as fallback
+    const fallbackProducts = products.slice(0, 8);
+    
     return {
-      featured: products.filter(p => p.is_featured).slice(0, 8),
-      trending: products.filter(p => p.is_best_selling).slice(0, 8),
-      latest: products.filter(p => p.is_latest).slice(0, 8),
-      popular: products.sort((a, b) => (b.stock || 0) - (a.stock || 0)).slice(0, 8)
+      featured: featured.length > 0 ? featured : fallbackProducts,
+      trending: trending.length > 0 ? trending : fallbackProducts,
+      latest: latest.length > 0 ? latest : fallbackProducts,
+      popular: popular.length > 0 ? popular : fallbackProducts
     };
   }, [products]);
 
