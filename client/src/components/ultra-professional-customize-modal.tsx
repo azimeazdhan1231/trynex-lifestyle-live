@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback } from "react";
-import PerfectResponsiveModal from "./perfect-responsive-modal";
+import FullScreenModal from "./full-screen-modal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -292,15 +292,12 @@ export default function UltraProfessionalCustomizeModal({
   ];
 
   return (
-    <PerfectResponsiveModal
+    <FullScreenModal
       isOpen={isOpen}
       onClose={onClose}
-      maxWidth="7xl"
       className="p-0"
-      showCloseButton={false}
-      enableScroll={true}
     >
-      <div className="relative bg-gradient-to-br from-blue-50 via-white to-purple-50 h-full flex flex-col">
+      <div className="relative bg-gradient-to-br from-blue-50 via-white to-purple-50 min-h-full flex flex-col">
         {/* Header */}
         <div className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 text-white p-4 md:p-6 flex-shrink-0">
           <div className="flex items-center justify-between">
@@ -369,11 +366,13 @@ export default function UltraProfessionalCustomizeModal({
         </div>
 
         {/* Content */}
-        <div className="flex-1 p-4 md:p-6 overflow-y-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-8 min-h-full">
+        <div className="flex-1 p-4 md:p-8">
+          <div className="max-w-7xl mx-auto">
+            <div className="grid grid-cols-1 xl:grid-cols-4 gap-6 md:gap-8">
             {/* Product Preview */}
-            <div className="lg:col-span-1 order-2 lg:order-1">
-              <Card className="shadow-xl border-0 bg-white/80 backdrop-blur-sm h-fit">
+            <div className="xl:col-span-1 order-2 xl:order-1">
+              <div className="xl:sticky xl:top-8">
+                <Card className="shadow-xl border-0 bg-white/90 backdrop-blur-sm">
                 <CardHeader className="text-center">
                   <CardTitle className="flex items-center justify-center gap-2">
                     <Crown className="w-5 h-5 text-yellow-500" />
@@ -423,23 +422,24 @@ export default function UltraProfessionalCustomizeModal({
                   </div>
 
                   {/* Price Display */}
-                  <div className="mt-4 bg-gradient-to-r from-green-50 to-blue-50 p-3 rounded-xl">
+                  <div className="mt-6 bg-gradient-to-r from-green-50 to-blue-50 p-4 rounded-xl">
                     <div className="text-center">
-                      <div className="text-xs text-gray-600 mb-1">মোট মূল্য</div>
-                      <div className="text-xl md:text-2xl font-bold text-green-600">
+                      <div className="text-sm text-gray-600 mb-2">মোট মূল্য</div>
+                      <div className="text-3xl font-bold text-green-600">
                         {formatPrice(totalPrice)}
                       </div>
-                      <div className="text-xs text-gray-500 mt-1">
+                      <div className="text-sm text-gray-500 mt-2">
                         {customization.quantity}টি × ({formatPrice(productPrice)} + {formatPrice(customization.customFee)} কাস্টমাইজেশন ফি)
                       </div>
                     </div>
                   </div>
                 </CardContent>
-              </Card>
+                </Card>
+              </div>
             </div>
 
             {/* Customization Options */}
-            <div className="lg:col-span-2 order-1 lg:order-2">
+            <div className="xl:col-span-3 order-1 xl:order-2">
               <AnimatePresence mode="wait">
                 <motion.div
                   key={activeStep}
@@ -770,8 +770,9 @@ export default function UltraProfessionalCustomizeModal({
               </div>
             </div>
           </div>
+          </div>
         </div>
       </div>
-    </PerfectResponsiveModal>
+    </FullScreenModal>
   );
 }
