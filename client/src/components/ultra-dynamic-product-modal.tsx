@@ -174,16 +174,28 @@ export default function UltraDynamicProductModal({
   };
 
   const handleCustomizeProduct = () => {
-    if (onCustomize) {
-      onCustomize(product);
+    // Check if product is customizable
+    const customizableTypes = ['t-shirt', 'tshirt', 'টি-শার্ট', 'মগ', 'mug', 'canvas', 'ক্যানভাস'];
+    const productName = product.name?.toLowerCase() || '';
+    const isCustomizable = customizableTypes.some(type =>
+      productName.includes(type)
+    );
+
+    if (isCustomizable) {
+      // Close modal and redirect to customize page
+      onClose();
+      window.location.href = `/customize/${product.id}`;
+    } else {
+      toast({
+        title: "কাস্টমাইজেশন উপলব্ধ নয়",
+        description: "এই পণ্যটি কাস্টমাইজ করা যায় না",
+        variant: "destructive"
+      });
     }
   };
 
   const handleCustomize = () => {
-    if (onCustomize) {
-      onCustomize(product);
-      onClose();
-    }
+    handleCustomizeProduct();
   };
 
   const handleWhatsAppOrder = () => {
@@ -396,18 +408,26 @@ export default function UltraDynamicProductModal({
               {/* Action Buttons */}
               <div className="space-y-2 sm:space-y-3">
                 <div className="flex gap-2 sm:gap-3">
-                  {onCustomize && (
-                    <Button
-                      onClick={handleCustomizeProduct}
-                      disabled={product.stock === 0}
-                      className="flex-1 h-10 sm:h-12 text-sm sm:text-base font-medium bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white touch-manipulation"
-                      data-testid="button-customize"
-                    >
-                      <Palette className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2" />
-                      <span className="hidden sm:inline">কাস্টমাইজ করুন</span>
-                      <span className="sm:hidden">কাস্টমাইজ</span>
-                    </Button>
-                  )}
+                  {(() => {
+                    const customizableTypes = ['t-shirt', 'tshirt', 'টি-শার্ট', 'মগ', 'mug', 'canvas', 'ক্যানভাস'];
+                    const productName = product.name?.toLowerCase() || '';
+                    const isCustomizable = customizableTypes.some(type =>
+                      productName.includes(type)
+                    );
+                    
+                    return isCustomizable && (
+                      <Button
+                        onClick={handleCustomizeProduct}
+                        disabled={product.stock === 0}
+                        className="flex-1 h-10 sm:h-12 text-sm sm:text-base font-medium bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white touch-manipulation"
+                        data-testid="button-customize"
+                      >
+                        <Palette className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2" />
+                        <span className="hidden sm:inline">কাস্টমাইজ করুন</span>
+                        <span className="sm:hidden">কাস্টমাইজ</span>
+                      </Button>
+                    );
+                  })()}
                   
                   <Button
                     variant="outline"
