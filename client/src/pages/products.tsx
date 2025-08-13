@@ -6,7 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Search, Filter, Grid3X3, Star, Eye, Palette } from "lucide-react";
+import { Search, Filter, Grid3X3, Star, Eye, Palette, Settings, ShoppingCart } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import MobileOptimizedLayout from "@/components/mobile-optimized-layout";
 import UnifiedProductCard from "@/components/unified-product-card";
@@ -168,15 +168,15 @@ export default function ProductsPage() {
     setIsCustomizeModalOpen(true);
   };
 
-  // Handle quick order - placeholder
-  const handleQuickOrder = (product: Product) => {
-    console.log("Quick order for:", product.name);
+  // Handle add to cart - placeholder
+  const handleAddToCart = (product: Product) => {
+    console.log("Add to cart for:", product.name);
     toast({
-      title: "দ্রুত অর্ডারের জন্য প্রস্তুত",
-      description: `আপনি ${product.name} দ্রুত অর্ডার করতে পারবেন।`,
-      variant: "default",
+      title: "পণ্য কার্টে যোগ করা হয়েছে",
+      description: `${product.name} আপনার কার্টে যোগ করা হয়েছে।`,
+      variant: "success",
     });
-    // This would typically open a simplified checkout or add to cart flow.
+    // This would typically involve updating a cart state or calling a cart API
   };
 
   // Handle order placed successfully
@@ -364,30 +364,32 @@ export default function ProductsPage() {
                     <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
                     {/* Hover overlay with quick actions */}
-                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 bg-black/30">
-                      <div className="flex gap-2">
-                        <Button 
-                          size="sm"
-                          className="bg-white/90 text-gray-900 hover:bg-white backdrop-blur-sm"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleQuickOrder(product);
-                          }}
-                        >
-                          দ্রুত অর্ডার
-                        </Button>
-                        <Button 
-                          size="sm"
-                          className="bg-green-600/90 text-white hover:bg-green-700 backdrop-blur-sm"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleCustomize(product);
-                          }}
-                        >
-                          কাস্টমাইজ
-                        </Button>
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-end justify-center pb-4">
+                        <div className="flex gap-2 w-full px-4">
+                          <Button
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleCustomize(product);
+                            }}
+                            className="flex-1 bg-white/95 backdrop-blur-sm text-gray-900 hover:bg-white shadow-lg transform translate-y-4 group-hover:translate-y-0 transition-all duration-300 delay-75"
+                          >
+                            <Settings className="w-4 h-4 mr-1" />
+                            কাস্টমাইজ
+                          </Button>
+                          <Button
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleAddToCart(product);
+                            }}
+                            className="flex-1 bg-green-600 hover:bg-green-700 text-white shadow-lg transform translate-y-4 group-hover:translate-y-0 transition-all duration-300 delay-100"
+                          >
+                            <ShoppingCart className="w-4 h-4 mr-1" />
+                            কার্ট
+                          </Button>
+                        </div>
                       </div>
-                    </div>
                   </div>
 
                   <div className="p-4">

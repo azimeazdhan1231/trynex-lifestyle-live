@@ -2,7 +2,7 @@ import { useState, memo } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Heart, ShoppingCart, Palette, Eye, Star, Zap } from "lucide-react";
+import { Heart, ShoppingCart, Palette, Eye, Star, Zap, Settings } from "lucide-react";
 import { formatPrice } from "@/lib/constants";
 import type { Product } from "@shared/schema";
 
@@ -56,7 +56,7 @@ const ModernProductCard = memo(function ModernProductCard({
   };
 
   return (
-    <Card 
+    <Card
       className="group overflow-hidden bg-white hover:shadow-2xl transition-all duration-500 cursor-pointer border-0 shadow-lg hover:shadow-orange-500/20"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
@@ -69,7 +69,7 @@ const ModernProductCard = memo(function ModernProductCard({
           {!imageLoaded && (
             <div className="absolute inset-0 animate-pulse bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 bg-[length:400%_100%] animate-[shimmer_1.5s_ease-in-out_infinite]" />
           )}
-          
+
           <img
             src={product.image_url || "https://images.unsplash.com/photo-1544787219-7f47ccb76574?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"}
             alt={product.name}
@@ -85,7 +85,7 @@ const ModernProductCard = memo(function ModernProductCard({
           <div className={`absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent transition-opacity duration-300 ${
             isHovered ? 'opacity-100' : 'opacity-0'
           }`} />
-          
+
           {/* Status badges */}
           <div className="absolute top-3 left-3 flex flex-col gap-2">
             {product.is_featured && (
@@ -129,7 +129,7 @@ const ModernProductCard = memo(function ModernProductCard({
             <div className="flex gap-2">
               <Button
                 size="sm"
-                className="flex-1 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-medium shadow-lg"
+                className="flex-1 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-medium h-10 shadow-lg"
                 onClick={handleCustomize}
                 disabled={isOutOfStock}
                 data-testid={`button-customize-${product.id}`}
@@ -137,11 +137,11 @@ const ModernProductCard = memo(function ModernProductCard({
                 <Palette className="w-4 h-4 mr-2" />
                 কাস্টমাইজ
               </Button>
-              
+
               <Button
                 size="sm"
                 variant="secondary"
-                className="bg-white/90 backdrop-blur-sm text-gray-800 hover:bg-white font-medium shadow-lg"
+                className="bg-white/90 backdrop-blur-sm text-gray-800 hover:bg-white font-medium h-10 shadow-lg"
                 onClick={handleViewDetails}
                 data-testid={`button-view-${product.id}`}
               >

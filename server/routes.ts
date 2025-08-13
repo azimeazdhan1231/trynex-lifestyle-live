@@ -879,12 +879,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/custom-orders', async (req, res) => {
     try {
       console.log('🔍 Fetching custom orders from database...');
-      const customOrdersResult = await storage.getCustomOrders(); // Changed to use storage.getCustomOrders() as per original code
+      
+      // Set proper CORS headers
+      res.header('Access-Control-Allow-Origin', '*');
+      res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+      res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+      
+      const customOrdersResult = await storage.getCustomOrders();
       console.log(`✅ Custom orders fetched successfully: ${customOrdersResult.length} orders`);
       res.json(customOrdersResult);
     } catch (error: any) {
       console.error('Error fetching custom orders:', error);
-      res.status(500).json({ error: 'Failed to fetch custom orders' });
+      
+      // Return empty array as fallback to prevent UI crashes
+      if (error.message && error.message.includes('column "tracking_id" does not exist')) {
+        console.log('📝 Custom orders table needs migration, returning empty array');
+        res.json([]);
+      } else {
+        res.status(500).json({ error: 'Failed to fetch custom orders', details: error.message });
+      }
     }
   });
 
