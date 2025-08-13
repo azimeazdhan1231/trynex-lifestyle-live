@@ -2,14 +2,16 @@ import React, { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Search, Filter, Grid3X3 } from "lucide-react";
+import { Search, Filter, Grid3X3, Star, Eye, Palette } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import MobileOptimizedLayout from "@/components/mobile-optimized-layout";
 import UnifiedProductCard from "@/components/unified-product-card";
 import UltraDynamicProductModal from "@/components/ultra-dynamic-product-modal";
-import ProductCustomizationModal from "@/components/ProductCustomizationModal";
+import SimpleCustomizeModal from "@/components/simple-customize-modal";
 import CustomOrderSuccessModal from "@/components/CustomOrderSuccessModal";
 import ComprehensiveProductLoading from "@/components/comprehensive-product-loading";
 import EnhancedFilterSystem from "@/components/enhanced-filter-system";
@@ -331,12 +333,86 @@ export default function ProductsPage() {
           <>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7 gap-4 sm:gap-6 auto-rows-fr items-stretch">
               {displayedProducts.map((product) => (
-                <UnifiedProductCard
+                <Card 
                   key={product.id}
-                  product={product}
-                  onViewProduct={handleViewProduct}
-                  onCustomize={handleCustomize}
-                />
+                  className="group overflow-hidden bg-white hover:shadow-xl transition-all duration-300 cursor-pointer border-0 shadow-lg hover:shadow-orange-500/20"
+                  onClick={() => handleViewProduct(product)}
+                >
+                  <div className="relative">
+                    {/* Product Image */}
+                    <div className="aspect-square overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100 relative">
+                      <img
+                        src={product.image_url || "https://images.unsplash.com/photo-1544787219-7f47ccb76574?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"}
+                        alt={product.name}
+                        className="w-full h-full object-cover transition-all duration-700 group-hover:scale-110"
+                        loading="lazy"
+                      />
+                      
+                      {/* Status badges */}
+                      <div className="absolute top-3 left-3 flex flex-col gap-2">
+                        {product.is_featured && (
+                          <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white font-bold shadow-lg px-2 py-1">
+                            <Star className="w-3 h-3 mr-1" />
+                            ফিচার্ড
+                          </Badge>
+                        )}
+                        {product.stock === 0 && (
+                          <Badge variant="destructive" className="font-bold shadow-lg">
+                            স্টক শেষ
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Product details */}
+                    <CardContent className="p-4 space-y-3">
+                      {/* Product name */}
+                      <h3 className="font-semibold text-gray-900 line-clamp-2 leading-5 min-h-[2.5rem]">
+                        {product.name}
+                      </h3>
+
+                      {/* Price and stock */}
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <span className="text-xl font-bold text-gray-900">
+                            {formatPrice(Number(product.price))}
+                          </span>
+                        </div>
+                        <div className="text-sm text-gray-500">
+                          স্টক: <span className={Number(product.stock) < 5 ? 'text-orange-500 font-medium' : ''}>{product.stock}</span>
+                        </div>
+                      </div>
+
+                      {/* Action buttons */}
+                      <div className="flex gap-2 pt-2">
+                        <Button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleViewProduct(product);
+                          }}
+                          variant="outline"
+                          size="sm"
+                          className="flex-1 h-9"
+                        >
+                          <Eye className="w-4 h-4 mr-1" />
+                          দেখুন
+                        </Button>
+                        
+                        <Button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleCustomize(product);
+                          }}
+                          size="sm"
+                          className="flex-1 h-9 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600"
+                        >
+                          <Palette className="w-4 h-4 mr-1" />
+                          কাস্টমাইজ
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </div>
+                </Card>
               ))}
             </div>
 
@@ -384,7 +460,7 @@ export default function ProductsPage() {
       />
 
       {/* Product Customization Modal */}
-      <ProductCustomizationModal
+      <SimpleCustomizeModal
         isOpen={isCustomizeModalOpen}
         onClose={() => {
           setIsCustomizeModalOpen(false);
