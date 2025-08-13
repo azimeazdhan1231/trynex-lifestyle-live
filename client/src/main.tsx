@@ -6,9 +6,9 @@ import "./index.css";
 const suppressResizeObserverErrors = () => {
   // Global error handler for uncaught errors
   window.addEventListener('error', (e) => {
-    if (e.message === 'ResizeObserver loop limit exceeded' || 
+    if (e.message && (e.message === 'ResizeObserver loop limit exceeded' || 
         e.message.includes('ResizeObserver loop completed with undelivered notifications') ||
-        e.message.includes('ResizeObserver loop')) {
+        e.message.includes('ResizeObserver loop'))) {
       e.stopImmediatePropagation();
       e.preventDefault();
       return false;

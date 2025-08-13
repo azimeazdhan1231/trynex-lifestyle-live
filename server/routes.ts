@@ -830,7 +830,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         updatedAt: new Date()
       };
       
-      const customOrder = await storage.createCustomOrder(customOrderData);
+      const customOrder = await storage.createCustomOrder({
+        ...customOrderData,
+        totalPrice: customOrderData.totalPrice.toString()
+      });
       console.log('Custom order created successfully:', customOrder.id);
       
       res.status(201).json({ 
@@ -896,6 +899,68 @@ export async function registerRoutes(app: Express): Promise<Server> {
       },
       uptime: process.uptime()
     });
+  });
+
+  // Order tracking endpoint
+  app.get('/api/orders/track/:trackingId', async (req, res) => {
+    try {
+      const { trackingId } = req.params;
+      console.log(`🔍 Tracking order: ${trackingId}`);
+      
+      const order = await storage.getOrder(trackingId);
+      
+      if (!order) {
+        return res.status(404).json({ 
+          success: false, 
+          message: 'অর্ডার খুঁজে পাওয়া যায়নি' 
+        });
+      }
+
+      // Parse items if it's a string
+      let parsedItems = [];
+      if (typeof order.items === 'string') {
+        try {
+          parsedItems = JSON.parse(order.items);
+        } catch (e) {
+          console.error('Error parsing items:', e);
+          parsedItems = [];
+        }
+      } else {
+        parsedItems = order.items || [];
+      }
+
+      // Parse payment info if it's a string
+      let parsedPaymentInfo = {};
+      if (typeof order.payment_info === 'string') {
+        try {
+          parsedPaymentInfo = JSON.parse(order.payment_info);
+        } catch (e) {
+          console.error('Error parsing payment_info:', e);
+          parsedPaymentInfo = {};
+        }
+      } else {
+        parsedPaymentInfo = order.payment_info || {};
+      }
+
+      const orderResponse = {
+        ...order,
+        items: parsedItems,
+        payment_info: parsedPaymentInfo
+      };
+
+      console.log(`✅ Order found: ${order.tracking_id}, Status: ${order.status}`);
+      
+      res.json({ 
+        success: true, 
+        order: orderResponse 
+      });
+    } catch (error) {
+      console.error('❌ Error tracking order:', error);
+      res.status(500).json({ 
+        success: false, 
+        message: 'সার্ভার ত্রুটি হয়েছে' 
+      });
+    }
   });
 
   // Order management endpoints (fixed to match database schema)

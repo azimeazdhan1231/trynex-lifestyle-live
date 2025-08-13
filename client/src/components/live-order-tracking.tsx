@@ -86,24 +86,24 @@ export default function LiveOrderTracking({
 
   // Live order tracking query with auto-refresh
   const { 
-    data: order, 
+    data: trackingResponse, 
     isLoading, 
     error, 
     refetch,
     isFetching 
-  } = useQuery<Order>({
-    queryKey: ["/api/orders", searchId],
+  } = useQuery<{success: boolean, order: Order}>({
+    queryKey: ["/api/orders/track", searchId],
     queryFn: async () => {
       if (!searchId) throw new Error("No tracking ID provided");
-      const response = await fetch(`/api/orders/${searchId}`, {
+      const response = await fetch(`/api/orders/track/${searchId}`, {
         headers: {
           'Cache-Control': 'no-cache',
           'Pragma': 'no-cache'
         }
       });
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ error: 'Order not found' }));
-        throw new Error(errorData.error || "Order not found");
+        const errorData = await response.json().catch(() => ({ message: 'Order not found' }));
+        throw new Error(errorData.message || "অর্ডার খুঁজে পাওয়া যায়নি");
       }
       return response.json();
     },
@@ -115,6 +115,8 @@ export default function LiveOrderTracking({
     retry: 2,
     retryDelay: 1000,
   });
+
+  const order = trackingResponse?.order;
 
   // Update last refresh time when data changes
   useEffect(() => {

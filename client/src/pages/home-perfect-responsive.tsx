@@ -7,11 +7,11 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion";
-import { Canvas } from "@react-three/fiber";
-import { OrbitControls, Sphere, MeshDistortMaterial, Float } from "@react-three/drei";
+// import { Canvas } from "@react-three/fiber";
+// import { OrbitControls, Sphere, MeshDistortMaterial, Float } from "@react-three/drei";
 import UltraSimpleLayout from "@/components/ultra-simple-layout";
 import UltraDynamicProductModal from "@/components/ultra-dynamic-product-modal";
-import EnhancedCustomizeModal from "@/components/enhanced-customize-modal";
+import UltraProfessionalCustomizeModal from "@/components/ultra-professional-customize-modal";
 import CustomOrderCheckout from "@/components/custom-order-checkout";
 import { useToast } from "@/hooks/use-toast";
 import { useCart } from "@/hooks/use-cart";
@@ -50,11 +50,13 @@ import {
 import { formatPrice, createWhatsAppUrl, PRODUCT_CATEGORIES } from "@/lib/constants";
 import type { Product } from "@shared/schema";
 
-// 3D Animated Background Component
+// 3D Animated Background Component (Disabled for now)
 const AnimatedBackground3D = memo(function AnimatedBackground3D() {
   return (
-    <div className="fixed inset-0 -z-10 opacity-30">
-      <Canvas camera={{ position: [0, 0, 5] }}>
+    <div className="fixed inset-0 -z-10 opacity-30 bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
+      {/* Temporary gradient background instead of 3D */}
+      <div className="absolute inset-0 bg-gradient-to-r from-blue-400/10 via-purple-400/10 to-pink-400/10"></div>
+      {/* <Canvas camera={{ position: [0, 0, 5] }}>
         <ambientLight intensity={0.5} />
         <pointLight position={[10, 10, 10]} />
         <Float speed={1.5} rotationIntensity={1} floatIntensity={2}>
@@ -91,7 +93,7 @@ const AnimatedBackground3D = memo(function AnimatedBackground3D() {
           </Sphere>
         </Float>
         <OrbitControls enableZoom={false} enablePan={false} autoRotate autoRotateSpeed={0.5} />
-      </Canvas>
+      </Canvas> */}
     </div>
   );
 });
@@ -821,7 +823,7 @@ export default function HomePerfectResponsive() {
 
   // Filter and sort products
   const filteredProducts = products.filter((product: Product) => {
-    const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = product.name?.toLowerCase().includes(searchTerm.toLowerCase()) || false;
     const matchesCategory = !selectedCategory || product.category === selectedCategory;
     return matchesSearch && matchesCategory;
   }).sort((a: Product, b: Product) => {
@@ -853,7 +855,12 @@ export default function HomePerfectResponsive() {
   }, []);
 
   const handleAddToCart = useCallback((product: Product) => {
-    addToCart({ ...product, quantity: 1 });
+    addToCart({ 
+      ...product, 
+      quantity: 1,
+      price: typeof product.price === 'string' ? parseFloat(product.price) : product.price,
+      image_url: product.image_url || undefined
+    });
     toast({
       title: "কার্টে যোগ করা হয়েছে!",
       description: `${product.name} আপনার কার্টে যোগ হয়েছে`,
@@ -1027,16 +1034,31 @@ export default function HomePerfectResponsive() {
         onCustomize={handleCustomize}
       />
 
-      <EnhancedCustomizeModal
-        isOpen={!!customizeProduct}
-        onClose={() => setCustomizeProduct(null)}
-        product={customizeProduct}
-        onAddToCart={async (customProduct, customization) => {
-          addToCart({ ...customProduct, quantity: 1 });
+      {customizeProduct && (
+        <UltraProfessionalCustomizeModal
+          isOpen={!!customizeProduct}
+          onClose={() => setCustomizeProduct(null)}
+          product={customizeProduct}
+        onAddToCart={async (customProduct: any, customization: any) => {
+          addToCart({ 
+            ...customProduct, 
+            quantity: 1,
+            price: typeof customProduct.price === 'string' ? parseFloat(customProduct.price) : customProduct.price,
+            customization
+          });
+          setCustomizeProduct(null);
+          toast({
+            title: "কাস্টমাইজড পণ্য যোগ করা হয়েছে!",
+            description: `${customProduct.name} আপনার পছন্দমতো কাস্টমাইজ করে কার্টে যোগ করা হয়েছে`,
+          });
+        }}
+        onDirectOrder={async (customProduct: any, customization: any) => {
+          // Handle direct order functionality
           setCustomizeProduct(null);
           setShowCustomCheckout(true);
         }}
-      />
+        />
+      )}
 
       <CustomOrderCheckout
         isOpen={showCustomCheckout}
