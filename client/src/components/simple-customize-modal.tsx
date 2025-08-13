@@ -29,6 +29,7 @@ interface SimpleCustomization {
   notes: string;
   material: string;
   engraving: string;
+  uploadedImages?: File[];
 }
 
 const sizeOptions = [
@@ -84,7 +85,8 @@ export default function SimpleCustomizeModal({ product, isOpen, onClose }: Simpl
         quantity: 1,
         notes: '',
         material: 'cotton',
-        engraving: ''
+        engraving: '',
+        uploadedImages: []
       });
     }
   }, [isOpen]);
@@ -112,8 +114,9 @@ export default function SimpleCustomizeModal({ product, isOpen, onClose }: Simpl
   const materialPrice = materialOptions.find(m => m.value === customization.material)?.price || 0;
   const textPrice = customization.text.trim() ? 120 : 0;
   const engravingPrice = customization.engraving.trim() ? 200 : 0;
+  const imagePrice = (customization.uploadedImages?.length || 0) > 0 ? 150 : 0;
   
-  const subtotal = basePrice + sizePrice + materialPrice + textPrice + engravingPrice;
+  const subtotal = basePrice + sizePrice + materialPrice + textPrice + engravingPrice + imagePrice;
   const totalPrice = subtotal * customization.quantity;
 
   const handleAddToCart = async () => {
@@ -122,6 +125,17 @@ export default function SimpleCustomizeModal({ product, isOpen, onClose }: Simpl
     setIsProcessing(true);
     
     try {
+      // Convert uploaded images to base64 for storage
+      const processedImages = await Promise.all(
+        (customization.uploadedImages || []).map(async (file) => {
+          return new Promise<string>((resolve) => {
+            const reader = new FileReader();
+            reader.onload = (e) => resolve(e.target?.result as string);
+            reader.readAsDataURL(file);
+          });
+        })
+      );
+
       addToCart({
         id: `${product.id}_custom_${Date.now()}`,
         name: `${product.name} (কাস্টমাইজড)`,
@@ -133,6 +147,7 @@ export default function SimpleCustomizeModal({ product, isOpen, onClose }: Simpl
           selectedColorName: colorOptions.find(c => c.value === customization.color)?.name,
           selectedSizeName: sizeOptions.find(s => s.value === customization.size)?.label,
           selectedMaterialName: materialOptions.find(m => m.value === customization.material)?.label,
+          uploadedImages: processedImages,
         }
       });
 
@@ -214,10 +229,10 @@ export default function SimpleCustomizeModal({ product, isOpen, onClose }: Simpl
 
           {/* Main Content */}
           <div className="flex-1 overflow-hidden">
-            <div className="h-full flex flex-col lg:flex-row">
+            <div className="h-full flex flex-col xl:flex-row">
               
               {/* Product Preview Section - Left/Top */}
-              <div className="w-full lg:w-1/2 bg-gray-50 p-4 md:p-6 overflow-y-auto">
+              <div className="w-full xl:w-1/2 bg-gray-50 p-3 md:p-4 lg:p-6 overflow-y-auto">
                 
                 {/* Main Product Image with Live Preview */}
                 <Card className="mb-6 overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100 shadow-lg">
@@ -283,7 +298,7 @@ export default function SimpleCustomizeModal({ product, isOpen, onClose }: Simpl
               </div>
 
               {/* Customization Options - Right/Bottom */}
-              <div className="w-full lg:w-1/2 p-4 md:p-6 overflow-y-auto bg-white" data-testid="customization-panel">
+              <div className="w-full xl:w-1/2 p-3 md:p-4 lg:p-6 overflow-y-auto bg-white" data-testid="customization-panel">
                 <div className="space-y-6">
 
                   {/* Size Selection */}
@@ -294,7 +309,7 @@ export default function SimpleCustomizeModal({ product, isOpen, onClose }: Simpl
                         সাইজ নির্বাচন করুন
                       </h3>
                       
-                      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-2 md:gap-3">
                         {sizeOptions.map((size) => (
                           <button
                             key={size.value}
@@ -332,7 +347,7 @@ export default function SimpleCustomizeModal({ product, isOpen, onClose }: Simpl
                         রং নির্বাচন করুন
                       </h3>
                       
-                      <div className="grid grid-cols-4 md:grid-cols-4 xl:grid-cols-4 gap-3">
+                      <div className="grid grid-cols-4 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-4 gap-2 md:gap-3">
                         {colorOptions.map((color) => (
                           <button
                             key={color.value}
@@ -442,6 +457,87 @@ export default function SimpleCustomizeModal({ product, isOpen, onClose }: Simpl
                             {customization.engraving.length}/30 অক্ষর
                           </div>
                         </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Image Upload */}
+                  <Card className="shadow-sm">
+                    <CardContent className="p-4 md:p-6">
+                      <h3 className="font-bold text-base md:text-lg mb-4 flex items-center gap-2">
+                        <Upload className="w-4 h-4 md:w-5 md:h-5 text-purple-500" />
+                        কাস্টম ছবি আপলোড (+১৫০ টাকা)
+                      </h3>
+                      
+                      <div className="space-y-4">
+                        <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 md:p-6 text-center hover:border-gray-400 transition-colors">
+                          <Upload className="w-8 h-8 md:w-10 md:h-10 text-gray-400 mx-auto mb-3" />
+                          <p className="text-sm md:text-base text-gray-600 mb-3">
+                            আপনার পছন্দের ছবি আপলোড করুন
+                          </p>
+                          <p className="text-xs md:text-sm text-gray-500 mb-4">
+                            সর্বোচ্চ ৫টি ছবি (JPG, PNG, WEBP)
+                          </p>
+                          <Input
+                            type="file"
+                            accept="image/*"
+                            multiple
+                            onChange={(e) => {
+                              const files = Array.from(e.target.files || []);
+                              if (files.length > 0) {
+                                setCustomization(prev => ({
+                                  ...prev,
+                                  uploadedImages: [...(prev.uploadedImages || []), ...files.slice(0, 5 - (prev.uploadedImages?.length || 0))]
+                                }));
+                              }
+                            }}
+                            className="hidden"
+                            id="custom-images"
+                            data-testid="image-upload-input"
+                          />
+                          <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => document.getElementById('custom-images')?.click()}
+                            className="w-full md:w-auto"
+                          >
+                            ছবি নির্বাচন করুন
+                          </Button>
+                        </div>
+
+                        {/* Preview uploaded images */}
+                        {customization.uploadedImages && customization.uploadedImages.length > 0 && (
+                          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                            {customization.uploadedImages.map((file, index) => (
+                              <div key={index} className="relative">
+                                <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden">
+                                  <img
+                                    src={URL.createObjectURL(file)}
+                                    alt={`Upload ${index + 1}`}
+                                    className="w-full h-full object-cover"
+                                  />
+                                </div>
+                                <Button
+                                  type="button"
+                                  variant="destructive"
+                                  size="sm"
+                                  onClick={() => {
+                                    setCustomization(prev => ({
+                                      ...prev,
+                                      uploadedImages: prev.uploadedImages?.filter((_, i) => i !== index)
+                                    }));
+                                  }}
+                                  className="absolute -top-2 -right-2 w-6 h-6 rounded-full p-0"
+                                >
+                                  <X className="w-3 h-3" />
+                                </Button>
+                                <div className="text-xs text-center mt-1 truncate">
+                                  {file.name}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     </CardContent>
                   </Card>
