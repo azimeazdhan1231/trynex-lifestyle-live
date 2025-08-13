@@ -50,6 +50,11 @@ const SimpleCustomizeModal: React.FC<SimpleCustomizeModalProps> = ({
 }) => {
   const { toast } = useToast();
   
+  // Early return if product is null/undefined
+  if (!product) {
+    return null;
+  }
+  
   // All useState hooks must be at the top level and in consistent order
   const [isLoading, setIsLoading] = useState(false);
   const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>({});
