@@ -92,9 +92,6 @@ export default function ProductCustomizationModal({
 
     setIsSubmitting(true);
     try {
-      // Generate tracking ID
-      const trackingId = `CXO${Date.now()}`;
-
       const orderData = {
         ...data,
         productId: product.id,
@@ -102,7 +99,6 @@ export default function ProductCustomizationModal({
         customizationCost: customizationCost.toString(),
         totalPrice: totalPrice.toString(),
         customizationImages: uploadedImages,
-        trackingId,
       };
 
       const response = await fetch('/api/custom-orders', {
@@ -118,6 +114,9 @@ export default function ProductCustomizationModal({
       }
 
       const result = await response.json();
+      
+      // Use the tracking ID from server response
+      const trackingId = result.data?.trackingId || result.data?.id || result.id || `CXO${Date.now()}`;
 
       toast({
         title: 'অর্ডার সফল!',

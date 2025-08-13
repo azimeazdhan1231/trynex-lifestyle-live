@@ -158,10 +158,10 @@ const FeaturedProductsSection = () => {
                     <TabsTrigger
                       key={tab.id}
                       value={tab.id}
-                      className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:shadow-md rounded-xl py-3 px-4 transition-all duration-300"
+                      className="flex items-center justify-center gap-2 data-[state=active]:bg-white data-[state=active]:shadow-md rounded-xl py-3 px-4 transition-all duration-300 text-center"
                     >
                       <IconComponent className={`w-4 h-4 ${tab.color}`} />
-                      <span className="font-medium">{tab.label}</span>
+                      <span className="font-medium whitespace-nowrap">{tab.label}</span>
                     </TabsTrigger>
                   );
                 })}

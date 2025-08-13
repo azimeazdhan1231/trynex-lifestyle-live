@@ -102,7 +102,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const dataToValidate = {
         ...orderData,
         total: String(orderData.total || 0),
-        phone: String(orderData.phone || '')
+        phone: String(orderData.phone || ''),
+        district: orderData.district || 'ঢাকা',
+        thana: orderData.thana || 'উত্তরা'
       };
 
       console.log('🔍 Data after conversion:', {
