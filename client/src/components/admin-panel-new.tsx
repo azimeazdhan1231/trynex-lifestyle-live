@@ -113,12 +113,41 @@ export default function AdminPanelNew({ onLogout }: AdminPanelProps) {
   const parseOrderItems = (items: any) => {
     if (typeof items === 'string') {
       try {
-        return JSON.parse(items);
+        const parsed = JSON.parse(items);
+        if (Array.isArray(parsed)) {
+          return parsed.map((item: any) => ({
+            productName: item.productName || item.name || 'কাস্টম আইটেম',
+            quantity: item.quantity || 1,
+            productPrice: Number(item.productPrice || item.price || 0),
+            customization: item.customization || null,
+            customizationCost: Number(item.customizationCost || 0),
+            totalPrice: Number(item.totalPrice || (item.productPrice * item.quantity) || 0)
+          }));
+        } else {
+          return [{ 
+            productName: parsed.productName || 'কাস্টম আইটেম', 
+            quantity: 1, 
+            productPrice: Number(parsed.productPrice || 0),
+            customization: parsed.customization || null,
+            customizationCost: Number(parsed.customizationCost || 0),
+            totalPrice: Number(parsed.totalPrice || parsed.productPrice || 0)
+          }];
+        }
       } catch {
-        return [{ productName: items, quantity: 1, productPrice: 0 }];
+        return [{ productName: String(items), quantity: 1, productPrice: 0, customization: null, customizationCost: 0, totalPrice: 0 }];
       }
     }
-    return Array.isArray(items) ? items : [];
+    if (Array.isArray(items)) {
+      return items.map((item: any) => ({
+        productName: item.productName || item.name || 'কাস্টম আইটেম',
+        quantity: item.quantity || 1,
+        productPrice: Number(item.productPrice || item.price || 0),
+        customization: item.customization || null,
+        customizationCost: Number(item.customizationCost || 0),
+        totalPrice: Number(item.totalPrice || (item.productPrice * item.quantity) || 0)
+      }));
+    }
+    return [];
   };
 
   // Parse payment info safely
@@ -524,7 +553,23 @@ export default function AdminPanelNew({ onLogout }: AdminPanelProps) {
                             </Select>
                           </div>
                           
-                          <p><strong>মোট মূল্য:</strong> <span className="text-green-600 font-semibold">{formatPrice(Number(selectedOrder.total))}</span></p>
+                          <div className="space-y-1">
+                            <p><strong>মোট মূল্য:</strong> <span className="text-green-600 font-semibold text-xl">{formatPrice(Number(selectedOrder.total))}</span></p>
+                            {(() => {
+                              const items = parseOrderItems(selectedOrder.items);
+                              const subtotal = items.reduce((sum, item) => sum + (item.productPrice * item.quantity), 0);
+                              const customizationTotal = items.reduce((sum, item) => sum + item.customizationCost, 0);
+                              const deliveryCharge = Number(selectedOrder.total) - subtotal - customizationTotal;
+                              
+                              return (
+                                <div className="text-sm text-gray-600 space-y-1">
+                                  <p>পণ্যের মূল্য: {formatPrice(subtotal)}</p>
+                                  {customizationTotal > 0 && <p>কাস্টমাইজেশন চার্জ: {formatPrice(customizationTotal)}</p>}
+                                  {deliveryCharge > 0 && <p>ডেলিভারি চার্জ: {formatPrice(deliveryCharge)}</p>}
+                                </div>
+                              );
+                            })()}
+                          </div>
                           <p><strong>অর্ডারের তারিখ:</strong> {new Date(selectedOrder.created_at || '').toLocaleDateString('bn-BD')}</p>
                           {selectedOrder.custom_instructions && (
                             <div>
@@ -544,23 +589,31 @@ export default function AdminPanelNew({ onLogout }: AdminPanelProps) {
                       <CardContent>
                         <div className="space-y-3">
                           {parseOrderItems(selectedOrder.items).map((item: any, idx: number) => (
-                            <div key={idx} className="flex justify-between items-center p-3 border rounded">
-                              <div>
-                                <p className="font-medium">{item.productName || item.name}</p>
-                                <p className="text-sm text-gray-600">পরিমাণ: {item.quantity}</p>
-                                {item.customization && (
-                                  <div className="mt-1">
-                                    <Badge variant="outline" className="text-xs">কাস্টমাইজড</Badge>
-                                    <p className="text-xs text-gray-500 mt-1">
-                                      {typeof item.customization === 'string' 
-                                        ? item.customization 
-                                        : JSON.stringify(item.customization)
-                                      }
-                                    </p>
+                            <div key={idx} className="p-4 border rounded-lg bg-gray-50">
+                              <div className="flex justify-between items-start mb-2">
+                                <div className="flex-1">
+                                  <p className="font-medium text-lg">{item.productName}</p>
+                                  <div className="grid grid-cols-2 gap-2 mt-2 text-sm">
+                                    <p><span className="font-medium">পরিমাণ:</span> {item.quantity}</p>
+                                    <p><span className="font-medium">দাম:</span> {formatPrice(item.productPrice)}</p>
+                                    {item.customizationCost > 0 && (
+                                      <p><span className="font-medium">কাস্টমাইজেশন চার্জ:</span> {formatPrice(item.customizationCost)}</p>
+                                    )}
+                                    <p><span className="font-medium">সাবটোটাল:</span> <span className="text-green-600 font-semibold">{formatPrice(item.totalPrice || (item.productPrice * item.quantity))}</span></p>
                                   </div>
-                                )}
+                                  {item.customization && (
+                                    <div className="mt-2">
+                                      <Badge variant="outline" className="text-xs mb-1">কাস্টমাইজড</Badge>
+                                      <p className="text-xs text-gray-600 bg-white p-2 rounded border">
+                                        {typeof item.customization === 'string' 
+                                          ? item.customization 
+                                          : JSON.stringify(item.customization, null, 2)
+                                        }
+                                      </p>
+                                    </div>
+                                  )}
+                                </div>
                               </div>
-                              <p className="font-medium">{formatPrice(item.productPrice * item.quantity)}</p>
                             </div>
                           ))}
                         </div>
@@ -585,55 +638,92 @@ export default function AdminPanelNew({ onLogout }: AdminPanelProps) {
                       </Card>
                     )}
 
-                    {/* Custom Images */}
-                    {selectedOrder.custom_images && (
+                    {/* Custom Images and Customization Details */}
+                    {(selectedOrder.custom_images || selectedOrder.custom_instructions) && (
                       <Card>
                         <CardHeader>
                           <CardTitle className="text-base flex items-center gap-2">
                             <ImageIcon className="w-4 h-4" />
-                            কাস্টম ইমেজ
+                            কাস্টমাইজেশন বিবরণ
                           </CardTitle>
                         </CardHeader>
-                        <CardContent>
-                          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                            {(() => {
-                              try {
-                                const images = typeof selectedOrder.custom_images === 'string' 
-                                  ? JSON.parse(selectedOrder.custom_images) 
-                                  : selectedOrder.custom_images;
-                                
-                                if (Array.isArray(images) && images.length > 0) {
-                                  return images.map((image: string, idx: number) => (
-                                    <div key={idx} className="relative group">
-                                      <img
-                                        src={image}
-                                        alt={`কাস্টম ইমেজ ${idx + 1}`}
-                                        className="w-full h-32 object-cover rounded-lg border border-gray-200 hover:border-blue-300 transition-colors cursor-pointer"
-                                        onClick={() => window.open(image, '_blank')}
-                                      />
-                                      <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 rounded-lg transition-opacity flex items-center justify-center">
-                                        <Eye className="w-6 h-6 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                        <CardContent className="space-y-4">
+                          {/* Custom Images */}
+                          {selectedOrder.custom_images && (
+                            <div>
+                              <h4 className="font-medium mb-2">আপলোড করা ইমেজসমূহ:</h4>
+                              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                                {(() => {
+                                  try {
+                                    const images = typeof selectedOrder.custom_images === 'string' 
+                                      ? JSON.parse(selectedOrder.custom_images) 
+                                      : selectedOrder.custom_images;
+                                    
+                                    if (Array.isArray(images) && images.length > 0) {
+                                      return images.map((image: string, idx: number) => (
+                                        <div key={idx} className="relative group">
+                                          <img
+                                            src={image}
+                                            alt={`কাস্টম ইমেজ ${idx + 1}`}
+                                            className="w-full h-24 object-cover rounded-lg border-2 border-gray-200 hover:border-blue-400 transition-all duration-200 cursor-pointer shadow-sm hover:shadow-md"
+                                            onClick={() => window.open(image, '_blank')}
+                                          />
+                                          <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 rounded-lg transition-all duration-200 flex items-center justify-center">
+                                            <Eye className="w-5 h-5 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                                          </div>
+                                          <p className="text-xs text-center mt-1 text-gray-600">ইমেজ {idx + 1}</p>
+                                        </div>
+                                      ));
+                                    } else {
+                                      return (
+                                        <div className="col-span-full text-center py-4">
+                                          <ImageIcon className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+                                          <p className="text-gray-500 text-sm">কোনো কাস্টম ইমেজ নেই</p>
+                                        </div>
+                                      );
+                                    }
+                                  } catch (error) {
+                                    return (
+                                      <div className="col-span-full text-center py-4">
+                                        <AlertTriangle className="w-8 h-8 text-red-400 mx-auto mb-2" />
+                                        <p className="text-red-500 text-sm">ইমেজ লোড করতে সমস্যা হয়েছে</p>
                                       </div>
-                                    </div>
-                                  ));
-                                } else {
-                                  return (
-                                    <div className="col-span-full text-center py-4">
-                                      <ImageIcon className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                                      <p className="text-gray-500 text-sm">কোনো কাস্টম ইমেজ নেই</p>
-                                    </div>
-                                  );
-                                }
-                              } catch (error) {
-                                return (
-                                  <div className="col-span-full text-center py-4">
-                                    <AlertTriangle className="w-8 h-8 text-red-400 mx-auto mb-2" />
-                                    <p className="text-red-500 text-sm">ইমেজ লোড করতে সমস্যা হয়েছে</p>
+                                    );
+                                  }
+                                })()}
+                              </div>
+                            </div>
+                          )}
+                          
+                          {/* Additional customization data from items */}
+                          {(() => {
+                            const items = parseOrderItems(selectedOrder.items);
+                            const hasCustomization = items.some(item => item.customization);
+                            if (hasCustomization) {
+                              return (
+                                <div>
+                                  <h4 className="font-medium mb-2">কাস্টমাইজেশন তথ্য:</h4>
+                                  <div className="space-y-2">
+                                    {items.filter(item => item.customization).map((item, idx) => (
+                                      <div key={idx} className="p-3 bg-blue-50 rounded-lg border border-blue-200">
+                                        <p className="font-medium text-blue-900">{item.productName}</p>
+                                        <p className="text-sm text-blue-700 mt-1">
+                                          {typeof item.customization === 'string' 
+                                            ? item.customization 
+                                            : JSON.stringify(item.customization, null, 2)
+                                          }
+                                        </p>
+                                        {item.customizationCost > 0 && (
+                                          <p className="text-xs text-blue-600 mt-1">অতিরিক্ত চার্জ: {formatPrice(item.customizationCost)}</p>
+                                        )}
+                                      </div>
+                                    ))}
                                   </div>
-                                );
-                              }
-                            })()}
-                          </div>
+                                </div>
+                              );
+                            }
+                            return null;
+                          })()}
                         </CardContent>
                       </Card>
                     )}

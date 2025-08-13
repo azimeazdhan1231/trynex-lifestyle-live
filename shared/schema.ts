@@ -215,7 +215,7 @@ export type InsertUserOrder = z.infer<typeof insertUserOrderSchema>;
 // Custom Orders table - Enhanced for comprehensive customization
 export const customOrders = pgTable('custom_orders', {
   id: uuid('id').primaryKey().default(sql`gen_random_uuid()`),
-  trackingId: text('tracking_id').unique().notNull(),
+  tracking_id: text('tracking_id').unique().notNull(),
   productId: uuid('product_id').notNull().references(() => products.id),
   customerName: text('customer_name').notNull(),
   customerPhone: text('customer_phone').notNull(), 
@@ -237,7 +237,7 @@ export const customOrders = pgTable('custom_orders', {
 
 export const insertCustomOrderSchema = createInsertSchema(customOrders).omit({
   id: true,
-  trackingId: true,
+  tracking_id: true,
   createdAt: true,
   updatedAt: true,
 });
