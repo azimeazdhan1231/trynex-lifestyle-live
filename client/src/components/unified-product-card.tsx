@@ -47,7 +47,7 @@ export default function UnifiedProductCard({
       onMouseLeave={() => setIsHovered(false)}
       onClick={handleViewProduct}
       data-testid={`card-product-${product.id}`}
-      style={{ minHeight: '380px', height: '100%' }}
+      style={{ minHeight: '420px', height: '100%' }}
     >
         <div className="relative flex-shrink-0">
           {/* Product Image */}

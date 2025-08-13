@@ -159,11 +159,12 @@ const CleanProductCard = memo(function CleanProductCard({
   // Grid view
   return (
     <Card 
-      className={`group overflow-hidden border hover:shadow-xl transition-all duration-300 bg-white cursor-pointer ${className}`}
+      className={`group overflow-hidden border hover:shadow-xl transition-all duration-300 bg-white cursor-pointer h-full flex flex-col ${className}`}
       onClick={handleViewDetails}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       data-testid={`card-product-${product.id}`}
+      style={{ minHeight: '420px' }}
     >
       <div className="relative">
         {/* Image Container */}
@@ -226,8 +227,8 @@ const CleanProductCard = memo(function CleanProductCard({
           </div>
         </div>
 
-        <CardContent className="p-4">
-          <div className="space-y-3">
+        <CardContent className="p-4 flex flex-col flex-1">
+          <div className="space-y-3 flex-1 flex flex-col">
             <div>
               <h3 className="font-semibold text-lg text-gray-900 mb-1 line-clamp-2 group-hover:text-primary transition-colors">
                 {product.name}
@@ -255,15 +256,17 @@ const CleanProductCard = memo(function CleanProductCard({
               </div>
             </div>
 
-            <Button
-              onClick={handleCustomize}
-              disabled={isOutOfStock}
-              className="w-full h-11 font-medium bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 transition-colors"
-              data-testid="button-customize"
-            >
-              <Palette className="w-4 h-4 mr-2" />
-              {isOutOfStock ? 'স্টকে নেই' : 'কাস্টমাইজ করুন'}
-            </Button>
+            <div className="mt-auto">
+              <Button
+                onClick={handleCustomize}
+                disabled={isOutOfStock}
+                className="w-full h-11 font-medium bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 transition-colors"
+                data-testid="button-customize"
+              >
+                <Palette className="w-4 h-4 mr-2" />
+                {isOutOfStock ? 'স্টকে নেই' : 'কাস্টমাইজ করুন'}
+              </Button>
+            </div>
           </div>
         </CardContent>
       </div>

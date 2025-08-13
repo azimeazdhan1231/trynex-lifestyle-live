@@ -8,6 +8,7 @@ import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion"
 import UltraSimpleLayout from "@/components/ultra-simple-layout";
 import UltraDynamicProductModal from "@/components/ultra-dynamic-product-modal";
 import CleanProductCard from "@/components/clean-product-card";
+import ProductCustomizationModal from "@/components/ProductCustomizationModal";
 import { useToast } from "@/hooks/use-toast";
 import { useCart } from "@/hooks/use-cart";
 import { 
@@ -487,13 +488,13 @@ export default function HomeCleanSimple() {
     setSelectedProduct(product);
   }, []);
 
+  const [isCustomizeModalOpen, setIsCustomizeModalOpen] = useState(false);
+  const [customizeProduct, setCustomizeProduct] = useState<Product | null>(null);
+
   const handleCustomize = useCallback((product: Product) => {
-    // For now, just show a toast - later this can open a customization modal
-    toast({
-      title: "কাস্টমাইজেশন",
-      description: `${product.name} কাস্টমাইজ করার জন্য পণ্যের পেজে যান`,
-    });
-  }, [toast]);
+    setCustomizeProduct(product);
+    setIsCustomizeModalOpen(true);
+  }, []);
 
   // Reset page when filters change
   useEffect(() => {
@@ -544,7 +545,7 @@ export default function HomeCleanSimple() {
             <div className={`${
               viewMode === "list" 
                 ? "space-y-3" 
-                : "grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4"
+                : "grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4 auto-rows-fr"
             }`}>
               {Array.from({ length: itemsPerPage }).map((_, index) => (
                 <ProductSkeleton key={index} viewMode={viewMode} />
@@ -556,7 +557,7 @@ export default function HomeCleanSimple() {
                 className={`${
                   viewMode === "list" 
                     ? "space-y-3" 
-                    : "grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4"
+                    : "grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4 auto-rows-fr"
                 }`}
                 layout
               >
@@ -648,6 +649,26 @@ export default function HomeCleanSimple() {
         product={selectedProduct}
         onCustomize={handleCustomize}
       />
+
+      {/* Product Customization Modal */}
+      {customizeProduct && (
+        <ProductCustomizationModal
+          isOpen={isCustomizeModalOpen}
+          onClose={() => {
+            setIsCustomizeModalOpen(false);
+            setCustomizeProduct(null);
+          }}
+          product={customizeProduct}
+          onOrderPlaced={(trackingId: string) => {
+            setIsCustomizeModalOpen(false);
+            setCustomizeProduct(null);
+            toast({
+              title: "অর্ডার সফল হয়েছে!",
+              description: `আপনার ট্র্যাকিং আইডি: ${trackingId}`,
+            });
+          }}
+        />
+      )}
     </UltraSimpleLayout>
   );
 }
