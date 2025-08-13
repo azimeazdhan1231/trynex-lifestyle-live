@@ -300,17 +300,17 @@ export default function UltraProfessionalCustomizeModal({
       showCloseButton={false}
       enableScroll={true}
     >
-      <div className="relative bg-gradient-to-br from-blue-50 via-white to-purple-50 overflow-hidden h-full">
+      <div className="relative bg-gradient-to-br from-blue-50 via-white to-purple-50 h-full flex flex-col">
         {/* Header */}
-        <div className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 text-white p-6">
+        <div className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 text-white p-4 md:p-6 flex-shrink-0">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
-                <Sparkles className="w-8 h-8" />
+            <div className="flex items-center gap-3 md:gap-4">
+              <div className="p-2 md:p-3 bg-white/20 rounded-xl backdrop-blur-sm">
+                <Sparkles className="w-6 h-6 md:w-8 md:h-8" />
               </div>
               <div>
-                <h2 className="text-2xl font-bold">{product.name} কাস্টমাইজ করুন</h2>
-                <p className="text-blue-100">আপনার স্বপ্নের ডিজাইন তৈরি করুন</p>
+                <h2 className="text-lg md:text-2xl font-bold">{product.name} কাস্টমাইজ করুন</h2>
+                <p className="text-blue-100 text-sm md:text-base">আপনার স্বপ্নের ডিজাইন তৈরি করুন</p>
               </div>
             </div>
             <div className="flex items-center gap-3">
@@ -333,8 +333,8 @@ export default function UltraProfessionalCustomizeModal({
           </div>
           
           {/* Progress Steps */}
-          <div className="mt-6">
-            <div className="flex items-center justify-between">
+          <div className="mt-4 md:mt-6">
+            <div className="flex items-center justify-between overflow-x-auto pb-2">
               {steps.map((step, index) => {
                 const StepIcon = step.icon;
                 const isActive = activeStep === step.id;
@@ -369,11 +369,11 @@ export default function UltraProfessionalCustomizeModal({
         </div>
 
         {/* Content */}
-        <div className="p-4 md:p-6">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-8">
+        <div className="flex-1 p-4 md:p-6 overflow-y-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-8 min-h-full">
             {/* Product Preview */}
             <div className="lg:col-span-1 order-2 lg:order-1">
-              <Card className="lg:sticky lg:top-4 shadow-xl border-0 bg-white/80 backdrop-blur-sm">
+              <Card className="shadow-xl border-0 bg-white/80 backdrop-blur-sm h-fit">
                 <CardHeader className="text-center">
                   <CardTitle className="flex items-center justify-center gap-2">
                     <Crown className="w-5 h-5 text-yellow-500" />
@@ -381,7 +381,7 @@ export default function UltraProfessionalCustomizeModal({
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="p-6">
-                  <div className="relative bg-gray-100 rounded-lg p-4 aspect-square overflow-hidden">
+                  <div className="relative bg-gray-100 rounded-lg p-3 aspect-square overflow-hidden max-w-xs mx-auto">
                     {/* Product Image */}
                     <img
                       src={product.image_url || "/placeholder.png"}
@@ -423,13 +423,13 @@ export default function UltraProfessionalCustomizeModal({
                   </div>
 
                   {/* Price Display */}
-                  <div className="mt-6 bg-gradient-to-r from-green-50 to-blue-50 p-4 rounded-xl">
+                  <div className="mt-4 bg-gradient-to-r from-green-50 to-blue-50 p-3 rounded-xl">
                     <div className="text-center">
-                      <div className="text-sm text-gray-600 mb-1">মোট মূল্য</div>
-                      <div className="text-3xl font-bold text-green-600">
+                      <div className="text-xs text-gray-600 mb-1">মোট মূল্য</div>
+                      <div className="text-xl md:text-2xl font-bold text-green-600">
                         {formatPrice(totalPrice)}
                       </div>
-                      <div className="text-sm text-gray-500 mt-1">
+                      <div className="text-xs text-gray-500 mt-1">
                         {customization.quantity}টি × ({formatPrice(productPrice)} + {formatPrice(customization.customFee)} কাস্টমাইজেশন ফি)
                       </div>
                     </div>

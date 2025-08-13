@@ -73,9 +73,9 @@ export default function PerfectResponsiveModal({
 
   const getHeightClass = () => {
     if (isMobile) {
-      return 'max-h-[100vh] h-full';
+      return 'h-screen max-h-screen';
     }
-    return 'max-h-[95vh]';
+    return 'max-h-[90vh] min-h-[70vh]';
   };
 
   const handleBackdropClick = (e: React.MouseEvent) => {
@@ -104,7 +104,7 @@ export default function PerfectResponsiveModal({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
+          className="fixed inset-0 z-50 flex items-start md:items-center justify-center bg-black/60 backdrop-blur-sm p-0 md:p-4"
           onClick={handleBackdropClick}
         >
           <motion.div
@@ -127,9 +127,7 @@ export default function PerfectResponsiveModal({
               duration: 0.2,
               ease: "easeOut"
             }}
-            className={`relative bg-white rounded-t-2xl md:rounded-2xl shadow-2xl ${getMaxWidthClass()} ${getHeightClass()} ${
-              isMobile ? 'rounded-b-none' : ''
-            } ${className}`}
+            className={`relative bg-white ${isMobile ? 'rounded-t-2xl rounded-b-none' : 'rounded-2xl'} shadow-2xl ${getMaxWidthClass()} ${getHeightClass()} ${className}`}
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}
@@ -166,7 +164,9 @@ export default function PerfectResponsiveModal({
                 title || showCloseButton ? '' : 'pt-4 md:pt-6'
               }`}
               style={{ 
-                maxHeight: `calc(${getHeightClass()} - ${title || showCloseButton ? '80px' : '0px'})` 
+                height: isMobile ? `calc(100vh - ${title || showCloseButton ? '80px' : '0px'})` : 'auto',
+                minHeight: isMobile ? 'auto' : '60vh',
+                maxHeight: isMobile ? `calc(100vh - ${title || showCloseButton ? '80px' : '0px'})` : '80vh'
               }}
             >
               {children}
