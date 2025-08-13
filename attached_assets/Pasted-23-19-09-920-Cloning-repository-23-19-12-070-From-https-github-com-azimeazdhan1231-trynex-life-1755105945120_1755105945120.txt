@@ -1,0 +1,74 @@
+23:19:09.920	Cloning repository...
+23:19:12.070	From https://github.com/azimeazdhan1231/trynex-lifestyle-live
+23:19:12.070	 * branch            ba5e5a836dfcb5d2b55a415d3407540a00d6795d -> FETCH_HEAD
+23:19:12.070	
+23:19:12.241	HEAD is now at ba5e5a8 trygyexuklmngOOgsyu
+23:19:12.241	
+23:19:12.323	
+23:19:12.323	Using v2 root directory strategy
+23:19:12.350	Success: Finished cloning repository files
+23:19:14.124	Checking for configuration in a Wrangler configuration file (BETA)
+23:19:14.125	
+23:19:15.223	No wrangler.toml file found. Continuing.
+23:19:15.301	Detected the following tools from environment: nodejs@20.19.2, npm@10.9.2
+23:19:15.302	Installing nodejs 20.19.2
+23:19:16.428	Trying to update node-build... ok
+23:19:16.526	To follow progress, use 'tail -f /tmp/node-build.20250813171916.494.log' or pass --verbose
+23:19:16.627	Downloading node-v20.19.2-linux-x64.tar.gz...
+23:19:16.860	-> https://nodejs.org/dist/v20.19.2/node-v20.19.2-linux-x64.tar.gz
+23:19:18.840	
+23:19:18.841	WARNING: node-v20.19.2-linux-x64 is in LTS Maintenance mode and nearing its end of life.
+23:19:18.841	It only receives *critical* security updates, *critical* bug fixes and documentation updates.
+23:19:18.842	
+23:19:18.842	Installing node-v20.19.2-linux-x64...
+23:19:19.226	Installed node-v20.19.2-linux-x64 to /opt/buildhome/.asdf/installs/nodejs/20.19.2
+23:19:19.226	
+23:19:20.269	Installing project dependencies: npm clean-install --progress=false
+23:19:24.827	npm warn deprecated @esbuild-kit/esm-loader@2.6.5: Merged into tsx: https://tsx.is
+23:19:24.847	npm warn deprecated @esbuild-kit/core-utils@3.3.2: Merged into tsx: https://tsx.is
+23:19:30.327	
+23:19:30.328	added 546 packages, and audited 547 packages in 10s
+23:19:30.328	
+23:19:30.328	72 packages are looking for funding
+23:19:30.328	  run `npm fund` for details
+23:19:30.355	
+23:19:30.355	5 moderate severity vulnerabilities
+23:19:30.356	
+23:19:30.356	To address all issues (including breaking changes), run:
+23:19:30.356	  npm audit fix --force
+23:19:30.357	
+23:19:30.357	Run `npm audit` for details.
+23:19:30.378	Executing user command: npm ci && npm run build && ls -la dist/ && ls -la dist/public/ && echo "Build completed successfully"
+23:19:36.069	npm warn deprecated @esbuild-kit/esm-loader@2.6.5: Merged into tsx: https://tsx.is
+23:19:36.176	npm warn deprecated @esbuild-kit/core-utils@3.3.2: Merged into tsx: https://tsx.is
+23:19:39.456	
+23:19:39.457	added 546 packages, and audited 547 packages in 9s
+23:19:39.458	
+23:19:39.458	72 packages are looking for funding
+23:19:39.458	  run `npm fund` for details
+23:19:39.482	
+23:19:39.483	5 moderate severity vulnerabilities
+23:19:39.483	
+23:19:39.483	To address all issues (including breaking changes), run:
+23:19:39.483	  npm audit fix --force
+23:19:39.483	
+23:19:39.483	Run `npm audit` for details.
+23:19:39.894	
+23:19:39.894	> rest-express@1.0.0 build
+23:19:39.894	> vite build && esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist
+23:19:39.894	
+23:19:40.207	vite v5.4.19 building for production...
+23:19:40.288	transforming...
+23:19:44.636	✓ 2130 modules transformed.
+23:19:44.643	x Build failed in 4.41s
+23:19:44.643	error during build:
+23:19:44.644	[vite:load-fallback] Could not load /opt/buildhome/repo/client/src/components/customize-modal-dynamic (imported by client/src/pages/product-enhanced.tsx): ENOENT: no such file or directory, open '/opt/buildhome/repo/client/src/components/customize-modal-dynamic'
+23:19:44.644	    at async open (node:internal/fs/promises:639:25)
+23:19:44.644	    at async Object.readFile (node:internal/fs/promises:1246:14)
+23:19:44.644	    at async Object.load (file:///opt/buildhome/repo/node_modules/vite/dist/node/chunks/dep-C6uTJdX2.js:65341:25)
+23:19:44.645	    at async PluginDriver.hookFirstAndGetPlugin (file:///opt/buildhome/repo/node_modules/rollup/dist/es/shared/node-entry.js:22233:28)
+23:19:44.645	    at async file:///opt/buildhome/repo/node_modules/rollup/dist/es/shared/node-entry.js:21237:33
+23:19:44.645	    at async Queue.work (file:///opt/buildhome/repo/node_modules/rollup/dist/es/shared/node-entry.js:22461:32)
+23:19:44.680	Failed: Error while executing user command. Exited with error code: 1
+23:19:44.690	Failed: build command exited with code: 1
+23:19:45.903	Failed: error occurred while running build command
