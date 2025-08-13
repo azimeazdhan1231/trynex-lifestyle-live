@@ -47,6 +47,7 @@ export default function UnifiedProductCard({
       onMouseLeave={() => setIsHovered(false)}
       onClick={handleViewProduct}
       data-testid={`card-product-${product.id}`}
+      style={{ minHeight: '380px', height: '100%' }}
     >
         <div className="relative flex-shrink-0">
           {/* Product Image */}
@@ -128,24 +129,27 @@ export default function UnifiedProductCard({
           )}
         </div>
 
-        <CardContent className="p-3 sm:p-4">
+        <CardContent className="p-3 sm:p-4 flex flex-col flex-1">
           {/* Product Category */}
-          {product.category && (
-            <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">
-              {product.category}
-            </p>
-          )}
+          <div className="min-h-[16px] mb-1">
+            {product.category && (
+              <p className="text-xs text-gray-500 uppercase tracking-wide">
+                {product.category}
+              </p>
+            )}
+          </div>
 
-          {/* Product Name */}
+          {/* Product Name - Fixed height */}
           <h3 
-            className="font-medium text-gray-900 line-clamp-2 mb-2 min-h-[2.5rem] hover:text-primary cursor-pointer responsive-text"
+            className="font-medium text-gray-900 line-clamp-2 mb-2 hover:text-primary cursor-pointer responsive-text"
             onClick={handleViewProduct}
+            style={{ minHeight: '40px', maxHeight: '40px', lineHeight: '1.25rem' }}
           >
             {product.name}
           </h3>
 
-          {/* Rating */}
-          <div className="flex items-center gap-1 mb-2">
+          {/* Rating - Fixed height */}
+          <div className="flex items-center gap-1 mb-2" style={{ minHeight: '20px' }}>
             <div className="flex items-center">
               {Array.from({ length: 5 }).map((_, i) => (
                 <Star 
@@ -163,8 +167,8 @@ export default function UnifiedProductCard({
             </span>
           </div>
 
-          {/* Price */}
-          <div className="flex items-center justify-between mb-3">
+          {/* Price - Fixed height */}
+          <div className="flex items-center justify-between mb-3" style={{ minHeight: '24px' }}>
             <div>
               <span className="text-base sm:text-lg font-bold text-gray-900 responsive-price">
                 {formatPrice(parseFloat(product.price))}
@@ -175,11 +179,14 @@ export default function UnifiedProductCard({
             </div>
           </div>
 
-          {/* Action Buttons */}
-          <div className="space-y-2">
+          {/* Spacer to push buttons to bottom */}
+          <div className="flex-1"></div>
+
+          {/* Action Buttons - Fixed at bottom */}
+          <div className="space-y-2 mt-auto">
             <Button
               onClick={handleCustomize}
-              className="w-full transition-all duration-300 text-sm mobile-transition bg-gradient-to-r from-orange-500 to-red-500 text-white hover:from-orange-600 hover:to-red-600"
+              className="w-full h-9 transition-all duration-300 text-sm mobile-transition bg-gradient-to-r from-orange-500 to-red-500 text-white hover:from-orange-600 hover:to-red-600"
               size="sm"
               data-testid={`button-customize-${product.id}`}
             >
@@ -192,7 +199,7 @@ export default function UnifiedProductCard({
               onClick={handleViewProduct}
               variant="outline"
               size="sm"
-              className="w-full mobile-transition"
+              className="w-full h-9 mobile-transition"
               data-testid={`button-view-${product.id}`}
             >
               <Eye className="w-4 h-4 mr-1" />

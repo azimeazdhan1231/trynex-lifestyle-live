@@ -1,6 +1,7 @@
 import { createRoot } from "react-dom/client";
 import App from "./App";
 import "./index.css";
+import "./styles/product-cards.css";
 
 // Comprehensive ResizeObserver error suppression
 const suppressResizeObserverErrors = () => {
