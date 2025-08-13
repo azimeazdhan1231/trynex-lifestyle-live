@@ -19,7 +19,9 @@ import {
   Edit3,
   Upload,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  X,
+  Palette
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -30,6 +32,7 @@ interface CartItem {
   quantity: number;
   image?: string;
   customization?: any;
+  image_url?: string; // Added for consistency with changes
 }
 
 interface PerfectCartModalProps {
@@ -41,6 +44,11 @@ interface PerfectCartModalProps {
   onClearCart: () => void;
   onCheckout: () => void;
 }
+
+// Helper function to format price
+const formatPrice = (price: number): string => {
+  return `৳${price.toFixed(2)}`;
+};
 
 export default function PerfectCartModal({
   isOpen,
@@ -80,6 +88,8 @@ export default function PerfectCartModal({
         [field]: value
       }
     }));
+    // In a real app, you'd also update the cart item's customization state here
+    // For now, we'll assume this state is managed internally for display
   };
 
   const handleImageUpload = (itemId: string, file: File) => {
@@ -101,7 +111,7 @@ export default function PerfectCartModal({
     const phoneNumber = "8801747292277";
     const itemsText = cartItems.map(item => {
       let itemText = `${item.name} - ৳${item.price} × ${item.quantity} = ৳${item.price * item.quantity}`;
-      
+
       // Add customization details if any
       const customization = customizations[item.id];
       if (customization) {
@@ -109,7 +119,7 @@ export default function PerfectCartModal({
         if (customization.instructions) itemText += `\n  নির্দেশনা: ${customization.instructions}`;
         if (customization.images?.length) itemText += `\n  আপলোড করা ছবি: ${customization.images.length}টি`;
       }
-      
+
       return itemText;
     }).join('\n\n');
 
@@ -189,200 +199,209 @@ ${itemsText}
       <div className="space-y-6">
         {/* Cart Items */}
         <div className="space-y-4 max-h-96 overflow-y-auto">
-          {cartItems.map((item, index) => (
-            <Card key={item.id || index} className="border border-gray-200">
-              <CardContent className="p-4">
-                <div className="flex items-center gap-4">
-                  {/* Product Image */}
-                  {item.image && (
-                    <img
-                      src={item.image}
-                      alt={item.name}
-                      className="w-16 h-16 object-cover rounded-lg border border-gray-200"
-                    />
-                  )}
+          {cartItems.map((item) => {
+              // Check if the item is customizable
+              const customizableTypes = ['t-shirt', 'tshirt', 'mug', 'photo canvas', 'canvas'];
+              const productName = item.name?.toLowerCase() || '';
+              const isCustomizable = customizableTypes.some(type => 
+                productName.includes(type)
+              );
 
-                  {/* Product Details */}
-                  <div className="flex-1">
-                    <h4 className="font-semibold text-gray-900 mb-1">{item.name}</h4>
-                    
-                    {/* Customization Info */}
-                    {item.customization && (
-                      <div className="mb-2">
-                        <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-200 text-xs">
-                          কাস্টমাইজড
-                        </Badge>
-                        {item.customization.color && (
-                          <span className="text-xs text-gray-600 ml-2">
-                            রং: {item.customization.color_name}
-                          </span>
+              return (
+                <Card key={item.id} className="border border-gray-200">
+                  <CardContent className="p-4">
+                    <div className="flex items-center gap-4">
+                      {/* Product Image */}
+                      {item.image && (
+                        <img
+                          src={item.image}
+                          alt={item.name}
+                          className="w-16 h-16 object-cover rounded-lg border border-gray-200"
+                        />
+                      )}
+
+                      {/* Product Details */}
+                      <div className="flex-1">
+                        <h4 className="font-semibold text-gray-900 mb-1">{item.name}</h4>
+
+                        {/* Customization Info */}
+                        {item.customization && (
+                          <div className="mb-2">
+                            <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-200 text-xs">
+                              কাস্টমাইজড
+                            </Badge>
+                            {item.customization.color && (
+                              <span className="text-xs text-gray-600 ml-2">
+                                রং: {item.customization.color_name}
+                              </span>
+                            )}
+                            {item.customization.text && (
+                              <span className="text-xs text-gray-600 ml-2">
+                                টেক্সট: "{item.customization.text}"
+                              </span>
+                            )}
+                          </div>
                         )}
-                        {item.customization.text && (
-                          <span className="text-xs text-gray-600 ml-2">
-                            টেক্সট: "{item.customization.text}"
-                          </span>
-                        )}
+
+                        <div className="flex items-center justify-between">
+                          <div className="text-lg font-bold text-green-600">
+                            {formatPrice(item.price)}
+                          </div>
+
+                          {/* Quantity Controls */}
+                          <div className="flex items-center gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleQuantityChange(item.id, -1)}
+                              disabled={item.quantity <= 1}
+                              className="h-8 w-8 p-0"
+                              data-testid={`button-decrease-${item.id}`}
+                            >
+                              <Minus className="w-3 h-3" />
+                            </Button>
+
+                            <span className="w-8 text-center font-medium">{item.quantity}</span>
+
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleQuantityChange(item.id, 1)}
+                              className="h-8 w-8 p-0"
+                              data-testid={`button-increase-${item.id}`}
+                            >
+                              <Plus className="w-3 h-3" />
+                            </Button>
+
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleRemoveItem(item.id)}
+                              className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50 ml-2"
+                              data-testid={`button-remove-${item.id}`}
+                            >
+                              <Trash2 className="w-3 h-3" />
+                            </Button>
+                          </div>
+                        </div>
+
+                        {/* Item Total */}
+                        <div className="text-right text-sm font-medium text-gray-900 mt-2">
+                          মোট: {formatPrice(item.price * item.quantity)}
+                        </div>
                       </div>
-                    )}
+                    </div>
 
-                    <div className="flex items-center justify-between">
-                      <div className="text-lg font-bold text-green-600">
-                        ৳{item.price}
-                      </div>
-
-                      {/* Quantity Controls */}
-                      <div className="flex items-center gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleQuantityChange(item.id, -1)}
-                          disabled={item.quantity <= 1}
-                          className="h-8 w-8 p-0"
-                          data-testid={`button-decrease-${item.id}`}
-                        >
-                          <Minus className="w-3 h-3" />
-                        </Button>
-                        
-                        <span className="w-8 text-center font-medium">{item.quantity}</span>
-                        
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleQuantityChange(item.id, 1)}
-                          className="h-8 w-8 p-0"
-                          data-testid={`button-increase-${item.id}`}
-                        >
-                          <Plus className="w-3 h-3" />
-                        </Button>
-
+                    {/* Customization Section for eligible products */}
+                    {isCustomizable && (
+                      <div className="mt-4 border-t pt-4">
                         <Button
                           variant="ghost"
-                          size="sm"
-                          onClick={() => handleRemoveItem(item.id)}
-                          className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50 ml-2"
-                          data-testid={`button-remove-${item.id}`}
-                        >
-                          <Trash2 className="w-3 h-3" />
-                        </Button>
-                      </div>
-                    </div>
-
-                    {/* Item Total */}
-                    <div className="text-right text-sm font-medium text-gray-900 mt-2">
-                      মোট: ৳{item.price * item.quantity}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Customization Section for eligible products */}
-                {isCustomizable(item.name) && (
-                  <div className="mt-4 border-t pt-4">
-                    <Button
-                      variant="ghost"
-                      onClick={() => setExpandedCustomization(
-                        expandedCustomization === item.id ? null : item.id
-                      )}
-                      className="w-full text-left justify-between p-0 h-auto text-blue-600 hover:text-blue-700"
-                    >
-                      <div className="flex items-center gap-2">
-                        <Edit3 className="w-4 h-4" />
-                        <span className="font-medium">কাস্টমাইজ করুন</span>
-                      </div>
-                      {expandedCustomization === item.id ? 
-                        <ChevronUp className="w-4 h-4" /> : 
-                        <ChevronDown className="w-4 h-4" />
-                      }
-                    </Button>
-
-                    {expandedCustomization === item.id && (
-                      <div className="mt-3 space-y-3 bg-blue-50 p-3 rounded-lg">
-                        {/* Custom Text Input */}
-                        <div>
-                          <Label htmlFor={`text-${item.id}`} className="text-sm font-medium text-gray-700">
-                            কাস্টম টেক্সট (যদি থাকে)
-                          </Label>
-                          <Input
-                            id={`text-${item.id}`}
-                            placeholder="আপনার পছন্দের টেক্সট লিখুন..."
-                            value={customizations[item.id]?.text || ''}
-                            onChange={(e) => handleCustomizationChange(item.id, 'text', e.target.value)}
-                            className="mt-1"
-                          />
-                        </div>
-
-                        {/* Special Instructions */}
-                        <div>
-                          <Label htmlFor={`instructions-${item.id}`} className="text-sm font-medium text-gray-700">
-                            বিশেষ নির্দেশনা
-                          </Label>
-                          <Textarea
-                            id={`instructions-${item.id}`}
-                            placeholder="কাস্টমাইজেশন সম্পর্কে বিস্তারিত লিখুন..."
-                            value={customizations[item.id]?.instructions || ''}
-                            onChange={(e) => handleCustomizationChange(item.id, 'instructions', e.target.value)}
-                            className="mt-1"
-                            rows={3}
-                          />
-                        </div>
-
-                        {/* Image Upload */}
-                        <div>
-                          <Label className="text-sm font-medium text-gray-700">
-                            ছবি আপলোড করুন
-                          </Label>
-                          <div className="mt-1">
-                            <input
-                              type="file"
-                              accept="image/*"
-                              onChange={(e) => {
-                                const file = e.target.files?.[0];
-                                if (file) {
-                                  handleImageUpload(item.id, file);
-                                }
-                              }}
-                              className="hidden"
-                              id={`image-upload-${item.id}`}
-                            />
-                            <Label
-                              htmlFor={`image-upload-${item.id}`}
-                              className="flex items-center gap-2 cursor-pointer border-2 border-dashed border-gray-300 rounded-lg p-3 hover:border-blue-400 transition-colors"
-                            >
-                              <Upload className="w-4 h-4 text-gray-500" />
-                              <span className="text-sm text-gray-600">ছবি নির্বাচন করুন</span>
-                            </Label>
-                          </div>
-                          
-                          {/* Show uploaded images */}
-                          {customizations[item.id]?.images && customizations[item.id]?.images!.length > 0 && (
-                            <div className="mt-2 grid grid-cols-3 gap-2">
-                              {customizations[item.id]?.images!.map((img, idx) => (
-                                <img
-                                  key={idx}
-                                  src={img}
-                                  alt={`Upload ${idx + 1}`}
-                                  className="w-16 h-16 object-cover rounded border"
-                                />
-                              ))}
-                            </div>
+                          onClick={() => setExpandedCustomization(
+                            expandedCustomization === item.id ? null : item.id
                           )}
-                        </div>
+                          className="w-full text-left justify-between p-0 h-auto text-blue-600 hover:text-blue-700"
+                        >
+                          <div className="flex items-center gap-2">
+                            <Edit3 className="w-4 h-4" />
+                            <span className="font-medium">কাস্টমাইজ করুন</span>
+                          </div>
+                          {expandedCustomization === item.id ? 
+                            <ChevronUp className="w-4 h-4" /> : 
+                            <ChevronDown className="w-4 h-4" />
+                          }
+                        </Button>
 
-                        {/* Advance Payment Notice */}
-                        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
-                          <p className="text-xs text-yellow-800 font-medium">
-                            💡 কাস্টম অর্ডারের জন্য অগ্রিম ১০০ টাকা পেমেন্ট প্রয়োজন
-                          </p>
-                          <p className="text-xs text-yellow-700 mt-1">
-                            bKash/Nagad: 01747292277
-                          </p>
-                        </div>
+                        {expandedCustomization === item.id && (
+                          <div className="mt-3 space-y-3 bg-blue-50 p-3 rounded-lg">
+                            {/* Custom Text Input */}
+                            <div>
+                              <Label htmlFor={`text-${item.id}`} className="text-sm font-medium text-gray-700">
+                                কাস্টম টেক্সট (যদি থাকে)
+                              </Label>
+                              <Input
+                                id={`text-${item.id}`}
+                                placeholder="আপনার পছন্দের টেক্সট লিখুন..."
+                                value={customizations[item.id]?.text || ''}
+                                onChange={(e) => handleCustomizationChange(item.id, 'text', e.target.value)}
+                                className="mt-1"
+                              />
+                            </div>
+
+                            {/* Special Instructions */}
+                            <div>
+                              <Label htmlFor={`instructions-${item.id}`} className="text-sm font-medium text-gray-700">
+                                বিশেষ নির্দেশনা
+                              </Label>
+                              <Textarea
+                                id={`instructions-${item.id}`}
+                                placeholder="কাস্টমাইজেশন সম্পর্কে বিস্তারিত লিখুন..."
+                                value={customizations[item.id]?.instructions || ''}
+                                onChange={(e) => handleCustomizationChange(item.id, 'instructions', e.target.value)}
+                                className="mt-1"
+                                rows={3}
+                              />
+                            </div>
+
+                            {/* Image Upload */}
+                            <div>
+                              <Label className="text-sm font-medium text-gray-700">
+                                ছবি আপলোড করুন
+                              </Label>
+                              <div className="mt-1">
+                                <input
+                                  type="file"
+                                  accept="image/*"
+                                  onChange={(e) => {
+                                    const file = e.target.files?.[0];
+                                    if (file) {
+                                      handleImageUpload(item.id, file);
+                                    }
+                                  }}
+                                  className="hidden"
+                                  id={`image-upload-${item.id}`}
+                                />
+                                <Label
+                                  htmlFor={`image-upload-${item.id}`}
+                                  className="flex items-center gap-2 cursor-pointer border-2 border-dashed border-gray-300 rounded-lg p-3 hover:border-blue-400 transition-colors"
+                                >
+                                  <Upload className="w-4 h-4 text-gray-500" />
+                                  <span className="text-sm text-gray-600">ছবি নির্বাচন করুন</span>
+                                </Label>
+                              </div>
+
+                              {/* Show uploaded images */}
+                              {customizations[item.id]?.images && customizations[item.id]?.images!.length > 0 && (
+                                <div className="mt-2 grid grid-cols-3 gap-2">
+                                  {customizations[item.id]?.images!.map((img, idx) => (
+                                    <img
+                                      key={idx}
+                                      src={img}
+                                      alt={`Upload ${idx + 1}`}
+                                      className="w-16 h-16 object-cover rounded border"
+                                    />
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+
+                            {/* Advance Payment Notice */}
+                            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                              <p className="text-xs text-yellow-800 font-medium">
+                                💡 কাস্টম অর্ডারের জন্য অগ্রিম ১০০ টাকা পেমেন্ট প্রয়োজন
+                              </p>
+                              <p className="text-xs text-yellow-700 mt-1">
+                                bKash/Nagad: 01747292277
+                              </p>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     )}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          ))}
+                  </CardContent>
+                </Card>
+              );
+            })}
         </div>
 
         <Separator />
@@ -394,18 +413,18 @@ ${itemsText}
               <Package className="w-5 h-5 text-blue-600" />
               অর্ডার সারাংশ
             </h3>
-            
+
             <div className="space-y-3">
               <div className="flex justify-between text-gray-700">
                 <span>পণ্যের দাম:</span>
-                <span>৳{subtotal}</span>
+                <span>{formatPrice(subtotal)}</span>
               </div>
-              
+
               <div className="flex justify-between text-gray-700">
                 <span>ডেলিভারি চার্জ:</span>
-                <span>৳{deliveryFee}</span>
+                <span>{formatPrice(deliveryFee)}</span>
               </div>
-              
+
               {subtotal >= 2000 && (
                 <div className="bg-green-100 border border-green-300 rounded-lg p-3 text-center">
                   <span className="text-green-800 font-medium">
@@ -413,12 +432,12 @@ ${itemsText}
                   </span>
                 </div>
               )}
-              
+
               <Separator />
-              
+
               <div className="flex justify-between text-xl font-bold text-gray-900">
                 <span>সর্বমোট:</span>
-                <span className="text-green-600">৳{total}</span>
+                <span className="text-green-600">{formatPrice(total)}</span>
               </div>
             </div>
           </CardContent>
@@ -433,7 +452,7 @@ ${itemsText}
               data-testid="button-checkout"
             >
               <CreditCard className="w-5 h-5 mr-2" />
-              চেকআউট (৳{total})
+              চেকআউট ({formatPrice(total)})
             </Button>
 
             <Button

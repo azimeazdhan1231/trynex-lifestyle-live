@@ -130,6 +130,10 @@ export default function CustomizeProduct() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { addToCart } = useCart();
+  
+  // Get productId from URL params or query params
+  const urlParams = new URLSearchParams(window.location.search);
+  const productId = params?.id || urlParams.get('productId');
 
   // Form states
   const [quantity, setQuantity] = useState(1);
@@ -151,8 +155,8 @@ export default function CustomizeProduct() {
 
   // Fetch product details
   const { data: product, isLoading } = useQuery({
-    queryKey: ['/api/products', params?.id],
-    enabled: !!params?.id
+    queryKey: ['/api/products', productId],
+    enabled: !!productId
   });
 
   const calculateCustomizationPrice = () => {

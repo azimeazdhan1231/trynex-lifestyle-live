@@ -17,12 +17,12 @@ interface EnhancedProductModalProps {
   onCustomize?: (product: Product) => void;
 }
 
-export default function EnhancedProductModal({ 
-  product, 
-  isOpen, 
-  onClose, 
-  onAddToCart, 
-  onCustomize 
+export default function EnhancedProductModal({
+  product,
+  isOpen,
+  onClose,
+  onAddToCart,
+  onCustomize
 }: EnhancedProductModalProps) {
   const [quantity, setQuantity] = useState(1);
   const [isImageOverlayOpen, setIsImageOverlayOpen] = useState(false);
@@ -92,19 +92,16 @@ export default function EnhancedProductModal({
   };
 
   const handleCustomize = () => {
-    // Only allow customization for specific product types
+    // Check if the product is customizable
     const customizableTypes = ['t-shirt', 'tshirt', 'mug', 'photo canvas', 'canvas'];
     const productName = product.name?.toLowerCase() || '';
-    const productCategory = product.category?.toLowerCase() || '';
-    
-    const isCustomizable = customizableTypes.some(type => 
-      productName.includes(type) || productCategory.includes(type)
+    const isCustomizable = customizableTypes.some(type =>
+      productName.includes(type)
     );
-    
+
     if (isCustomizable) {
       // Navigate to customize page with product data
-      onClose();
-      window.location.href = `/customize?productId=${product.id}`;
+      window.location.href = `/customize/${product.id}`;
     } else {
       toast({
         title: "কাস্টমাইজেশন উপলব্ধ নয়",
@@ -171,7 +168,7 @@ export default function EnhancedProductModal({
                     onClick={() => setIsImageOverlayOpen(true)}
                     data-testid="product-image"
                   />
-                  
+
                   {/* Image Expand Overlay */}
                   <div className="absolute inset-0 bg-black/0 hover:bg-black/20 transition-all duration-300 flex items-center justify-center cursor-pointer rounded-lg"
                        onClick={() => setIsImageOverlayOpen(true)}>
