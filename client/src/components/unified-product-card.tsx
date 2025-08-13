@@ -42,12 +42,11 @@ export default function UnifiedProductCard({
 
   return (
     <Card 
-      className={`group cursor-pointer transition-all duration-300 ease-out hover:shadow-xl hover:-translate-y-1 overflow-hidden bg-white border border-gray-200 hover:border-gray-300 h-full flex flex-col ${className}`}
+      className={`uniform-product-card group cursor-pointer transition-all duration-300 ease-out hover:shadow-xl hover:-translate-y-1 overflow-hidden bg-white border border-gray-200 hover:border-gray-300 ${className}`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       onClick={handleViewProduct}
       data-testid={`card-product-${product.id}`}
-      style={{ minHeight: '420px', height: '100%' }}
     >
         <div className="relative flex-shrink-0">
           {/* Product Image */}

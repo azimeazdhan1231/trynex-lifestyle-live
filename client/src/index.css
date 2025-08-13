@@ -4,6 +4,26 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Unified Product Card Heights */
+.uniform-product-card {
+  height: 420px !important;
+  min-height: 420px !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.uniform-product-card .card-content {
+  flex: 1 !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.uniform-product-card .card-content > div {
+  display: flex !important;
+  flex-direction: column !important;
+  flex: 1 !important;
+}
+
 /* Enhanced Animation Utilities */
 @keyframes float {
   0%, 100% { transform: translateY(0px); }

@@ -159,12 +159,11 @@ const CleanProductCard = memo(function CleanProductCard({
   // Grid view
   return (
     <Card 
-      className={`group overflow-hidden border hover:shadow-xl transition-all duration-300 bg-white cursor-pointer h-full flex flex-col ${className}`}
+      className={`uniform-product-card group overflow-hidden border hover:shadow-xl transition-all duration-300 bg-white cursor-pointer ${className}`}
       onClick={handleViewDetails}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       data-testid={`card-product-${product.id}`}
-      style={{ minHeight: '420px' }}
     >
       <div className="relative">
         {/* Image Container */}
@@ -227,36 +226,36 @@ const CleanProductCard = memo(function CleanProductCard({
           </div>
         </div>
 
-        <CardContent className="p-4 flex flex-col flex-1">
-          <div className="space-y-3 flex-1 flex flex-col">
-            <div>
-              <h3 className="font-semibold text-lg text-gray-900 mb-1 line-clamp-2 group-hover:text-primary transition-colors">
+        <CardContent className="card-content p-4">
+          <div className="flex-1 flex flex-col justify-between gap-3">
+            <div className="flex-1">
+              <h3 className="font-semibold text-base text-gray-900 mb-2 line-clamp-2 group-hover:text-primary transition-colors">
                 {product.name}
               </h3>
-              <p className="text-gray-600 text-sm line-clamp-2">
+              <p className="text-gray-600 text-sm line-clamp-2 mb-3">
                 {product.description}
               </p>
-            </div>
 
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-1">
-                <div className="flex">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} className={`w-4 h-4 ${i < 4 ? 'text-yellow-400 fill-current' : 'text-gray-200'}`} />
-                  ))}
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-1">
+                  <div className="flex">
+                    {[...Array(5)].map((_, i) => (
+                      <Star key={i} className={`w-3 h-3 ${i < 4 ? 'text-yellow-400 fill-current' : 'text-gray-200'}`} />
+                    ))}
+                  </div>
+                  <span className="text-xs text-gray-600 ml-1">(4.5)</span>
                 </div>
-                <span className="text-sm text-gray-600 ml-1">(4.5)</span>
+                <span className="text-xs text-gray-500">{stock} টি স্টকে</span>
               </div>
-              <span className="text-sm text-gray-500">{stock} টি স্টকে</span>
+
+              <div className="mb-3">
+                <div className="text-lg font-bold text-primary">
+                  {formatPrice(price)}
+                </div>
+              </div>
             </div>
 
-            <div className="flex items-center justify-between">
-              <div className="text-2xl font-bold text-primary">
-                {formatPrice(price)}
-              </div>
-            </div>
-
-            <div className="mt-auto">
+            <div>
               <Button
                 onClick={handleCustomize}
                 disabled={isOutOfStock}
