@@ -9,7 +9,7 @@ import { RadioGroup, RadioGroupItem } from './ui/radio-group';
 import { Badge } from './ui/badge';
 import { Separator } from './ui/separator';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
-import { toast } from './ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { Loader2, Upload, X, Plus, Minus, ShoppingCart, Eye, EyeOff } from 'lucide-react';
 
 interface Product {
@@ -47,6 +47,8 @@ const SimpleCustomizeModal: React.FC<SimpleCustomizeModalProps> = ({
   product,
   onAddToCart
 }) => {
+  const { toast } = useToast();
+  
   // All useState hooks must be at the top level and in consistent order
   const [isLoading, setIsLoading] = useState(false);
   const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>({});
