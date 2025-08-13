@@ -33,282 +33,31 @@ import {
 import { formatPrice, PRODUCT_CATEGORIES } from "@/lib/constants";
 import type { Product } from "@shared/schema";
 
-// Professional Product Card Component
-const ProfessionalProductCard = memo(function ProfessionalProductCard({ 
-  product, 
-  onViewProduct, 
-  onAddToCart,
-  index,
-  viewMode = "grid"
-}: {
-  product: Product;
-  onViewProduct: (product: Product) => void;
-  onAddToCart: (product: Product) => void;
-  index: number;
-  viewMode?: "grid" | "list";
-}) {
-  const [isHovered, setIsHovered] = useState(false);
-  const [isFavorite, setIsFavorite] = useState(false);
-  const [imageLoaded, setImageLoaded] = useState(false);
-
-  const price = typeof product.price === 'string' ? parseFloat(product.price) : product.price;
-
-  if (viewMode === "list") {
-    return (
-      <motion.div
-        initial={{ opacity: 0, x: -20 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 0.3, delay: index * 0.02 }}
-        className="w-full"
-      >
-        <Card 
-          className="overflow-hidden border shadow-sm hover:shadow-md transition-all duration-200 bg-white cursor-pointer"
-          onClick={() => onViewProduct(product)}
-          data-testid={`card-product-${product.id}`}
-        >
-          <div className="flex flex-row p-3">
-            {/* Image */}
-            <div className="relative w-20 h-20 sm:w-24 sm:h-24 flex-shrink-0 rounded-lg overflow-hidden bg-gray-100">
-              {!imageLoaded && (
-                <div className="absolute inset-0 bg-gray-200 animate-pulse" />
-              )}
-              <img
-                src={product.image_url || "/api/placeholder/96/96"}
-                alt={product.name}
-                className={`w-full h-full object-cover transition-opacity duration-200 ${
-                  imageLoaded ? 'opacity-100' : 'opacity-0'
-                }`}
-                onLoad={() => setImageLoaded(true)}
-                loading="lazy"
-              />
-              {product.is_featured && (
-                <Badge className="absolute -top-1 -right-1 bg-red-500 text-white text-xs px-1.5 py-0.5 rounded-full">
-                  ট্রেন্ডিং
-                </Badge>
-              )}
-            </div>
-
-            {/* Content */}
-            <div className="flex-1 ml-3 flex flex-col justify-between">
-              <div>
-                <h3 className="font-semibold text-gray-900 text-sm line-clamp-2 leading-tight mb-1">
-                  {product.name}
-                </h3>
-                <Badge variant="outline" className="text-xs">
-                  {product.category || 'গিফট'}
-                </Badge>
-              </div>
-
-              <div className="flex items-center justify-between mt-2">
-                <div className="flex flex-col">
-                  <span className="text-lg font-bold text-primary">
-                    {formatPrice(price)}
-                  </span>
-                  <div className="flex items-center gap-1">
-                    <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
-                    <span className="text-xs text-gray-600">5.0</span>
-                  </div>
-                </div>
-                
-                <div className="flex items-center gap-2">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="h-8 w-8 p-0 rounded-full"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setIsFavorite(!isFavorite);
-                    }}
-                  >
-                    <Heart className={`w-3 h-3 ${isFavorite ? 'fill-red-500 text-red-500' : 'text-gray-500'}`} />
-                  </Button>
-                  <Button
-                    size="sm"
-                    className="h-8 px-3 text-xs"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onAddToCart(product);
-                    }}
-                    data-testid={`button-add-cart-${product.id}`}
-                  >
-                    <ShoppingCart className="w-3 h-3 mr-1" />
-                    কার্ট
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </Card>
-      </motion.div>
-    );
-  }
-
-  // Grid view
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ 
-        duration: 0.4,
-        delay: index * 0.02,
-        ease: [0.4, 0, 0.2, 1]
-      }}
-      whileHover={{ y: -2 }}
-      className="group relative w-full"
-    >
-      <Card 
-        className="overflow-hidden border shadow-sm hover:shadow-lg transition-all duration-200 bg-white cursor-pointer h-full"
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
-        onClick={() => onViewProduct(product)}
-        data-testid={`card-product-${product.id}`}
-      >
-        {/* Image Container */}
-        <div className="relative aspect-square overflow-hidden bg-gray-50">
-          {/* Featured Badge */}
-          {product.is_featured && (
-            <motion.div
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ duration: 0.2, delay: index * 0.02 + 0.1 }}
-              className="absolute top-2 right-2 z-10"
-            >
-              <Badge className="bg-red-500 text-white font-bold text-xs shadow-md">
-                <Flame className="w-3 h-3 mr-1" />
-                ট্রেন্ডিং
-              </Badge>
-            </motion.div>
-          )}
-
-          {/* Product Image */}
-          <div className="relative w-full h-full">
-            {!imageLoaded && (
-              <div className="absolute inset-0 bg-gray-200 animate-pulse" />
-            )}
-            <img
-              src={product.image_url || "/api/placeholder/300/300"}
-              alt={product.name}
-              className={`w-full h-full object-cover transition-all duration-300 ${
-                isHovered ? 'scale-105' : 'scale-100'
-              } ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
-              onLoad={() => setImageLoaded(true)}
-              loading="lazy"
-            />
-          </div>
-
-          {/* Quick Actions */}
-          <AnimatePresence>
-            {isHovered && (
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 10 }}
-                transition={{ duration: 0.15 }}
-                className="absolute bottom-2 left-2 right-2 flex gap-1"
-              >
-                <Button
-                  size="sm"
-                  variant="secondary"
-                  className="flex-1 bg-white/95 backdrop-blur-sm hover:bg-white text-gray-900 shadow-md text-xs h-8"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onViewProduct(product);
-                  }}
-                  data-testid={`button-view-${product.id}`}
-                >
-                  <Eye className="w-3 h-3 mr-1" />
-                  দেখুন
-                </Button>
-                <Button
-                  size="sm"
-                  className="flex-1 bg-primary hover:bg-primary/90 text-white shadow-md text-xs h-8"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onAddToCart(product);
-                  }}
-                  data-testid={`button-add-cart-${product.id}`}
-                >
-                  <ShoppingCart className="w-3 h-3 mr-1" />
-                  কার্ট
-                </Button>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          {/* Favorite Button */}
-          <motion.button
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
-            onClick={(e) => {
-              e.stopPropagation();
-              setIsFavorite(!isFavorite);
-            }}
-            className={`absolute top-2 left-2 w-7 h-7 rounded-full flex items-center justify-center transition-all duration-200 ${
-              isFavorite ? 'bg-red-500 text-white' : 'bg-white/80 text-gray-600'
-            } shadow-md`}
-          >
-            <Heart className={`w-3 h-3 ${isFavorite ? 'fill-current' : ''}`} />
-          </motion.button>
-        </div>
-
-        {/* Product Info */}
-        <CardContent className="p-3">
-          <div className="space-y-2">
-            {/* Product Name */}
-            <h3 className="font-semibold text-gray-900 line-clamp-2 text-sm leading-tight min-h-[2.5rem]">
-              {product.name}
-            </h3>
-
-            {/* Category */}
-            <Badge variant="outline" className="text-xs">
-              {product.category || 'গিফট'}
-            </Badge>
-
-            {/* Price and Rating */}
-            <div className="flex items-center justify-between">
-              <span className="text-base font-bold text-primary">
-                {formatPrice(price)}
-              </span>
-              
-              <div className="flex items-center gap-1">
-                <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
-                <span className="text-xs text-gray-600">5.0</span>
-              </div>
-            </div>
-
-
-          </div>
-        </CardContent>
-      </Card>
-    </motion.div>
-  );
-});
-
 // Compact Hero Section
 const CompactHeroSection = memo(function CompactHeroSection() {
   const [currentSlide, setCurrentSlide] = useState(0);
   
   const heroSlides = [
     {
-      title: "আপনার পছন্দের গিফট শপ",
-      subtitle: "বিশেষ মুহূর্তগুলোকে করুন আরও মধুর",
-      description: "৫০০+ পণ্য • দ্রুত ডেলিভারি • কাস্টমাইজেশন",
-      cta: "কেনাকাটা শুরু করুন",
-      gradient: "from-indigo-600 via-purple-600 to-pink-600"
+      title: "বিশেষ গিফট কালেকশন",
+      subtitle: "আপনার প্রিয়জনের জন্য নিখুঁত উপহার",
+      cta: "শপিং শুরু করুন",
+      bg: "from-gradient-start to-gradient-end",
+      image: "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"
     },
     {
-      title: "কাস্টমাইজড গিফট সল্যুশন",
-      subtitle: "আপনার কল্পনাকে বাস্তব করুন",
-      description: "ফটো প্রিন্ট • নাম লেখা • ইউনিক ডিজাইন",
-      cta: "কাস্টম অর্ডার",
-      gradient: "from-cyan-500 via-blue-600 to-indigo-600"
+      title: "ট্রেন্ডিং পণ্য",
+      subtitle: "সবচেয়ে জনপ্রিয় আইটেম এখানে",
+      cta: "এখনই দেখুন",
+      bg: "from-blue-600 to-purple-600",
+      image: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"
     },
     {
-      title: "সারাদেশে দ্রুত ডেলিভারি",
-      subtitle: "১-৩ দিনে পৌঁছে যাবে আপনার কাছে",
-      description: "নিরাপদ প্যাকেজিং • ট্র্যাকিং সুবিধা • রিটার্ন পলিসি",
+      title: "দ্রুত ডেলিভারি",
+      subtitle: "সারাদেশে ১-৩ দিনে পৌঁছে দিই",
       cta: "অর্ডার করুন",
-      gradient: "from-emerald-500 via-teal-600 to-cyan-600"
+      bg: "from-green-600 to-teal-600",
+      image: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"
     }
   ];
 
@@ -320,58 +69,54 @@ const CompactHeroSection = memo(function CompactHeroSection() {
   }, []);
 
   return (
-    <div className="relative h-[35vh] sm:h-[40vh] overflow-hidden rounded-xl mx-2 sm:mx-4 my-4">
+    <div className="relative h-[300px] sm:h-[400px] md:h-[500px] overflow-hidden">
       <AnimatePresence mode="wait">
         <motion.div
           key={currentSlide}
-          initial={{ opacity: 0, scale: 1.02 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 0.98 }}
-          transition={{ duration: 0.8 }}
-          className={`absolute inset-0 bg-gradient-to-br ${heroSlides[currentSlide].gradient}`}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 1 }}
+          className={`absolute inset-0 bg-gradient-to-br ${heroSlides[currentSlide].bg}`}
         >
-          {/* Content */}
-          <div className="relative h-full flex items-center justify-center text-center text-white p-4 sm:p-6">
+          <div className="absolute inset-0 bg-black/20" />
+          <div
+            className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-30"
+            style={{ backgroundImage: `url("${heroSlides[currentSlide].image}")` }}
+          />
+          
+          <div className="relative h-full flex items-center justify-center px-4 sm:px-6">
             <motion.div
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              className="max-w-3xl mx-auto"
+              transition={{ delay: 0.3, duration: 0.6 }}
+              className="text-center text-white max-w-4xl mx-auto"
             >
-              <motion.h1 
-                className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-3 sm:mb-4 leading-tight"
-                initial={{ y: 15, opacity: 0 }}
+              <motion.h1
+                initial={{ y: 20, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
-                transition={{ duration: 0.6, delay: 0.3 }}
+                transition={{ delay: 0.4, duration: 0.6 }}
+                className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-3 sm:mb-4 leading-tight"
               >
                 {heroSlides[currentSlide].title}
               </motion.h1>
               
-              <motion.h2 
-                className="text-sm sm:text-base md:text-lg lg:text-xl mb-2 sm:mb-3 font-medium opacity-95"
-                initial={{ y: 15, opacity: 0 }}
+              <motion.p
+                initial={{ y: 20, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
-                transition={{ duration: 0.6, delay: 0.4 }}
+                transition={{ delay: 0.5, duration: 0.6 }}
+                className="text-base sm:text-lg md:text-xl mb-6 sm:mb-8 text-white/90 max-w-2xl mx-auto"
               >
                 {heroSlides[currentSlide].subtitle}
-              </motion.h2>
-              
-              <motion.p 
-                className="text-xs sm:text-sm md:text-base mb-4 sm:mb-6 opacity-90 max-w-lg mx-auto"
-                initial={{ y: 15, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ duration: 0.6, delay: 0.5 }}
-              >
-                {heroSlides[currentSlide].description}
               </motion.p>
-              
+
               <motion.div
-                initial={{ y: 15, opacity: 0 }}
+                initial={{ y: 20, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
-                transition={{ duration: 0.6, delay: 0.6 }}
+                transition={{ delay: 0.6, duration: 0.6 }}
               >
                 <Button 
-                  size="lg" 
+                  size="lg"
                   className="bg-white text-gray-900 hover:bg-gray-100 font-bold py-2 sm:py-3 px-4 sm:px-6 rounded-full text-sm sm:text-base shadow-xl transform transition-all duration-300 hover:scale-105"
                 >
                   {heroSlides[currentSlide].cta}
@@ -424,8 +169,8 @@ const CompactFeaturesSection = memo(function CompactFeaturesSection() {
     },
     {
       icon: Heart,
-      title: "কাস্টমাইজেশন",
-      description: "আপনার পছন্দ অনুযায়ী",
+      title: "সেরা সেবা",
+      description: "গ্রাহক সন্তুষ্টি আমাদের অগ্রাধিকার",
       color: "from-orange-500 to-red-500"
     }
   ];
@@ -484,7 +229,7 @@ const CompactFeaturesSection = memo(function CompactFeaturesSection() {
   );
 });
 
-// Compact Search and Filter
+// Search and Filter Component
 const CompactSearchAndFilter = memo(function CompactSearchAndFilter({
   searchTerm,
   onSearchChange,
@@ -496,11 +241,11 @@ const CompactSearchAndFilter = memo(function CompactSearchAndFilter({
   onViewModeChange
 }: {
   searchTerm: string;
-  onSearchChange: (term: string) => void;
+  onSearchChange: (value: string) => void;
   selectedCategory: string;
-  onCategoryChange: (category: string) => void;
+  onCategoryChange: (value: string) => void;
   sortBy: string;
-  onSortChange: (sort: string) => void;
+  onSortChange: (value: string) => void;
   viewMode: "grid" | "list";
   onViewModeChange: (mode: "grid" | "list") => void;
 }) {
@@ -684,7 +429,7 @@ const ProductSkeleton = memo(function ProductSkeleton({ viewMode }: { viewMode: 
 });
 
 // Main Component
-export default function HomeProfessionalEcommerce() {
+export default function HomeCleanSimple() {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
@@ -897,7 +642,7 @@ export default function HomeProfessionalEcommerce() {
         </div>
       </section>
 
-      {/* Product Detail Modal */}
+      {/* Product Detail Modal - NO CUSTOMIZE FEATURES */}
       <UltraDynamicProductModal
         isOpen={!!selectedProduct}
         onClose={() => setSelectedProduct(null)}

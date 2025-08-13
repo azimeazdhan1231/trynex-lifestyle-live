@@ -13,7 +13,7 @@ import { UltraPerformanceLoader } from './components/ultra-performance-loader';
 import MobileResponsiveEnhancement from './components/mobile-responsive-enhancement';
 
 // Dynamic imports for better code splitting
-const Home = lazy(() => import("./pages/home-professional-ecommerce"));
+const Home = lazy(() => import("./pages/home-clean-simple"));
 const Product = lazy(() => import("./pages/product-enhanced"));
 const Products = lazy(() => import("./pages/products"));
 const Contact = lazy(() => import("./pages/contact"));
