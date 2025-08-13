@@ -13,9 +13,9 @@ import { UltraPerformanceLoader } from './components/ultra-performance-loader';
 import MobileResponsiveEnhancement from './components/mobile-responsive-enhancement';
 
 // Dynamic imports for better code splitting
-const Home = lazy(() => import("./pages/home-clean-simple"));
+const Home = lazy(() => import("./pages/home-modern"));
 const Product = lazy(() => import("./pages/product-enhanced"));
-const Products = lazy(() => import("./pages/products"));
+const Products = lazy(() => import("./pages/products-modern"));
 const Contact = lazy(() => import("./pages/contact"));
 const OrderTracking = lazy(() => import("./pages/tracking"));
 const Admin = lazy(() => import("./pages/admin"));
