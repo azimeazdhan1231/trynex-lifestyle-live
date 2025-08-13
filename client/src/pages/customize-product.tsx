@@ -31,7 +31,10 @@ import {
   Home,
   Search,
   User,
-  Menu
+  Menu,
+  Coffee,
+  Shirt,
+  ImageIcon
 } from "lucide-react";
 import { useCart } from "@/hooks/use-cart";
 
@@ -65,18 +68,6 @@ const CustomizePageHeader = () => {
                 পণ্যসমূহ
               </Button>
             </Link>
-            <Link href="/categories">
-              <Button variant="ghost" className="flex items-center gap-2">
-                <Menu className="w-4 h-4" />
-                ক্যাটেগরি
-              </Button>
-            </Link>
-            <Link href="/orders">
-              <Button variant="ghost" className="flex items-center gap-2">
-                <ShoppingCart className="w-4 h-4" />
-                অর্ডার ট্র্যাকিং
-              </Button>
-            </Link>
             <Link href="/contact">
               <Button variant="ghost" className="flex items-center gap-2">
                 <User className="w-4 h-4" />
@@ -97,33 +88,90 @@ const CustomizePageHeader = () => {
   );
 };
 
-// Available customization options
-const SIZES = [
-  { value: 'XS', label: 'XS', available: true },
-  { value: 'S', label: 'S (ছোট)', available: true },
-  { value: 'M', label: 'M (মাঝারি)', available: true },
-  { value: 'L', label: 'L (বড়)', available: true },
-  { value: 'XL', label: 'XL (অতিরিক্ত বড়)', available: true },
-  { value: 'XXL', label: 'XXL', available: true }
-];
+// Available customization options based on product type
+const PRODUCT_TYPES = {
+  'tshirt': {
+    name: 'টি-শার্ট',
+    icon: Shirt,
+    sizes: [
+      { value: 'XS', label: 'XS', price: 0 },
+      { value: 'S', label: 'S (ছোট)', price: 0 },
+      { value: 'M', label: 'M (মাঝারি)', price: 0 },
+      { value: 'L', label: 'L (বড়)', price: 0 },
+      { value: 'XL', label: 'XL (অতিরিক্ত বড়)', price: 50 },
+      { value: 'XXL', label: 'XXL', price: 100 }
+    ],
+    colors: [
+      { value: 'white', label: 'সাদা', hex: '#ffffff' },
+      { value: 'black', label: 'কালো', hex: '#000000' },
+      { value: 'red', label: 'লাল', hex: '#ef4444' },
+      { value: 'blue', label: 'নীল', hex: '#3b82f6' },
+      { value: 'green', label: 'সবুজ', hex: '#10b981' },
+      { value: 'yellow', label: 'হলুদ', hex: '#f59e0b' },
+      { value: 'purple', label: 'বেগুনি', hex: '#8b5cf6' },
+      { value: 'pink', label: 'গোলাপী', hex: '#ec4899' }
+    ],
+    printAreas: [
+      { value: 'front', label: 'সামনে', price: 0 },
+      { value: 'back', label: 'পিছনে', price: 50 },
+      { value: 'both', label: 'উভয় দিকে', price: 150 },
+      { value: 'sleeve', label: 'হাতায়', price: 100 }
+    ]
+  },
+  'mug': {
+    name: 'মগ',
+    icon: Coffee,
+    sizes: [
+      { value: 'standard', label: 'স্ট্যান্ডার্ড (11oz)', price: 0 },
+      { value: 'large', label: 'বড় (15oz)', price: 50 }
+    ],
+    colors: [
+      { value: 'white', label: 'সাদা', hex: '#ffffff' },
+      { value: 'black', label: 'কালো', hex: '#000000' },
+      { value: 'red', label: 'লাল', hex: '#ef4444' },
+      { value: 'blue', label: 'নীল', hex: '#3b82f6' },
+      { value: 'green', label: 'সবুজ', hex: '#10b981' }
+    ],
+    printAreas: [
+      { value: 'front', label: 'সামনে', price: 0 },
+      { value: 'both_sides', label: 'উভয় পাশে', price: 100 }
+    ]
+  },
+  'canvas': {
+    name: 'ফটো ক্যানভাস',
+    icon: ImageIcon,
+    sizes: [
+      { value: '8x10', label: '8"×10"', price: 0 },
+      { value: '11x14', label: '11"×14"', price: 200 },
+      { value: '16x20', label: '16"×20"', price: 400 },
+      { value: '20x24', label: '20"×24"', price: 600 }
+    ],
+    colors: [
+      { value: 'glossy', label: 'গ্লসি ফিনিশ', hex: '#ffffff' },
+      { value: 'matte', label: 'ম্যাট ফিনিশ', hex: '#f5f5f5' }
+    ],
+    printAreas: [
+      { value: 'full', label: 'সম্পূর্ণ ক্যানভাস', price: 0 }
+    ]
+  }
+};
 
-const COLORS = [
-  { value: 'white', label: 'সাদা', hex: '#ffffff', available: true },
-  { value: 'black', label: 'কালো', hex: '#000000', available: true },
-  { value: 'red', label: 'লাল', hex: '#ef4444', available: true },
-  { value: 'blue', label: 'নীল', hex: '#3b82f6', available: true },
-  { value: 'green', label: 'সবুজ', hex: '#10b981', available: true },
-  { value: 'yellow', label: 'হলুদ', hex: '#f59e0b', available: true },
-  { value: 'purple', label: 'বেগুনি', hex: '#8b5cf6', available: true },
-  { value: 'pink', label: 'গোলাপী', hex: '#ec4899', available: true }
-];
-
-const PRINT_AREAS = [
-  { value: 'front', label: 'সামনে' },
-  { value: 'back', label: 'পিছনে' },
-  { value: 'both', label: 'উভয় দিকে' },
-  { value: 'sleeve', label: 'হাতায়' }
-];
+// Function to detect product type from name
+const detectProductType = (productName: string): keyof typeof PRODUCT_TYPES => {
+  const name = productName.toLowerCase();
+  
+  if (name.includes('t-shirt') || name.includes('tshirt') || name.includes('টি-শার্ট') || name.includes('shirt')) {
+    return 'tshirt';
+  }
+  if (name.includes('mug') || name.includes('মগ') || name.includes('cup')) {
+    return 'mug';
+  }
+  if (name.includes('canvas') || name.includes('ক্যানভাস') || name.includes('photo') || name.includes('ছবি')) {
+    return 'canvas';
+  }
+  
+  return 'tshirt'; // Default to t-shirt
+};
 
 export default function CustomizeProduct() {
   const [match, params] = useRoute('/customize/:id');
@@ -159,22 +207,41 @@ export default function CustomizeProduct() {
     enabled: !!productId
   });
 
+  // Detect product type and get customization options
+  const productType = product ? detectProductType(product.name) : 'tshirt';
+  const customizationOptions = PRODUCT_TYPES[productType];
+
+  // Set default selections when product loads
+  useEffect(() => {
+    if (product && customizationOptions) {
+      if (!selectedSize && customizationOptions.sizes.length > 0) {
+        setSelectedSize(customizationOptions.sizes[0].value);
+      }
+      if (!selectedColor && customizationOptions.colors.length > 0) {
+        setSelectedColor(customizationOptions.colors[0].value);
+      }
+      if (!selectedPrintArea && customizationOptions.printAreas.length > 0) {
+        setSelectedPrintArea(customizationOptions.printAreas[0].value);
+      }
+    }
+  }, [product, customizationOptions]);
+
   const calculateCustomizationPrice = () => {
     let additionalPrice = 0;
     
     // Size-based pricing
-    if (selectedSize === 'XL') additionalPrice += 50;
-    if (selectedSize === 'XXL') additionalPrice += 100;
+    const sizeOption = customizationOptions.sizes.find(s => s.value === selectedSize);
+    if (sizeOption) additionalPrice += sizeOption.price;
+    
+    // Print area pricing
+    const printAreaOption = customizationOptions.printAreas.find(p => p.value === selectedPrintArea);
+    if (printAreaOption) additionalPrice += printAreaOption.price;
     
     // Custom text pricing
     if (customText.trim()) additionalPrice += 150;
     
     // Custom images pricing
     if (customImages.length > 0) additionalPrice += customImages.length * 100;
-    
-    // Print area pricing
-    if (selectedPrintArea === 'both') additionalPrice += 200;
-    if (selectedPrintArea === 'sleeve') additionalPrice += 100;
     
     return additionalPrice;
   };
@@ -283,9 +350,9 @@ export default function CustomizeProduct() {
       // Reset form
       setCustomImages([]);
       setQuantity(1);
-      setSelectedSize('');
-      setSelectedColor('');
-      setSelectedPrintArea('');
+      setSelectedSize(customizationOptions.sizes[0]?.value || '');
+      setSelectedColor(customizationOptions.colors[0]?.value || '');
+      setSelectedPrintArea(customizationOptions.printAreas[0]?.value || '');
       setCustomText('');
       setInstructions('');
       setCustomerInfo({ name: '', phone: '', email: '', address: '' });
@@ -312,6 +379,7 @@ export default function CustomizeProduct() {
     }
 
     const customizationData = {
+      productType,
       size: selectedSize,
       color: selectedColor,
       printArea: selectedPrintArea,
@@ -364,6 +432,7 @@ export default function CustomizeProduct() {
       productId: product.id,
       productName: product.name,
       productPrice: product.price,
+      productType,
       quantity,
       selectedSize,
       selectedColor,
@@ -419,6 +488,8 @@ export default function CustomizeProduct() {
     );
   }
 
+  const ProductTypeIcon = customizationOptions.icon;
+
   return (
     <>
       <CustomizePageHeader />
@@ -435,9 +506,9 @@ export default function CustomizeProduct() {
             
             <div className="bg-white rounded-xl shadow-lg p-6">
               <div className="flex items-center gap-3 mb-4">
-                <Zap className="w-8 h-8 text-yellow-500" />
+                <ProductTypeIcon className="w-8 h-8 text-yellow-500" />
                 <div>
-                  <h1 className="text-3xl font-bold text-gray-800">পণ্য কাস্টমাইজ করুন</h1>
+                  <h1 className="text-3xl font-bold text-gray-800">{customizationOptions.name} কাস্টমাইজ করুন</h1>
                   <p className="text-gray-600">আপনার পছন্দ অনুযায়ী ডিজাইন করুন</p>
                 </div>
               </div>
@@ -469,6 +540,12 @@ export default function CustomizeProduct() {
                     <Package className="w-5 h-5" />
                     {product.name}
                   </CardTitle>
+                  <div className="flex items-center gap-2">
+                    <Badge variant="secondary" className="flex items-center gap-1">
+                      <ProductTypeIcon className="w-3 h-3" />
+                      {customizationOptions.name}
+                    </Badge>
+                  </div>
                 </CardHeader>
                 <CardContent>
                   <div className="aspect-square bg-gray-100 rounded-lg mb-4 overflow-hidden">
@@ -480,7 +557,7 @@ export default function CustomizeProduct() {
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-gray-400">
-                        <Package className="w-16 h-16" />
+                        <ProductTypeIcon className="w-16 h-16" />
                       </div>
                     )}
                   </div>
@@ -508,28 +585,27 @@ export default function CustomizeProduct() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid grid-cols-3 gap-3">
-                    {SIZES.map((size) => (
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                    {customizationOptions.sizes.map((size) => (
                       <Button
                         key={size.value}
                         variant={selectedSize === size.value ? "default" : "outline"}
-                        className={`h-12 ${selectedSize === size.value ? 'bg-blue-600 text-white' : ''}`}
+                        className={`h-12 text-center ${selectedSize === size.value ? 'bg-blue-600 text-white' : ''}`}
                         onClick={() => setSelectedSize(size.value)}
-                        disabled={!size.available}
                       >
-                        {size.label}
-                        {(size.value === 'XL' || size.value === 'XXL') && (
-                          <span className="text-xs block">
-                            +{size.value === 'XL' ? '৫০' : '১০০'} টাকা
-                          </span>
-                        )}
+                        <div>
+                          <div className="text-sm font-medium">{size.label}</div>
+                          {size.price > 0 && (
+                            <div className="text-xs">+৳{size.price}</div>
+                          )}
+                        </div>
                       </Button>
                     ))}
                   </div>
                   {selectedSize && (
                     <p className="text-sm text-green-600 mt-2 flex items-center gap-1">
                       <CheckCircle className="w-4 h-4" />
-                      নির্বাচিত সাইজ: {SIZES.find(s => s.value === selectedSize)?.label}
+                      নির্বাচিত সাইজ: {customizationOptions.sizes.find(s => s.value === selectedSize)?.label}
                     </p>
                   )}
                 </CardContent>
@@ -540,25 +616,24 @@ export default function CustomizeProduct() {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Palette className="w-5 h-5" />
-                    রঙ নির্বাচন করুন *
+                    রঙ/ফিনিশ নির্বাচন করুন *
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid grid-cols-4 gap-3">
-                    {COLORS.map((color) => (
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    {customizationOptions.colors.map((color) => (
                       <Button
                         key={color.value}
                         variant="outline"
                         className={`h-16 relative ${selectedColor === color.value ? 'ring-2 ring-blue-500 ring-offset-2' : ''}`}
                         onClick={() => setSelectedColor(color.value)}
-                        disabled={!color.available}
                       >
                         <div className="flex flex-col items-center gap-2">
                           <div 
                             className="w-6 h-6 rounded-full border-2 border-gray-300"
                             style={{ backgroundColor: color.hex }}
                           />
-                          <span className="text-xs">{color.label}</span>
+                          <span className="text-xs text-center">{color.label}</span>
                         </div>
                       </Button>
                     ))}
@@ -566,7 +641,7 @@ export default function CustomizeProduct() {
                   {selectedColor && (
                     <p className="text-sm text-green-600 mt-2 flex items-center gap-1">
                       <CheckCircle className="w-4 h-4" />
-                      নির্বাচিত রঙ: {COLORS.find(c => c.value === selectedColor)?.label}
+                      নির্বাচিত: {customizationOptions.colors.find(c => c.value === selectedColor)?.label}
                     </p>
                   )}
                 </CardContent>
@@ -583,11 +658,10 @@ export default function CustomizeProduct() {
                       <SelectValue placeholder="প্রিন্ট এরিয়া নির্বাচন করুন" />
                     </SelectTrigger>
                     <SelectContent>
-                      {PRINT_AREAS.map((area) => (
+                      {customizationOptions.printAreas.map((area) => (
                         <SelectItem key={area.value} value={area.value}>
                           {area.label}
-                          {area.value === 'both' && ' (+২০০ টাকা)'}
-                          {area.value === 'sleeve' && ' (+১০০ টাকা)'}
+                          {area.price > 0 && ` (+৳${area.price})`}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -702,6 +776,23 @@ export default function CustomizeProduct() {
                     onChange={(e) => setInstructions(e.target.value)}
                     rows={4}
                   />
+                </CardContent>
+              </Card>
+
+              {/* Advance Payment Information */}
+              <Card className="shadow-lg bg-gradient-to-br from-orange-50 to-yellow-50 border-orange-200">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-orange-800">
+                    <Zap className="w-5 h-5" />
+                    অগ্রিম পেমেন্ট তথ্য
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3 text-orange-800">
+                  <div className="text-center p-4 bg-white/50 rounded-lg">
+                    <p className="text-lg font-bold">১০০ টাকা অগ্রিম</p>
+                    <p className="text-sm">bKash/Nagad: 01747292277</p>
+                    <p className="text-xs mt-1">পেমেন্ট করার পর অর্ডার করুন</p>
+                  </div>
                 </CardContent>
               </Card>
 
