@@ -297,7 +297,7 @@ export default function PremiumHomePage() {
                     দ্রুত ডেলিভারি
                   </h3>
                   <p className="premium-text-muted">
-                    ঢাকার মধ্যে ২৪ ঘন্টা এবং ঢাকার বাইরে ৪৮ ঘন্টার মধ্যে পণ্য পৌঁছে দেওয়া হয়
+                    ঢাকার মধ্যে ২ৄ ঘন্টা এবং ঢাকার বাইরে ৪৮ ঘন্টার মধ্যে পণ্য পৌঁছে দেওয়া হয়
                   </p>
                 </div>
                 
@@ -306,28 +306,66 @@ export default function PremiumHomePage() {
                     <Shield className="w-8 h-8 text-white" />
                   </div>
                   <h3 className="text-xl font-semibold premium-heading mb-4">
-                    গুণগত মান নিশ্চয়তা
+                    নিরাপদ পেমেন্ট
                   </h3>
                   <p className="premium-text-muted">
-                    আমাদের সব পণ্যই উচ্চ মানের এবং গুণগত মানের নিশ্চয়তা দেওয়া হয়
+                    ক্যাশ অন ডেলিভারি এবং বিকাশ/নগদ/রকেটের মাধ্যমে সহজ ও নিরাপদ পেমেন্ট
                   </p>
                 </div>
                 
                 <div className="premium-card p-8 text-center">
                   <div className="premium-button-primary rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-6">
-                    <MessageCircle className="w-8 h-8 text-white" />
+                    <Phone className="w-8 h-8 text-white" />
                   </div>
                   <h3 className="text-xl font-semibold premium-heading mb-4">
                     ২৪/৭ সাপোর্ট
                   </h3>
                   <p className="premium-text-muted">
-                    যেকোনো সময় WhatsApp বা ফোনের মাধ্যমে আমাদের সাথে যোগাযোগ করতে পারেন
+                    যে কোনো সমস্যায় আমাদের কাস্টমার সাপোর্ট টিম সবসময় আপনার পাশে আছে
                   </p>
                 </div>
               </div>
             </div>
           </div>
         </section>
+
+        {/* Latest Products */}
+        {latestProducts.length > 0 && (
+          <section className="container mx-auto px-4">
+            <div className="space-y-8">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-3xl md:text-4xl font-bold premium-heading mb-2">
+                    নতুন পণ্য
+                  </h2>
+                  <p className="premium-text-muted">সদ্য এসেছে আমাদের সংগ্রহে</p>
+                </div>
+                <Link href="/products?latest=true">
+                  <Button variant="outline" className="premium-button-secondary">
+                    আরো দেখুন
+                    <ArrowRight className="w-4 h-4 ml-2" />
+                  </Button>
+                </Link>
+              </div>
+              
+              {productsLoading ? (
+                <PremiumLoadingSkeleton count={8} />
+              ) : (
+                <div className="premium-grid premium-grid-responsive">
+                  {latestProducts.map((product: Product) => (
+                    <PremiumProductCard
+                      key={product.id}
+                      product={product}
+                      onViewDetails={handleViewProduct}
+                      onCustomize={handleCustomizeProduct}
+                      className="premium-bounce-in"
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+          </section>
+        )}
 
         {/* Best Selling Products */}
         {bestSellingProducts.length > 0 && (
