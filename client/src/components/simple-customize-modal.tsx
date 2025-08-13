@@ -143,42 +143,45 @@ export default function SimpleCustomizeModal({ product, isOpen, onClose }: Simpl
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-6xl max-h-[95vh] w-[calc(100vw-32px)] p-0 overflow-hidden bg-white">
-        <DialogHeader className="px-8 py-6 bg-gradient-to-r from-orange-50 to-red-50 border-b">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-red-500 rounded-full flex items-center justify-center">
-                <Palette className="w-6 h-6 text-white" />
+      <DialogContent className="max-w-[95vw] sm:max-w-4xl lg:max-w-7xl max-h-[98vh] w-full p-0 overflow-hidden bg-white mx-2 sm:mx-4">
+        <DialogHeader className="px-4 sm:px-6 lg:px-8 py-4 sm:py-6 bg-gradient-to-r from-orange-50 to-red-50 border-b sticky top-0 z-10">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="flex items-center gap-3 sm:gap-4 flex-1 min-w-0">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-orange-500 to-red-500 rounded-full flex items-center justify-center flex-shrink-0">
+                <Palette className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
               </div>
-              <div>
-                <DialogTitle className="text-2xl font-bold text-gray-900 mb-1">
+              <div className="min-w-0 flex-1">
+                <DialogTitle className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 mb-1 truncate">
                   {product.name} কাস্টমাইজ করুন
                 </DialogTitle>
-                <DialogDescription className="text-gray-600">
+                <DialogDescription className="text-sm sm:text-base text-gray-600 hidden sm:block">
                   আপনার পছন্দ অনুযায়ী পণ্যটি সাজিয়ে নিন এবং দেখুন কেমন লাগছে
                 </DialogDescription>
               </div>
             </div>
             
-            <div className="flex items-center gap-4">
-              <Badge className="bg-green-500 text-white px-4 py-2 text-lg font-bold">
+            <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
+              <Badge className="bg-green-500 text-white px-3 py-1.5 sm:px-4 sm:py-2 text-sm sm:text-lg font-bold">
                 মোট: {formatPrice(totalPrice)}
               </Badge>
-              <Button variant="ghost" size="sm" onClick={onClose} className="text-gray-500 hover:text-gray-700">
-                <X className="w-6 h-6" />
+              <Button variant="ghost" size="sm" onClick={onClose} className="text-gray-500 hover:text-gray-700 p-2">
+                <X className="w-5 h-5 sm:w-6 sm:h-6" />
               </Button>
             </div>
           </div>
         </DialogHeader>
 
         <div className="flex-1 overflow-y-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 p-8">
-            {/* Left Side - Product Preview */}
-            <div className="space-y-6">
-              {/* Main Product Image with Customization Preview */}
-              <Card className="overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100">
+          {/* Mobile-First Responsive Layout */}
+          <div className="flex flex-col lg:grid lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8 p-4 sm:p-6 lg:p-8">
+            
+            {/* Product Preview Section */}
+            <div className="order-1 lg:order-1 space-y-4 sm:space-y-6">
+              
+              {/* Main Product Image with Live Preview */}
+              <Card className="overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100 shadow-lg">
                 <CardContent className="p-0">
-                  <div className="aspect-square relative bg-white">
+                  <div className="aspect-square sm:aspect-[4/3] lg:aspect-square relative bg-white">
                     <img
                       src={product.image_url || "https://images.unsplash.com/photo-1544787219-7f47ccb76574?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"}
                       alt={product.name}
@@ -188,17 +191,17 @@ export default function SimpleCustomizeModal({ product, isOpen, onClose }: Simpl
                     {/* Color Overlay Effect */}
                     {customization.color !== '#FFFFFF' && (
                       <div 
-                        className="absolute inset-0 mix-blend-multiply opacity-20 pointer-events-none"
+                        className="absolute inset-0 mix-blend-multiply opacity-25 pointer-events-none transition-all duration-300"
                         style={{ backgroundColor: customization.color }}
                       />
                     )}
                     
                     {/* Custom Text Preview */}
                     {customization.text && (
-                      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                        <div className="bg-white/95 backdrop-blur-sm px-6 py-3 rounded-lg shadow-xl border-2 border-orange-200">
+                      <div className="absolute inset-0 flex items-center justify-center pointer-events-none p-4">
+                        <div className="bg-white/95 backdrop-blur-sm px-4 py-2 sm:px-6 sm:py-3 rounded-lg shadow-xl border-2 border-orange-200 max-w-[80%]">
                           <span 
-                            className="font-bold text-xl"
+                            className="font-bold text-lg sm:text-xl lg:text-2xl text-center break-words"
                             style={{ color: customization.color === '#FFFFFF' ? '#000000' : customization.color }}
                           >
                             {customization.text}
@@ -209,37 +212,57 @@ export default function SimpleCustomizeModal({ product, isOpen, onClose }: Simpl
 
                     {/* Engraving Preview */}
                     {customization.engraving && (
-                      <div className="absolute bottom-4 right-4 bg-black/80 text-white px-3 py-1 rounded text-sm">
+                      <div className="absolute bottom-2 right-2 sm:bottom-4 sm:right-4 bg-black/80 text-white px-2 py-1 sm:px-3 sm:py-1 rounded text-xs sm:text-sm">
                         খোদাই: {customization.engraving}
                       </div>
                     )}
+
+                    {/* Size Indicator */}
+                    <div className="absolute top-2 left-2 sm:top-4 sm:left-4 bg-white/90 backdrop-blur-sm px-2 py-1 sm:px-3 sm:py-1 rounded text-xs sm:text-sm font-medium">
+                      {selectedSize?.label}
+                    </div>
                   </div>
                 </CardContent>
               </Card>
 
-              {/* Customization Summary */}
-              <Card>
-                <CardContent className="p-6">
-                  <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
+              {/* Price Summary - Always Visible on Mobile */}
+              <Card className="lg:hidden bg-gradient-to-r from-green-50 to-emerald-50 border-green-200">
+                <CardContent className="p-4">
+                  <div className="text-center">
+                    <div className="text-2xl sm:text-3xl font-bold text-green-600 mb-2">
+                      {formatPrice(totalPrice)}
+                    </div>
+                    <div className="text-sm text-gray-600">
+                      {customization.quantity > 1 && `${customization.quantity}টি × ${formatPrice(subtotal)} = `}
+                      সর্বমোট দাম
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Detailed Price Breakdown - Hidden by default on mobile */}
+              <Card className="hidden sm:block">
+                <CardContent className="p-4 sm:p-6">
+                  <h3 className="font-bold text-base sm:text-lg mb-4 flex items-center gap-2">
                     <CheckCircle className="w-5 h-5 text-green-500" />
                     কাস্টমাইজেশন সারাংশ
                   </h3>
                   
-                  <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
                     <div className="space-y-2">
-                      <div className="flex justify-between">
+                      <div className="flex justify-between items-center">
                         <span className="text-gray-600">সাইজ:</span>
-                        <span className="font-medium">{selectedSize?.label}</span>
+                        <span className="font-medium text-right">{selectedSize?.label}</span>
                       </div>
-                      <div className="flex justify-between">
+                      <div className="flex justify-between items-center">
                         <span className="text-gray-600">উপাদান:</span>
-                        <span className="font-medium">{selectedMaterial?.label}</span>
+                        <span className="font-medium text-right">{selectedMaterial?.label}</span>
                       </div>
-                      <div className="flex justify-between">
+                      <div className="flex justify-between items-center">
                         <span className="text-gray-600">রং:</span>
                         <div className="flex items-center gap-2">
                           <div 
-                            className="w-4 h-4 rounded border border-gray-300"
+                            className="w-4 h-4 rounded border border-gray-300 flex-shrink-0"
                             style={{ backgroundColor: customization.color }}
                           />
                           <span className="font-medium">{selectedColor?.name}</span>
@@ -248,15 +271,15 @@ export default function SimpleCustomizeModal({ product, isOpen, onClose }: Simpl
                     </div>
 
                     <div className="space-y-2">
-                      <div className="flex justify-between">
+                      <div className="flex justify-between items-center">
                         <span className="text-gray-600">পরিমাণ:</span>
                         <span className="font-medium">{customization.quantity}টি</span>
                       </div>
-                      <div className="flex justify-between">
+                      <div className="flex justify-between items-center">
                         <span className="text-gray-600">কাস্টম টেক্সট:</span>
                         <span className="font-medium">{customization.text ? 'হ্যাঁ' : 'না'}</span>
                       </div>
-                      <div className="flex justify-between">
+                      <div className="flex justify-between items-center">
                         <span className="text-gray-600">খোদাই:</span>
                         <span className="font-medium">{customization.engraving ? 'হ্যাঁ' : 'না'}</span>
                       </div>
@@ -269,46 +292,46 @@ export default function SimpleCustomizeModal({ product, isOpen, onClose }: Simpl
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between">
                       <span>মূল দাম:</span>
-                      <span>{formatPrice(basePrice)}</span>
+                      <span className="font-medium">{formatPrice(basePrice)}</span>
                     </div>
                     
                     {sizePrice > 0 && (
                       <div className="flex justify-between text-blue-600">
                         <span>সাইজ চার্জ ({selectedSize?.label}):</span>
-                        <span>+{formatPrice(sizePrice)}</span>
+                        <span className="font-medium">+{formatPrice(sizePrice)}</span>
                       </div>
                     )}
                     
                     {materialPrice > 0 && (
                       <div className="flex justify-between text-purple-600">
                         <span>উপাদান চার্জ ({selectedMaterial?.label}):</span>
-                        <span>+{formatPrice(materialPrice)}</span>
+                        <span className="font-medium">+{formatPrice(materialPrice)}</span>
                       </div>
                     )}
                     
                     {textPrice > 0 && (
                       <div className="flex justify-between text-orange-600">
                         <span>কাস্টম টেক্সট:</span>
-                        <span>+{formatPrice(textPrice)}</span>
+                        <span className="font-medium">+{formatPrice(textPrice)}</span>
                       </div>
                     )}
                     
                     {engravingPrice > 0 && (
                       <div className="flex justify-between text-red-600">
                         <span>খোদাই:</span>
-                        <span>+{formatPrice(engravingPrice)}</span>
+                        <span className="font-medium">+{formatPrice(engravingPrice)}</span>
                       </div>
                     )}
 
                     <Separator />
                     
-                    <div className="flex justify-between font-bold text-lg">
+                    <div className="flex justify-between font-bold text-base sm:text-lg">
                       <span>প্রতিটির দাম:</span>
                       <span className="text-green-600">{formatPrice(subtotal)}</span>
                     </div>
                     
                     {customization.quantity > 1 && (
-                      <div className="flex justify-between font-bold text-xl text-green-600">
+                      <div className="flex justify-between font-bold text-lg sm:text-xl text-green-600">
                         <span>মোট ({customization.quantity}টি):</span>
                         <span>{formatPrice(totalPrice)}</span>
                       </div>
@@ -318,40 +341,38 @@ export default function SimpleCustomizeModal({ product, isOpen, onClose }: Simpl
               </Card>
             </div>
 
-            {/* Right Side - Customization Options */}
-            <div className="space-y-6"
-              data-testid="customization-panel"
-            >
+            {/* Customization Options */}
+            <div className="order-2 lg:order-2 space-y-4 sm:space-y-6" data-testid="customization-panel">
 
               {/* Size Selection */}
-              <Card>
-                <CardContent className="p-6">
-                  <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
-                    <Shirt className="w-5 h-5 text-blue-500" />
+              <Card className="shadow-sm">
+                <CardContent className="p-4 sm:p-6">
+                  <h3 className="font-bold text-base sm:text-lg mb-3 sm:mb-4 flex items-center gap-2">
+                    <Shirt className="w-4 h-4 sm:w-5 sm:h-5 text-blue-500" />
                     সাইজ নির্বাচন করুন
                   </h3>
                   
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3">
                     {sizeOptions.map((size) => (
                       <button
                         key={size.value}
                         onClick={() => setCustomization(prev => ({ ...prev, size: size.value }))}
-                        className={`p-4 rounded-lg border-2 transition-all text-left ${
+                        className={`p-3 sm:p-4 rounded-lg border-2 transition-all duration-200 text-left ${
                           customization.size === size.value
-                            ? 'border-orange-500 bg-orange-50 shadow-md'
+                            ? 'border-orange-500 bg-orange-50 shadow-md scale-[1.02]'
                             : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
                         }`}
                         data-testid={`size-option-${size.value}`}
                       >
-                        <div className="flex justify-between items-start mb-2">
-                          <span className="font-semibold">{size.label}</span>
+                        <div className="flex justify-between items-start mb-1 sm:mb-2">
+                          <span className="font-semibold text-sm sm:text-base">{size.label}</span>
                           {customization.size === size.value && (
-                            <CheckCircle className="w-5 h-5 text-orange-500" />
+                            <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-orange-500 flex-shrink-0" />
                           )}
                         </div>
-                        <div className="text-sm text-gray-600 mb-1">{size.description}</div>
+                        <div className="text-xs sm:text-sm text-gray-600 mb-1">{size.description}</div>
                         {size.price > 0 && (
-                          <div className="text-sm font-medium text-green-600">
+                          <div className="text-xs sm:text-sm font-medium text-green-600">
                             +{formatPrice(size.price)}
                           </div>
                         )}
@@ -362,33 +383,33 @@ export default function SimpleCustomizeModal({ product, isOpen, onClose }: Simpl
               </Card>
 
               {/* Color Selection */}
-              <Card>
-                <CardContent className="p-6">
-                  <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
-                    <Palette className="w-5 h-5 text-purple-500" />
+              <Card className="shadow-sm">
+                <CardContent className="p-4 sm:p-6">
+                  <h3 className="font-bold text-base sm:text-lg mb-3 sm:mb-4 flex items-center gap-2">
+                    <Palette className="w-4 h-4 sm:w-5 sm:h-5 text-purple-500" />
                     রং নির্বাচন করুন
                   </h3>
                   
-                  <div className="grid grid-cols-4 gap-4">
+                  <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-4 gap-2 sm:gap-3 lg:gap-4">
                     {colorOptions.map((color) => (
                       <button
                         key={color.value}
                         onClick={() => setCustomization(prev => ({ ...prev, color: color.value }))}
-                        className={`relative p-3 rounded-lg border-2 transition-all ${
+                        className={`relative p-2 sm:p-3 rounded-lg border-2 transition-all duration-200 ${
                           customization.color === color.value
-                            ? 'border-orange-500 ring-2 ring-orange-200 shadow-lg'
+                            ? 'border-orange-500 ring-2 ring-orange-200 shadow-lg scale-[1.05]'
                             : 'border-gray-200 hover:border-gray-300 hover:shadow-md'
                         }`}
                         data-testid={`color-option-${color.value}`}
                       >
                         <div 
-                          className="w-full aspect-square rounded-md mb-2"
+                          className="w-full aspect-square rounded-md mb-1 sm:mb-2 border border-gray-200"
                           style={{ backgroundColor: color.hex }}
                         />
-                        <div className="text-sm font-medium text-center">{color.name}</div>
+                        <div className="text-xs sm:text-sm font-medium text-center leading-tight">{color.name}</div>
                         {customization.color === color.value && (
-                          <div className="absolute top-2 right-2">
-                            <CheckCircle className="w-4 h-4 text-orange-500 bg-white rounded-full" />
+                          <div className="absolute -top-1 -right-1 sm:top-1 sm:right-1">
+                            <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-orange-500 bg-white rounded-full shadow-sm" />
                           </div>
                         )}
                       </button>
@@ -398,36 +419,36 @@ export default function SimpleCustomizeModal({ product, isOpen, onClose }: Simpl
               </Card>
 
               {/* Material Selection */}
-              <Card>
-                <CardContent className="p-6">
-                  <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
-                    <Star className="w-5 h-5 text-yellow-500" />
+              <Card className="shadow-sm">
+                <CardContent className="p-4 sm:p-6">
+                  <h3 className="font-bold text-base sm:text-lg mb-3 sm:mb-4 flex items-center gap-2">
+                    <Star className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-500" />
                     উপাদান নির্বাচন করুন
                   </h3>
                   
-                  <div className="space-y-3">
+                  <div className="space-y-2 sm:space-y-3">
                     {materialOptions.map((material) => (
                       <button
                         key={material.value}
                         onClick={() => setCustomization(prev => ({ ...prev, material: material.value }))}
-                        className={`w-full p-4 rounded-lg border-2 transition-all text-left ${
+                        className={`w-full p-3 sm:p-4 rounded-lg border-2 transition-all duration-200 text-left ${
                           customization.material === material.value
-                            ? 'border-orange-500 bg-orange-50 shadow-md'
+                            ? 'border-orange-500 bg-orange-50 shadow-md scale-[1.01]'
                             : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
                         }`}
                         data-testid={`material-option-${material.value}`}
                       >
-                        <div className="flex justify-between items-center">
-                          <div>
-                            <div className="font-semibold">{material.label}</div>
-                            <div className="text-sm text-gray-600">গুণমান: {material.quality}</div>
+                        <div className="flex justify-between items-center gap-4">
+                          <div className="flex-1 min-w-0">
+                            <div className="font-semibold text-sm sm:text-base">{material.label}</div>
+                            <div className="text-xs sm:text-sm text-gray-600">গুণমান: {material.quality}</div>
                           </div>
-                          <div className="text-right">
+                          <div className="text-right flex-shrink-0 flex flex-col items-end gap-1">
                             {material.price > 0 && (
-                              <div className="font-medium text-green-600">+{formatPrice(material.price)}</div>
+                              <div className="font-medium text-green-600 text-sm">+{formatPrice(material.price)}</div>
                             )}
                             {customization.material === material.value && (
-                              <CheckCircle className="w-5 h-5 text-orange-500 mt-1" />
+                              <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-orange-500" />
                             )}
                           </div>
                         </div>
@@ -438,16 +459,16 @@ export default function SimpleCustomizeModal({ product, isOpen, onClose }: Simpl
               </Card>
 
               {/* Text Customization */}
-              <Card>
-                <CardContent className="p-6">
-                  <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
-                    <Type className="w-5 h-5 text-green-500" />
+              <Card className="shadow-sm">
+                <CardContent className="p-4 sm:p-6">
+                  <h3 className="font-bold text-base sm:text-lg mb-3 sm:mb-4 flex items-center gap-2">
+                    <Type className="w-4 h-4 sm:w-5 sm:h-5 text-green-500" />
                     টেক্সট কাস্টমাইজেশন
                   </h3>
                   
-                  <div className="space-y-4">
+                  <div className="space-y-3 sm:space-y-4">
                     <div>
-                      <Label className="text-base font-medium mb-2 block">
+                      <Label className="text-sm sm:text-base font-medium mb-2 block">
                         কাস্টম টেক্সট (+১২০ টাকা)
                       </Label>
                       <Input
@@ -455,16 +476,16 @@ export default function SimpleCustomizeModal({ product, isOpen, onClose }: Simpl
                         value={customization.text}
                         onChange={(e) => setCustomization(prev => ({ ...prev, text: e.target.value }))}
                         maxLength={50}
-                        className="text-lg h-12"
+                        className="text-base sm:text-lg h-10 sm:h-12"
                         data-testid="custom-text-input"
                       />
-                      <div className="text-sm text-gray-500 mt-1">
+                      <div className="text-xs sm:text-sm text-gray-500 mt-1">
                         {customization.text.length}/50 অক্ষর
                       </div>
                     </div>
 
                     <div>
-                      <Label className="text-base font-medium mb-2 block">
+                      <Label className="text-sm sm:text-base font-medium mb-2 block">
                         খোদাই (+২০০ টাকা)
                       </Label>
                       <Input
@@ -472,10 +493,10 @@ export default function SimpleCustomizeModal({ product, isOpen, onClose }: Simpl
                         value={customization.engraving}
                         onChange={(e) => setCustomization(prev => ({ ...prev, engraving: e.target.value }))}
                         maxLength={30}
-                        className="h-12"
+                        className="h-10 sm:h-12"
                         data-testid="engraving-input"
                       />
-                      <div className="text-sm text-gray-500 mt-1">
+                      <div className="text-xs sm:text-sm text-gray-500 mt-1">
                         {customization.engraving.length}/30 অক্ষর
                       </div>
                     </div>
@@ -484,11 +505,11 @@ export default function SimpleCustomizeModal({ product, isOpen, onClose }: Simpl
               </Card>
 
               {/* Quantity & Notes */}
-              <Card>
-                <CardContent className="p-6 space-y-6">
+              <Card className="shadow-sm">
+                <CardContent className="p-4 sm:p-6 space-y-4 sm:space-y-6">
                   <div>
-                    <Label className="text-base font-medium mb-3 block">পরিমাণ</Label>
-                    <div className="flex items-center justify-center gap-4">
+                    <Label className="text-sm sm:text-base font-medium mb-3 block">পরিমাণ</Label>
+                    <div className="flex items-center justify-center gap-3 sm:gap-4">
                       <Button
                         variant="outline"
                         size="lg"
@@ -497,14 +518,14 @@ export default function SimpleCustomizeModal({ product, isOpen, onClose }: Simpl
                           quantity: Math.max(1, prev.quantity - 1) 
                         }))}
                         disabled={customization.quantity <= 1}
-                        className="w-12 h-12"
+                        className="w-10 h-10 sm:w-12 sm:h-12 flex-shrink-0"
                         data-testid="quantity-decrease"
                       >
-                        <Minus className="w-5 h-5" />
+                        <Minus className="w-4 h-4 sm:w-5 sm:h-5" />
                       </Button>
                       
-                      <div className="bg-gray-50 px-6 py-3 rounded-lg">
-                        <span className="font-bold text-2xl text-center block min-w-[3ch]">
+                      <div className="bg-gray-50 px-4 py-2 sm:px-6 sm:py-3 rounded-lg min-w-[60px] sm:min-w-[80px]">
+                        <span className="font-bold text-xl sm:text-2xl text-center block">
                           {customization.quantity}
                         </span>
                       </div>
@@ -516,26 +537,26 @@ export default function SimpleCustomizeModal({ product, isOpen, onClose }: Simpl
                           ...prev, 
                           quantity: prev.quantity + 1 
                         }))}
-                        className="w-12 h-12"
+                        className="w-10 h-10 sm:w-12 sm:h-12 flex-shrink-0"
                         data-testid="quantity-increase"
                       >
-                        <Plus className="w-5 h-5" />
+                        <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
                       </Button>
                     </div>
                   </div>
 
                   <div>
-                    <Label className="text-base font-medium mb-2 block">বিশেষ নির্দেশনা</Label>
+                    <Label className="text-sm sm:text-base font-medium mb-2 block">বিশেষ নির্দেশনা</Label>
                     <Textarea
                       placeholder="কোনো বিশেষ নির্দেশনা থাকলে এখানে লিখুন..."
                       value={customization.notes}
                       onChange={(e) => setCustomization(prev => ({ ...prev, notes: e.target.value }))}
-                      rows={4}
-                      className="resize-none"
+                      rows={3}
+                      className="resize-none text-sm sm:text-base"
                       maxLength={200}
                       data-testid="special-notes"
                     />
-                    <div className="text-sm text-gray-500 mt-1">
+                    <div className="text-xs sm:text-sm text-gray-500 mt-1">
                       {customization.notes.length}/200 অক্ষর
                     </div>
                   </div>
@@ -545,44 +566,48 @@ export default function SimpleCustomizeModal({ product, isOpen, onClose }: Simpl
           </div>
         </div>
 
-        {/* Footer with Actions */}
-        <div className="px-8 py-6 bg-gray-50 border-t">
-          <div className="flex items-center justify-between">
-            <div className="text-left">
-              <div className="text-3xl font-bold text-gray-900 mb-1">
+        {/* Sticky Footer with Actions */}
+        <div className="px-4 sm:px-6 lg:px-8 py-4 sm:py-6 bg-gradient-to-r from-gray-50 to-gray-100 border-t sticky bottom-0 z-10">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+            
+            {/* Total Price - Always visible */}
+            <div className="text-center sm:text-left">
+              <div className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">
                 {formatPrice(totalPrice)}
               </div>
-              <div className="text-sm text-gray-600">
+              <div className="text-xs sm:text-sm text-gray-600">
                 {customization.quantity > 1 && `${customization.quantity}টি × ${formatPrice(subtotal)} = `}
                 সর্বমোট দাম
               </div>
             </div>
 
-            <div className="flex items-center gap-4">
+            {/* Action Buttons */}
+            <div className="flex items-center gap-3 sm:gap-4 w-full sm:w-auto">
               <Button 
                 variant="outline" 
                 onClick={onClose} 
-                className="min-w-[120px] h-12"
+                className="flex-1 sm:flex-initial min-w-[100px] sm:min-w-[120px] h-10 sm:h-12 text-sm sm:text-base"
                 disabled={isProcessing}
               >
-                বাতিল করুন
+                বাতিল
               </Button>
               
               <Button 
                 onClick={handleAddToCart} 
-                className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white min-w-[200px] h-12 text-lg font-semibold shadow-lg"
+                className="flex-1 sm:flex-initial bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white min-w-[140px] sm:min-w-[200px] h-10 sm:h-12 text-sm sm:text-lg font-semibold shadow-lg"
                 disabled={isProcessing}
                 data-testid="add-to-cart-final"
               >
                 {isProcessing ? (
                   <div className="flex items-center gap-2">
                     <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    প্রসেসিং...
+                    <span className="hidden sm:inline">প্রসেসিং...</span>
                   </div>
                 ) : (
                   <>
-                    <ShoppingCart className="w-5 h-5 mr-2" />
-                    কার্টে যোগ করুন
+                    <ShoppingCart className="w-4 h-4 sm:w-5 sm:h-5 sm:mr-2" />
+                    <span className="hidden sm:inline">কার্টে যোগ করুন</span>
+                    <span className="sm:hidden">কার্ট</span>
                   </>
                 )}
               </Button>
