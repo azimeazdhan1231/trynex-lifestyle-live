@@ -17,7 +17,8 @@ import {
   ArrowUpDown
 } from "lucide-react";
 import PremiumLayout from "@/components/premium-layout";
-import PremiumProductCard from "@/components/premium-unified-product-card";
+import PerfectResponsiveProductCard from "@/components/perfect-responsive-product-card";
+import { PerfectProductGrid } from "@/components/perfect-product-grid";
 import PremiumProductDetailModal from "@/components/premium-product-detail-modal";
 import PremiumLoadingSkeleton from "@/components/premium-loading-system";
 import PerfectCustomizeModal from "@/components/perfect-customize-modal";
@@ -407,19 +408,31 @@ export default function PremiumProductsPage() {
               </div>
             </Card>
           ) : (
-            <div className={`${viewMode === "list" ? "space-y-4" : "premium-grid premium-grid-responsive"}`}>
-              {filteredProducts.map((product: Product, index) => (
-                <PremiumProductCard
-                  key={product.id}
-                  product={product}
-                  variant={viewMode}
-                  onViewDetails={handleViewProduct}
-                  onCustomize={handleCustomizeProduct}
-                  className="premium-fade-in"
-                  style={{ animationDelay: `${index * 50}ms` }}
-                />
-              ))}
-            </div>
+            viewMode === "list" ? (
+              <div className="space-y-4">
+                {filteredProducts.map((product: Product, index) => (
+                  <PerfectResponsiveProductCard
+                    key={product.id}
+                    product={product}
+                    onViewDetails={handleViewProduct}
+                    onCustomize={handleCustomizeProduct}
+                    className="premium-fade-in"
+                  />
+                ))}
+              </div>
+            ) : (
+              <PerfectProductGrid>
+                {filteredProducts.map((product: Product, index) => (
+                  <PerfectResponsiveProductCard
+                    key={product.id}
+                    product={product}
+                    onViewDetails={handleViewProduct}
+                    onCustomize={handleCustomizeProduct}
+                    className="premium-fade-in"
+                  />
+                ))}
+              </PerfectProductGrid>
+            )
           )}
         </div>
 

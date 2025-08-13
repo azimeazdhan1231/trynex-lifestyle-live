@@ -4,24 +4,123 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Unified Product Card Heights */
-.uniform-product-card {
-  height: 420px !important;
-  min-height: 420px !important;
-  display: flex !important;
-  flex-direction: column !important;
+/* Perfect Product Grid System */
+.perfect-product-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
 }
 
-.uniform-product-card .card-content {
-  flex: 1 !important;
-  display: flex !important;
-  flex-direction: column !important;
+/* Mobile first responsive breakpoints */
+@media (max-width: 640px) {
+  .perfect-product-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+  }
 }
 
-.uniform-product-card .card-content > div {
-  display: flex !important;
-  flex-direction: column !important;
-  flex: 1 !important;
+@media (min-width: 641px) and (max-width: 768px) {
+  .perfect-product-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  .perfect-product-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.25rem;
+  }
+}
+
+@media (min-width: 1025px) and (max-width: 1280px) {
+  .perfect-product-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
+  }
+}
+
+@media (min-width: 1281px) and (max-width: 1536px) {
+  .perfect-product-grid {
+    grid-template-columns: repeat(5, 1fr);
+    gap: 1.5rem;
+  }
+}
+
+@media (min-width: 1537px) {
+  .perfect-product-grid {
+    grid-template-columns: repeat(6, 1fr);
+    gap: 2rem;
+  }
+}
+
+/* Perfect Product Card */
+.perfect-product-card {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  min-height: 380px;
+}
+
+/* Mobile product card adjustments */
+@media (max-width: 640px) {
+  .perfect-product-card {
+    min-height: 320px;
+  }
+}
+
+/* Ensure all cards have same height in grid */
+.perfect-product-grid .perfect-product-card {
+  height: auto;
+}
+
+/* Text truncation utilities */
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Premium Grid Classes for backward compatibility */
+.premium-grid {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.premium-grid-responsive {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+@media (min-width: 768px) {
+  .premium-grid-responsive {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .premium-grid-responsive {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+@media (min-width: 1280px) {
+  .premium-grid-responsive {
+    grid-template-columns: repeat(5, 1fr);
+  }
+}
+
+@media (min-width: 1536px) {
+  .premium-grid-responsive {
+    grid-template-columns: repeat(6, 1fr);
+  }
 }
 
 /* Enhanced Animation Utilities */

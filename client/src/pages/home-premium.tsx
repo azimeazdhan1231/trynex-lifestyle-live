@@ -18,7 +18,8 @@ import {
   Zap
 } from "lucide-react";
 import PremiumLayout from "@/components/premium-layout";
-import PremiumProductCard from "@/components/premium-unified-product-card";
+import PerfectResponsiveProductCard from "@/components/perfect-responsive-product-card";
+import { PerfectProductGrid } from "@/components/perfect-product-grid";
 import PremiumProductDetailModal from "@/components/premium-product-detail-modal";
 import PremiumLoadingSkeleton, { PremiumHeroSkeleton, PremiumCategorySkeleton, PremiumStatsSkeleton } from "@/components/premium-loading-system";
 import PerfectCustomizeModal from "@/components/perfect-customize-modal";
@@ -264,9 +265,9 @@ export default function PremiumHomePage() {
               {productsLoading ? (
                 <PremiumLoadingSkeleton count={8} />
               ) : (
-                <div className="premium-grid premium-grid-responsive">
+                <PerfectProductGrid>
                   {featuredProducts.map((product: Product) => (
-                    <PremiumProductCard
+                    <PerfectResponsiveProductCard
                       key={product.id}
                       product={product}
                       onViewDetails={handleViewProduct}
@@ -274,7 +275,7 @@ export default function PremiumHomePage() {
                       className="premium-fade-in"
                     />
                   ))}
-                </div>
+                </PerfectProductGrid>
               )}
             </div>
           </section>
@@ -351,9 +352,9 @@ export default function PremiumHomePage() {
               {productsLoading ? (
                 <PremiumLoadingSkeleton count={8} />
               ) : (
-                <div className="premium-grid premium-grid-responsive">
+                <PerfectProductGrid>
                   {latestProducts.map((product: Product) => (
-                    <PremiumProductCard
+                    <PerfectResponsiveProductCard
                       key={product.id}
                       product={product}
                       onViewDetails={handleViewProduct}
@@ -361,7 +362,7 @@ export default function PremiumHomePage() {
                       className="premium-bounce-in"
                     />
                   ))}
-                </div>
+                </PerfectProductGrid>
               )}
             </div>
           </section>
@@ -389,9 +390,9 @@ export default function PremiumHomePage() {
               {productsLoading ? (
                 <PremiumLoadingSkeleton count={8} />
               ) : (
-                <div className="premium-grid premium-grid-responsive">
+                <PerfectProductGrid>
                   {bestSellingProducts.map((product: Product) => (
-                    <PremiumProductCard
+                    <PerfectResponsiveProductCard
                       key={product.id}
                       product={product}
                       onViewDetails={handleViewProduct}
@@ -399,7 +400,7 @@ export default function PremiumHomePage() {
                       className="premium-slide-up"
                     />
                   ))}
-                </div>
+                </PerfectProductGrid>
               )}
             </div>
           </section>

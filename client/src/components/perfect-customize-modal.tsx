@@ -199,23 +199,24 @@ export default function PerfectCustomizeModal({
       isOpen={isOpen}
       onClose={onClose}
       title={`কাস্টমাইজ করুন - ${product.name}`}
-      maxWidth="max-w-7xl"
+      maxWidth="max-w-[95vw] xl:max-w-[90vw] 2xl:max-w-7xl"
     >
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 p-6">
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 lg:gap-8 p-4 sm:p-6 max-h-[85vh] overflow-y-auto">
         {/* Left Side - Product Preview */}
-        <div className="space-y-6">
-          <Card className="overflow-hidden">
-            <CardHeader className="pb-4">
+        <div className="space-y-4 lg:space-y-6">
+          <Card className="overflow-hidden sticky top-4">
+            <CardHeader className="pb-3 lg:pb-4">
               <div className="flex items-center justify-between">
-                <CardTitle className="flex items-center gap-2 text-lg">
-                  <Sparkles className="w-5 h-5 text-primary" />
+                <CardTitle className="flex items-center gap-2 text-base lg:text-lg">
+                  <Sparkles className="w-4 h-4 lg:w-5 lg:h-5 text-primary" />
                   প্রিভিউ
                 </CardTitle>
-                <div className="flex gap-2">
+                <div className="flex gap-1 lg:gap-2">
                   <Button
                     variant={previewMode === '2d' ? 'default' : 'outline'}
                     size="sm"
                     onClick={() => setPreviewMode('2d')}
+                    className="text-xs lg:text-sm px-2 lg:px-3"
                   >
                     2D
                   </Button>
@@ -223,15 +224,16 @@ export default function PerfectCustomizeModal({
                     variant={previewMode === '3d' ? 'default' : 'outline'}
                     size="sm"
                     onClick={() => setPreviewMode('3d')}
+                    className="text-xs lg:text-sm px-2 lg:px-3"
                   >
-                    <Move3D className="w-4 h-4 mr-1" />
+                    <Move3D className="w-3 h-3 lg:w-4 lg:h-4 mr-1" />
                     3D
                   </Button>
                 </div>
               </div>
             </CardHeader>
             <CardContent>
-              <div className="aspect-square bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg flex items-center justify-center mb-4 overflow-hidden relative">
+              <div className="aspect-square bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg flex items-center justify-center mb-3 lg:mb-4 overflow-hidden relative">
                 {product.image_url ? (
                   <div className="relative w-full h-full">
                     <img
@@ -264,34 +266,42 @@ export default function PerfectCustomizeModal({
               </div>
               
               {/* Customization Summary */}
-              <div className="space-y-3 text-sm">
-                <div className="flex justify-between">
+              <div className="space-y-2 lg:space-y-3 text-xs lg:text-sm">
+                <div className="flex justify-between items-center">
                   <span className="text-gray-600">সাইজ:</span>
-                  <Badge variant="secondary">{sizeOptions.find(s => s.value === customization.size)?.label}</Badge>
+                  <Badge variant="secondary" className="text-xs">
+                    {sizeOptions.find(s => s.value === customization.size)?.label}
+                  </Badge>
                 </div>
-                <div className="flex justify-between">
+                <div className="flex justify-between items-center">
                   <span className="text-gray-600">রং:</span>
                   <div className="flex items-center gap-2">
                     <div 
-                      className="w-4 h-4 rounded-full border border-gray-300"
+                      className="w-3 h-3 lg:w-4 lg:h-4 rounded-full border border-gray-300"
                       style={{ backgroundColor: customization.color }}
                     />
-                    <span>{colorOptions.find(c => c.value === customization.color)?.name || 'কাস্টম'}</span>
+                    <span className="text-xs lg:text-sm">
+                      {colorOptions.find(c => c.value === customization.color)?.name || 'কাস্টম'}
+                    </span>
                   </div>
                 </div>
-                <div className="flex justify-between">
+                <div className="flex justify-between items-center">
                   <span className="text-gray-600">ম্যাটেরিয়াল:</span>
-                  <Badge variant="outline">{materialOptions.find(m => m.value === customization.material)?.label}</Badge>
+                  <Badge variant="outline" className="text-xs">
+                    {materialOptions.find(m => m.value === customization.material)?.label}
+                  </Badge>
                 </div>
                 {customization.text && (
-                  <div className="flex justify-between">
+                  <div className="flex justify-between items-center">
                     <span className="text-gray-600">টেক্সট:</span>
-                    <span className="font-medium">{customization.text}</span>
+                    <span className="font-medium text-xs lg:text-sm truncate max-w-24">
+                      {customization.text}
+                    </span>
                   </div>
                 )}
-                <div className="flex justify-between">
+                <div className="flex justify-between items-center">
                   <span className="text-gray-600">পরিমাণ:</span>
-                  <Badge className="bg-primary">{customization.quantity} টি</Badge>
+                  <Badge className="bg-primary text-xs">{customization.quantity} টি</Badge>
                 </div>
               </div>
             </CardContent>
@@ -372,22 +382,22 @@ export default function PerfectCustomizeModal({
         {/* Right Side - Customization Options */}
         <div className="space-y-6">
           <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="grid w-full grid-cols-4">
-              <TabsTrigger value="basic" className="text-xs">
-                <Palette className="w-4 h-4 mr-1" />
-                বেসিক
+            <TabsList className="grid w-full grid-cols-4 h-auto">
+              <TabsTrigger value="basic" className="text-xs lg:text-sm flex-col gap-1 h-auto py-2">
+                <Palette className="w-3 h-3 lg:w-4 lg:h-4" />
+                <span className="hidden sm:inline">বেসিক</span>
               </TabsTrigger>
-              <TabsTrigger value="text" className="text-xs">
-                <Type className="w-4 h-4 mr-1" />
-                টেক্সট
+              <TabsTrigger value="text" className="text-xs lg:text-sm flex-col gap-1 h-auto py-2">
+                <Type className="w-3 h-3 lg:w-4 lg:h-4" />
+                <span className="hidden sm:inline">টেক্সট</span>
               </TabsTrigger>
-              <TabsTrigger value="advanced" className="text-xs">
-                <Layers className="w-4 h-4 mr-1" />
-                অ্যাডভান্স
+              <TabsTrigger value="advanced" className="text-xs lg:text-sm flex-col gap-1 h-auto py-2">
+                <Layers className="w-3 h-3 lg:w-4 lg:h-4" />
+                <span className="hidden sm:inline">অ্যাডভান্স</span>
               </TabsTrigger>
-              <TabsTrigger value="extras" className="text-xs">
-                <Zap className="w-4 h-4 mr-1" />
-                এক্সট্রা
+              <TabsTrigger value="extras" className="text-xs lg:text-sm flex-col gap-1 h-auto py-2">
+                <Zap className="w-3 h-3 lg:w-4 lg:h-4" />
+                <span className="hidden sm:inline">এক্সট্রা</span>
               </TabsTrigger>
             </TabsList>
 
@@ -737,26 +747,26 @@ export default function PerfectCustomizeModal({
           </Tabs>
 
           {/* Action Buttons */}
-          <div className="flex gap-3">
+          <div className="flex flex-col sm:flex-row gap-2 lg:gap-3 sticky bottom-0 bg-white pt-4 border-t">
             <Button
               variant="outline"
-              className="flex-1"
+              className="flex-1 order-3 sm:order-1"
               onClick={resetCustomization}
             >
               রিসেট
             </Button>
             <Button
-              variant="outline"
-              className="flex-1"
+              variant="outline" 
+              className="flex-1 order-2"
               onClick={onClose}
             >
               বাতিল
             </Button>
             <Button
-              className="flex-1 bg-gradient-to-r from-primary to-orange-600 hover:from-primary/90 hover:to-orange-600/90 text-white"
+              className="flex-1 order-1 sm:order-3 bg-gradient-to-r from-primary to-orange-600 hover:from-primary/90 hover:to-orange-600/90 text-white"
               onClick={handleAddToCart}
             >
-              <ShoppingCart className="w-4 h-4 mr-2" />
+              <ShoppingCart className="w-3 h-3 lg:w-4 lg:h-4 mr-2" />
               কার্টে যোগ করুন
             </Button>
           </div>
