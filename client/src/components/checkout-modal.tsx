@@ -114,13 +114,18 @@ export default function CheckoutModal({ isOpen, onClose, cart, onOrderComplete }
     },
     onSuccess: (order) => {
       console.log('Order created successfully:', order);
+      console.log('Order tracking_id:', order.tracking_id);
+      console.log('Full order object:', JSON.stringify(order, null, 2));
+      
       setCompletedOrder(order);
       setShowSuccessModal(true);
       queryClient.invalidateQueries({ queryKey: ['/api/orders'] });
       
+      // Show tracking ID in toast
+      const trackingId = order.tracking_id || order.id || 'অজানা';
       toast({
         title: "✅ অর্ডার সফল হয়েছে!",
-        description: `ট্র্যাকিং আইডি: ${order.tracking_id}\nআমরা শীঘ্রই আপনার সাথে যোগাযোগ করব।`,
+        description: `ট্র্যাকিং আইডি: ${trackingId}\nআমরা শীঘ্রই আপনার সাথে যোগাযোগ করব।`,
         duration: 8000,
       });
 

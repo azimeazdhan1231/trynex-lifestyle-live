@@ -20,7 +20,8 @@ export default function OrderSuccessModal({ isOpen, onClose, order }: OrderSucce
   if (!order) return null;
 
   const handleCopyTrackingId = () => {
-    navigator.clipboard.writeText(order.tracking_id);
+    const trackingId = order.tracking_id || order.id || 'TRK-অজানা';
+    navigator.clipboard.writeText(trackingId);
     toast({
       title: "কপি হয়েছে!",
       description: "ট্র্যাকিং আইডি ক্লিপবোর্ডে কপি হয়েছে",
@@ -31,12 +32,15 @@ export default function OrderSuccessModal({ isOpen, onClose, order }: OrderSucce
     // Close modal first
     onClose();
     // Navigate to tracking page
-    window.location.href = `/tracking?id=${order.tracking_id}`;
+    const trackingId = order.tracking_id || order.id || 'TRK-অজানা';
+    window.location.href = `/tracking?id=${trackingId}`;
   };
 
   const handleWhatsAppContact = () => {
-    const message = `আমার অর্ডার সম্পর্কে জানতে চাই। ট্র্যাকিং আইডি: ${order.tracking_id}`;
-    window.open(createWhatsAppUrl(message), '_blank');
+    const trackingId = order.tracking_id || order.id || 'TRK-অজানা';
+    const message = `আমার অর্ডার সম্পর্কে জানতে চাই। ট্র্যাকিং আইডি: ${trackingId}`;
+    const whatsappUrl = `https://wa.me/8801747292277?text=${encodeURIComponent(message)}`;
+    window.open(whatsappUrl, '_blank');
   };
 
   const orderItems = order?.items ? (Array.isArray(order.items) ? order.items : 
@@ -85,7 +89,9 @@ export default function OrderSuccessModal({ isOpen, onClose, order }: OrderSucce
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-0">
                   <div className="flex-1 min-w-0">
                     <p className="text-xs sm:text-sm text-blue-600 font-medium">ট্র্যাকিং আইডি</p>
-                    <p className="text-sm sm:text-lg font-bold text-blue-800 break-all">{order.tracking_id}</p>
+                    <p className="text-sm sm:text-lg font-bold text-blue-800 break-all">
+                      {order.tracking_id || order.id || 'TRK-অজানা'}
+                    </p>
                   </div>
                   <Button
                     onClick={handleCopyTrackingId}
