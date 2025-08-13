@@ -182,6 +182,10 @@ export default function CustomizeProduct() {
   // Get productId from URL params or query params
   const urlParams = new URLSearchParams(window.location.search);
   const productId = params?.id || urlParams.get('productId');
+  
+  console.log('Customize Product - productId:', productId);
+  console.log('URL params:', Object.fromEntries(urlParams.entries()));
+  console.log('Route params:', params);
 
   // Form states
   const [quantity, setQuantity] = useState(1);
@@ -202,8 +206,20 @@ export default function CustomizeProduct() {
   });
 
   // Fetch product details
-  const { data: product, isLoading } = useQuery({
+  const { data: product, isLoading, error } = useQuery({
     queryKey: ['/api/products', productId],
+    queryFn: async () => {
+      if (!productId) throw new Error('No product ID provided');
+      
+      console.log('Fetching product with ID:', productId);
+      const response = await fetch(`/api/products/${productId}`);
+      if (!response.ok) {
+        throw new Error(`Product not found: ${response.status}`);
+      }
+      const data = await response.json();
+      console.log('Product data received:', data);
+      return data;
+    },
     enabled: !!productId
   });
 
