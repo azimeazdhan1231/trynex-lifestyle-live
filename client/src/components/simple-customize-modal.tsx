@@ -89,6 +89,9 @@ const SimpleCustomizeModal: React.FC<SimpleCustomizeModalProps> = ({
     return totalPrice;
   }, [selectedOptions, product, engravingText]);
 
+  const totalPrice = calculateTotalPrice();
+  
+  // Calculate customization cost safely
   const customizationCost = product.customizationOptions?.reduce((acc, option) => {
     const selectedValue = selectedOptions[option.id];
     if (selectedValue) {
@@ -97,8 +100,6 @@ const SimpleCustomizeModal: React.FC<SimpleCustomizeModalProps> = ({
     }
     return acc;
   }, 0) || 0;
-
-  const totalPrice = calculateTotalPrice();
 
 
   const handleOptionChange = useCallback((optionId: string, value: string) => {
