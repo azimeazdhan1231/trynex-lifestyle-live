@@ -487,15 +487,13 @@ export default function HomeCleanSimple() {
     setSelectedProduct(product);
   }, []);
 
-  const handleAddToCart = useCallback((product: Product) => {
-    const price = typeof product.price === 'string' ? parseFloat(product.price) : product.price;
-    const image_url = product.image_url || undefined;
-    addToCart({ ...product, price, image_url, quantity: 1 });
+  const handleCustomize = useCallback((product: Product) => {
+    // For now, just show a toast - later this can open a customization modal
     toast({
-      title: "কার্টে যোগ করা হয়েছে!",
-      description: `${product.name} আপনার কার্টে যোগ হয়েছে`,
+      title: "কাস্টমাইজেশন",
+      description: `${product.name} কাস্টমাইজ করার জন্য পণ্যের পেজে যান`,
     });
-  }, [addToCart, toast]);
+  }, [toast]);
 
   // Reset page when filters change
   useEffect(() => {
@@ -568,6 +566,7 @@ export default function HomeCleanSimple() {
                     product={product}
                     variant={viewMode}
                     onViewDetails={handleViewProduct}
+                    onCustomize={handleCustomize}
                   />
                 ))}
               </motion.div>
@@ -642,12 +641,12 @@ export default function HomeCleanSimple() {
         </div>
       </section>
 
-      {/* Product Detail Modal - NO CUSTOMIZE FEATURES */}
+      {/* Product Detail Modal - WITH CUSTOMIZE FEATURES */}
       <UltraDynamicProductModal
         isOpen={!!selectedProduct}
         onClose={() => setSelectedProduct(null)}
         product={selectedProduct}
-        onAddToCart={handleAddToCart}
+        onCustomize={handleCustomize}
       />
     </UltraSimpleLayout>
   );

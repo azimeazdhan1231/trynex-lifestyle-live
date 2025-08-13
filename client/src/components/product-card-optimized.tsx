@@ -2,7 +2,7 @@ import { memo, useState, useCallback } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Star, Heart, ShoppingCart, Eye, Zap } from "lucide-react";
+import { Star, Heart, ShoppingCart, Eye, Zap, Palette } from "lucide-react";
 import { formatPrice } from "@/lib/constants";
 import { useLocation } from "wouter";
 import type { Product } from "@shared/schema";
@@ -11,7 +11,6 @@ interface ProductCardProps {
   product: Product;
   onQuickView: (product: Product) => void;
   onCustomize: (product: Product) => void;
-  onAddToCart: (product: Product) => void;
   onToggleWishlist: (productId: string) => void;
   isInWishlist: boolean;
 }
@@ -46,7 +45,6 @@ const ProductCard = memo(({
   product, 
   onQuickView, 
   onCustomize, 
-  onAddToCart, 
   onToggleWishlist, 
   isInWishlist 
 }: ProductCardProps) => {
@@ -58,12 +56,8 @@ const ProductCard = memo(({
   }, [product, onQuickView]);
 
   const handleCustomize = useCallback(() => {
-    setLocation(`/customize/${product.id}`);
-  }, [product.id, setLocation]);
-
-  const handleAddToCart = useCallback(() => {
-    onAddToCart(product);
-  }, [product, onAddToCart]);
+    onCustomize(product);
+  }, [product, onCustomize]);
 
   const handleToggleWishlist = useCallback(() => {
     onToggleWishlist(product.id);
@@ -170,23 +164,14 @@ const ProductCard = memo(({
           </div>
 
           {/* Action Buttons */}
-          <div className="flex gap-2">
+          <div className="space-y-2">
             <Button
               size="sm"
-              variant="outline"
-              className="flex-1 text-xs"
-              onClick={handleAddToCart}
-            >
-              <ShoppingCart className="w-3 h-3 mr-1" />
-              কার্ট
-            </Button>
-            <Button
-              size="sm"
-              className="flex-1 text-xs bg-gradient-to-r from-blue-500 to-green-500 hover:from-blue-600 hover:to-green-600"
+              className="w-full text-xs bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600"
               onClick={handleCustomize}
             >
-              <Zap className="w-3 h-3 mr-1" />
-              অর্ডার
+              <Palette className="w-4 h-4 mr-1" />
+              কাস্টমাইজ করুন
             </Button>
           </div>
         </div>

@@ -8,7 +8,8 @@ import {
   Heart, 
   Eye, 
   TrendingUp,
-  Package
+  Package,
+  Palette
 } from "lucide-react";
 import { formatPrice } from "@/lib/constants";
 import { useCart } from "@/hooks/use-cart";
@@ -18,6 +19,7 @@ import type { Product } from "@shared/schema";
 interface CleanProductCardProps {
   product: Product;
   onViewDetails: (product: Product) => void;
+  onCustomize?: (product: Product) => void;
   className?: string;
   variant?: "grid" | "list";
 }
@@ -25,6 +27,7 @@ interface CleanProductCardProps {
 const CleanProductCard = memo(function CleanProductCard({ 
   product, 
   onViewDetails,
+  onCustomize,
   className = "", 
   variant = "grid"
 }: CleanProductCardProps) {
@@ -41,41 +44,13 @@ const CleanProductCard = memo(function CleanProductCard({
   const isOutOfStock = stock === 0;
   const isLowStock = stock > 0 && stock <= 5;
 
-  const handleAddToCart = useCallback(async (e: React.MouseEvent) => {
+  const handleCustomize = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    
-    if (isOutOfStock) {
-      toast({
-        title: "স্টক নেই",
-        description: "এই পণ্যটি বর্তমানে স্টকে নেই",
-        variant: "destructive",
-      });
-      return;
+    if (onCustomize) {
+      onCustomize(product);
     }
-
-    try {
-      addToCart({
-        id: product.id,
-        name: product.name || 'Unknown Product',
-        price: price,
-        image: product.image_url || '',
-        quantity: 1
-      });
-
-      toast({
-        title: "কার্টে যোগ করা হয়েছে!",
-        description: `${product.name}`,
-      });
-    } catch (error) {
-      console.error('Error adding to cart:', error);
-      toast({
-        title: "ত্রুটি",
-        description: "কার্টে যোগ করতে সমস্যা হয়েছে",
-        variant: "destructive",
-      });
-    }
-  }, [addToCart, product, price, isOutOfStock, toast]);
+  }, [product, onCustomize]);
 
   const toggleFavorite = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
@@ -164,14 +139,14 @@ const CleanProductCard = memo(function CleanProductCard({
                 </Button>
                 
                 <Button
-                  onClick={handleAddToCart}
+                  onClick={handleCustomize}
                   disabled={isOutOfStock}
                   size="sm"
-                  className="px-4"
-                  data-testid="button-add-to-cart"
+                  className="px-4 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600"
+                  data-testid="button-customize"
                 >
-                  <ShoppingCart className="w-4 h-4 mr-1" />
-                  কার্টে যোগ করুন
+                  <Palette className="w-4 h-4 mr-1" />
+                  কাস্টমাইজ করুন
                 </Button>
               </div>
             </div>
@@ -281,13 +256,13 @@ const CleanProductCard = memo(function CleanProductCard({
             </div>
 
             <Button
-              onClick={handleAddToCart}
+              onClick={handleCustomize}
               disabled={isOutOfStock}
-              className="w-full h-11 font-medium bg-primary hover:bg-primary/90 transition-colors"
-              data-testid="button-add-to-cart"
+              className="w-full h-11 font-medium bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 transition-colors"
+              data-testid="button-customize"
             >
-              <ShoppingCart className="w-4 h-4 mr-2" />
-              {isOutOfStock ? 'স্টকে নেই' : 'কার্টে যোগ করুন'}
+              <Palette className="w-4 h-4 mr-2" />
+              {isOutOfStock ? 'স্টকে নেই' : 'কাস্টমাইজ করুন'}
             </Button>
           </div>
         </CardContent>
