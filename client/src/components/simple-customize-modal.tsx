@@ -19,6 +19,7 @@ interface Product {
   image_url?: string;
   description?: string;
   category?: string;
+  customizationOptions?: CustomizationOption[];
 }
 
 interface CustomizationOption {
@@ -66,16 +67,18 @@ const SimpleCustomizeModal: React.FC<SimpleCustomizeModalProps> = ({
   const calculateTotalPrice = useCallback(() => {
     let totalPrice = parseFloat(product.price.toString()) || 0;
 
-    // Add price for selected options
-    Object.keys(selectedOptions).forEach(optionId => {
-      const option = product.customizationOptions?.find(opt => opt.id === optionId);
-      if (option) {
-        const selectedOptionValue = option.options.find(optValue => optValue.value === selectedOptions[optionId]);
-        if (selectedOptionValue) {
-          totalPrice += selectedOptionValue.price || 0;
+    // Add price for selected options only if customizationOptions exist
+    if (product.customizationOptions) {
+      Object.keys(selectedOptions).forEach(optionId => {
+        const option = product.customizationOptions?.find(opt => opt.id === optionId);
+        if (option) {
+          const selectedOptionValue = option.options.find(optValue => optValue.value === selectedOptions[optionId]);
+          if (selectedOptionValue) {
+            totalPrice += selectedOptionValue.price || 0;
+          }
         }
-      }
-    });
+      });
+    }
 
     // Add price for engraving text if applicable (example, adjust logic as needed)
     if (engravingText) {
@@ -255,8 +258,8 @@ const SimpleCustomizeModal: React.FC<SimpleCustomizeModalProps> = ({
                   </div>
                 </Card>
 
-                {/* Customizable Options - Render dynamically */}
-                {product.customizationOptions?.map((option) => (
+                {/* Customizable Options - Render dynamically only if they exist */}
+                {product.customizationOptions && product.customizationOptions.length > 0 && product.customizationOptions.map((option) => (
                   <Card key={option.id}>
                     <CardHeader>
                       <CardTitle className="text-base md:text-lg">{option.nameBengali} ({option.name})</CardTitle>
