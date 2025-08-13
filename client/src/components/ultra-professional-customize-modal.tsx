@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback } from "react";
-import PerfectModalBase from "./perfect-modal-base";
+import PerfectResponsiveModal from "./perfect-responsive-modal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -292,16 +292,15 @@ export default function UltraProfessionalCustomizeModal({
   ];
 
   return (
-    <PerfectModalBase
+    <PerfectResponsiveModal
       isOpen={isOpen}
       onClose={onClose}
-      title=""
-      description=""
       maxWidth="7xl"
       className="p-0"
-      data-testid="modal-ultra-professional-customize"
+      showCloseButton={false}
+      enableScroll={true}
     >
-      <div className="relative bg-gradient-to-br from-blue-50 via-white to-purple-50 rounded-xl overflow-hidden">
+      <div className="relative bg-gradient-to-br from-blue-50 via-white to-purple-50 overflow-hidden h-full">
         {/* Header */}
         <div className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 text-white p-6">
           <div className="flex items-center justify-between">
@@ -370,11 +369,11 @@ export default function UltraProfessionalCustomizeModal({
         </div>
 
         {/* Content */}
-        <div className="p-6">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="p-4 md:p-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-8">
             {/* Product Preview */}
-            <div className="lg:col-span-1">
-              <Card className="sticky top-0 shadow-xl border-0 bg-white/80 backdrop-blur-sm">
+            <div className="lg:col-span-1 order-2 lg:order-1">
+              <Card className="lg:sticky lg:top-4 shadow-xl border-0 bg-white/80 backdrop-blur-sm">
                 <CardHeader className="text-center">
                   <CardTitle className="flex items-center justify-center gap-2">
                     <Crown className="w-5 h-5 text-yellow-500" />
@@ -440,7 +439,7 @@ export default function UltraProfessionalCustomizeModal({
             </div>
 
             {/* Customization Options */}
-            <div className="lg:col-span-2">
+            <div className="lg:col-span-2 order-1 lg:order-2">
               <AnimatePresence mode="wait">
                 <motion.div
                   key={activeStep}
@@ -725,21 +724,21 @@ export default function UltraProfessionalCustomizeModal({
               </AnimatePresence>
 
               {/* Navigation Buttons */}
-              <div className="flex justify-between items-center mt-8 pt-6 border-t">
+              <div className="flex flex-col sm:flex-row justify-between items-center mt-6 md:mt-8 pt-4 md:pt-6 border-t gap-4 sm:gap-0">
                 <Button
                   onClick={() => setActiveStep(Math.max(1, activeStep - 1))}
                   variant="outline"
                   disabled={activeStep === 1}
-                  className="flex items-center gap-2"
+                  className="flex items-center gap-2 w-full sm:w-auto"
                 >
                   পূর্ববর্তী
                 </Button>
 
-                <div className="flex gap-3">
+                <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
                   {activeStep < 4 ? (
                     <Button
                       onClick={() => setActiveStep(Math.min(4, activeStep + 1))}
-                      className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 flex items-center gap-2"
+                      className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 flex items-center gap-2 w-full sm:w-auto"
                     >
                       পরবর্তী
                       <ArrowRight className="w-4 h-4" />
@@ -750,7 +749,7 @@ export default function UltraProfessionalCustomizeModal({
                         onClick={handleAddToCart}
                         disabled={isLoading || !customization.size}
                         variant="outline"
-                        className="flex items-center gap-2"
+                        className="flex items-center gap-2 w-full sm:w-auto"
                       >
                         <ShoppingCart className="w-4 h-4" />
                         কার্টে যোগ করুন
@@ -759,7 +758,7 @@ export default function UltraProfessionalCustomizeModal({
                         <Button
                           onClick={handleDirectOrder}
                           disabled={isLoading || !customization.size}
-                          className="bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 flex items-center gap-2"
+                          className="bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 flex items-center gap-2 w-full sm:w-auto"
                         >
                           <Zap className="w-4 h-4" />
                           সরাসরি অর্ডার
@@ -773,6 +772,6 @@ export default function UltraProfessionalCustomizeModal({
           </div>
         </div>
       </div>
-    </PerfectModalBase>
+    </PerfectResponsiveModal>
   );
 }

@@ -56,7 +56,6 @@ export default function EnhancedHeader() {
   const navLinks = [
     { href: '/', label: 'হোম' },
     { href: '/products', label: 'পণ্যসমূহ' },
-    { href: '/categories', label: 'ক্যাটেগরি' },
     { href: '/custom-order', label: 'কাস্টমাইজ' },
     { href: '/tracking', label: 'ট্র্যাকিং' },
     { href: '/about', label: 'আমাদের সম্পর্কে' },

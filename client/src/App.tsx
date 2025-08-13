@@ -33,7 +33,7 @@ const Terms = lazy(() => import("./pages/terms"));
 const RefundPolicy = lazy(() => import("./pages/refund-policy"));
 const PaymentPolicy = lazy(() => import("./pages/payment-policy"));
 const SearchPage = lazy(() => import("./pages/search"));
-const Categories = lazy(() => import("./pages/categories"));
+
 const CustomizeProduct = lazy(() => import("./pages/customize-product-enhanced"));
 
 // Performance and Mobile Optimization Components
@@ -66,8 +66,8 @@ function Router() {
         <Route path="/blog" component={BlogPage} />
         <Route path="/admin" component={Admin} />
         <Route path="/tracking" component={OrderTracking} />
-        <Route path="/track/:id" component={() => import("./pages/track-order-page").then(m => m.default)} />
-        <Route path="/track" component={() => import("./pages/track-order-page").then(m => m.default)} />
+        <Route path="/track/:id" component={OrderTracking} />
+        <Route path="/track" component={OrderTracking} />
 
         <Route path="/custom-order" component={CustomOrderForm} />
         <Route path="/return-policy-old" component={ReturnPolicy} />
@@ -79,7 +79,6 @@ function Router() {
         <Route path="/payment-policy" component={PaymentPolicy} />
         <Route path="/payment" component={PaymentPolicy} />
         <Route path="/search" component={SearchPage} />
-        <Route path="/categories" component={Categories} />
         <Route path="/customize/:id" component={CustomizeProduct} />
         <Route component={NotFound} />
       </Switch>
