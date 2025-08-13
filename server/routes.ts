@@ -814,31 +814,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const orderData = req.body;
       
-      // Map the frontend data to the expected schema format
+      // Generate unique tracking ID
+      const trackingId = orderData.trackingId || `CXO${Date.now()}${Math.random().toString(36).substr(2, 4).toUpperCase()}`;
+      
+      // Map the frontend data to the enhanced schema format
       const customOrderData = {
+        trackingId,
         productId: orderData.productId,
-        productName: "কাস্টম পণ্য",
         customerName: orderData.customerName,
         customerPhone: orderData.customerPhone,
-        customerEmail: orderData.customerEmail,
-        customerAddress: orderData.customerAddress || "ঢাকা",
-        customizationData: JSON.stringify(orderData.customizationData),
-        totalPrice: parseFloat(orderData.totalPrice || "0"),
-        advancePayment: 100, // Default advance payment
-        status: orderData.status || "pending_advance_payment",
-        createdAt: new Date(),
-        updatedAt: new Date()
+        customerEmail: orderData.customerEmail || null,
+        customerAddress: orderData.customerAddress,
+        district: orderData.district,
+        thana: orderData.thana,
+        customizationInstructions: orderData.customizationInstructions,
+        customizationImages: orderData.customizationImages || [],
+        basePrice: orderData.basePrice,
+        customizationCost: orderData.customizationCost || "0",
+        totalPrice: orderData.totalPrice,
+        paymentMethod: orderData.paymentMethod || "cash_on_delivery",
+        status: orderData.status || "pending",
+        notes: orderData.notes || null
       };
       
-      const customOrder = await storage.createCustomOrder({
-        ...customOrderData,
-        totalPrice: customOrderData.totalPrice.toString()
-      });
-      console.log('Custom order created successfully:', customOrder.id);
+      // Validate required fields
+      const requiredFields = ['productId', 'customerName', 'customerPhone', 'customerAddress', 'district', 'thana', 'basePrice', 'totalPrice'];
+      for (const field of requiredFields) {
+        if (!customOrderData[field as keyof typeof customOrderData]) {
+          return res.status(400).json({
+            success: false,
+            error: `${field} is required`
+          });
+        }
+      }
+      
+      const customOrder = await storage.createCustomOrder(customOrderData);
+      console.log('Custom order created successfully:', customOrder.id, 'Tracking ID:', trackingId);
       
       res.status(201).json({ 
         success: true,
         id: customOrder.id,
+        trackingId: trackingId,
         data: customOrder,
         message: "কাস্টম অর্ডার সফলভাবে তৈরি হয়েছে"
       });

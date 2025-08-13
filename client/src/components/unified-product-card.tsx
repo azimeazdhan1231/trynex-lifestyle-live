@@ -2,9 +2,8 @@ import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Star, ShoppingCart, Heart, Eye, Palette } from "lucide-react";
+import { Star, Heart, Eye, Palette } from "lucide-react";
 import { formatPrice } from "@/lib/constants";
-import { useCart } from "@/hooks/use-cart";
 import { useLocation } from "wouter";
 import type { Product } from "@shared/schema";
 
@@ -12,8 +11,7 @@ interface UnifiedProductCardProps {
   product: Product;
   className?: string;
   onViewProduct: (product: Product) => void;
-  onCustomize?: (product: Product) => void;
-  onAddToCart: (product: Product) => void;
+  onCustomize: (product: Product) => void;
   showBadge?: boolean;
 }
 
@@ -21,23 +19,12 @@ export default function UnifiedProductCard({
   product, 
   className = "", 
   onViewProduct, 
-  onCustomize, 
-  onAddToCart 
+  onCustomize 
 }: UnifiedProductCardProps) {
   const [isHovered, setIsHovered] = useState(false);
   const [, setLocation] = useLocation();
 
-  const handleAddToCart = async (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    
-    try {
-      onAddToCart(product);
-      console.log('Product added to cart:', product.name);
-    } catch (error) {
-      console.error('Error adding to cart:', error);
-    }
-  };
+
 
   const handleViewProduct = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -48,9 +35,7 @@ export default function UnifiedProductCard({
   const handleCustomize = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    if (onCustomize) {
-      onCustomize(product);
-    }
+    onCustomize(product);
   };
 
   const rating = 4.5; // Mock rating - replace with actual rating
@@ -80,7 +65,7 @@ export default function UnifiedProductCard({
               />
             ) : (
               <div className="w-full h-full flex items-center justify-center text-gray-400">
-                <ShoppingCart className="w-12 h-12" />
+                <Palette className="w-12 h-12" />
               </div>
             )}
           </div>
@@ -188,41 +173,26 @@ export default function UnifiedProductCard({
           {/* Action Buttons */}
           <div className="space-y-2">
             <Button
-              onClick={handleAddToCart}
-              disabled={product.stock <= 0}
-              className="w-full transition-all duration-300 text-sm mobile-transition"
+              onClick={handleCustomize}
+              className="w-full transition-all duration-300 text-sm mobile-transition bg-gradient-to-r from-orange-500 to-red-500 text-white hover:from-orange-600 hover:to-red-600"
               size="sm"
-              data-testid={`button-add-to-cart-${product.id}`}
+              data-testid={`button-customize-${product.id}`}
             >
-              <ShoppingCart className="w-4 h-4 mr-2" />
-              কার্টে যোগ করুন
+              <Palette className="w-4 h-4 mr-2" />
+              কাস্টমাইজ করুন
             </Button>
             
             {/* View Details Button */}
-            <div className="mobile-button-group grid grid-cols-2 gap-2">
-              <Button
-                onClick={handleViewProduct}
-                variant="outline"
-                size="sm"
-                className="w-full mobile-transition"
-                data-testid={`button-view-${product.id}`}
-              >
-                <Eye className="w-4 h-4 mr-1" />
-                দেখুন
-              </Button>
-              
-              {onCustomize && (
-                <Button
-                  onClick={handleCustomize}
-                  variant="outline"
-                  size="sm"
-                  className="w-full bg-purple-50 border-purple-300 text-purple-600 hover:bg-purple-100"
-                >
-                  <Palette className="w-4 h-4 mr-1" />
-                  কাস্টম
-                </Button>
-              )}
-            </div>
+            <Button
+              onClick={handleViewProduct}
+              variant="outline"
+              size="sm"
+              className="w-full mobile-transition"
+              data-testid={`button-view-${product.id}`}
+            >
+              <Eye className="w-4 h-4 mr-1" />
+              বিস্তারিত দেখুন
+            </Button>
           </div>
         </CardContent>
     </Card>

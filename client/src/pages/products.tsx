@@ -6,11 +6,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Skeleton } from "@/components/ui/skeleton";
 import { Search, Filter, Grid3X3 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { useCart } from "@/hooks/use-cart";
 import MobileOptimizedLayout from "@/components/mobile-optimized-layout";
 import UnifiedProductCard from "@/components/unified-product-card";
 import UltraDynamicProductModal from "@/components/ultra-dynamic-product-modal";
-import EnhancedCustomizeModal from "@/components/enhanced-customize-modal";
+import ProductCustomizationModal from "@/components/ProductCustomizationModal";
+import CustomOrderSuccessModal from "@/components/CustomOrderSuccessModal";
 import ComprehensiveProductLoading from "@/components/comprehensive-product-loading";
 import EnhancedFilterSystem from "@/components/enhanced-filter-system";
 import { ProgressiveLoader, PerformanceErrorBoundary, PerformanceMonitor } from "@/components/enhanced-loading-system";
@@ -56,8 +56,17 @@ export default function ProductsPage() {
   const [isCustomizeModalOpen, setIsCustomizeModalOpen] = useState(false);
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
   const [displayLimit, setDisplayLimit] = useState(20); // Start with 20 products
-  // Remove local cart state - use global cart hook instead
-  const { addToCart: globalAddToCart, cart: globalCart } = useCart();
+  const [orderSuccess, setOrderSuccess] = useState<{
+    trackingId: string;
+    customerName: string;
+    customerPhone: string;
+    customerAddress: string;
+    totalPrice: number;
+    paymentMethod: string;
+    productName: string;
+    customizationInstructions: string;
+  } | null>(null);
+  const [isOrderSuccessModalOpen, setIsOrderSuccessModalOpen] = useState(false);
 
   // Ensure valid initial states to prevent Select errors
   React.useEffect(() => {
@@ -152,75 +161,28 @@ export default function ProductsPage() {
     setIsCustomizeModalOpen(true);
   };
 
-  // Handle add to cart using global cart
-  const handleAddToCart = async (product: Product) => {
-    if (product.stock === 0) {
-      toast({
-        title: "স্টক শেষ",
-        description: "এই পণ্যটি বর্তমানে স্টকে নেই",
-        variant: "destructive",
+  // Handle order placed successfully
+  const handleOrderPlaced = (trackingId: string) => {
+    if (selectedProduct) {
+      setOrderSuccess({
+        trackingId,
+        customerName: "Customer", // This will be filled from the form
+        customerPhone: "Customer Phone", // This will be filled from the form
+        customerAddress: "Customer Address", // This will be filled from the form
+        totalPrice: parseFloat(selectedProduct.price),
+        paymentMethod: "cash_on_delivery",
+        productName: selectedProduct.name,
+        customizationInstructions: "Custom design as requested"
       });
-      return;
-    }
-
-    try {
-      await globalAddToCart({
-        id: product.id,
-        name: product.name,
-        price: Number(product.price),
-        image: product.image_url || '',
-        quantity: 1
-      });
-
-      toast({
-        title: "কার্টে যোগ করা হয়েছে",
-        description: `${product.name} কার্টে যোগ করা হয়েছে`,
-        duration: 3000,
-      });
-    } catch (error) {
-      console.error('Error adding to cart:', error);
-      toast({
-        title: "ত্রুটি",
-        description: "কার্টে যোগ করতে সমস্যা হয়েছে",
-        variant: "destructive",
-      });
+      setIsOrderSuccessModalOpen(true);
+      setIsCustomizeModalOpen(false);
+      setSelectedProduct(null);
     }
   };
 
-  // Handle customize add to cart
-  const handleCustomizeAddToCart = async (product: Product, customization: any) => {
-    console.log("🎨 Adding customized product to cart:", product.name, customization);
-    
-    try {
-      await globalAddToCart({
-        id: product.id,
-        name: product.name,
-        price: Number(product.price),
-        image: product.image_url || '',
-        quantity: customization.quantity || 1,
-        customization: {
-          ...customization,
-          custom_images: customization.uploaded_images || [], // Ensure custom images are included
-        }
-      });
-
-      toast({
-        title: "কাস্টম পণ্য যোগ করা হয়েছে!",
-        description: `${product.name} আপনার পছন্দমতো ডিজাইন করে কার্টে যোগ করা হয়েছে`,
-        duration: 4000,
-      });
-
-      // Close the customize modal
-      setIsCustomizeModalOpen(false);
-      setSelectedProduct(null);
-    } catch (error) {
-      console.error('Error adding customized product to cart:', error);
-      toast({
-        title: "ত্রুটি",
-        description: "কাস্টম পণ্য যোগ করতে সমস্যা হয়েছে",
-        variant: "destructive",
-      });
-    }
+  // Load more products
+  const handleLoadMore = () => {
+    setDisplayLimit(prev => prev + 20);
   };
 
   // Safe handlers for Select components
@@ -234,11 +196,6 @@ export default function ProductsPage() {
     if (value && value.trim()) {
       setSortOption(value);
     }
-  };
-
-  // Load more products
-  const handleLoadMore = () => {
-    setDisplayLimit(prev => prev + 20);
   };
 
   // Show error if products failed to load
@@ -379,7 +336,6 @@ export default function ProductsPage() {
                   product={product}
                   onViewProduct={handleViewProduct}
                   onCustomize={handleCustomize}
-                  onAddToCart={handleAddToCart}
                 />
               ))}
             </div>
@@ -424,19 +380,28 @@ export default function ProductsPage() {
           setSelectedProduct(null);
         }}
         product={selectedProduct}
-        onAddToCart={handleAddToCart}
         onCustomize={handleCustomize}
       />
 
-      {/* Enhanced Customize Modal */}
-      <EnhancedCustomizeModal
-        product={selectedProduct}
+      {/* Product Customization Modal */}
+      <ProductCustomizationModal
         isOpen={isCustomizeModalOpen}
         onClose={() => {
           setIsCustomizeModalOpen(false);
           setSelectedProduct(null);
         }}
-        onAddToCart={handleCustomizeAddToCart}
+        product={selectedProduct}
+        onOrderPlaced={handleOrderPlaced}
+      />
+
+      {/* Custom Order Success Modal */}
+      <CustomOrderSuccessModal
+        isOpen={isOrderSuccessModalOpen}
+        onClose={() => {
+          setIsOrderSuccessModalOpen(false);
+          setOrderSuccess(null);
+        }}
+        orderDetails={orderSuccess}
       />
     </MobileOptimizedLayout>
   );

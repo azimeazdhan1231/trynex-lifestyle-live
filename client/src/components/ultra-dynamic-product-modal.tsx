@@ -36,7 +36,6 @@ interface UltraDynamicProductModalProps {
   isOpen: boolean;
   onClose: () => void;
   product: Product | null;
-  onAddToCart: (product: Product, quantity?: number) => void;
   onCustomize?: (product: Product) => void;
 }
 
@@ -134,7 +133,6 @@ export default function UltraDynamicProductModal({
   isOpen,
   onClose,
   product,
-  onAddToCart,
   onCustomize
 }: UltraDynamicProductModalProps) {
   const { toast } = useToast();
@@ -175,23 +173,10 @@ export default function UltraDynamicProductModal({
     setQuantity(newQuantity);
   };
 
-  const handleAddToCart = () => {
-    if (product.stock === 0) {
-      toast({
-        title: "স্টক নেই",
-        description: "এই পণ্যটি বর্তমানে স্টকে নেই",
-        variant: "destructive",
-      });
-      return;
+  const handleCustomizeProduct = () => {
+    if (onCustomize) {
+      onCustomize(product);
     }
-
-    onAddToCart(product, quantity);
-    
-    toast({
-      title: "কার্টে যোগ হয়েছে!",
-      description: `${quantity} টি ${product.name} কার্টে যোগ করা হয়েছে`,
-      duration: 2000,
-    });
   };
 
   const handleCustomize = () => {
@@ -411,16 +396,18 @@ export default function UltraDynamicProductModal({
               {/* Action Buttons */}
               <div className="space-y-2 sm:space-y-3">
                 <div className="flex gap-2 sm:gap-3">
-                  <Button
-                    onClick={handleAddToCart}
-                    disabled={product.stock === 0}
-                    className="flex-1 h-10 sm:h-12 text-sm sm:text-base font-medium bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 touch-manipulation"
-                    data-testid="button-add-to-cart"
-                  >
-                    <ShoppingCart className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2" />
-                    <span className="hidden sm:inline">কার্টে যোগ করুন</span>
-                    <span className="sm:hidden">কার্টে যোগ</span>
-                  </Button>
+                  {onCustomize && (
+                    <Button
+                      onClick={handleCustomizeProduct}
+                      disabled={product.stock === 0}
+                      className="flex-1 h-10 sm:h-12 text-sm sm:text-base font-medium bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white touch-manipulation"
+                      data-testid="button-customize"
+                    >
+                      <Palette className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2" />
+                      <span className="hidden sm:inline">কাস্টমাইজ করুন</span>
+                      <span className="sm:hidden">কাস্টমাইজ</span>
+                    </Button>
+                  )}
                   
                   <Button
                     variant="outline"
@@ -431,18 +418,6 @@ export default function UltraDynamicProductModal({
                     <Heart className={`w-4 h-4 sm:w-5 sm:h-5 ${isFavorite ? 'fill-red-500 text-red-500' : ''}`} />
                   </Button>
                 </div>
-
-                {onCustomize && (
-                  <Button
-                    variant="outline"
-                    onClick={handleCustomize}
-                    className="w-full h-10 sm:h-12 text-sm sm:text-base font-medium border-2 border-orange-500 text-orange-600 hover:bg-orange-50 touch-manipulation"
-                    data-testid="button-customize"
-                  >
-                    <Palette className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2" />
-                    কাস্টমাইজ করুন
-                  </Button>
-                )}
 
                 <div className="flex gap-2 sm:gap-3">
                   <Button

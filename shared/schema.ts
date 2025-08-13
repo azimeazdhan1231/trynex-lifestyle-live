@@ -212,23 +212,32 @@ export type InsertUserCart = z.infer<typeof insertUserCartSchema>;
 export type UserOrder = typeof userOrders.$inferSelect;
 export type InsertUserOrder = z.infer<typeof insertUserOrderSchema>;
 
-// Custom Orders table
+// Custom Orders table - Enhanced for comprehensive customization
 export const customOrders = pgTable('custom_orders', {
   id: uuid('id').primaryKey().default(sql`gen_random_uuid()`),
+  trackingId: text('tracking_id').unique().notNull(),
   productId: uuid('product_id').notNull().references(() => products.id),
   customerName: text('customer_name').notNull(),
   customerPhone: text('customer_phone').notNull(), 
   customerEmail: text('customer_email'),
-  customerAddress: text('customer_address'),
-  customizationData: jsonb('customization_data'),
+  customerAddress: text('customer_address').notNull(),
+  district: text('district').notNull(),
+  thana: text('thana').notNull(),
+  customizationInstructions: text('customization_instructions'),
+  customizationImages: jsonb('customization_images').default('[]'), // Array of image URLs
+  basePrice: numeric('base_price').notNull(),
+  customizationCost: numeric('customization_cost').default('0'),
   totalPrice: numeric('total_price').notNull(),
-  status: text('status').default('pending'),
+  paymentMethod: text('payment_method').default('cash_on_delivery'),
+  status: text('status').default('pending'), // pending, confirmed, in_production, completed, cancelled
+  notes: text('notes'), // Internal notes for the order
   createdAt: timestamp('created_at').defaultNow(),
   updatedAt: timestamp('updated_at').defaultNow(),
 });
 
 export const insertCustomOrderSchema = createInsertSchema(customOrders).omit({
   id: true,
+  trackingId: true,
   createdAt: true,
   updatedAt: true,
 });
