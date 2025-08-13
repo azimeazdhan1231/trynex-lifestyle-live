@@ -29,6 +29,7 @@ interface UseCartReturn {
   totalPrice: number;
   isLoaded: boolean;
   refreshCart: () => void;
+  updateCartItemCustomization: (itemId: string, customization: any) => void;
 }
 
 const CART_STORAGE_KEY = 'trynex_cart_v2';
@@ -182,6 +183,18 @@ class CartManager {
     this.loadFromStorage();
     this.notifyListeners();
   }
+
+  updateItemCustomization(itemId: string, customization: any): void {
+    const itemIndex = this.cart.findIndex(item => item.id === itemId);
+    if (itemIndex > -1) {
+      this.cart[itemIndex] = {
+        ...this.cart[itemIndex],
+        customization: { ...this.cart[itemIndex].customization, ...customization }
+      };
+      this.saveToStorage();
+      this.notifyListeners();
+    }
+  }
 }
 
 const cartManager = CartManager.getInstance();
@@ -230,6 +243,10 @@ export function useCart(): UseCartReturn {
     cartManager.refresh();
   }, []);
 
+  const updateCartItemCustomization = useCallback((itemId: string, customization: any) => {
+    cartManager.updateItemCustomization(itemId, customization);
+  }, []);
+
   const totalItems = cartManager.getTotalItems();
   const totalPrice = cartManager.getTotalPrice();
 
@@ -243,5 +260,6 @@ export function useCart(): UseCartReturn {
     totalPrice,
     isLoaded,
     refreshCart,
+    updateCartItemCustomization,
   };
 }

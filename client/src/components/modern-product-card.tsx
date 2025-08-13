@@ -200,23 +200,10 @@ const ModernProductCard = memo(function ModernProductCard({
             <div className={`absolute bottom-3 left-3 right-3 flex gap-2 transition-all duration-300 ${
               isHovered ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
             }`}>
-              {onCustomize && (
-                <Button
-                  onClick={handleCustomize}
-                  size="sm"
-                  variant="secondary"
-                  className="flex-1 bg-white/90 hover:bg-white text-gray-800 backdrop-blur-sm border-0 font-medium text-xs"
-                  disabled={isOutOfStock}
-                >
-                  <Palette className="w-3 h-3 mr-1" />
-                  কাস্টমাইজ
-                </Button>
-              )}
-              
               <Button
                 onClick={handleAddToCart}
                 size="sm"
-                className="flex-1 bg-orange-500 hover:bg-orange-600 text-white backdrop-blur-sm border-0 font-medium text-xs"
+                className="w-full bg-orange-500 hover:bg-orange-600 text-white backdrop-blur-sm border-0 font-medium text-xs"
                 disabled={isOutOfStock}
               >
                 <ShoppingCart className="w-3 h-3 mr-1" />

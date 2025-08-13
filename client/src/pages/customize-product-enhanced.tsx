@@ -40,15 +40,35 @@ export default function CustomizeProductEnhanced() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string>('');
   const [isOrderNowOpen, setIsOrderNowOpen] = useState(false);
+  const [selectedProductType, setSelectedProductType] = useState<string>('t-shirt');
+  const [selectedSize, setSelectedSize] = useState<string>('M');
+  const [selectedColor, setSelectedColor] = useState<string>('#FFFFFF');
   
   const { addToCart } = useCart();
   const { toast } = useToast();
 
-  // Fetch product data
-  const { data: product, isLoading } = useQuery<Product>({
+  // Fetch product data only if productId exists, otherwise use default custom product
+  const { data: fetchedProduct, isLoading } = useQuery<Product>({
     queryKey: ['/api/products', productId],
     enabled: !!productId,
   });
+
+  // Default custom product for standalone customization
+  const defaultCustomProduct: Product = {
+    id: 'custom-product',
+    name: 'কাস্টম টি-শার্ট',
+    description: 'আপনার পছন্দ অনুযায়ী কাস্টমাইজ করুন',
+    price: '500',
+    image_url: '/custom-tshirt-placeholder.jpg',
+    category: 'custom',
+    stock: 100,
+    created_at: new Date(),
+    is_featured: false,
+    is_latest: false,
+    is_best_selling: false
+  };
+
+  const product = fetchedProduct || defaultCustomProduct;
 
   useEffect(() => {
     if (selectedFile) {
@@ -72,10 +92,16 @@ export default function CustomizeProductEnhanced() {
     const customizedProduct = {
       id: `${product.id}-custom-${Date.now()}`,
       name: `${product.name} (কাস্টমাইজড)`,
-      price: Number(product.price) + 50, // Additional customization fee
-      image: product.image_url || '',
+      price: Number(product.price) + 100, // Additional customization fee
+      image_url: product.image_url || '',
       quantity: 1,
-      customization: customization,
+      customization: {
+        ...customization,
+        productType: selectedProductType,
+        size: selectedSize,
+        baseColor: selectedColor,
+        customImage: selectedFile?.name || '',
+      },
     };
 
     addToCart(customizedProduct);
@@ -86,28 +112,13 @@ export default function CustomizeProductEnhanced() {
     });
   };
 
-  if (isLoading) {
+  if (isLoading && productId) {
     return (
       <MobileOptimizedLayout>
         <div className="min-h-screen bg-gray-50 flex items-center justify-center">
           <div className="text-center">
             <div className="w-8 h-8 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
             <p className="text-gray-600">লোড হচ্ছে...</p>
-          </div>
-        </div>
-      </MobileOptimizedLayout>
-    );
-  }
-
-  if (!product) {
-    return (
-      <MobileOptimizedLayout>
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-          <div className="text-center">
-            <h2 className="text-xl font-semibold text-gray-900 mb-2">পণ্য পাওয়া যায়নি</h2>
-            <Button onClick={() => setLocation('/products')} className="bg-orange-500 hover:bg-orange-600">
-              পণ্য তালিকায় ফিরে যান
-            </Button>
           </div>
         </div>
       </MobileOptimizedLayout>
@@ -123,14 +134,16 @@ export default function CustomizeProductEnhanced() {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setLocation(`/product/${productId}`)}
+              onClick={() => setLocation(productId ? `/product/${productId}` : '/')}
               className="flex items-center gap-2"
             >
               <ArrowLeft className="w-4 h-4" />
               ফিরে যান
             </Button>
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">পণ্য কাস্টমাইজ করুন</h1>
+              <h1 className="text-2xl font-bold text-gray-900">
+                {productId ? 'পণ্য কাস্টমাইজ করুন' : 'কাস্টম অর্ডার করুন'}
+              </h1>
               <p className="text-gray-600">{product.name}</p>
             </div>
           </div>
@@ -226,6 +239,64 @@ export default function CustomizeProductEnhanced() {
 
             {/* Customization Options */}
             <div className="space-y-6">
+              {/* Product Selection for Standalone Customize */}
+              {!productId && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <ShoppingCart className="w-5 h-5" />
+                      পণ্যের ধরন নির্বাচন করুন
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div>
+                      <Label>পণ্যের ধরন</Label>
+                      <select 
+                        value={selectedProductType}
+                        onChange={(e) => setSelectedProductType(e.target.value)}
+                        className="w-full mt-1 p-2 border rounded-lg bg-white"
+                      >
+                        <option value="t-shirt">টি-শার্ট</option>
+                        <option value="hoodie">হুডি</option>
+                        <option value="mug">মগ</option>
+                        <option value="cap">ক্যাপ</option>
+                        <option value="bag">ব্যাগ</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <Label>সাইজ</Label>
+                      <select 
+                        value={selectedSize}
+                        onChange={(e) => setSelectedSize(e.target.value)}
+                        className="w-full mt-1 p-2 border rounded-lg bg-white"
+                      >
+                        <option value="S">ছোট (S)</option>
+                        <option value="M">মাঝারি (M)</option>
+                        <option value="L">বড় (L)</option>
+                        <option value="XL">অতি বড় (XL)</option>
+                        <option value="XXL">দুই এক্স এল (XXL)</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <Label>বেস রং</Label>
+                      <div className="grid grid-cols-6 gap-2 mt-2">
+                        {['#FFFFFF', '#000000', '#FF0000', '#00FF00', '#0000FF', '#FFFF00'].map(color => (
+                          <button
+                            key={color}
+                            onClick={() => setSelectedColor(color)}
+                            className={`w-8 h-8 rounded-full border-2 transition-all ${selectedColor === color ? 'border-orange-500 scale-110' : 'border-gray-300'}`}
+                            style={{ backgroundColor: color }}
+                            title={color}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
               <Card>
                 <CardHeader>
                   <CardTitle>কাস্টমাইজেশন অপশন</CardTitle>

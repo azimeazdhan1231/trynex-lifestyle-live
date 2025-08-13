@@ -2,10 +2,12 @@ import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { ShoppingCart, Plus, Minus, Trash2 } from "lucide-react";
+import { ShoppingCart, Plus, Minus, Trash2, Palette } from "lucide-react";
 import { formatPrice } from "@/lib/constants";
 import { useCart } from "@/hooks/use-cart-bulletproof";
 import CheckoutModal from "@/components/checkout-modal";
+import PerfectCustomizeModal from "@/components/perfect-customize-modal";
+import type { Product } from "@shared/schema";
 
 interface CartModalProps {
   isOpen: boolean;
@@ -14,7 +16,10 @@ interface CartModalProps {
 
 export default function CartModalBulletproof({ isOpen, onClose }: CartModalProps) {
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
-  const { cart, updateQuantity, removeFromCart, totalItems, totalPrice, clearCart, isLoaded, refreshCart } = useCart();
+  const [isCustomizeOpen, setIsCustomizeOpen] = useState(false);
+  const [selectedItemForCustomize, setSelectedItemForCustomize] = useState<Product | null>(null);
+  const [selectedCartItemId, setSelectedCartItemId] = useState<string>('');
+  const { cart, updateQuantity, removeFromCart, totalItems, totalPrice, clearCart, isLoaded, refreshCart, updateCartItemCustomization } = useCart();
 
   // Force cart refresh when modal opens
   useEffect(() => {
@@ -37,6 +42,35 @@ export default function CartModalBulletproof({ isOpen, onClose }: CartModalProps
     } else {
       updateQuantity(id, newQuantity);
     }
+  };
+
+  const handleCustomizeCartItem = (cartItem: any) => {
+    // Convert cart item to product format for customize modal
+    const productForCustomize: Product = {
+      id: cartItem.id.split('-')[0], // Remove unique cart identifier
+      name: cartItem.name.replace(' (কাস্টমাইজড)', ''), // Remove customized suffix
+      price: cartItem.price.toString(),
+      image_url: cartItem.image_url || cartItem.image,
+      description: '',
+      category: '',
+      stock: 10,
+      created_at: new Date(),
+      is_featured: false,
+      is_latest: false,
+      is_best_selling: false
+    };
+    
+    setSelectedItemForCustomize(productForCustomize);
+    setSelectedCartItemId(cartItem.id);
+    setIsCustomizeOpen(true);
+  };
+
+  const handleCustomizeAddToCart = (product: Product, customization: any) => {
+    // Update existing cart item with new customization
+    updateCartItemCustomization(selectedCartItemId, customization);
+    setIsCustomizeOpen(false);
+    setSelectedItemForCustomize(null);
+    setSelectedCartItemId('');
   };
 
   if (!isLoaded) {
@@ -137,6 +171,17 @@ export default function CartModalBulletproof({ isOpen, onClose }: CartModalProps
                             </div>
                           </div>
                         )}
+
+                        {/* Customize Button */}
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleCustomizeCartItem(item)}
+                          className="mt-2 h-8 px-3 text-xs bg-blue-50 hover:bg-blue-100 border-blue-200 text-blue-700"
+                        >
+                          <Palette className="w-3 h-3 mr-1" />
+                          কাস্টমাইজ করুন
+                        </Button>
                       </div>
 
                       {/* Quantity Controls */}
@@ -231,6 +276,20 @@ export default function CartModalBulletproof({ isOpen, onClose }: CartModalProps
           setIsCheckoutOpen(false);
         }}
       />
+
+      {/* Customize Modal */}
+      {selectedItemForCustomize && (
+        <PerfectCustomizeModal
+          isOpen={isCustomizeOpen}
+          onClose={() => {
+            setIsCustomizeOpen(false);
+            setSelectedItemForCustomize(null);
+            setSelectedCartItemId('');
+          }}
+          product={selectedItemForCustomize}
+          onAddToCart={handleCustomizeAddToCart}
+        />
+      )}
     </>
   );
 }

@@ -67,6 +67,26 @@ const CleanProductCard = memo(function CleanProductCard({
     onViewDetails(product);
   }, [onViewDetails, product]);
 
+  const handleAddToCart = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (isOutOfStock) return;
+    
+    addToCart({
+      id: product.id,
+      name: product.name,
+      price: price,
+      image_url: product.image_url || '',
+      quantity: 1
+    });
+    
+    toast({
+      title: "পণ্য কার্টে যোগ করা হয়েছে",
+      description: product.name,
+    });
+  }, [product, price, isOutOfStock, addToCart, toast]);
+
   if (variant === "list") {
     return (
       <Card 
@@ -139,14 +159,14 @@ const CleanProductCard = memo(function CleanProductCard({
                 </Button>
                 
                 <Button
-                  onClick={handleCustomize}
+                  onClick={handleAddToCart}
                   disabled={isOutOfStock}
                   size="sm"
                   className="px-4 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600"
-                  data-testid="button-customize"
+                  data-testid="button-add-to-cart"
                 >
-                  <Palette className="w-4 h-4 mr-1" />
-                  কাস্টমাইজ করুন
+                  <ShoppingCart className="w-4 h-4 mr-1" />
+                  কার্টে যোগ করুন
                 </Button>
               </div>
             </div>
@@ -257,13 +277,13 @@ const CleanProductCard = memo(function CleanProductCard({
 
             <div>
               <Button
-                onClick={handleCustomize}
+                onClick={handleAddToCart}
                 disabled={isOutOfStock}
                 className="w-full h-11 font-medium bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 transition-colors"
-                data-testid="button-customize"
+                data-testid="button-add-to-cart"
               >
-                <Palette className="w-4 h-4 mr-2" />
-                {isOutOfStock ? 'স্টকে নেই' : 'কাস্টমাইজ করুন'}
+                <ShoppingCart className="w-4 h-4 mr-2" />
+                {isOutOfStock ? 'স্টকে নেই' : 'কার্টে যোগ করুন'}
               </Button>
             </div>
           </div>

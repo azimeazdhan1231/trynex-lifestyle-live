@@ -80,6 +80,7 @@ function Router() {
         <Route path="/payment" component={PaymentPolicy} />
         <Route path="/search" component={SearchPage} />
         <Route path="/customize/:id" component={CustomizeProduct} />
+        <Route path="/customize" component={CustomizeProduct} />
         <Route component={NotFound} />
       </Switch>
     </Suspense>

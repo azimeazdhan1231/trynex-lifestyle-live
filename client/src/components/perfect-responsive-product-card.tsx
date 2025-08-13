@@ -225,14 +225,7 @@ const PerfectResponsiveProductCard = memo(function PerfectResponsiveProductCard(
               <ShoppingCart className="w-3 h-3 mr-1" />
               কার্টে যোগ করুন
             </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={handleCustomize}
-              className="h-8 px-3 bg-white/90 backdrop-blur-sm border-white/50 shadow-md text-xs"
-            >
-              <Palette className="w-3 h-3" />
-            </Button>
+
           </div>
         </div>
       </div>
@@ -295,19 +288,12 @@ const PerfectResponsiveProductCard = memo(function PerfectResponsiveProductCard(
             <div className="flex gap-1 sm:hidden">
               <Button
                 size="sm"
-                variant="outline"
-                onClick={handleCustomize}
-                className="h-8 w-8 p-0"
-              >
-                <Palette className="w-3 h-3" />
-              </Button>
-              <Button
-                size="sm"
                 onClick={handleAddToCart}
                 disabled={isOutOfStock}
-                className="h-8 w-8 p-0 bg-primary hover:bg-primary/90"
+                className="h-8 px-3 bg-primary hover:bg-primary/90 text-xs"
               >
-                <ShoppingCart className="w-3 h-3" />
+                <ShoppingCart className="w-3 h-3 mr-1" />
+                কার্ট
               </Button>
             </div>
           </div>
