@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { useCart } from "@/hooks/use-cart";
 import MobileOptimizedLayout from "@/components/mobile-optimized-layout";
-import CustomizeModalDynamic from "@/components/customize-modal-dynamic";
+import PerfectCustomizeModal from "@/components/perfect-customize-modal";
 import { formatPrice, createWhatsAppUrl } from "@/lib/constants";
 import { trackProductView, trackAddToCart } from "@/lib/analytics";
 import type { Product } from "@shared/schema";
@@ -625,11 +625,11 @@ export default function EnhancedProductPage({ params }: ProductPageProps) {
 
         {/* Customize Modal */}
         {product && (
-          <CustomizeModalDynamic
+          <PerfectCustomizeModal
             product={product}
             isOpen={isCustomizeModalOpen}
             onClose={() => setIsCustomizeModalOpen(false)}
-            onAddToCart={async (customProduct, customization) => {
+            onAddToCart={async (customProduct: any, customization: any) => {
               addToCart({
                 id: customProduct.id,
                 name: customProduct.name,

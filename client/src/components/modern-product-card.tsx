@@ -1,282 +1,202 @@
-import { useState, memo, useCallback } from "react";
-import { motion } from "framer-motion";
+import { useState, memo } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { 
-  Star, 
-  ShoppingCart, 
-  Heart, 
-  Eye, 
-  Package,
-  Palette,
-  Zap,
-  TrendingUp
-} from "lucide-react";
+import { Heart, ShoppingCart, Palette, Eye, Star, Zap } from "lucide-react";
 import { formatPrice } from "@/lib/constants";
-import { useCart } from "@/hooks/use-cart";
-import { useToast } from "@/hooks/use-toast";
 import type { Product } from "@shared/schema";
 
 interface ModernProductCardProps {
   product: Product;
+  onAddToCart: (product: Product) => void;
+  onCustomize: (product: Product) => void;
   onViewDetails: (product: Product) => void;
-  onCustomize?: (product: Product) => void;
-  className?: string;
-  index?: number;
+  onToggleWishlist?: (productId: string) => void;
+  isInWishlist?: boolean;
 }
 
-const ModernProductCard = memo(function ModernProductCard({ 
-  product, 
-  onViewDetails,
+const ModernProductCard = memo(function ModernProductCard({
+  product,
+  onAddToCart,
   onCustomize,
-  className = "",
-  index = 0
+  onViewDetails,
+  onToggleWishlist,
+  isInWishlist = false
 }: ModernProductCardProps) {
   const [isHovered, setIsHovered] = useState(false);
-  const [isFavorite, setIsFavorite] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
-  const [imageError, setImageError] = useState(false);
-  
-  const { addToCart } = useCart();
-  const { toast } = useToast();
 
-  const price = typeof product.price === 'string' ? parseFloat(product.price) : product.price;
-  const stock = product.stock || 0;
+  const stock = Number(product.stock) || 0;
+  const price = Number(product.price) || 0;
   const isOutOfStock = stock === 0;
-  const isLowStock = stock > 0 && stock <= 5;
-  const isTrending = product.is_best_selling;
-  const isNew = product.is_latest;
-  const isFeatured = product.is_featured;
 
-  const handleAddToCart = useCallback((e: React.MouseEvent) => {
-    e.preventDefault();
+  const handleAddToCart = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (!isOutOfStock) {
-      addToCart({
-        id: product.id,
-        name: product.name,
-        price: price,
-        image_url: product.image_url || '',
-        quantity: 1
-      });
-      toast({
-        title: "কার্টে যোগ করা হয়েছে",
-        description: `${product.name} সফলভাবে কার্টে যোগ করা হয়েছে`,
-        duration: 2000,
-      });
+      onAddToCart(product);
     }
-  }, [product, addToCart, toast, isOutOfStock, price]);
+  };
 
-  const handleCustomize = useCallback((e: React.MouseEvent) => {
-    e.preventDefault();
+  const handleCustomize = (e: React.MouseEvent) => {
     e.stopPropagation();
-    // Only allow customization for specific product types
-    const customizableTypes = ['t-shirt', 'tshirt', 'mug', 'photo canvas', 'canvas'];
-    const productName = product.name?.toLowerCase() || '';
-    const productCategory = product.category?.toLowerCase() || '';
-    
-    const isCustomizable = customizableTypes.some(type => 
-      productName.includes(type) || productCategory.includes(type)
-    );
-    
-    if (isCustomizable) {
-      // Navigate to customize page with product data
-      window.location.href = `/customize?productId=${product.id}`;
-    } else {
-      toast({
-        title: "কাস্টমাইজেশন উপলব্ধ নয়",
-        description: "এই পণ্যটি কাস্টমাইজ করা যায় না",
-        variant: "destructive"
-      });
+    if (!isOutOfStock) {
+      onCustomize(product);
     }
-  }, [product, toast]);
+  };
 
-  const toggleFavorite = useCallback((e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsFavorite(!isFavorite);
-    
-    toast({
-      title: isFavorite ? "পছন্দের তালিকা থেকে সরানো হয়েছে" : "পছন্দের তালিকায় যোগ করা হয়েছে",
-      description: product.name,
-    });
-  }, [isFavorite, product.name, toast]);
-
-  const handleViewDetails = useCallback(() => {
+  const handleViewDetails = () => {
     onViewDetails(product);
-  }, [onViewDetails, product]);
+  };
 
-  const cardVariants = {
-    hidden: { y: 20, opacity: 0 },
-    visible: { 
-      y: 0, 
-      opacity: 1,
-      transition: { 
-        delay: index * 0.1,
-        duration: 0.5,
-        ease: "easeOut"
-      }
+  const handleToggleWishlist = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (onToggleWishlist) {
+      onToggleWishlist(product.id);
     }
   };
 
   return (
-    <motion.div
-      variants={cardVariants}
-      initial="hidden"
-      animate="visible"
-      whileHover={{ y: -8 }}
-      transition={{ duration: 0.3 }}
+    <Card 
+      className="group overflow-hidden bg-white hover:shadow-2xl transition-all duration-500 cursor-pointer border-0 shadow-lg hover:shadow-orange-500/20"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      onClick={handleViewDetails}
+      data-testid={`card-product-${product.id}`}
     >
-      <Card 
-        className={`group overflow-hidden border-0 shadow-sm hover:shadow-xl bg-white cursor-pointer transform transition-all duration-300 rounded-2xl ${className}`}
-        onClick={handleViewDetails}
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
-      >
-        <div className="relative overflow-hidden">
-          {/* Image Container */}
-          <div className="relative aspect-[4/5] bg-gradient-to-br from-gray-50 to-gray-100 overflow-hidden">
-            {!imageLoaded && (
-              <div className="absolute inset-0 bg-gradient-to-br from-gray-100 to-gray-200 animate-pulse flex items-center justify-center">
-                <Package className="w-12 h-12 text-gray-400" />
-              </div>
+      <div className="relative">
+        {/* Product Image */}
+        <div className="aspect-square overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100 relative">
+          {!imageLoaded && (
+            <div className="absolute inset-0 animate-pulse bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 bg-[length:400%_100%] animate-[shimmer_1.5s_ease-in-out_infinite]" />
+          )}
+          
+          <img
+            src={product.image_url || "https://images.unsplash.com/photo-1544787219-7f47ccb76574?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"}
+            alt={product.name}
+            className={`w-full h-full object-cover transition-all duration-700 group-hover:scale-110 ${
+              imageLoaded ? 'opacity-100' : 'opacity-0'
+            }`}
+            loading="lazy"
+            onLoad={() => setImageLoaded(true)}
+            data-testid={`img-product-${product.id}`}
+          />
+
+          {/* Gradient overlay on hover */}
+          <div className={`absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent transition-opacity duration-300 ${
+            isHovered ? 'opacity-100' : 'opacity-0'
+          }`} />
+          
+          {/* Status badges */}
+          <div className="absolute top-3 left-3 flex flex-col gap-2">
+            {product.is_featured && (
+              <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white font-bold shadow-lg px-2 py-1">
+                <Star className="w-3 h-3 mr-1" />
+                ফিচার্ড
+              </Badge>
             )}
-            <img
-              src={product.image_url || "/placeholder.png"}
-              alt={product.name}
-              className={`w-full h-full object-cover transition-all duration-500 group-hover:scale-110 ${
-                imageLoaded ? 'opacity-100' : 'opacity-0'
+            {product.is_best_selling && (
+              <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold shadow-lg px-2 py-1">
+                <Zap className="w-3 h-3 mr-1" />
+                বেস্ট সেলার
+              </Badge>
+            )}
+            {isOutOfStock && (
+              <Badge variant="destructive" className="font-bold shadow-lg">
+                স্টক শেষ
+              </Badge>
+            )}
+          </div>
+
+          {/* Wishlist button */}
+          <div className="absolute top-3 right-3">
+            <Button
+              variant="secondary"
+              size="sm"
+              className={`w-9 h-9 p-0 rounded-full bg-white/90 backdrop-blur-sm shadow-lg border-0 transition-all duration-300 ${
+                isInWishlist ? 'text-red-500' : 'text-gray-600 hover:text-red-500'
               }`}
-              onLoad={() => setImageLoaded(true)}
-              onError={() => setImageError(true)}
-            />
-            
-            {/* Gradient overlay on hover */}
-            <div className={`absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent transition-opacity duration-300 ${
-              isHovered ? 'opacity-100' : 'opacity-0'
-            }`} />
+              onClick={handleToggleWishlist}
+              data-testid={`button-wishlist-${product.id}`}
+            >
+              <Heart className={`w-4 h-4 ${isInWishlist ? 'fill-current' : ''}`} />
+            </Button>
+          </div>
 
-            {/* Top badges */}
-            <div className="absolute top-3 left-3 flex flex-col gap-2">
-              {isOutOfStock && (
-                <Badge className="bg-red-500/90 text-white font-medium text-xs px-2 py-1">
-                  স্টকে নেই
-                </Badge>
-              )}
-              {isNew && !isOutOfStock && (
-                <Badge className="bg-green-500/90 text-white font-medium text-xs px-2 py-1">
-                  নতুন
-                </Badge>
-              )}
-              {isFeatured && !isOutOfStock && !isNew && (
-                <Badge className="bg-blue-500/90 text-white font-medium text-xs px-2 py-1">
-                  বিশেষ
-                </Badge>
-              )}
-              {isTrending && !isOutOfStock && !isNew && !isFeatured && (
-                <Badge className="bg-orange-500/90 text-white font-medium text-xs px-2 py-1 flex items-center gap-1">
-                  <TrendingUp className="w-3 h-3" />
-                  জনপ্রিয়
-                </Badge>
-              )}
-              {isLowStock && !isOutOfStock && (
-                <Badge className="bg-amber-500/90 text-white font-medium text-xs px-2 py-1">
-                  সীমিত স্টক
-                </Badge>
-              )}
-            </div>
-
-            {/* Top right actions */}
-            <div className="absolute top-3 right-3 flex flex-col gap-2">
-              <motion.button
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={toggleFavorite}
-                className={`w-8 h-8 rounded-full flex items-center justify-center backdrop-blur-sm transition-all duration-300 ${
-                  isFavorite 
-                    ? 'bg-red-500/90 text-white' 
-                    : 'bg-white/80 text-gray-600 hover:bg-white/90'
-                }`}
-              >
-                <Heart className={`w-4 h-4 ${isFavorite ? 'fill-current' : ''}`} />
-              </motion.button>
-              
-              <motion.button
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={handleViewDetails}
-                className="w-8 h-8 rounded-full bg-white/80 hover:bg-white/90 flex items-center justify-center backdrop-blur-sm transition-all duration-300"
-              >
-                <Eye className="w-4 h-4 text-gray-600" />
-              </motion.button>
-            </div>
-
-            {/* Bottom action buttons - show on hover */}
-            <div className={`absolute bottom-3 left-3 right-3 flex gap-2 transition-all duration-300 ${
-              isHovered ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
-            }`}>
+          {/* Hover actions */}
+          <div className={`absolute inset-x-4 bottom-4 transition-all duration-300 transform ${
+            isHovered ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
+          }`}>
+            <div className="flex gap-2">
               <Button
-                onClick={handleAddToCart}
                 size="sm"
-                className="w-full bg-orange-500 hover:bg-orange-600 text-white backdrop-blur-sm border-0 font-medium text-xs"
+                className="flex-1 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-medium shadow-lg"
+                onClick={handleCustomize}
                 disabled={isOutOfStock}
+                data-testid={`button-customize-${product.id}`}
               >
-                <ShoppingCart className="w-3 h-3 mr-1" />
-                কার্টে যোগ করুন
+                <Palette className="w-4 h-4 mr-2" />
+                কাস্টমাইজ
+              </Button>
+              
+              <Button
+                size="sm"
+                variant="secondary"
+                className="bg-white/90 backdrop-blur-sm text-gray-800 hover:bg-white font-medium shadow-lg"
+                onClick={handleViewDetails}
+                data-testid={`button-view-${product.id}`}
+              >
+                <Eye className="w-4 h-4" />
               </Button>
             </div>
           </div>
-
-          <CardContent className="p-4">
-            {/* Product name */}
-            <h3 className="font-semibold text-base text-gray-900 mb-2 line-clamp-2 leading-tight">
-              {product.name}
-            </h3>
-
-            {/* Rating and stock info */}
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-1">
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <Star
-                    key={star}
-                    className={`w-3 h-3 ${
-                      star <= 4 ? 'text-yellow-400 fill-current' : 'text-gray-300'
-                    }`}
-                  />
-                ))}
-                <span className="text-xs text-gray-500 ml-1">(4.0)</span>
-              </div>
-              <span className="text-xs text-gray-500">{stock} টি স্টকে</span>
-            </div>
-
-            {/* Price */}
-            <div className="flex items-center justify-between">
-              <div className="flex flex-col">
-                <span className="text-lg font-bold text-orange-600">
-                  ৳{formatPrice(price)}
-                </span>
-                {product.category && (
-                  <span className="text-xs text-gray-500 capitalize">
-                    {product.category}
-                  </span>
-                )}
-              </div>
-              
-              <div className="flex items-center gap-1">
-                {isTrending && (
-                  <div className="flex items-center gap-1 text-orange-500">
-                    <Zap className="w-3 h-3" />
-                    <span className="text-xs font-medium">হট</span>
-                  </div>
-                )}
-              </div>
-            </div>
-          </CardContent>
         </div>
-      </Card>
-    </motion.div>
+
+        {/* Product details */}
+        <CardContent className="p-4 space-y-3">
+          {/* Product name */}
+          <h3 className="font-semibold text-gray-900 line-clamp-2 leading-5 min-h-[2.5rem]" data-testid={`text-name-${product.id}`}>
+            {product.name}
+          </h3>
+
+          {/* Rating */}
+          <div className="flex items-center gap-1">
+            {[...Array(5)].map((_, i) => (
+              <Star
+                key={i}
+                className={`w-3 h-3 ${i < 4 ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'}`}
+              />
+            ))}
+            <span className="text-sm text-gray-500 ml-1">(4.8)</span>
+          </div>
+
+          {/* Price and stock */}
+          <div className="flex items-center justify-between">
+            <div>
+              <span className="text-xl font-bold text-gray-900" data-testid={`text-price-${product.id}`}>
+                {formatPrice(price)}
+              </span>
+            </div>
+            <div className="text-sm text-gray-500">
+              স্টক: <span className={stock < 5 ? 'text-orange-500 font-medium' : ''}>{stock}</span>
+            </div>
+          </div>
+
+          {/* Add to cart button */}
+          <Button
+            className="w-full bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white font-medium h-10 shadow-lg"
+            onClick={handleAddToCart}
+            disabled={isOutOfStock}
+            data-testid={`button-add-cart-${product.id}`}
+          >
+            <ShoppingCart className="w-4 h-4 mr-2" />
+            {isOutOfStock ? 'স্টক নেই' : 'কার্টে যোগ করুন'}
+          </Button>
+        </CardContent>
+      </div>
+    </Card>
   );
 });
+
+ModernProductCard.displayName = "ModernProductCard";
 
 export default ModernProductCard;

@@ -1,151 +1,150 @@
-import React, { useState, useMemo, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { Search, Filter, Grid3X3, List, SlidersHorizontal, Heart, ShoppingCart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { 
-  Search, 
-  Filter, 
-  Grid3X3, 
-  List,
-  SlidersHorizontal,
-  ArrowUp,
-  Package,
-  Star,
-  TrendingUp,
-  Clock,
-  Sparkles,
-  ChevronDown,
-  X,
-  Eye,
-  ShoppingCart
-} from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import UltraSimpleLayout from "@/components/ultra-simple-layout";
-import ModernProductCard from "@/components/modern-product-card";
-import UltraDynamicProductModal from "@/components/ultra-dynamic-product-modal";
-import ProductCustomizationModal from "@/components/ProductCustomizationModal";
 import { useCart } from "@/hooks/use-cart";
-import type { Product } from "@shared/schema";
+import MobileOptimizedLayout from "@/components/mobile-optimized-layout";
+import ModernProductCard from "@/components/modern-product-card";
+import SimpleCustomizeModal from "@/components/simple-customize-modal";
+import UltraDynamicProductModal from "@/components/ultra-dynamic-product-modal";
+import EnhancedCartModal from "@/components/enhanced-cart-modal";
 import { PRODUCT_CATEGORIES } from "@/lib/constants";
+import type { Product } from "@shared/schema";
 
 const SORT_OPTIONS = [
-  { value: "newest", label: "নতুন আগে", icon: Clock },
-  { value: "oldest", label: "পুরাতন আগে", icon: Clock },
-  { value: "price_asc", label: "দাম: কম থেকে বেশি", icon: ArrowUp },
-  { value: "price_desc", label: "দাম: বেশি থেকে কম", icon: ArrowUp },
-  { value: "name_asc", label: "নাম: A-Z", icon: Filter },
-  { value: "popular", label: "জনপ্রিয়", icon: TrendingUp },
+  { value: "newest", label: "নতুন আগে" },
+  { value: "oldest", label: "পুরাতন আগে" },
+  { value: "price_asc", label: "দাম: কম থেকে বেশি" },
+  { value: "price_desc", label: "দাম: বেশি থেকে কম" },
+  { value: "name_asc", label: "নাম: A-Z" },
+  { value: "featured", label: "ফিচার্ড প্রথমে" },
 ];
 
-const PRICE_RANGES = [
-  { label: "সব দাম", min: 0, max: Infinity },
-  { label: "৫০০ টাকার নিচে", min: 0, max: 500 },
-  { label: "৫০০-১০০০ টাকা", min: 500, max: 1000 },
-  { label: "১০০০-২০০০ টাকা", min: 1000, max: 2000 },
-  { label: "২০০০-৫০০০ টাকা", min: 2000, max: 5000 },
-  { label: "৫০০০ টাকার উপরে", min: 5000, max: Infinity },
-];
+// Enhanced loading skeleton
+function ModernProductSkeleton() {
+  return (
+    <Card className="overflow-hidden">
+      <div className="aspect-square bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 bg-[length:400%_100%] animate-[shimmer_1.5s_ease-in-out_infinite]" />
+      <CardContent className="p-4 space-y-3">
+        <div className="h-4 bg-gray-200 rounded w-3/4 animate-pulse" />
+        <div className="h-3 bg-gray-200 rounded w-1/2 animate-pulse" />
+        <div className="flex justify-between items-center">
+          <div className="h-5 bg-gray-200 rounded w-20 animate-pulse" />
+          <div className="h-4 bg-gray-200 rounded w-16 animate-pulse" />
+        </div>
+        <div className="h-10 bg-gray-200 rounded animate-pulse" />
+      </CardContent>
+    </Card>
+  );
+}
 
-const ModernProductsPage = () => {
+export default function ModernProductsPage() {
   const { toast } = useToast();
-  const { addToCart } = useCart();
-  
+  const { addToCart, totalItems } = useCart();
+
   // State management
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [sortOption, setSortOption] = useState("newest");
-  const [priceRange, setPriceRange] = useState(PRICE_RANGES[0]);
-  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
-  const [showFilters, setShowFilters] = useState(false);
-  const [displayLimit, setDisplayLimit] = useState(20);
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [priceRange, setPriceRange] = useState<[number, number]>([0, 10000]);
+  const [showOnlyInStock, setShowOnlyInStock] = useState(false);
+  const [wishlist, setWishlist] = useState<string[]>([]);
+
+  // Modal states
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-  const [isProductModalOpen, setIsProductModalOpen] = useState(false);
   const [isCustomizeModalOpen, setIsCustomizeModalOpen] = useState(false);
+  const [isProductModalOpen, setIsProductModalOpen] = useState(false);
+  const [isCartModalOpen, setIsCartModalOpen] = useState(false);
 
   // Fetch products
   const { data: products = [], isLoading, error } = useQuery<Product[]>({
     queryKey: ["/api/products"],
-    staleTime: 1000 * 60 * 5,
-    refetchOnWindowFocus: false,
+    staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
   // Filter and sort products
   const filteredProducts = useMemo(() => {
-    let filtered = [...products];
+    let filtered = products;
 
     // Search filter
     if (searchTerm.trim()) {
-      const searchLower = searchTerm.toLowerCase();
       filtered = filtered.filter(product =>
-        product.name.toLowerCase().includes(searchLower) ||
-        (product.description || '').toLowerCase().includes(searchLower) ||
-        (product.category || '').toLowerCase().includes(searchLower)
+        product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (product.description && product.description.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (product.category && product.category.toLowerCase().includes(searchTerm.toLowerCase()))
       );
     }
 
     // Category filter
-    if (selectedCategory && selectedCategory !== "all") {
-      filtered = filtered.filter(product => {
-        if (!product.category) return false;
-        return product.category.toLowerCase().includes(selectedCategory.toLowerCase()) ||
-               selectedCategory.toLowerCase().includes(product.category.toLowerCase());
-      });
+    if (selectedCategory !== "all") {
+      filtered = filtered.filter(product => product.category === selectedCategory);
     }
 
     // Price range filter
-    if (priceRange.min > 0 || priceRange.max < Infinity) {
-      filtered = filtered.filter(product => {
-        const price = typeof product.price === 'string' ? parseFloat(product.price) : product.price;
-        return price >= priceRange.min && price <= priceRange.max;
-      });
+    filtered = filtered.filter(product => {
+      const price = Number(product.price) || 0;
+      return price >= priceRange[0] && price <= priceRange[1];
+    });
+
+    // Stock filter
+    if (showOnlyInStock) {
+      filtered = filtered.filter(product => (Number(product.stock) || 0) > 0);
     }
 
     // Sort products
     filtered.sort((a, b) => {
-      const priceA = typeof a.price === 'string' ? parseFloat(a.price) : a.price;
-      const priceB = typeof b.price === 'string' ? parseFloat(b.price) : b.price;
-      
       switch (sortOption) {
-        case 'price_asc':
-          return priceA - priceB;
-        case 'price_desc':
-          return priceB - priceA;
-        case 'name_asc':
-          return a.name.localeCompare(b.name);
-        case 'popular':
-          return (b.stock || 0) - (a.stock || 0);
-        case 'oldest':
-          return new Date(a.created_at || 0).getTime() - new Date(b.created_at || 0).getTime();
-        default: // newest
+        case "newest":
           return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime();
+        case "oldest":
+          return new Date(a.created_at || 0).getTime() - new Date(b.created_at || 0).getTime();
+        case "price_asc":
+          return (Number(a.price) || 0) - (Number(b.price) || 0);
+        case "price_desc":
+          return (Number(b.price) || 0) - (Number(a.price) || 0);
+        case "name_asc":
+          return a.name.localeCompare(b.name);
+        case "featured":
+          return (b.is_featured ? 1 : 0) - (a.is_featured ? 1 : 0);
+        default:
+          return 0;
       }
     });
 
     return filtered;
-  }, [products, searchTerm, selectedCategory, sortOption, priceRange]);
+  }, [products, searchTerm, selectedCategory, sortOption, priceRange, showOnlyInStock]);
 
-  const displayedProducts = filteredProducts.slice(0, displayLimit);
-  const hasMoreProducts = filteredProducts.length > displayLimit;
+  // Event handlers
+  const handleAddToCart = (product: Product) => {
+    const stock = Number(product.stock) || 0;
+    if (stock === 0) {
+      toast({
+        title: "স্টক নেই",
+        description: "এই পণ্যটি বর্তমানে স্টকে নেই",
+        variant: "destructive",
+      });
+      return;
+    }
 
-  // Categorize products for tabs
-  const categorizedProducts = useMemo(() => {
-    return {
-      all: filteredProducts,
-      featured: filteredProducts.filter(p => p.is_featured),
-      trending: filteredProducts.filter(p => p.is_best_selling),
-      latest: filteredProducts.filter(p => p.is_latest),
-    };
-  }, [filteredProducts]);
+    addToCart({
+      id: product.id,
+      name: product.name,
+      price: Number(product.price) || 0,
+      quantity: 1,
+      image_url: product.image_url || undefined,
+    });
 
-  // Handlers
-  const handleViewProduct = (product: Product) => {
-    setSelectedProduct(product);
-    setIsProductModalOpen(true);
+    toast({
+      title: "কার্টে যোগ করা হয়েছে!",
+      description: `${product.name} সফলভাবে কার্টে যোগ করা হয়েছে`,
+      duration: 2000,
+    });
   };
 
   const handleCustomize = (product: Product) => {
@@ -153,370 +152,285 @@ const ModernProductsPage = () => {
     setIsCustomizeModalOpen(true);
   };
 
-  const handleLoadMore = () => {
-    setDisplayLimit(prev => prev + 20);
+  const handleViewDetails = (product: Product) => {
+    setSelectedProduct(product);
+    setIsProductModalOpen(true);
+  };
+
+  const handleToggleWishlist = (productId: string) => {
+    setWishlist(prev => 
+      prev.includes(productId) 
+        ? prev.filter(id => id !== productId)
+        : [...prev, productId]
+    );
+
+    const isInWishlist = wishlist.includes(productId);
+    toast({
+      title: isInWishlist ? "উইশলিস্ট থেকে সরানো হয়েছে" : "উইশলিস্টে যোগ করা হয়েছে",
+      description: products.find(p => p.id === productId)?.name || "পণ্য",
+      duration: 2000,
+    });
   };
 
   const clearFilters = () => {
     setSearchTerm("");
     setSelectedCategory("all");
     setSortOption("newest");
-    setPriceRange(PRICE_RANGES[0]);
+    setPriceRange([0, 10000]);
+    setShowOnlyInStock(false);
   };
-
-  const activeFiltersCount = [
-    searchTerm.trim() !== "",
-    selectedCategory !== "all",
-    priceRange !== PRICE_RANGES[0],
-    sortOption !== "newest"
-  ].filter(Boolean).length;
-
-  // Loading skeleton
-  const ProductSkeleton = () => (
-    <div className="animate-pulse">
-      <div className="aspect-[4/5] bg-gray-200 rounded-2xl mb-4"></div>
-      <div className="space-y-3">
-        <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-        <div className="h-3 bg-gray-200 rounded w-1/2"></div>
-        <div className="h-5 bg-gray-200 rounded w-16"></div>
-      </div>
-    </div>
-  );
 
   if (error) {
     return (
-      <UltraSimpleLayout>
-        <div className="container mx-auto px-4 py-16">
-          <div className="text-center">
-            <Package className="w-16 h-16 text-red-500 mx-auto mb-4" />
-            <h2 className="text-2xl font-bold text-red-600 mb-4">পণ্য লোড করতে সমস্যা হয়েছে</h2>
-            <p className="text-gray-600 mb-4">দয়া করে পেজ রিফ্রেশ করুন</p>
+      <MobileOptimizedLayout>
+        <div className="container mx-auto px-4 py-12 text-center">
+          <div className="max-w-md mx-auto">
+            <h1 className="text-2xl font-bold text-gray-800 mb-4">কিছু সমস্যা হয়েছে</h1>
+            <p className="text-gray-600 mb-6">পণ্য লোড করতে সমস্যা হয়েছে। পরে আবার চেষ্টা করুন।</p>
             <Button onClick={() => window.location.reload()}>
-              পেজ রিফ্রেশ করুন
+              আবার চেষ্টা করুন
             </Button>
           </div>
         </div>
-      </UltraSimpleLayout>
+      </MobileOptimizedLayout>
     );
   }
 
   return (
-    <>
-      <UltraSimpleLayout>
-        {/* Hero Section */}
-        <section className="bg-gradient-to-br from-orange-500 via-red-500 to-pink-600 text-white py-16">
-          <div className="container mx-auto px-4">
-            <motion.div
-              initial={{ y: 30, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ duration: 0.6 }}
-              className="text-center max-w-4xl mx-auto"
-            >
-              <Badge className="bg-white/20 text-white border-white/30 backdrop-blur-sm px-4 py-2 mb-6">
-                <Sparkles className="w-4 h-4 mr-2" />
-                {products.length}+ পণ্যের বিশাল সংগ্রহ
-              </Badge>
-              
-              <h1 className="text-3xl lg:text-5xl font-bold mb-6 leading-tight">
-                আপনার পছন্দের পণ্য খুঁজুন
+    <MobileOptimizedLayout>
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-red-50">
+        {/* Header */}
+        <div className="bg-white shadow-sm border-b">
+          <div className="container mx-auto px-4 py-6">
+            <div className="text-center mb-8">
+              <h1 className="text-4xl font-bold text-gray-900 mb-3 bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent">
+                আমাদের পণ্যসমূহ
               </h1>
-              
-              <p className="text-xl mb-8 text-white/90 max-w-2xl mx-auto leading-relaxed">
-                হাজার হাজার মানসম্পন্ন পণ্যের মধ্য থেকে বেছে নিন আপনার পছন্দের আইটেম
+              <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+                উচ্চমানের ও সাশ্রয়ী দামে বিভিন্ন ধরনের পণ্য এবং কাস্টমাইজেশন সুবিধা
               </p>
+            </div>
 
-              {/* Search Bar */}
-              <div className="max-w-2xl mx-auto">
+            {/* Stats */}
+            <div className="flex items-center justify-center gap-8 text-sm text-gray-600 mb-8">
+              <div className="flex items-center gap-2">
+                <Badge variant="secondary" className="bg-green-100 text-green-800">
+                  {filteredProducts.length} পণ্য
+                </Badge>
+              </div>
+              
+              {wishlist.length > 0 && (
+                <div className="flex items-center gap-2">
+                  <Heart className="w-4 h-4 text-red-500" />
+                  <span>{wishlist.length} উইশলিস্ট</span>
+                </div>
+              )}
+              
+              {totalItems > 0 && (
+                <button
+                  onClick={() => setIsCartModalOpen(true)}
+                  className="flex items-center gap-2 text-orange-600 hover:text-orange-700 font-medium"
+                >
+                  <ShoppingCart className="w-4 h-4" />
+                  <span>{totalItems} কার্টে</span>
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+
+        <div className="container mx-auto px-4 py-8">
+          {/* Filters and Controls */}
+          <Card className="mb-8 overflow-hidden">
+            <CardContent className="p-6">
+              <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 items-end">
+                {/* Search */}
                 <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                   <Input
-                    type="text"
-                    placeholder="পণ্য খুঁজুন... (যেমন: টি-শার্ট, মগ, গিফট)"
+                    placeholder="পণ্য খুঁজুন..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-12 pr-4 py-4 text-lg bg-white/20 border-white/30 text-white placeholder-white/70 backdrop-blur-sm rounded-2xl focus:bg-white/30 focus:border-white/50 transition-all duration-300"
+                    className="pl-10 h-12 border-2 focus:border-orange-500 rounded-xl"
                   />
-                  <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-6 h-6 text-white/70" />
-                </div>
-              </div>
-            </motion.div>
-          </div>
-        </section>
-
-        {/* Filters and Controls */}
-        <section className="py-8 bg-white border-b border-gray-200 sticky top-20 z-40 backdrop-blur-sm">
-          <div className="container mx-auto px-4">
-            <div className="flex flex-col lg:flex-row gap-4 items-center justify-between">
-              {/* Left Side - Filters */}
-              <div className="flex flex-wrap items-center gap-4 w-full lg:w-auto">
-                <Button
-                  onClick={() => setShowFilters(!showFilters)}
-                  variant="outline"
-                  className="flex items-center gap-2"
-                >
-                  <SlidersHorizontal className="w-4 h-4" />
-                  ফিল্টার
-                  {activeFiltersCount > 0 && (
-                    <Badge className="bg-orange-500 text-white ml-1 text-xs">
-                      {activeFiltersCount}
-                    </Badge>
-                  )}
-                  <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${showFilters ? 'rotate-180' : ''}`} />
-                </Button>
-
-                {/* Quick Category Pills */}
-                <div className="flex flex-wrap gap-2">
-                  {["all", "t-shirt", "mug", "gift-for-her", "gift-for-him"].map((category) => (
-                    <Button
-                      key={category}
-                      onClick={() => setSelectedCategory(category)}
-                      variant={selectedCategory === category ? "default" : "outline"}
-                      size="sm"
-                      className="rounded-full text-xs"
-                    >
-                      {category === "all" ? "সব পণ্য" :
-                       category === "t-shirt" ? "টি-শার্ট" :
-                       category === "mug" ? "মগ" :
-                       category === "gift-for-her" ? "তার জন্য" :
-                       "তার জন্য"}
-                    </Button>
-                  ))}
                 </div>
 
-                {activeFiltersCount > 0 && (
-                  <Button
-                    onClick={clearFilters}
-                    variant="ghost"
-                    size="sm"
-                    className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                  >
-                    <X className="w-4 h-4 mr-1" />
-                    সাফ করুন
-                  </Button>
-                )}
-              </div>
+                {/* Category */}
+                <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                  <SelectTrigger className="h-12 border-2 rounded-xl">
+                    <Filter className="w-4 h-4 mr-2" />
+                    <SelectValue placeholder="ক্যাটাগরি" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">সব ক্যাটাগরি</SelectItem>
+                    {PRODUCT_CATEGORIES.filter(cat => cat.id && cat.id.trim()).map((category) => (
+                      <SelectItem key={category.id} value={category.id}>
+                        {category.bengaliName || category.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
 
-              {/* Right Side - View Controls */}
-              <div className="flex items-center gap-4 w-full lg:w-auto justify-between lg:justify-end">
-                <span className="text-sm text-gray-600">
-                  {filteredProducts.length} টি পণ্য পাওয়া গেছে
-                </span>
+                {/* Sort */}
+                <Select value={sortOption} onValueChange={setSortOption}>
+                  <SelectTrigger className="h-12 border-2 rounded-xl">
+                    <SlidersHorizontal className="w-4 h-4 mr-2" />
+                    <SelectValue placeholder="সাজান" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {SORT_OPTIONS.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
 
-                <div className="flex items-center gap-2">
-                  <Select value={sortOption} onValueChange={setSortOption}>
-                    <SelectTrigger className="w-48">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {SORT_OPTIONS.map(option => (
-                        <SelectItem key={option.value} value={option.value}>
-                          {option.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-
-                  <div className="border border-gray-300 rounded-lg p-1 flex">
+                {/* View Mode & Clear */}
+                <div className="flex gap-2">
+                  <div className="flex border-2 rounded-xl overflow-hidden">
                     <Button
-                      onClick={() => setViewMode("grid")}
-                      variant={viewMode === "grid" ? "default" : "ghost"}
+                      variant={viewMode === 'grid' ? 'default' : 'ghost'}
                       size="sm"
-                      className="p-2"
+                      onClick={() => setViewMode('grid')}
+                      className="rounded-none"
                     >
                       <Grid3X3 className="w-4 h-4" />
                     </Button>
                     <Button
-                      onClick={() => setViewMode("list")}
-                      variant={viewMode === "list" ? "default" : "ghost"}
+                      variant={viewMode === 'list' ? 'default' : 'ghost'}
                       size="sm"
-                      className="p-2"
+                      onClick={() => setViewMode('list')}
+                      className="rounded-none"
                     >
                       <List className="w-4 h-4" />
                     </Button>
                   </div>
+
+                  {(searchTerm || selectedCategory !== "all" || sortOption !== "newest") && (
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={clearFilters}
+                      className="whitespace-nowrap"
+                    >
+                      সব পরিষ্কার
+                    </Button>
+                  )}
                 </div>
               </div>
-            </div>
 
-            {/* Expanded Filters */}
-            <AnimatePresence>
-              {showFilters && (
-                <motion.div
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: "auto", opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  transition={{ duration: 0.3 }}
-                  className="mt-6 p-6 bg-gray-50 rounded-xl border"
+              {/* Quick Filters */}
+              <div className="flex flex-wrap gap-2 mt-4">
+                <Button
+                  variant={showOnlyInStock ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setShowOnlyInStock(!showOnlyInStock)}
+                  className="text-xs"
                 >
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-900 mb-2">
-                        ক্যাটেগরি
-                      </label>
-                      <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="ক্যাটেগরি বেছে নিন" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="all">সব ক্যাটেগরি</SelectItem>
-                          {Object.entries(PRODUCT_CATEGORIES).map(([key, category]) => (
-                            <SelectItem key={key} value={key}>
-                              {category.nameBengali}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-900 mb-2">
-                        দামের পরিসর
-                      </label>
-                      <Select 
-                        value={PRICE_RANGES.findIndex(r => r.min === priceRange.min && r.max === priceRange.max).toString()}
-                        onValueChange={(value) => setPriceRange(PRICE_RANGES[parseInt(value)])}
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {PRICE_RANGES.map((range, index) => (
-                            <SelectItem key={index} value={index.toString()}>
-                              {range.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-900 mb-2">
-                        সাজানো
-                      </label>
-                      <Select value={sortOption} onValueChange={setSortOption}>
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {SORT_OPTIONS.map(option => (
-                            <SelectItem key={option.value} value={option.value}>
-                              {option.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-        </section>
-
-        {/* Products Section */}
-        <section className="py-8">
-          <div className="container mx-auto px-4">
-            {isLoading ? (
-              <div className={`grid gap-6 ${
-                viewMode === "grid" 
-                  ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-4" 
-                  : "grid-cols-1"
-              }`}>
-                {Array.from({ length: 12 }).map((_, index) => (
-                  <ProductSkeleton key={index} />
-                ))}
-              </div>
-            ) : filteredProducts.length === 0 ? (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="text-center py-16"
-              >
-                <Package className="w-16 h-16 text-gray-300 mx-auto mb-6" />
-                <h3 className="text-2xl font-bold text-gray-900 mb-4">
-                  কোনো পণ্য পাওয়া যায়নি
-                </h3>
-                <p className="text-gray-600 mb-6 max-w-md mx-auto">
-                  আপনার খোঁজার মাপকাঠিতে কোনো পণ্য খুঁজে পাওয়া যায়নি। অনুগ্রহ করে ভিন্ন কিওয়ার্ড বা ফিল্টার ব্যবহার করুন।
-                </p>
-                <Button onClick={clearFilters} className="bg-orange-500 hover:bg-orange-600">
-                  সব ফিল্টার সাফ করুন
+                  শুধু স্টকে আছে
                 </Button>
-              </motion.div>
-            ) : (
-              <>
-                <motion.div
-                  layout
-                  className={`grid gap-6 ${
-                    viewMode === "grid" 
-                      ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-4" 
-                      : "grid-cols-1 max-w-4xl mx-auto"
-                  }`}
+                
+                <Button
+                  variant={sortOption === "featured" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setSortOption("featured")}
+                  className="text-xs"
                 >
-                  {displayedProducts.map((product, index) => (
-                    <ModernProductCard
-                      key={product.id}
-                      product={product}
-                      onViewDetails={handleViewProduct}
-                      onCustomize={handleCustomize}
-                      index={index}
-                      className={viewMode === "list" ? "w-full" : ""}
-                    />
-                  ))}
-                </motion.div>
+                  ফিচার্ড পণ্য
+                </Button>
 
-                {/* Load More Button */}
-                {hasMoreProducts && (
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    className="text-center mt-12"
+                {wishlist.length > 0 && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      // Show only wishlisted products
+                      setSearchTerm("");
+                      setSelectedCategory("all");
+                    }}
+                    className="text-xs"
                   >
-                    <Button
-                      onClick={handleLoadMore}
-                      size="lg"
-                      className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white px-8 py-3 rounded-full font-medium"
-                    >
-                      আরও পণ্য দেখুন
-                      <ChevronDown className="w-4 h-4 ml-2" />
-                    </Button>
-                  </motion.div>
+                    <Heart className="w-3 h-3 mr-1" />
+                    উইশলিস্ট ({wishlist.length})
+                  </Button>
                 )}
-              </>
-            )}
-          </div>
-        </section>
-      </UltraSimpleLayout>
+              </div>
+            </CardContent>
+          </Card>
 
-      {/* Product Modal */}
-      <UltraDynamicProductModal
-        product={selectedProduct}
-        isOpen={isProductModalOpen}
-        onClose={() => {
-          setIsProductModalOpen(false);
-          setSelectedProduct(null);
-        }}
-        onCustomize={handleCustomize}
-      />
+          {/* Results */}
+          {isLoading ? (
+            <div className={`grid gap-6 ${
+              viewMode === 'grid' 
+                ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' 
+                : 'grid-cols-1'
+            }`}>
+              {[...Array(12)].map((_, i) => (
+                <ModernProductSkeleton key={i} />
+              ))}
+            </div>
+          ) : filteredProducts.length === 0 ? (
+            <div className="text-center py-16">
+              <div className="max-w-md mx-auto">
+                <div className="w-32 h-32 mx-auto mb-6 bg-gray-100 rounded-full flex items-center justify-center">
+                  <Search className="w-16 h-16 text-gray-400" />
+                </div>
+                <h3 className="text-xl font-semibold text-gray-800 mb-3">কোনো পণ্য পাওয়া যায়নি</h3>
+                <p className="text-gray-600 mb-6">
+                  আপনার অনুসন্ধানের জন্য কোনো পণ্য খুঁজে পাওয়া যায়নি। অন্য শব্দ দিয়ে চেষ্টা করুন।
+                </p>
+                <Button onClick={clearFilters} variant="outline">
+                  সব ফিল্টার পরিষ্কার করুন
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <div className={`grid gap-6 transition-all duration-300 ${
+              viewMode === 'grid' 
+                ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' 
+                : 'grid-cols-1 md:grid-cols-2'
+            }`}>
+              {filteredProducts.map((product) => (
+                <ModernProductCard
+                  key={product.id}
+                  product={product}
+                  onAddToCart={handleAddToCart}
+                  onCustomize={handleCustomize}
+                  onViewDetails={handleViewDetails}
+                  onToggleWishlist={handleToggleWishlist}
+                  isInWishlist={wishlist.includes(product.id)}
+                />
+              ))}
+            </div>
+          )}
+        </div>
 
-      {/* Customize Modal */}
-      <ProductCustomizationModal
-        product={selectedProduct}
-        isOpen={isCustomizeModalOpen}
-        onClose={() => {
-          setIsCustomizeModalOpen(false);
-          setSelectedProduct(null);
-        }}
-        onOrderPlaced={(trackingId) => {
-          toast({
-            title: "অর্ডার সফল!",
-            description: `আপনার অর্ডার নম্বর: ${trackingId}`,
-          });
-          setIsCustomizeModalOpen(false);
-          setSelectedProduct(null);
-        }}
-      />
-    </>
+        {/* Modals */}
+        <SimpleCustomizeModal
+          product={selectedProduct}
+          isOpen={isCustomizeModalOpen}
+          onClose={() => {
+            setIsCustomizeModalOpen(false);
+            setSelectedProduct(null);
+          }}
+        />
+
+        <UltraDynamicProductModal
+          isOpen={isProductModalOpen}
+          onClose={() => {
+            setIsProductModalOpen(false);
+            setSelectedProduct(null);
+          }}
+          product={selectedProduct}
+          onCustomize={handleCustomize}
+        />
+
+        <EnhancedCartModal
+          isOpen={isCartModalOpen}
+          onClose={() => setIsCartModalOpen(false)}
+        />
+      </div>
+    </MobileOptimizedLayout>
   );
-};
-
-export default ModernProductsPage;
+}
