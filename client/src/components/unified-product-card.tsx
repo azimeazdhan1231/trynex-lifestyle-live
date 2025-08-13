@@ -22,9 +22,8 @@ export default function UnifiedProductCard({
   onCustomize 
 }: UnifiedProductCardProps) {
   const [isHovered, setIsHovered] = useState(false);
+  const [imageLoaded, setImageLoaded] = useState(false);
   const [, setLocation] = useLocation();
-
-
 
   const handleViewProduct = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -43,29 +42,35 @@ export default function UnifiedProductCard({
 
   return (
     <Card 
-      className={`group cursor-pointer transition-all duration-500 hover:shadow-2xl hover:scale-[1.02] mobile-transition overflow-hidden product-card premium-card border-0 shadow-lg hover:shadow-xl transform-gpu ${className}`}
+      className={`group cursor-pointer transition-all duration-300 ease-out hover:shadow-xl hover:-translate-y-1 overflow-hidden bg-white border border-gray-200 hover:border-gray-300 h-full flex flex-col ${className}`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       onClick={handleViewProduct}
       data-testid={`card-product-${product.id}`}
-      style={{ 
-        transition: 'all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1)',
-        background: 'linear-gradient(135deg, #ffffff 0%, #fafafa 100%)',
-      }}
     >
-        <div className="relative">
+        <div className="relative flex-shrink-0">
           {/* Product Image */}
-          <div className="aspect-square overflow-hidden bg-gray-100">
+          <div className="aspect-square overflow-hidden bg-gray-50 relative">
             {product.image_url ? (
-              <img
-                src={product.image_url}
-                alt={product.name}
-                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                loading="lazy"
-              />
+              <>
+                <img
+                  src={product.image_url}
+                  alt={product.name}
+                  className={`w-full h-full object-cover transition-all duration-500 group-hover:scale-105 ${
+                    imageLoaded ? 'opacity-100' : 'opacity-0'
+                  }`}
+                  loading="lazy"
+                  onLoad={() => setImageLoaded(true)}
+                />
+                {!imageLoaded && (
+                  <div className="absolute inset-0 bg-gray-100 animate-pulse flex items-center justify-center">
+                    <Palette className="w-8 h-8 text-gray-300" />
+                  </div>
+                )}
+              </>
             ) : (
-              <div className="w-full h-full flex items-center justify-center text-gray-400">
-                <Palette className="w-12 h-12" />
+              <div className="w-full h-full flex items-center justify-center text-gray-400 bg-gray-50">
+                <Palette className="w-8 h-8 text-gray-300" />
               </div>
             )}
           </div>

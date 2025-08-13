@@ -21,7 +21,7 @@ import {
   MessageSquare, Award, Palette, Megaphone, ImageIcon, Phone, MapPin, Clock, Download,
   LogOut, Menu, X
 } from "lucide-react";
-import type { Product, Category, Order, PromoCode, Offer } from "@shared/schema";
+import type { Product, Category, Order, PromoCode, Offer, CustomOrder } from "@shared/schema";
 
 // Import management components
 import ProductManagement from "@/components/admin/product-management";
@@ -75,6 +75,11 @@ export default function AdminPanelNew({ onLogout }: AdminPanelProps) {
   const { data: offers = [], isLoading: offersLoading } = useQuery<Offer[]>({ 
     queryKey: ["/api/offers"],
     refetchInterval: 60000,
+  });
+
+  const { data: customOrders = [], isLoading: customOrdersLoading } = useQuery<CustomOrder[]>({ 
+    queryKey: ["/api/custom-orders"],
+    refetchInterval: 30000,
   });
 
   // Calculate dashboard stats
@@ -205,11 +210,12 @@ export default function AdminPanelNew({ onLogout }: AdminPanelProps) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           {/* Desktop Tabs List */}
-          <TabsList className="hidden md:grid w-full grid-cols-6 lg:grid-cols-6">
+          <TabsList className="hidden md:grid w-full grid-cols-7 lg:grid-cols-7">
             <TabsTrigger value="dashboard" data-testid="tab-dashboard">ড্যাশবোর্ড</TabsTrigger>
             <TabsTrigger value="products" data-testid="tab-products">পণ্য</TabsTrigger>
             <TabsTrigger value="categories" data-testid="tab-categories">ক্যাটেগরি</TabsTrigger>
             <TabsTrigger value="orders" data-testid="tab-orders">অর্ডার</TabsTrigger>
+            <TabsTrigger value="custom-orders" data-testid="tab-custom-orders">কাস্টম অর্ডার</TabsTrigger>
             <TabsTrigger value="offers" data-testid="tab-offers">অফার</TabsTrigger>
             <TabsTrigger value="promo-codes" data-testid="tab-promo-codes">প্রোমো কোড</TabsTrigger>
           </TabsList>
@@ -223,6 +229,7 @@ export default function AdminPanelNew({ onLogout }: AdminPanelProps) {
                   { value: "products", label: "পণ্য", icon: Package },
                   { value: "categories", label: "ক্যাটেগরি", icon: Tag },
                   { value: "orders", label: "অর্ডার", icon: ShoppingCart },
+                  { value: "custom-orders", label: "কাস্টম অর্ডার", icon: Palette },
                   { value: "offers", label: "অফার", icon: Gift },
                   { value: "promo-codes", label: "প্রমো কোড", icon: Award },
                   { value: "site-settings", label: "সাইট সেটিংস", icon: Settings },
@@ -640,6 +647,167 @@ export default function AdminPanelNew({ onLogout }: AdminPanelProps) {
                 </DialogFooter>
               </DialogContent>
             </Dialog>
+          </TabsContent>
+
+          {/* Custom Orders Tab */}
+          <TabsContent value="custom-orders" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Palette className="w-5 h-5" />
+                  কাস্টম অর্ডার ম্যানেজমেন্ট
+                </CardTitle>
+                <CardDescription>
+                  গ্রাহকদের কাস্টমাইজেশন অর্ডার দেখুন এবং পরিচালনা করুন
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {customOrdersLoading ? (
+                  <div className="flex items-center justify-center h-32">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                  </div>
+                ) : customOrders.length === 0 ? (
+                  <div className="text-center py-8">
+                    <Palette className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                    <p className="text-gray-500">কোনো কাস্টম অর্ডার নেই</p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                      <Card>
+                        <CardContent className="p-4 text-center">
+                          <div className="text-2xl font-bold text-blue-600">{customOrders.length}</div>
+                          <div className="text-sm text-gray-600">মোট কাস্টম অর্ডার</div>
+                        </CardContent>
+                      </Card>
+                      <Card>
+                        <CardContent className="p-4 text-center">
+                          <div className="text-2xl font-bold text-yellow-600">
+                            {customOrders.filter(order => order.status === 'pending').length}
+                          </div>
+                          <div className="text-sm text-gray-600">অপেক্ষমান</div>
+                        </CardContent>
+                      </Card>
+                      <Card>
+                        <CardContent className="p-4 text-center">
+                          <div className="text-2xl font-bold text-green-600">
+                            {customOrders.filter(order => order.status === 'completed').length}
+                          </div>
+                          <div className="text-sm text-gray-600">সম্পন্ন</div>
+                        </CardContent>
+                      </Card>
+                    </div>
+
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>ট্র্যাকিং আইডি</TableHead>
+                          <TableHead>গ্রাহক তথ্য</TableHead>
+                          <TableHead>প্রোডাক্ট</TableHead>
+                          <TableHead>মোট মূল্য</TableHead>
+                          <TableHead>স্ট্যাটাস</TableHead>
+                          <TableHead>তারিখ</TableHead>
+                          <TableHead>কার্যক্রম</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {customOrders.map((customOrder) => (
+                          <TableRow key={customOrder.id}>
+                            <TableCell>
+                              <div className="font-mono text-sm bg-gray-100 px-2 py-1 rounded">
+                                {customOrder.trackingId}
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <div className="space-y-1">
+                                <div className="font-medium">{customOrder.customerName}</div>
+                                <div className="text-sm text-gray-600">{customOrder.customerPhone}</div>
+                                <div className="text-xs text-gray-500">{customOrder.district}, {customOrder.thana}</div>
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <div className="font-medium">Product ID: {customOrder.productId}</div>
+                            </TableCell>
+                            <TableCell>
+                              <div className="font-medium text-green-600">
+                                {formatPrice(parseFloat(customOrder.totalPrice))}
+                              </div>
+                              <div className="text-xs text-gray-500">
+                                বেস: {formatPrice(parseFloat(customOrder.basePrice))} + 
+                                কাস্টম: {formatPrice(parseFloat(customOrder.customizationCost || "0"))}
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <Badge variant={
+                                customOrder.status === 'pending' ? 'default' :
+                                customOrder.status === 'confirmed' ? 'secondary' :
+                                customOrder.status === 'in_production' ? 'outline' :
+                                customOrder.status === 'completed' ? 'default' :
+                                'destructive'
+                              }>
+                                {customOrder.status === 'pending' ? 'অপেক্ষমান' :
+                                 customOrder.status === 'confirmed' ? 'নিশ্চিত' :
+                                 customOrder.status === 'in_production' ? 'উৎপাদনে' :
+                                 customOrder.status === 'completed' ? 'সম্পন্ন' :
+                                 'বাতিল'
+                                }
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              <div className="text-sm">
+                                {new Date(customOrder.createdAt).toLocaleDateString('bn-BD')}
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex gap-2">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => {
+                                    // Show custom order details
+                                    const details = `
+ট্র্যাকিং: ${customOrder.trackingId}
+গ্রাহক: ${customOrder.customerName} (${customOrder.customerPhone})
+ঠিকানা: ${customOrder.customerAddress}, ${customOrder.district}, ${customOrder.thana}
+কাস্টমাইজেশন: ${customOrder.customizationInstructions || 'কোনো নির্দেশনা নেই'}
+মোট: ${formatPrice(parseFloat(customOrder.totalPrice))}
+পেমেন্ট: ${customOrder.paymentMethod}
+${customOrder.notes ? `নোট: ${customOrder.notes}` : ''}
+                                    `;
+                                    alert(details);
+                                  }}
+                                >
+                                  <Eye className="w-4 h-4" />
+                                </Button>
+                                <Select
+                                  value={customOrder.status}
+                                  onValueChange={(newStatus) => {
+                                    // Update custom order status
+                                    // This would be implemented with a mutation
+                                    console.log('Update custom order status:', customOrder.id, newStatus);
+                                  }}
+                                >
+                                  <SelectTrigger className="w-32">
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="pending">অপেক্ষমান</SelectItem>
+                                    <SelectItem value="confirmed">নিশ্চিত</SelectItem>
+                                    <SelectItem value="in_production">উৎপাদনে</SelectItem>
+                                    <SelectItem value="completed">সম্পন্ন</SelectItem>
+                                    <SelectItem value="cancelled">বাতিল</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           </TabsContent>
 
           {/* Offers Tab */}

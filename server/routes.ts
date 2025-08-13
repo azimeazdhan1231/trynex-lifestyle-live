@@ -942,7 +942,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           parsedItems = [];
         }
       } else {
-        parsedItems = order.items || [];
+        parsedItems = (order.items as any[]) || [];
       }
 
       // Parse payment info if it's a string
