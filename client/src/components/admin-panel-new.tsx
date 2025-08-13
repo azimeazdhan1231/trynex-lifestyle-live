@@ -533,7 +533,7 @@ export default function AdminPanelNew({ onLogout }: AdminPanelProps) {
                               {selectedOrder.tracking_id}
                             </span>
                           </div>
-                          
+
                           <div className="flex items-center gap-2">
                             <strong>স্ট্যাটাস:</strong>
                             <Select
@@ -552,7 +552,7 @@ export default function AdminPanelNew({ onLogout }: AdminPanelProps) {
                               </SelectContent>
                             </Select>
                           </div>
-                          
+
                           <div className="space-y-1">
                             <p><strong>মোট মূল্য:</strong> <span className="text-green-600 font-semibold text-xl">{formatPrice(Number(selectedOrder.total))}</span></p>
                             {(() => {
@@ -560,7 +560,7 @@ export default function AdminPanelNew({ onLogout }: AdminPanelProps) {
                               const subtotal = items.reduce((sum, item) => sum + (item.productPrice * item.quantity), 0);
                               const customizationTotal = items.reduce((sum, item) => sum + item.customizationCost, 0);
                               const deliveryCharge = Number(selectedOrder.total) - subtotal - customizationTotal;
-                              
+
                               return (
                                 <div className="text-sm text-gray-600 space-y-1">
                                   <p>পণ্যের মূল্য: {formatPrice(subtotal)}</p>
@@ -658,7 +658,7 @@ export default function AdminPanelNew({ onLogout }: AdminPanelProps) {
                                     const images = typeof selectedOrder.custom_images === 'string' 
                                       ? JSON.parse(selectedOrder.custom_images) 
                                       : selectedOrder.custom_images;
-                                    
+
                                     if (Array.isArray(images) && images.length > 0) {
                                       return images.map((image: string, idx: number) => (
                                         <div key={idx} className="relative group">
@@ -694,7 +694,7 @@ export default function AdminPanelNew({ onLogout }: AdminPanelProps) {
                               </div>
                             </div>
                           )}
-                          
+
                           {/* Additional customization data from items */}
                           {(() => {
                             const items = parseOrderItems(selectedOrder.items);
@@ -805,27 +805,40 @@ export default function AdminPanelNew({ onLogout }: AdminPanelProps) {
                           <TableRow key={customOrder.id}>
                             <TableCell>
                               <div className="font-mono text-sm bg-gray-100 px-2 py-1 rounded">
-                                {customOrder.trackingId}
+                                {customOrder.tracking_id || customOrder.trackingId || `CUSTOM-${customOrder.id}`}
                               </div>
                             </TableCell>
                             <TableCell>
                               <div className="space-y-1">
-                                <div className="font-medium">{customOrder.customerName}</div>
-                                <div className="text-sm text-gray-600">{customOrder.customerPhone}</div>
-                                <div className="text-xs text-gray-500">{customOrder.district}, {customOrder.thana}</div>
+                                <div className="font-medium">{customOrder.customer_name || customOrder.name}</div>
+                                <div className="text-sm text-gray-600">{customOrder.customer_phone || customOrder.whatsapp}</div>
+                                <div className="text-xs text-gray-500">{customOrder.district || 'N/A'}, {customOrder.thana || 'N/A'}</div>
                               </div>
                             </TableCell>
                             <TableCell>
-                              <div className="font-medium">Product ID: {customOrder.productId}</div>
+                              <div className="font-medium">{customOrder.product_name || `Product ID: ${customOrder.product_id}`}</div>
+                              {customOrder.customization && (
+                                <div className="text-xs text-gray-500 mt-1">
+                                  কাস্টমাইজেশন: {typeof customOrder.customization === 'string' 
+                                    ? customOrder.customization.substring(0, 50) + '...'
+                                    : 'বিস্তারিত দেখুন'}
+                                </div>
+                              )}
                             </TableCell>
                             <TableCell>
                               <div className="font-medium text-green-600">
-                                {formatPrice(parseFloat(customOrder.totalPrice))}
+                                {formatPrice(parseFloat(customOrder.total_price || customOrder.totalPrice || '0'))}
                               </div>
-                              <div className="text-xs text-gray-500">
-                                বেস: {formatPrice(parseFloat(customOrder.basePrice))} + 
-                                কাস্টম: {formatPrice(parseFloat(customOrder.customizationCost || "0"))}
-                              </div>
+                              {customOrder.base_price && (
+                                <div className="text-xs text-gray-500">
+                                  বেস: {formatPrice(parseFloat(customOrder.base_price))}
+                                </div>
+                              )}
+                              {customOrder.customization_cost && parseFloat(customOrder.customization_cost) > 0 && (
+                                <div className="text-xs text-blue-600">
+                                  কাস্টম চার্জ: {formatPrice(parseFloat(customOrder.customization_cost))}
+                                </div>
+                              )}
                             </TableCell>
                             <TableCell>
                               <Badge variant={
@@ -845,7 +858,7 @@ export default function AdminPanelNew({ onLogout }: AdminPanelProps) {
                             </TableCell>
                             <TableCell>
                               <div className="text-sm">
-                                {new Date(customOrder.createdAt).toLocaleDateString('bn-BD')}
+                                {new Date(customOrder.createdAt || customOrder.created_at).toLocaleDateString('bn-BD')}
                               </div>
                             </TableCell>
                             <TableCell>
@@ -856,12 +869,12 @@ export default function AdminPanelNew({ onLogout }: AdminPanelProps) {
                                   onClick={() => {
                                     // Show custom order details
                                     const details = `
-ট্র্যাকিং: ${customOrder.trackingId}
-গ্রাহক: ${customOrder.customerName} (${customOrder.customerPhone})
-ঠিকানা: ${customOrder.customerAddress}, ${customOrder.district}, ${customOrder.thana}
-কাস্টমাইজেশন: ${customOrder.customizationInstructions || 'কোনো নির্দেশনা নেই'}
-মোট: ${formatPrice(parseFloat(customOrder.totalPrice))}
-পেমেন্ট: ${customOrder.paymentMethod}
+ট্র্যাকিং: ${customOrder.tracking_id || customOrder.trackingId || 'N/A'}
+গ্রাহক: ${customOrder.customer_name || customOrder.name || 'N/A'} (${customOrder.customer_phone || customOrder.whatsapp || 'N/A'})
+ঠিকানা: ${customOrder.customerAddress || customOrder.address || 'N/A'}, ${customOrder.district || 'N/A'}, ${customOrder.thana || 'N/A'}
+কাস্টমাইজেশন: ${customOrder.customizationInstructions || customOrder.customization || 'কোনো নির্দেশনা নেই'}
+মোট: ${formatPrice(parseFloat(customOrder.total_price || customOrder.totalPrice || '0'))}
+পেমেন্ট: ${customOrder.paymentMethod || 'N/A'}
 ${customOrder.notes ? `নোট: ${customOrder.notes}` : ''}
                                     `;
                                     alert(details);

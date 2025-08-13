@@ -438,7 +438,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Check for cache-busting headers
       const cacheBust = req.headers['x-cache-bust'] || req.headers['x-force-update'];
       const forceRefresh = cacheBust || req.query.refresh === 'true';
-      
+
       if (forceRefresh) {
         console.log('🔄 Force refresh requested, bypassing cache');
         // Clear cache and fetch fresh data
@@ -446,9 +446,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         productCache.timestamp = 0;
         performanceCache.clearCache();
       }
-      
+
       const products = await getCachedProducts();
-      
+
       // Set response headers to prevent aggressive caching
       res.set({
         'Cache-Control': 'public, max-age=30, must-revalidate', // 30 second cache only
@@ -457,7 +457,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         'ETag': `"products-${productCache.timestamp}"`,
         'Vary': 'Accept-Encoding, X-Cache-Bust'
       });
-      
+
       console.log(`✅ Serving ${products.length} products (cache: ${productCache.timestamp > 0 ? 'HIT' : 'MISS'})`);
       res.json(products);
 
@@ -539,11 +539,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Input validation and sanitization
       const sanitizedMessage = message.trim().substring(0, 1000); // Limit message length
-      
+
       try {
         // AI chat is temporarily disabled - provide fallback
         const response = "আমি একজন AI সহায়ক। আপনি আমাদের প্রোডাক্ট সম্পর্কে জানতে চাইলে বা কোন সাহায্য প্রয়োজন হলে হোয়াটসঅ্যাপে (+8801648534981) যোগাযোগ করুন।";
-        
+
         res.json({ reply: response });
       } catch (aiError) {
         console.error('AI Service Error:', aiError);
@@ -584,7 +584,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { id } = req.params;
       const { fresh, t } = req.query;
-      
+
       // If fresh data is requested, add stronger cache busting
       if (fresh || t) {
         res.set({
@@ -595,7 +595,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           'X-Timestamp': Date.now().toString()
         });
       }
-      
+
       const product = await storage.getProduct(id);
 
       if (!product) {
@@ -806,39 +806,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/custom-orders', async (req, res) => {
     try {
       console.log('Creating custom order with data:', req.body);
-      
+
       // Set proper CORS headers
       res.header('Access-Control-Allow-Origin', '*');
       res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
       res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
-      
+
       const orderData = req.body;
-      
-      // Generate unique tracking ID
-      const trackingId = orderData.trackingId || `CXO${Date.now()}${Math.random().toString(36).substr(2, 4).toUpperCase()}`;
-      
-      // Map the frontend data to the enhanced schema format
+
+      // Generate unique tracking ID for custom order
+      const trackingId = `CUSTOM-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
+
+      // Create custom order data matching the new schema
       const customOrderData = {
-        trackingId,
-        productId: orderData.productId,
-        customerName: orderData.customerName,
-        customerPhone: orderData.customerPhone,
-        customerEmail: orderData.customerEmail || null,
-        customerAddress: orderData.customerAddress,
-        district: orderData.district,
-        thana: orderData.thana,
-        customizationInstructions: orderData.customizationInstructions,
-        customizationImages: orderData.customizationImages || [],
-        basePrice: orderData.basePrice,
-        customizationCost: orderData.customizationCost || "0",
-        totalPrice: orderData.totalPrice,
-        paymentMethod: orderData.paymentMethod || "cash_on_delivery",
-        status: orderData.status || "pending",
+        tracking_id: trackingId,
+        product_id: orderData.productId || null,
+        customer_name: orderData.name || orderData.customerName,
+        customer_phone: orderData.whatsapp || orderData.phone,
+        customer_email: orderData.email || null,
+        customer_address: orderData.address,
+        district: orderData.district || "ঢাকা",
+        thana: orderData.thana || "ঢাকা",
+        product_name: orderData.productName || 'Custom Product',
+        customization: typeof orderData.customization === 'string' 
+          ? orderData.customization 
+          : JSON.stringify(orderData.customization || {}),
+        customization_instructions: orderData.customizationInstructions || null,
+        customization_images: Array.isArray(orderData.uploadedImages) 
+          ? JSON.stringify(orderData.uploadedImages) 
+          : '[]',
+        quantity: orderData.quantity || 1,
+        base_price: orderData.basePrice || orderData.totalPrice || 0,
+        customization_cost: orderData.customizationCost || 0,
+        total_price: orderData.totalPrice || orderData.basePrice || 0,
+        payment_method: orderData.paymentMethod || 'cash_on_delivery',
+        trx_id: orderData.trxId || null,
+        payment_screenshot: orderData.paymentScreenshot || null,
+        status: 'pending',
         notes: orderData.notes || null
       };
-      
-      // Validate required fields
-      const requiredFields = ['productId', 'customerName', 'customerPhone', 'customerAddress', 'district', 'thana', 'basePrice', 'totalPrice'];
+
+      // Validate required fields (adjusting to new schema names)
+      const requiredFields = ['customer_name', 'customer_phone', 'customer_address', 'district', 'thana', 'base_price', 'total_price'];
       for (const field of requiredFields) {
         if (!customOrderData[field as keyof typeof customOrderData]) {
           return res.status(400).json({
@@ -847,12 +856,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
           });
         }
       }
-      
+
       const customOrder = await storage.createCustomOrder(customOrderData);
       console.log('Custom order created successfully:', customOrder.id, 'Tracking ID:', trackingId);
-      
+
       res.status(201).json({ 
-        success: true,
+        success: true, 
         id: customOrder.id,
         trackingId: trackingId,
         data: customOrder,
@@ -869,10 +878,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get('/api/custom-orders', async (req, res) => {
     try {
-      const customOrders = await storage.getCustomOrders();
-      res.json(customOrders);
+      console.log('🔍 Fetching custom orders from database...');
+      const customOrdersResult = await storage.getCustomOrders(); // Changed to use storage.getCustomOrders() as per original code
+      console.log(`✅ Custom orders fetched successfully: ${customOrdersResult.length} orders`);
+      res.json(customOrdersResult);
     } catch (error: any) {
-      console.error('Failed to fetch custom orders:', error);
+      console.error('Error fetching custom orders:', error);
       res.status(500).json({ error: 'Failed to fetch custom orders' });
     }
   });
@@ -893,6 +904,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.patch('/api/custom-orders/:id', async (req, res) => {
     try {
       const { status } = req.body;
+      // Assuming updateCustomOrderStatus takes the ID and new status
       const customOrder = await storage.updateCustomOrderStatus(req.params.id, status);
       res.json(customOrder);
     } catch (error: any) {
@@ -922,9 +934,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { trackingId } = req.params;
       console.log(`🔍 Tracking order: ${trackingId}`);
-      
+
       const order = await storage.getOrder(trackingId);
-      
+
       if (!order) {
         return res.status(404).json({ 
           success: false, 
@@ -965,7 +977,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       };
 
       console.log(`✅ Order found: ${order.tracking_id}, Status: ${order.status}`);
-      
+
       res.json({ 
         success: true, 
         order: orderResponse 
@@ -1000,8 +1012,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const orderDataForDB = {
         tracking_id: trackingId,
         customer_name: orderData.customer_name,
-        district: orderData.district || "ঢাকা",
-        thana: orderData.thana || "ঢাকা",
+        district: orderData.district || "ঢাকা", // Default district
+        thana: orderData.thana || "ঢাকা", // Default thana
         address: orderData.address || "",
         phone: orderData.phone,
         payment_info: orderData.payment_info ? JSON.stringify(orderData.payment_info) : null,
@@ -1061,9 +1073,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { id } = req.params;
       const { status } = req.body;
-      
+
       console.log(`Updating order ${id} status to: ${status}`);
-      
+
       // Set proper JSON headers
       res.set({
         'Content-Type': 'application/json',
@@ -1071,9 +1083,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         'Access-Control-Allow-Methods': 'GET, POST, PATCH, DELETE, OPTIONS',
         'Access-Control-Allow-Headers': 'Content-Type, Authorization'
       });
-      
+
       const updatedOrder = await storage.updateOrderStatus(id, status);
-      
+
       return res.status(200).json({
         success: true,
         order: updatedOrder,
@@ -1081,12 +1093,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error) {
       console.error('❌ Failed to update order status:', error);
-      
+
       res.set({
         'Content-Type': 'application/json',
         'Access-Control-Allow-Origin': '*'
       });
-      
+
       return res.status(500).json({ 
         success: false,
         error: 'Failed to update order status',
@@ -1100,11 +1112,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { id } = req.params;
       const { status } = req.body;
-      
+
       console.log(`Updating order ${id} status to: ${status}`);
-      
+
       const updatedOrder = await storage.updateOrderStatus(id, status);
-      
+
       res.json({
         success: true,
         order: updatedOrder,
@@ -1166,7 +1178,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const decoded = jwt.verify(token, JWT_SECRET) as any;
       console.log('🔍 Token decoded:', { id: decoded.id, role: decoded.role, email: decoded.email });
-      
+
       if (decoded.role !== 'admin') {
         console.log('❌ Not admin role:', decoded.role);
         return res.status(403).json({ error: 'Admin access required' });
@@ -1200,7 +1212,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const categoryPromises = giftCategories.map(cat => 
         storage.createCategory(cat)
       );
-      
+
       await Promise.all(categoryPromises);
 
       // Update products to match new categories based on keywords
@@ -1208,7 +1220,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const updatePromises = products.map(product => {
         let newCategory = 'birthday-gifts'; // default
         const name = product.name.toLowerCase();
-        
+
         if (name.includes('men') || name.includes('male') || name.includes('watch') || name.includes('gadget')) {
           newCategory = 'gift-for-him';
         } else if (name.includes('women') || name.includes('female') || name.includes('jewelry') || name.includes('cosmetic')) {
@@ -1226,15 +1238,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         } else if (name.includes('kid') || name.includes('child') || name.includes('শিশু') || name.includes('বাচ্চা')) {
           newCategory = 'kids-gifts';
         }
-        
+
         if (product.category !== newCategory) {
           return storage.updateProduct(product.id, { category: newCategory });
         }
         return Promise.resolve();
       });
-      
+
       await Promise.all(updatePromises);
-      
+
       // Clear cache to force refresh
       performanceCache.clearCache();
 
@@ -1391,22 +1403,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/products', authenticateAdmin, async (req, res) => {
     try {
       console.log('🆕 Creating product with data:', req.body);
-      
+
       // Validate request data
       const validatedData = insertProductSchema.parse(req.body);
-      
+
       // IMMEDIATE cache clearing before creation
       performanceCache.clearCache();
       productCache.data = null;
       productCache.timestamp = 0;
       categoryCache.data = null;
       categoryCache.timestamp = 0;
-      
+
       // Cache service is optional
-      
+
       const product = await storage.createProduct(validatedData);
       console.log('✅ Product created successfully:', product.id);
-      
+
       // Ultra-aggressive no-cache headers
       res.set({
         'Cache-Control': 'no-cache, no-store, must-revalidate, max-age=0',
@@ -1418,7 +1430,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         'Last-Modified': new Date().toUTCString(),
         'ETag': `"created-${Date.now()}"`
       });
-      
+
       res.status(201).json({
         ...product,
         _created_at: new Date().toISOString(),
@@ -1437,7 +1449,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { id } = req.params;
       console.log(`🔄 Updating product ${id} with data:`, req.body);
-      
+
       // Set CORS and JSON headers first
       res.set({
         'Content-Type': 'application/json',
@@ -1448,7 +1460,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         'Pragma': 'no-cache',
         'Expires': '0'
       });
-      
+
       // Validate the product exists first
       const existingProduct = await storage.getProduct(id);
       if (!existingProduct) {
@@ -1457,10 +1469,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
           error: 'Product not found'
         });
       }
-      
+
       // Sanitize and validate update data with proper validation
       const updateData: any = {};
-      
+
       // Validate required fields
       if (req.body.name !== undefined) {
         const name = String(req.body.name).trim();
@@ -1472,9 +1484,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
         updateData.name = name;
       }
-      
+
       if (req.body.description !== undefined) updateData.description = String(req.body.description || '').trim();
-      
+
       if (req.body.price !== undefined) {
         const price = parseFloat(req.body.price);
         if (isNaN(price) || price < 0) {
@@ -1485,7 +1497,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
         updateData.price = price;
       }
-      
+
       if (req.body.stock !== undefined) {
         const stock = parseInt(req.body.stock);
         if (isNaN(stock) || stock < 0) {
@@ -1496,7 +1508,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
         updateData.stock = stock;
       }
-      
+
       if (req.body.category !== undefined) {
         const category = String(req.body.category).trim();
         if (!category) {
@@ -1507,34 +1519,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
         updateData.category = category;
       }
-      
+
       if (req.body.image_url !== undefined) updateData.image_url = String(req.body.image_url || '').trim();
       if (req.body.is_featured !== undefined) updateData.is_featured = Boolean(req.body.is_featured);
       if (req.body.is_latest !== undefined) updateData.is_latest = Boolean(req.body.is_latest);
       if (req.body.is_best_selling !== undefined) updateData.is_best_selling = Boolean(req.body.is_best_selling);
-      
+
       console.log('Sanitized update data:', updateData);
-      
+
       // Clear cache before update
       performanceCache.clearCache();
       productCache.data = null;
       productCache.timestamp = 0;
       categoryCache.data = null;
       categoryCache.timestamp = 0;
-      
+
       // Cache service is optional
-      
+
       const updatedProduct = await storage.updateProduct(id, updateData);
-      
+
       if (!updatedProduct) {
         return res.status(500).json({
           success: false,
           error: 'Failed to update product in database'
         });
       }
-      
+
       console.log('✅ Product updated successfully:', updatedProduct);
-      
+
       // Return the updated product with success flag
       return res.status(200).json({
         success: true,
@@ -1543,13 +1555,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error: any) {
       console.error('❌ Failed to update product:', error);
-      
+
       // Set JSON headers for error response too
       res.set({
         'Content-Type': 'application/json',
         'Access-Control-Allow-Origin': '*'
       });
-      
+
       return res.status(500).json({ 
         success: false,
         error: 'Failed to update product',
@@ -1562,26 +1574,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { id } = req.params;
       console.log(`Deleting product ${id}`);
-      
+
       // Clear ALL cache layers when product is deleted
       performanceCache.clearCache();
       productCache.data = null;
       productCache.timestamp = 0;
       categoryCache.data = null;
       categoryCache.timestamp = 0;
-      
+
       // Cache service is optional
-      
+
       await storage.deleteProduct(id);
       console.log('✅ Product deleted successfully:', id);
-      
+
       // Set headers to prevent caching
       res.set({
         'Cache-Control': 'no-cache, no-store, must-revalidate',
         'Pragma': 'no-cache',
         'Expires': '0'
       });
-      
+
       res.json({ success: true });
     } catch (error) {
       console.error('❌ Failed to delete product:', error);
@@ -1785,7 +1797,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       console.log('⚙️ Updating settings with data:', req.body);
       const updatedSettings: any = {};
-      
+
       // Update each setting individually
       for (const [key, value] of Object.entries(req.body)) {
         try {
@@ -1798,7 +1810,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           updatedSettings[key] = newSetting.value;
         }
       }
-      
+
       res.json(updatedSettings);
     } catch (error) {
       console.error('Failed to update settings:', error);

@@ -20,6 +20,11 @@ import type { Product } from "@shared/schema";
 
 import { PRODUCT_CATEGORIES } from "@/lib/constants";
 
+// Helper function for price formatting
+function formatPrice(price: number): string {
+  return `৳${price.toFixed(2)}`;
+}
+
 // Use the unified categories from constants
 
 // Sort options
@@ -108,20 +113,20 @@ export default function ProductsPage() {
     if (selectedCategory && selectedCategory !== "all") {
       filtered = filtered.filter(product => {
         if (!product.category) return false;
-        
+
         const productCategory = product.category.toLowerCase();
         const selectedCat = selectedCategory.toLowerCase();
-        
+
         // Direct match
         if (productCategory === selectedCat) return true;
-        
+
         // Gift category matching
         if (selectedCat.includes('gift-for-her') && (productCategory.includes('women') || productCategory.includes('her') || productCategory.includes('female'))) return true;
         if (selectedCat.includes('gift-for-him') && (productCategory.includes('men') || productCategory.includes('him') || productCategory.includes('male'))) return true;
         if (selectedCat.includes('gift-for-babies') && (productCategory.includes('baby') || productCategory.includes('kids') || productCategory.includes('children'))) return true;
         if (selectedCat.includes('birthday') && productCategory.includes('birthday')) return true;
         if (selectedCat.includes('anniversary') && productCategory.includes('anniversary')) return true;
-        
+
         // Fallback to partial match
         return productCategory.includes(selectedCat) || selectedCat.includes(productCategory);
       });
@@ -161,6 +166,17 @@ export default function ProductsPage() {
   const handleCustomize = (product: Product) => {
     setSelectedProduct(product);
     setIsCustomizeModalOpen(true);
+  };
+
+  // Handle quick order - placeholder
+  const handleQuickOrder = (product: Product) => {
+    console.log("Quick order for:", product.name);
+    toast({
+      title: "দ্রুত অর্ডারের জন্য প্রস্তুত",
+      description: `আপনি ${product.name} দ্রুত অর্ডার করতে পারবেন।`,
+      variant: "default",
+    });
+    // This would typically open a simplified checkout or add to cart flow.
   };
 
   // Handle order placed successfully
@@ -219,7 +235,7 @@ export default function ProductsPage() {
 
   return (
     <MobileOptimizedLayout>
-      
+
       <div className="container mx-auto px-4 py-8">
         {/* Hero Section - Professional E-commerce Style */}
         <div className="relative bg-gradient-to-br from-emerald-600 via-blue-600 to-purple-700 rounded-2xl p-6 sm:p-8 md:p-12 mb-8 text-white overflow-hidden shadow-2xl border border-white/20">
@@ -335,82 +351,87 @@ export default function ProductsPage() {
               {displayedProducts.map((product) => (
                 <Card 
                   key={product.id}
-                  className="group overflow-hidden bg-white hover:shadow-xl transition-all duration-300 cursor-pointer border-0 shadow-lg hover:shadow-orange-500/20"
+                  className="group relative bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-xl hover:border-green-200 transition-all duration-300 overflow-hidden transform hover:scale-[1.02]"
                   onClick={() => handleViewProduct(product)}
                 >
-                  <div className="relative">
-                    {/* Product Image */}
-                    <div className="aspect-square overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100 relative">
-                      <img
-                        src={product.image_url || "https://images.unsplash.com/photo-1544787219-7f47ccb76574?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"}
-                        alt={product.name}
-                        className="w-full h-full object-cover transition-all duration-700 group-hover:scale-110"
-                        loading="lazy"
-                      />
-                      
-                      {/* Status badges */}
-                      <div className="absolute top-3 left-3 flex flex-col gap-2">
-                        {product.is_featured && (
-                          <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white font-bold shadow-lg px-2 py-1">
-                            <Star className="w-3 h-3 mr-1" />
-                            ফিচার্ড
-                          </Badge>
-                        )}
-                        {product.stock === 0 && (
-                          <Badge variant="destructive" className="font-bold shadow-lg">
-                            স্টক শেষ
-                          </Badge>
-                        )}
-                      </div>
-                    </div>
+                  <div className="relative aspect-square overflow-hidden bg-gray-50">
+                    <img
+                      src={product.image_url || '/placeholder.jpg'}
+                      alt={product.name}
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                      loading="lazy"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
-                    {/* Product details */}
-                    <CardContent className="p-4 space-y-3">
-                      {/* Product name */}
-                      <h3 className="font-semibold text-gray-900 line-clamp-2 leading-5 min-h-[2.5rem]">
-                        {product.name}
-                      </h3>
-
-                      {/* Price and stock */}
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <span className="text-xl font-bold text-gray-900">
-                            {formatPrice(Number(product.price))}
-                          </span>
-                        </div>
-                        <div className="text-sm text-gray-500">
-                          স্টক: <span className={Number(product.stock) < 5 ? 'text-orange-500 font-medium' : ''}>{product.stock}</span>
-                        </div>
-                      </div>
-
-                      {/* Action buttons */}
-                      <div className="flex gap-2 pt-2">
-                        <Button
+                    {/* Hover overlay with quick actions */}
+                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 bg-black/30">
+                      <div className="flex gap-2">
+                        <Button 
+                          size="sm"
+                          className="bg-white/90 text-gray-900 hover:bg-white backdrop-blur-sm"
                           onClick={(e) => {
                             e.stopPropagation();
-                            handleViewProduct(product);
+                            handleQuickOrder(product);
                           }}
-                          variant="outline"
-                          size="sm"
-                          className="flex-1 h-9"
                         >
-                          <Eye className="w-4 h-4 mr-1" />
-                          দেখুন
+                          দ্রুত অর্ডার
                         </Button>
-                        
-                        <Button
+                        <Button 
+                          size="sm"
+                          className="bg-green-600/90 text-white hover:bg-green-700 backdrop-blur-sm"
                           onClick={(e) => {
                             e.stopPropagation();
                             handleCustomize(product);
                           }}
-                          size="sm"
-                          className="flex-1 h-9 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600"
                         >
-                          <Palette className="w-4 h-4 mr-1" />
                           কাস্টমাইজ
                         </Button>
                       </div>
-                    </CardContent>
+                    </div>
+                  </div>
+
+                  <div className="p-4">
+                    <h3 className="font-semibold text-gray-900 text-lg mb-2 line-clamp-2 group-hover:text-green-600 transition-colors">
+                      {product.name}
+                    </h3>
+
+                    <div className="flex items-center justify-between mb-4">
+                      <div>
+                        <span className="text-xl font-bold text-gray-900">
+                          {formatPrice(Number(product.price))}
+                        </span>
+                      </div>
+                      <div className="text-sm text-gray-500">
+                        স্টক: <span className={Number(product.stock) < 5 ? 'text-orange-500 font-medium' : ''}>{product.stock}</span>
+                      </div>
+                    </div>
+
+                    <div className="flex gap-2">
+                      <Button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleViewProduct(product);
+                        }}
+                        variant="outline"
+                        size="sm"
+                        className="flex-1 h-9"
+                      >
+                        <Eye className="w-4 h-4 mr-1" />
+                        দেখুন
+                      </Button>
+
+                      <Button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleCustomize(product);
+                        }}
+                        size="sm"
+                        className="flex-1 h-9 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600"
+                      >
+                        <Palette className="w-4 h-4 mr-1" />
+                        কাস্টমাইজ
+                      </Button>
+                    </div>
                   </div>
                 </Card>
               ))}
