@@ -25,17 +25,21 @@ export default function PerfectModalBase({
       <DialogContent 
         className={`
           ${maxWidth} 
-          max-h-[95vh] 
-          w-[95vw] 
-          md:w-[90vw] 
+          h-[96vh] 
+          max-h-[96vh] 
+          w-[96vw] 
+          sm:w-[92vw] 
+          md:w-[88vw] 
           lg:w-[85vw] 
-          xl:w-[80vw] 
+          xl:w-[82vw] 
           p-0 
           gap-0 
           overflow-hidden 
           border-0 
           shadow-2xl 
           rounded-lg 
+          sm:rounded-xl 
+          md:rounded-2xl 
           ${className}
         `}
         aria-describedby="modal-description"
@@ -56,7 +60,7 @@ export default function PerfectModalBase({
         )}
         
         {/* Scrollable Content */}
-        <div className="overflow-y-auto max-h-[calc(95vh-80px)] flex flex-col p-4 md:p-6">
+        <div className="overflow-y-auto max-h-[calc(96vh-80px)] flex flex-col flex-1 scrollbar-hide">
           {children}
         </div>
         

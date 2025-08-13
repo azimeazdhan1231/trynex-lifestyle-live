@@ -241,7 +241,7 @@ export default function UltraDynamicProductModal({
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent 
-        className="max-w-6xl w-[calc(100vw-8px)] sm:w-[calc(100vw-32px)] md:w-[90vw] lg:w-[85vw] h-[calc(100vh-8px)] sm:h-[calc(100vh-32px)] md:h-[90vh] overflow-hidden p-0 gap-0 bg-white rounded-none sm:rounded-xl md:rounded-2xl touch-manipulation"
+        className="max-w-6xl w-[calc(100vw-16px)] sm:w-[calc(100vw-32px)] md:w-[90vw] lg:w-[85vw] h-[calc(100vh-16px)] sm:h-[calc(100vh-32px)] md:h-[85vh] max-h-[95vh] overflow-hidden p-0 gap-0 bg-white rounded-lg sm:rounded-xl md:rounded-2xl touch-manipulation"
         data-testid="product-modal"
       >
         <DialogTitle className="sr-only">{product.name} - পণ্যের বিস্তারিত</DialogTitle>
@@ -273,8 +273,8 @@ export default function UltraDynamicProductModal({
           </div>
 
           {/* Bottom/Right Side - Product Details */}
-          <div className="flex-1 p-3 sm:p-4 md:p-6 bg-white overflow-y-auto scrollbar-hide modal-details-section">
-            <div className="space-y-4 md:space-y-6 pb-4 sm:pb-6">
+          <div className="flex-1 p-3 sm:p-4 md:p-6 bg-white overflow-y-auto scrollbar-hide modal-details-section max-h-full">
+            <div className="space-y-4 md:space-y-6 pb-6 sm:pb-8 md:pb-12">
               {/* Product Title & Badges */}
               <div className="space-y-2 sm:space-y-3">
                 <div className="flex flex-wrap gap-1 sm:gap-2 mb-2 sm:mb-3">
@@ -447,10 +447,12 @@ export default function UltraDynamicProductModal({
               {/* Product Description */}
               {product.description && (
                 <div className="space-y-2 sm:space-y-3">
-                  <h3 className="text-base sm:text-lg font-semibold text-gray-900">পণ্যের বিবরণ</h3>
-                  <p className="text-sm sm:text-base text-gray-700 leading-relaxed">
-                    {product.description}
-                  </p>
+                  <h3 className="text-base sm:text-lg font-semibold text-gray-900 sticky top-0 bg-white py-2 border-b border-gray-100">পণ্যের বিবরণ</h3>
+                  <div className="max-h-32 sm:max-h-40 md:max-h-48 overflow-y-auto pr-2">
+                    <p className="text-sm sm:text-base text-gray-700 leading-relaxed whitespace-pre-wrap">
+                      {product.description}
+                    </p>
+                  </div>
                 </div>
               )}
 

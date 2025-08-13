@@ -199,9 +199,10 @@ export default function PerfectCustomizeModal({
       isOpen={isOpen}
       onClose={onClose}
       title={`কাস্টমাইজ করুন - ${product.name}`}
-      maxWidth="max-w-[95vw] xl:max-w-[90vw] 2xl:max-w-7xl"
+      maxWidth="max-w-[96vw] sm:max-w-[92vw] md:max-w-[88vw] lg:max-w-[85vw] xl:max-w-[82vw] 2xl:max-w-7xl"
+      className="h-[95vh] sm:h-[90vh] md:h-[85vh] lg:h-[80vh]"
     >
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 lg:gap-8 p-4 sm:p-6 max-h-[85vh] overflow-y-auto">
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6 lg:gap-8 p-3 sm:p-4 md:p-6 h-full overflow-y-auto scrollbar-hide">
         {/* Left Side - Product Preview */}
         <div className="space-y-4 lg:space-y-6">
           <Card className="overflow-hidden sticky top-4">
@@ -747,7 +748,7 @@ export default function PerfectCustomizeModal({
           </Tabs>
 
           {/* Action Buttons */}
-          <div className="flex flex-col sm:flex-row gap-2 lg:gap-3 sticky bottom-0 bg-white pt-4 border-t">
+          <div className="flex flex-col sm:flex-row gap-2 lg:gap-3 sticky bottom-0 bg-white pt-4 border-t mt-6">
             <Button
               variant="outline"
               className="flex-1 order-3 sm:order-1"

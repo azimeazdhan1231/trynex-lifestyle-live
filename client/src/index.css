@@ -123,6 +123,78 @@
   }
 }
 
+/* Modal Responsiveness Fixes */
+.modal-image-section {
+  flex: 1;
+  min-height: 35vh;
+}
+
+.modal-details-section {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Ensure modal content is properly scrollable */
+@media (max-width: 768px) {
+  .modal-image-section {
+    min-height: 30vh;
+    max-height: 40vh;
+  }
+  
+  .modal-details-section {
+    max-height: 60vh;
+  }
+}
+
+/* Custom scrollbar for modal content */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Improve modal dialog positioning */
+[data-radix-popper-content-wrapper] {
+  z-index: 100 !important;
+}
+
+/* Ensure modals are properly positioned */
+[role="dialog"] {
+  position: fixed !important;
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
+  max-width: calc(100vw - 16px) !important;
+  max-height: calc(100vh - 16px) !important;
+}
+
+/* Mobile modal specific improvements */
+@media (max-width: 640px) {
+  [role="dialog"] {
+    max-width: calc(100vw - 8px) !important;
+    max-height: calc(100vh - 8px) !important;
+    border-radius: 8px !important;
+  }
+}
+
+/* Prevent modal content overflow */
+.modal-content-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+.modal-scrollable-content {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
 /* Modern enhancements for new design */
 @layer base {
   :root {
