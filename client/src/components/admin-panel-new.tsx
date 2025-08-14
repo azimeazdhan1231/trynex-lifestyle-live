@@ -117,34 +117,53 @@ export default function AdminPanelNew({ onLogout }: AdminPanelProps) {
         if (Array.isArray(parsed)) {
           return parsed.map((item: any) => ({
             productName: item.productName || item.name || 'কাস্টম আইটেম',
+            name: item.name || item.productName || 'কাস্টম আইটেম',
             quantity: item.quantity || 1,
             productPrice: Number(item.productPrice || item.price || 0),
-            customization: item.customization || null,
-            customizationCost: Number(item.customizationCost || 0),
-            totalPrice: Number(item.totalPrice || (item.productPrice * item.quantity) || 0)
+            customization: item.customization || item.custom_options || null,
+            customizationCost: Number(item.customizationCost || item.customization_cost || 0),
+            totalPrice: Number(item.totalPrice || (item.productPrice * item.quantity) || 0),
+            custom_images: item.custom_images || null,
+            special_instructions: item.special_instructions || null
           }));
         } else {
           return [{ 
-            productName: parsed.productName || 'কাস্টম আইটেম', 
+            productName: parsed.productName || parsed.name || 'কাস্টম আইটেম',
+            name: parsed.name || parsed.productName || 'কাস্টম আইটেম',
             quantity: 1, 
-            productPrice: Number(parsed.productPrice || 0),
-            customization: parsed.customization || null,
-            customizationCost: Number(parsed.customizationCost || 0),
-            totalPrice: Number(parsed.totalPrice || parsed.productPrice || 0)
+            productPrice: Number(parsed.productPrice || parsed.price || 0),
+            customization: parsed.customization || parsed.custom_options || null,
+            customizationCost: Number(parsed.customizationCost || parsed.customization_cost || 0),
+            totalPrice: Number(parsed.totalPrice || parsed.productPrice || parsed.price || 0),
+            custom_images: parsed.custom_images || null,
+            special_instructions: parsed.special_instructions || null
           }];
         }
       } catch {
-        return [{ productName: String(items), quantity: 1, productPrice: 0, customization: null, customizationCost: 0, totalPrice: 0 }];
+        return [{ 
+          productName: String(items), 
+          name: String(items),
+          quantity: 1, 
+          productPrice: 0, 
+          customization: null, 
+          customizationCost: 0, 
+          totalPrice: 0,
+          custom_images: null,
+          special_instructions: null
+        }];
       }
     }
     if (Array.isArray(items)) {
       return items.map((item: any) => ({
         productName: item.productName || item.name || 'কাস্টম আইটেম',
+        name: item.name || item.productName || 'কাস্টম আইটেম',
         quantity: item.quantity || 1,
         productPrice: Number(item.productPrice || item.price || 0),
-        customization: item.customization || null,
-        customizationCost: Number(item.customizationCost || 0),
-        totalPrice: Number(item.totalPrice || (item.productPrice * item.quantity) || 0)
+        customization: item.customization || item.custom_options || null,
+        customizationCost: Number(item.customizationCost || item.customization_cost || 0),
+        totalPrice: Number(item.totalPrice || (item.productPrice * item.quantity) || 0),
+        custom_images: item.custom_images || null,
+        special_instructions: item.special_instructions || null
       }));
     }
     return [];
@@ -639,94 +658,179 @@ export default function AdminPanelNew({ onLogout }: AdminPanelProps) {
                     )}
 
                     {/* Custom Images and Customization Details */}
-                    {(selectedOrder.custom_images || selectedOrder.custom_instructions) && (
-                      <Card>
-                        <CardHeader>
-                          <CardTitle className="text-base flex items-center gap-2">
-                            <ImageIcon className="w-4 h-4" />
-                            কাস্টমাইজেশন বিবরণ
-                          </CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                          {/* Custom Images */}
-                          {selectedOrder.custom_images && (
-                            <div>
-                              <h4 className="font-medium mb-2">আপলোড করা ইমেজসমূহ:</h4>
-                              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                                {(() => {
-                                  try {
-                                    const images = typeof selectedOrder.custom_images === 'string' 
-                                      ? JSON.parse(selectedOrder.custom_images) 
-                                      : selectedOrder.custom_images;
-
-                                    if (Array.isArray(images) && images.length > 0) {
-                                      return images.map((image: string, idx: number) => (
-                                        <div key={idx} className="relative group">
-                                          <img
-                                            src={image}
-                                            alt={`কাস্টম ইমেজ ${idx + 1}`}
-                                            className="w-full h-24 object-cover rounded-lg border-2 border-gray-200 hover:border-blue-400 transition-all duration-200 cursor-pointer shadow-sm hover:shadow-md"
-                                            onClick={() => window.open(image, '_blank')}
-                                          />
-                                          <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 rounded-lg transition-all duration-200 flex items-center justify-center">
-                                            <Eye className="w-5 h-5 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
-                                          </div>
-                                          <p className="text-xs text-center mt-1 text-gray-600">ইমেজ {idx + 1}</p>
-                                        </div>
-                                      ));
-                                    } else {
-                                      return (
-                                        <div className="col-span-full text-center py-4">
-                                          <ImageIcon className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                                          <p className="text-gray-500 text-sm">কোনো কাস্টম ইমেজ নেই</p>
-                                        </div>
-                                      );
-                                    }
-                                  } catch (error) {
-                                    return (
-                                      <div className="col-span-full text-center py-4">
-                                        <AlertTriangle className="w-8 h-8 text-red-400 mx-auto mb-2" />
-                                        <p className="text-red-500 text-sm">ইমেজ লোড করতে সমস্যা হয়েছে</p>
-                                      </div>
-                                    );
-                                  }
-                                })()}
-                              </div>
-                            </div>
-                          )}
-
-                          {/* Additional customization data from items */}
-                          {(() => {
-                            const items = parseOrderItems(selectedOrder.items);
-                            const hasCustomization = items.some(item => item.customization);
-                            if (hasCustomization) {
-                              return (
+                    {(() => {
+                      const items = parseOrderItems(selectedOrder.items);
+                      const hasCustomImages = selectedOrder.custom_images || items.some(item => item.customization?.uploaded_images || item.custom_images);
+                      const hasCustomInstructions = selectedOrder.custom_instructions || items.some(item => item.customization?.specialInstructions || item.customization?.instructions);
+                      const hasAnyCustomization = items.some(item => item.customization);
+                      
+                      if (hasCustomImages || hasCustomInstructions || hasAnyCustomization) {
+                        return (
+                          <Card>
+                            <CardHeader>
+                              <CardTitle className="text-base flex items-center gap-2">
+                                <ImageIcon className="w-4 h-4" />
+                                কাস্টমাইজেশন বিবরণ
+                              </CardTitle>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
+                              {/* Order Level Custom Instructions */}
+                              {selectedOrder.custom_instructions && (
                                 <div>
-                                  <h4 className="font-medium mb-2">কাস্টমাইজেশন তথ্য:</h4>
-                                  <div className="space-y-2">
-                                    {items.filter(item => item.customization).map((item, idx) => (
-                                      <div key={idx} className="p-3 bg-blue-50 rounded-lg border border-blue-200">
-                                        <p className="font-medium text-blue-900">{item.productName}</p>
-                                        <p className="text-sm text-blue-700 mt-1">
-                                          {typeof item.customization === 'string' 
-                                            ? item.customization 
-                                            : JSON.stringify(item.customization, null, 2)
-                                          }
-                                        </p>
-                                        {item.customizationCost > 0 && (
-                                          <p className="text-xs text-blue-600 mt-1">অতিরিক্ত চার্জ: {formatPrice(item.customizationCost)}</p>
-                                        )}
-                                      </div>
-                                    ))}
+                                  <h4 className="font-medium mb-2">বিশেষ নির্দেশনা:</h4>
+                                  <div className="p-3 bg-yellow-50 rounded-lg border border-yellow-200">
+                                    <p className="text-sm text-yellow-800">{selectedOrder.custom_instructions}</p>
                                   </div>
                                 </div>
-                              );
-                            }
-                            return null;
-                          })()}
-                        </CardContent>
-                      </Card>
-                    )}
+                              )}
+
+                              {/* Order Level Custom Images */}
+                              {selectedOrder.custom_images && (
+                                <div>
+                                  <h4 className="font-medium mb-2">আপলোড করা ইমেজসমূহ:</h4>
+                                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                                    {(() => {
+                                      try {
+                                        const images = typeof selectedOrder.custom_images === 'string' 
+                                          ? JSON.parse(selectedOrder.custom_images) 
+                                          : selectedOrder.custom_images;
+
+                                        if (Array.isArray(images) && images.length > 0) {
+                                          return images.map((image: string, idx: number) => (
+                                            <div key={idx} className="relative group">
+                                              <img
+                                                src={image}
+                                                alt={`কাস্টম ইমেজ ${idx + 1}`}
+                                                className="w-full h-24 object-cover rounded-lg border-2 border-gray-200 hover:border-blue-400 transition-all duration-200 cursor-pointer shadow-sm hover:shadow-md"
+                                                onClick={() => window.open(image, '_blank')}
+                                              />
+                                              <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 rounded-lg transition-all duration-200 flex items-center justify-center">
+                                                <Eye className="w-5 h-5 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                                              </div>
+                                              <p className="text-xs text-center mt-1 text-gray-600">ইমেজ {idx + 1}</p>
+                                            </div>
+                                          ));
+                                        }
+                                      } catch (error) {
+                                        return (
+                                          <div className="col-span-full text-center py-4">
+                                            <AlertTriangle className="w-8 h-8 text-red-400 mx-auto mb-2" />
+                                            <p className="text-red-500 text-sm">ইমেজ লোড করতে সমস্যা হয়েছে</p>
+                                          </div>
+                                        );
+                                      }
+                                    })()}
+                                  </div>
+                                </div>
+                              )}
+
+                              {/* Item Level Customization */}
+                              {items.filter(item => item.customization).map((item, idx) => (
+                                <div key={idx} className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                                  <h5 className="font-medium text-blue-900 mb-2">{item.productName || item.name}</h5>
+                                  
+                                  {/* Customization Details */}
+                                  {item.customization && (
+                                    <div className="space-y-3">
+                                      {/* Basic customization info */}
+                                      {(item.customization.color || item.customization.size || item.customization.text || item.customization.customText) && (
+                                        <div className="grid grid-cols-2 gap-2 text-sm">
+                                          {item.customization.color && (
+                                            <div>
+                                              <span className="text-gray-600">রং:</span>
+                                              <span className="font-medium ml-1">{item.customization.color_name || item.customization.color}</span>
+                                            </div>
+                                          )}
+                                          {item.customization.size && (
+                                            <div>
+                                              <span className="text-gray-600">সাইজ:</span>
+                                              <span className="font-medium ml-1">{item.customization.size}</span>
+                                            </div>
+                                          )}
+                                          {(item.customization.text || item.customization.customText) && (
+                                            <div className="col-span-2">
+                                              <span className="text-gray-600">কাস্টম টেক্সট:</span>
+                                              <span className="font-medium ml-1">"{item.customization.text || item.customization.customText}"</span>
+                                            </div>
+                                          )}
+                                          {item.customization.font && item.customization.font !== 'default' && (
+                                            <div>
+                                              <span className="text-gray-600">ফন্ট:</span>
+                                              <span className="font-medium ml-1">{item.customization.font}</span>
+                                            </div>
+                                          )}
+                                        </div>
+                                      )}
+
+                                      {/* Special Instructions */}
+                                      {(item.customization.specialInstructions || item.customization.instructions || item.customization.special_instructions) && (
+                                        <div>
+                                          <span className="text-gray-600 font-medium">বিশেষ নির্দেশনা:</span>
+                                          <p className="bg-white p-3 rounded border mt-1 text-sm">
+                                            {item.customization.specialInstructions || item.customization.instructions || item.customization.special_instructions}
+                                          </p>
+                                        </div>
+                                      )}
+
+                                      {/* Custom Images from item */}
+                                      {item.customization.uploaded_images && Array.isArray(item.customization.uploaded_images) && item.customization.uploaded_images.length > 0 && (
+                                        <div>
+                                          <span className="text-gray-600 font-medium">আপলোড করা ছবি:</span>
+                                          <div className="grid grid-cols-3 gap-2 mt-2">
+                                            {item.customization.uploaded_images.map((imageData: any, imageIndex: number) => {
+                                              const imageUrl = imageData.dataUrl || imageData.url || imageData;
+                                              return (
+                                                <div key={imageIndex} className="relative group">
+                                                  <img
+                                                    src={imageUrl}
+                                                    alt={`Custom image ${imageIndex + 1}`}
+                                                    className="w-full h-16 object-cover rounded border cursor-pointer hover:opacity-75"
+                                                    onClick={() => window.open(imageUrl, '_blank')}
+                                                  />
+                                                  <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 rounded transition-all duration-200 flex items-center justify-center">
+                                                    <Eye className="w-4 h-4 text-white opacity-0 group-hover:opacity-100" />
+                                                  </div>
+                                                </div>
+                                              );
+                                            })}
+                                          </div>
+                                        </div>
+                                      )}
+
+                                      {/* Custom Image (single) */}
+                                      {item.customization.customImage && !item.customization.uploaded_images && (
+                                        <div>
+                                          <span className="text-gray-600 font-medium">কাস্টম ইমেজ:</span>
+                                          <div className="bg-gray-100 p-3 rounded border mt-1">
+                                            <p className="text-sm text-gray-600">✅ ছবি আপলোড করা হয়েছে</p>
+                                          </div>
+                                        </div>
+                                      )}
+
+                                      {/* Customization Cost */}
+                                      {item.customizationCost > 0 && (
+                                        <div className="text-xs text-blue-600 mt-2">
+                                          অতিরিক্ত চার্জ: {formatPrice(item.customizationCost)}
+                                        </div>
+                                      )}
+                                    </div>
+                                  )}
+                                </div>
+                              ))}
+
+                              {/* Show message if no customization found */}
+                              {!hasCustomImages && !hasCustomInstructions && !hasAnyCustomization && (
+                                <div className="text-center py-4">
+                                  <ImageIcon className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+                                  <p className="text-gray-500 text-sm">কোনো কাস্টমাইজেশন তথ্য নেই</p>
+                                </div>
+                              )}
+                            </CardContent>
+                          </Card>
+                        );
+                      }
+                      return null;
+                    })()}
                   </div>
                 )}
 
