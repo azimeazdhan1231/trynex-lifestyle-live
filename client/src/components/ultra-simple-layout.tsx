@@ -1,5 +1,5 @@
 import { ReactNode } from 'react';
-import EnhancedHeader from './enhanced-header';
+import ModernHeader from './modern-header';
 import EnhancedFooter from './enhanced-footer';
 
 interface UltraSimpleLayoutProps {
@@ -9,7 +9,7 @@ interface UltraSimpleLayoutProps {
 export default function UltraSimpleLayout({ children }: UltraSimpleLayoutProps) {
   return (
     <div className="min-h-screen bg-gray-50">
-      <EnhancedHeader />
+      <ModernHeader />
       <main className="pt-20 lg:pt-24">
         {children}
       </main>

@@ -3,11 +3,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import MobileOptimizedLayout from "@/components/mobile-optimized-layout";
-import { useCart } from "@/hooks/use-cart";
 import { COMPANY_NAME, COMPANY_TAGLINE, WHATSAPP_NUMBER, createWhatsAppUrl } from "@/lib/constants";
 
 export default function About() {
-  const { cartCount, openCart } = useCart();
 
   const features = [
     {

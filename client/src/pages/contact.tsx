@@ -7,12 +7,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { MapPin, Phone, Mail, MessageCircle, Clock, Facebook } from "lucide-react";
 import MobileOptimizedLayout from "@/components/mobile-optimized-layout";
-import { useCart } from "@/hooks/use-cart";
 import { createWhatsAppUrl, WHATSAPP_NUMBER, FACEBOOK_PAGE } from "@/lib/constants";
 import { useToast } from "@/hooks/use-toast";
 
 export default function ContactPage() {
-  const { totalItems } = useCart();
   const { toast } = useToast();
   const [formData, setFormData] = useState({
     name: "",
