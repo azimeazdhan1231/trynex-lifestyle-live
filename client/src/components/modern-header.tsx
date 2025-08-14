@@ -66,7 +66,6 @@ export default function ModernHeader() {
   const navLinks = [
     { href: '/', label: 'হোম', icon: '🏠' },
     { href: '/products', label: 'পণ্যসমূহ', icon: '🛍️' },
-    { href: '/wishlist', label: 'পছন্দের তালিকা', icon: '❤️' },
     { href: '/custom-order', label: 'কাস্টমাইজ', icon: '🎨' },
     { href: '/tracking', label: 'ট্র্যাকিং', icon: '📦' },
     { href: '/about', label: 'আমাদের সম্পর্কে', icon: '💡' },

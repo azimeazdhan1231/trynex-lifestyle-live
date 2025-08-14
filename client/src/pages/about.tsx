@@ -2,7 +2,6 @@ import { Shield, Award, Users, Clock, CheckCircle, Star, Heart, Truck, MessageCi
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import MobileOptimizedLayout from "@/components/mobile-optimized-layout";
 import { COMPANY_NAME, COMPANY_TAGLINE, WHATSAPP_NUMBER, createWhatsAppUrl } from "@/lib/constants";
 
 export default function About() {
@@ -49,10 +48,9 @@ export default function About() {
   ];
 
   return (
-    <MobileOptimizedLayout>
-      
+    <>
       {/* Hero Section */}
-      <section className="pt-20 pb-16 bg-gradient-to-br from-primary via-primary/90 to-primary/80">
+      <section className="pb-16 bg-gradient-to-br from-primary via-primary/90 to-primary/80">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center text-white">
             <Badge className="mb-6 bg-white/20 text-white border-white/30">
@@ -256,6 +254,6 @@ export default function About() {
           </div>
         </div>
       </footer>
-    </MobileOptimizedLayout>
+    </>
   );
 }

@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation } from "@tanstack/react-query";
-import MobileOptimizedLayout from "@/components/mobile-optimized-layout";
+
 import { useCart } from "@/hooks/use-cart";
 import { 
   Upload, 
@@ -174,8 +174,7 @@ export default function CustomOrderForm() {
   const { totalItems } = useCart();
 
   return (
-    <MobileOptimizedLayout>
-      <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 py-8 px-4">
+    <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 py-8 px-4">
         <div className="max-w-2xl mx-auto">
         <Card className="shadow-xl border-0">
           <CardHeader className="bg-gradient-to-r from-green-500 to-blue-500 text-white rounded-t-lg">
@@ -439,6 +438,5 @@ export default function CustomOrderForm() {
         </Card>
         </div>
       </div>
-    </MobileOptimizedLayout>
   );
 }

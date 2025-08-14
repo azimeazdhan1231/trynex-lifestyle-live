@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
-import MobileOptimizedLayout from "@/components/mobile-optimized-layout";
+
 import { 
   Search, 
   Package, 
@@ -210,8 +210,7 @@ export default function OrderTracking() {
   };
 
   return (
-    <MobileOptimizedLayout>
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
         <div className="max-w-2xl md:max-w-4xl lg:max-w-5xl xl:max-w-6xl mx-auto px-4 py-4 md:py-8">
           {/* Header */}
           <div className="text-center mb-8">
@@ -522,6 +521,5 @@ export default function OrderTracking() {
           )}
         </div>
       </div>
-    </MobileOptimizedLayout>
   );
 }

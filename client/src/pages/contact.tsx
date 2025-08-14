@@ -6,7 +6,6 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { MapPin, Phone, Mail, MessageCircle, Clock, Facebook } from "lucide-react";
-import MobileOptimizedLayout from "@/components/mobile-optimized-layout";
 import { createWhatsAppUrl, WHATSAPP_NUMBER, FACEBOOK_PAGE } from "@/lib/constants";
 import { useToast } from "@/hooks/use-toast";
 
@@ -53,9 +52,7 @@ export default function ContactPage() {
   };
 
   return (
-    <MobileOptimizedLayout>
-      
-      <div className="pt-20 py-16">
+    <div className="py-16">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
             <h1 className="text-4xl md:text-5xl font-bold text-gray-800 mb-4">যোগাযোগ করুন</h1>
@@ -226,6 +223,5 @@ export default function ContactPage() {
           </div>
         </div>
       </div>
-    </MobileOptimizedLayout>
   );
 }
