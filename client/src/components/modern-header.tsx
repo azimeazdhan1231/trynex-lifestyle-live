@@ -6,6 +6,7 @@ import { Search, ShoppingCart, User, Menu, X, Heart, MapPin, Phone } from 'lucid
 import { Input } from '@/components/ui/input';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { useCart } from '@/hooks/use-cart';
+import { useWishlist } from '@/hooks/use-wishlist';
 import ProfessionalCartModal from './professional-cart-modal';
 import UserRegistration from './user-registration';
 import UserLogin from './user-login';
@@ -20,6 +21,7 @@ interface UserData {
 export default function ModernHeader() {
   const [location, navigate] = useLocation();
   const { totalItems } = useCart();
+  const { totalItems: wishlistItems } = useWishlist();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -64,6 +66,7 @@ export default function ModernHeader() {
   const navLinks = [
     { href: '/', label: 'হোম', icon: '🏠' },
     { href: '/products', label: 'পণ্যসমূহ', icon: '🛍️' },
+    { href: '/wishlist', label: 'পছন্দের তালিকা', icon: '❤️' },
     { href: '/custom-order', label: 'কাস্টমাইজ', icon: '🎨' },
     { href: '/tracking', label: 'ট্র্যাকিং', icon: '📦' },
     { href: '/about', label: 'আমাদের সম্পর্কে', icon: '💡' },
@@ -188,13 +191,16 @@ export default function ModernHeader() {
               <Button
                 variant="ghost"
                 size="sm"
+                onClick={() => navigate('/wishlist')}
                 className="hidden sm:flex p-2 hover:bg-orange-50 hover:text-orange-500 rounded-full relative"
                 data-testid="button-wishlist"
               >
                 <Heart className="w-5 h-5" />
-                <Badge className="absolute -top-1 -right-1 bg-red-500 text-white text-xs min-w-5 h-5 flex items-center justify-center">
-                  0
-                </Badge>
+                {wishlistItems > 0 && (
+                  <Badge className="absolute -top-1 -right-1 bg-red-500 text-white text-xs min-w-5 h-5 flex items-center justify-center">
+                    {wishlistItems}
+                  </Badge>
+                )}
               </Button>
 
               {/* Cart */}

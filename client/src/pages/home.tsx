@@ -437,23 +437,29 @@ export default function Home() {
   // Use current products or cached products for instant display
   const currentProducts = products?.length > 0 ? products : cachedProducts;
 
-  // Memoized product filtering for better performance
-  const featuredProducts = useMemo(() => 
-    currentProducts.filter(p => p.is_featured), [currentProducts]
-  );
+  // Memoized product filtering for better performance with fallback logic
+  const featuredProducts = useMemo(() => {
+    const featured = currentProducts.filter(p => p.is_featured === true);
+    // If no featured products, mark first 4 as featured for display
+    return featured.length > 0 ? featured : currentProducts.slice(0, 4);
+  }, [currentProducts]);
 
-  const latestProducts = useMemo(() =>
-    currentProducts.filter(p => p.is_latest), [currentProducts]
-  );
+  const latestProducts = useMemo(() => {
+    const latest = currentProducts.filter(p => p.is_latest === true);
+    // If no latest products, mark next 4 as latest for display
+    return latest.length > 0 ? latest : currentProducts.slice(4, 8);
+  }, [currentProducts]);
 
-  const bestSellingProducts = useMemo(() =>
-    currentProducts.filter(p => p.is_best_selling), [currentProducts]
-  );
+  const bestSellingProducts = useMemo(() => {
+    const bestSelling = currentProducts.filter(p => p.is_best_selling === true);
+    // If no best selling products, mark next 4 as best selling for display
+    return bestSelling.length > 0 ? bestSelling : currentProducts.slice(8, 12);
+  }, [currentProducts]);
 
-  // If no products are marked, use defaults
-  const defaultFeatured = featuredProducts.length > 0 ? featuredProducts.slice(0, 4) : currentProducts.slice(0, 4);
-  const defaultLatest = latestProducts.length > 0 ? latestProducts.slice(0, 4) : currentProducts.slice(4, 8);
-  const defaultBestSelling = bestSellingProducts.length > 0 ? bestSellingProducts.slice(0, 4) : currentProducts.slice(8, 12);
+  // Use filtered products directly (they already include fallbacks)
+  const defaultFeatured = featuredProducts.slice(0, 8);
+  const defaultLatest = latestProducts.slice(0, 8);
+  const defaultBestSelling = bestSellingProducts.slice(0, 8);
 
   // Optimized scroll handler with proper cleanup
   useEffect(() => {

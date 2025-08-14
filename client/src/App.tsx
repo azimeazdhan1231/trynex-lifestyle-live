@@ -34,6 +34,7 @@ const Terms = lazy(() => import("./pages/terms"));
 const RefundPolicy = lazy(() => import("./pages/refund-policy"));
 const PaymentPolicy = lazy(() => import("./pages/payment-policy"));
 const SearchPage = lazy(() => import("./pages/search"));
+const WishlistPage = lazy(() => import("./pages/wishlist"));
 
 const CustomizeProduct = lazy(() => import("./pages/customize-product-enhanced"));
 
@@ -62,6 +63,7 @@ function Router() {
           <Route path="/product/:id" component={Product} />
           <Route path="/product" component={Product} />
           <Route path="/products" component={Products} />
+          <Route path="/wishlist" component={WishlistPage} />
           <Route path="/offers" component={Offers} />
           <Route path="/contact" component={Contact} />
           <Route path="/about" component={About} />

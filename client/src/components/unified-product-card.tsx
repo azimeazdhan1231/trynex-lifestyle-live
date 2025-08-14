@@ -5,6 +5,8 @@ import { Badge } from "@/components/ui/badge";
 import { Star, Heart, Eye, Palette } from "lucide-react";
 import { formatPrice } from "@/lib/constants";
 import { useLocation } from "wouter";
+import { useWishlist } from "@/hooks/use-wishlist";
+import { useToast } from "@/hooks/use-toast";
 import type { Product } from "@shared/schema";
 
 interface UnifiedProductCardProps {
@@ -12,6 +14,7 @@ interface UnifiedProductCardProps {
   className?: string;
   onViewProduct: (product: Product) => void;
   onCustomize: (product: Product) => void;
+  onAddToCart?: (product: Product) => void;
   showBadge?: boolean;
 }
 
@@ -19,11 +22,14 @@ export default function UnifiedProductCard({
   product, 
   className = "", 
   onViewProduct, 
-  onCustomize 
+  onCustomize,
+  onAddToCart
 }: UnifiedProductCardProps) {
   const [isHovered, setIsHovered] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
   const [, setLocation] = useLocation();
+  const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
+  const { toast } = useToast();
 
   const handleViewProduct = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -37,8 +43,36 @@ export default function UnifiedProductCard({
     onCustomize(product);
   };
 
+  const handleToggleWishlist = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (isInWishlist(product.id)) {
+      removeFromWishlist(product.id);
+      toast({
+        title: "পছন্দের তালিকা থেকে সরানো হয়েছে",
+        description: product.name,
+      });
+    } else {
+      addToWishlist({
+        id: product.id,
+        name: product.name,
+        price: parseFloat(product.price),
+        image_url: product.image_url || undefined,
+        category: product.category || undefined,
+        stock: product.stock,
+        added_at: Date.now()
+      });
+      toast({
+        title: "পছন্দের তালিকায় যোগ করা হয়েছে",
+        description: product.name,
+      });
+    }
+  };
+
   const rating = 4.5; // Mock rating - replace with actual rating
   const reviewCount = 42; // Mock review count
+  const isWishlisted = isInWishlist(product.id);
 
   return (
     <Card 
@@ -101,14 +135,13 @@ export default function UnifiedProductCard({
             <Button
               size="sm"
               variant="secondary"
-              className="w-8 h-8 p-0 bg-white/95 hover:bg-white border border-gray-200 shadow-sm"
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                // Handle wishlist
-              }}
+              className={`w-8 h-8 p-0 bg-white/95 hover:bg-white border border-gray-200 shadow-sm ${
+                isWishlisted ? 'text-red-500' : 'text-gray-400 hover:text-red-500'
+              }`}
+              onClick={handleToggleWishlist}
+              data-testid={`button-wishlist-${product.id}`}
             >
-              <Heart className="w-4 h-4 text-red-500" />
+              <Heart className={`w-4 h-4 ${isWishlisted ? 'fill-current' : ''}`} />
             </Button>
             <Button
               size="sm"

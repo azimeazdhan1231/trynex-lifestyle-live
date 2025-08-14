@@ -298,6 +298,46 @@ export default function PerfectOrderDetailsModal({ isOpen, onClose, order }: Ord
                             <div className="text-sm text-gray-500 mt-1">
                               প্রতি পিস: {formatPrice(item.price)}
                             </div>
+                            
+                            {/* Show customization data if available */}
+                            {item.customization && (
+                              <div className="mt-3 p-3 bg-blue-50 rounded-md border border-blue-200">
+                                <h5 className="text-sm font-medium text-blue-900 mb-2">কাস্টমাইজেশন:</h5>
+                                <div className="space-y-1 text-sm text-blue-800">
+                                  {item.customization.color && (
+                                    <div>রং: <span className="font-medium">{item.customization.color}</span></div>
+                                  )}
+                                  {item.customization.size && (
+                                    <div>সাইজ: <span className="font-medium">{item.customization.size}</span></div>
+                                  )}
+                                  {item.customization.text && (
+                                    <div>টেক্সট: <span className="font-medium">{item.customization.text}</span></div>
+                                  )}
+                                  {item.customization.font && (
+                                    <div>ফন্ট: <span className="font-medium">{item.customization.font}</span></div>
+                                  )}
+                                  {item.customization.instructions && (
+                                    <div>নির্দেশনা: <span className="font-medium">{item.customization.instructions}</span></div>
+                                  )}
+                                  {item.customization.custom_images && item.customization.custom_images.length > 0 && (
+                                    <div>
+                                      <div className="mb-2">কাস্টম ছবি:</div>
+                                      <div className="flex flex-wrap gap-2">
+                                        {item.customization.custom_images.map((img: string, idx: number) => (
+                                          <img
+                                            key={idx}
+                                            src={img}
+                                            alt={`Custom image ${idx + 1}`}
+                                            className="w-12 h-12 object-cover rounded border cursor-pointer hover:opacity-75"
+                                            onClick={() => handleImageView(img)}
+                                          />
+                                        ))}
+                                      </div>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            )}
                           </div>
                         </div>
                       </CardContent>
