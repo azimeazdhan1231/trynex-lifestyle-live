@@ -105,7 +105,15 @@ export default function ProfessionalCheckoutModal({
           product_name: item.name,
           quantity: item.quantity,
           unit_price: item.price,
-          total_price: item.price * item.quantity
+          total_price: item.price * item.quantity,
+          customization: item.customization ? {
+            customText: item.customization.customText || item.customization.text,
+            specialInstructions: item.customization.specialInstructions || item.customization.instructions,
+            uploadedImages: item.customization.uploadedImages || item.customization.customizationImages || item.customization.custom_images || [],
+            color: item.customization.color,
+            size: item.customization.size,
+            font: item.customization.font
+          } : null
         })),
         total: totalAmount,
         total_amount: totalAmount,

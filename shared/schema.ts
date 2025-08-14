@@ -124,11 +124,11 @@ export const users = pgTable("users", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
-// User carts for persistent storage
+// User carts for persistent storage with customization support
 export const userCarts = pgTable("user_carts", {
   id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
   user_id: varchar("user_id").notNull(),
-  items: jsonb("items").notNull().default('[]'),
+  items: jsonb("items").notNull().default('[]'), // Enhanced to support customization data
   updated_at: timestamp("updated_at").defaultNow(),
 });
 

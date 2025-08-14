@@ -1021,6 +1021,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Generate tracking ID
       const trackingId = `TRX${Date.now()}${Math.floor(Math.random() * 1000)}`;
 
+      // Extract customization data from items
+      let allCustomInstructions = [];
+      let allCustomImages = [];
+      
+      if (orderData.items) {
+        const items = Array.isArray(orderData.items) ? orderData.items : JSON.parse(orderData.items);
+        items.forEach((item: any) => {
+          if (item.customization) {
+            if (item.customization.customText || item.customization.specialInstructions) {
+              allCustomInstructions.push(`${item.product_name}: ${item.customization.customText || item.customization.specialInstructions}`);
+            }
+            if (item.customization.uploadedImages && item.customization.uploadedImages.length > 0) {
+              allCustomImages.push(...item.customization.uploadedImages);
+            }
+          }
+        });
+      }
+
       // Prepare order data matching database schema
       const orderDataForDB = {
         tracking_id: trackingId,
@@ -1034,8 +1052,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         items: typeof orderData.items === 'string' ? orderData.items : JSON.stringify(orderData.items),
         total: (orderData.total_amount || orderData.total || 0).toString(),
         delivery_fee: orderData.delivery_fee || 60,
-        custom_instructions: orderData.custom_instructions || null,
-        custom_images: orderData.custom_images ? JSON.stringify(orderData.custom_images) : null,
+        custom_instructions: allCustomInstructions.length > 0 
+          ? allCustomInstructions.join('\n') 
+          : orderData.custom_instructions || null,
+        custom_images: allCustomImages.length > 0 
+          ? JSON.stringify(allCustomImages) 
+          : orderData.custom_images ? JSON.stringify(orderData.custom_images) : null,
         user_id: orderData.user_id || null
       };
 

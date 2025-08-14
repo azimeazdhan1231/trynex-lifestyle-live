@@ -9,7 +9,7 @@ import { useCart } from '@/hooks/use-cart';
 import ProfessionalCartModal from './professional-cart-modal';
 import UserRegistration from './user-registration';
 import UserLogin from './user-login';
-import SearchBar from './search-bar';
+// Search bar component removed for consolidation
 
 interface UserData {
   firstName: string;
@@ -26,14 +26,14 @@ export default function EnhancedHeader() {
   const [showRegistration, setShowRegistration] = useState(false);
   const [showLogin, setShowLogin] = useState(false);
   const [user, setUser] = useState<UserData | null>(null);
-  const [isSearchOpen, setIsSearchOpen] = useState(false); // State for the search modal
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
       navigate(`/products?search=${encodeURIComponent(searchQuery.trim())}`);
       setSearchQuery('');
-      setIsSearchOpen(false); // Close search modal after search
+      setIsSearchOpen(false);
     }
   };
 
@@ -332,11 +332,38 @@ export default function EnhancedHeader() {
         onLoginSuccess={handleLoginSuccess}
       />
 
-      {/* YouTube-style Search Bar Modal */}
-      <SearchBar
-        isOpen={isSearchOpen}
-        onClose={() => setIsSearchOpen(false)}
-      />
+      {/* Mobile Search Modal */}
+      {isSearchOpen && (
+        <div className="fixed inset-0 z-50 bg-black/50" onClick={() => setIsSearchOpen(false)}>
+          <div className="fixed top-0 left-0 right-0 bg-white p-4 shadow-lg">
+            <form onSubmit={handleSearch} className="flex items-center space-x-3">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                <Input
+                  type="text"
+                  placeholder="পণ্য খুঁজুন..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10 pr-4"
+                  autoFocus
+                  data-testid="mobile-search-input"
+                />
+              </div>
+              <Button type="submit" size="sm">
+                খুঁজুন
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsSearchOpen(false)}
+              >
+                <X className="w-4 h-4" />
+              </Button>
+            </form>
+          </div>
+        </div>
+      )}
     </>
   );
 }

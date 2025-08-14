@@ -5,7 +5,7 @@ import { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { COMPANY_NAME } from "@/lib/constants";
 import PerfectCartModal from "@/components/perfect-modals/perfect-cart-modal";
-import SearchBar from "@/components/search-bar";
+// Search bar component removed for consolidation
 import ProductModal from "@/components/product-modal";
 import type { Product } from "@shared/schema";
 
@@ -184,15 +184,34 @@ export default function Header({ cartCount, onCartOpen }: HeaderProps) {
 
       <PerfectCartModal isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
 
-      {/* Search Modal */}
-      <SearchBar
-        isOpen={isSearchOpen}
-        onClose={() => setIsSearchOpen(false)}
-        onProductSelect={(product) => {
-          setSelectedProduct(product);
-          setIsProductModalOpen(true);
-        }}
-      />
+      {/* Mobile Search Modal */}
+      {isSearchOpen && (
+        <div className="fixed inset-0 z-50 bg-black/50" onClick={() => setIsSearchOpen(false)}>
+          <div className="fixed top-0 left-0 right-0 bg-white p-4 shadow-lg">
+            <div className="flex items-center space-x-3">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                <input
+                  type="text"
+                  placeholder="পণ্য খুঁজুন..."
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
+                  autoFocus
+                />
+              </div>
+              <Button size="sm">
+                খুঁজুন
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsSearchOpen(false)}
+              >
+                <X className="w-4 h-4" />
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Product Modal from Search */}
       {selectedProduct && (
