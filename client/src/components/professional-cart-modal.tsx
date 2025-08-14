@@ -47,12 +47,34 @@ export default function ProfessionalCartModal({ isOpen, onClose }: ProfessionalC
   const deliveryCharge = totalPrice >= deliveryThreshold ? 0 : 60;
   const finalTotal = totalPrice + deliveryCharge;
 
-  // WhatsApp integration
+  // WhatsApp integration with customization details
   const createWhatsAppUrl = () => {
     const phoneNumber = "8801765555593";
-    const itemsText = items.map(item => 
-      `${item.name} - ৳${item.price} × ${item.quantity} = ৳${item.price * item.quantity}`
-    ).join('\n');
+    const itemsText = items.map(item => {
+      let itemDetails = `${item.name} - ৳${item.price} × ${item.quantity} = ৳${item.price * item.quantity}`;
+      
+      // Add customization details if available
+      if (item.customization) {
+        const customDetails = [];
+        if (item.customization.color) customDetails.push(`রং: ${item.customization.color}`);
+        if (item.customization.size) customDetails.push(`সাইজ: ${item.customization.size}`);
+        if (item.customization.text) customDetails.push(`টেক্সট: "${item.customization.text}"`);
+        if (item.customization.font) customDetails.push(`ফন্ট: ${item.customization.font}`);
+        if (item.customization.instructions) customDetails.push(`নির্দেশনা: ${item.customization.instructions}`);
+        
+        if (customDetails.length > 0) {
+          itemDetails += `\n   📝 কাস্টমাইজেশন: ${customDetails.join(', ')}`;
+        }
+        
+        // Note about uploaded images
+        const totalImages = (item.customization.custom_images?.length || 0) + (item.customization.uploaded_images?.length || 0);
+        if (totalImages > 0) {
+          itemDetails += `\n   🖼️ আপলোড করা ছবি: ${totalImages}টি`;
+        }
+      }
+      
+      return itemDetails;
+    }).join('\n\n');
 
     const message = `আসসালামু আলাইকুম! আমি অর্ডার দিতে চাই।
 
@@ -219,22 +241,63 @@ ${itemsText}
                             
                             {/* Customization Display */}
                             {item.customization && (
-                              <div className="mb-2 p-2 bg-blue-50 rounded border border-blue-200">
-                                <div className="flex items-center gap-1 mb-1">
+                              <div className="mb-2 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                                <div className="flex items-center gap-1 mb-2">
                                   <Package className="w-3 h-3 text-blue-600" />
                                   <Badge variant="outline" className="text-xs bg-white text-blue-800 border-blue-300">
                                     কাস্টমাইজড
                                   </Badge>
                                 </div>
                                 <div className="text-xs text-blue-700 space-y-1">
-                                  {item.customization.text && (
-                                    <p><strong>টেক্সট:</strong> "{item.customization.text}"</p>
-                                  )}
                                   {item.customization.color && (
                                     <p><strong>রং:</strong> {item.customization.color}</p>
                                   )}
                                   {item.customization.size && (
                                     <p><strong>সাইজ:</strong> {item.customization.size}</p>
+                                  )}
+                                  {item.customization.text && (
+                                    <p><strong>কাস্টম টেক্সট:</strong> "{item.customization.text}"</p>
+                                  )}
+                                  {item.customization.font && (
+                                    <p><strong>ফন্ট:</strong> {item.customization.font}</p>
+                                  )}
+                                  {item.customization.instructions && (
+                                    <p><strong>বিশেষ নির্দেশনা:</strong> {item.customization.instructions}</p>
+                                  )}
+                                  
+                                  {/* Display uploaded/custom images */}
+                                  {(item.customization.custom_images?.length > 0 || item.customization.uploaded_images?.length > 0) && (
+                                    <div className="mt-2">
+                                      <p className="font-medium text-blue-800 mb-1">আপলোড করা ছবি:</p>
+                                      <div className="flex flex-wrap gap-1">
+                                        {/* Custom images */}
+                                        {item.customization.custom_images?.map((imageUrl: string, idx: number) => (
+                                          <div key={`custom-${idx}`} className="relative">
+                                            <img
+                                              src={imageUrl}
+                                              alt={`Custom image ${idx + 1}`}
+                                              className="w-8 h-8 object-cover rounded border cursor-pointer hover:opacity-75"
+                                              onClick={() => window.open(imageUrl, '_blank')}
+                                            />
+                                          </div>
+                                        ))}
+                                        
+                                        {/* Uploaded images */}
+                                        {item.customization.uploaded_images?.map((imageUrl: string, idx: number) => (
+                                          <div key={`uploaded-${idx}`} className="relative">
+                                            <img
+                                              src={imageUrl}
+                                              alt={`Uploaded image ${idx + 1}`}
+                                              className="w-8 h-8 object-cover rounded border cursor-pointer hover:opacity-75"
+                                              onClick={() => window.open(imageUrl, '_blank')}
+                                            />
+                                          </div>
+                                        ))}
+                                      </div>
+                                      <p className="text-xs text-blue-600 mt-1">
+                                        ছবিতে ক্লিক করে বড় করে দেখুন
+                                      </p>
+                                    </div>
                                   )}
                                 </div>
                               </div>

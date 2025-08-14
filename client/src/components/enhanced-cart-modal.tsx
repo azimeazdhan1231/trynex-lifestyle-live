@@ -120,19 +120,57 @@ export default function EnhancedCartModal({ isOpen, onClose }: EnhancedCartModal
                         <p className="text-sm text-gray-600">{formatPrice(item.price)}</p>
                         
                         {item.customization && (
-                          <div className="mt-2">
-                            <Badge variant="outline" className="text-xs">
-                              কাস্টমাইজড
-                            </Badge>
-                            <div className="text-xs text-blue-600 mt-1 space-y-0.5">
-                              {item.customization.text && (
-                                <p><strong>টেক্সট:</strong> {item.customization.text}</p>
-                              )}
+                          <div className="mt-2 p-2 bg-blue-50 rounded-lg border border-blue-200">
+                            <div className="flex items-center gap-1 mb-1">
+                              <Badge variant="outline" className="text-xs bg-white text-blue-800 border-blue-300">
+                                কাস্টমাইজড
+                              </Badge>
+                            </div>
+                            <div className="text-xs text-blue-700 space-y-0.5">
                               {item.customization.color && (
                                 <p><strong>রং:</strong> {item.customization.color}</p>
                               )}
                               {item.customization.size && (
                                 <p><strong>সাইজ:</strong> {item.customization.size}</p>
+                              )}
+                              {item.customization.text && (
+                                <p><strong>কাস্টম টেক্সট:</strong> "{item.customization.text}"</p>
+                              )}
+                              {item.customization.font && (
+                                <p><strong>ফন্ট:</strong> {item.customization.font}</p>
+                              )}
+                              {item.customization.instructions && (
+                                <p><strong>বিশেষ নির্দেশনা:</strong> {item.customization.instructions}</p>
+                              )}
+                              
+                              {/* Display uploaded/custom images */}
+                              {(item.customization.custom_images?.length > 0 || item.customization.uploaded_images?.length > 0) && (
+                                <div className="mt-1">
+                                  <p className="font-medium text-blue-800 mb-1">আপলোড করা ছবি:</p>
+                                  <div className="flex flex-wrap gap-1">
+                                    {/* Custom images */}
+                                    {item.customization.custom_images?.map((imageUrl: string, idx: number) => (
+                                      <img
+                                        key={`custom-${idx}`}
+                                        src={imageUrl}
+                                        alt={`Custom image ${idx + 1}`}
+                                        className="w-6 h-6 object-cover rounded border cursor-pointer hover:opacity-75"
+                                        onClick={() => window.open(imageUrl, '_blank')}
+                                      />
+                                    ))}
+                                    
+                                    {/* Uploaded images */}
+                                    {item.customization.uploaded_images?.map((imageUrl: string, idx: number) => (
+                                      <img
+                                        key={`uploaded-${idx}`}
+                                        src={imageUrl}
+                                        alt={`Uploaded image ${idx + 1}`}
+                                        className="w-6 h-6 object-cover rounded border cursor-pointer hover:opacity-75"
+                                        onClick={() => window.open(imageUrl, '_blank')}
+                                      />
+                                    ))}
+                                  </div>
+                                </div>
                               )}
                             </div>
                           </div>
