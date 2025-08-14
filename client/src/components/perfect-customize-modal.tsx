@@ -265,7 +265,7 @@ export default function PerfectCustomizeModal({
                   </div>
                 )}
               </div>
-
+              
               {/* Customization Summary */}
               <div className="space-y-2 lg:space-y-3 text-xs lg:text-sm">
                 <div className="flex justify-between items-center">
@@ -321,7 +321,7 @@ export default function PerfectCustomizeModal({
                 <span>মূল দাম:</span>
                 <span>{formatPrice(typeof product.price === 'string' ? parseFloat(product.price) : product.price)}</span>
               </div>
-
+              
               {(() => {
                 const sizeOption = sizeOptions.find(s => s.value === customization.size);
                 return sizeOption?.price && sizeOption.price > 0 && (
@@ -331,7 +331,7 @@ export default function PerfectCustomizeModal({
                   </div>
                 );
               })()}
-
+              
               {(() => {
                 const materialOption = materialOptions.find(m => m.value === customization.material);
                 return materialOption?.price && materialOption.price > 0 && (
@@ -341,37 +341,37 @@ export default function PerfectCustomizeModal({
                   </div>
                 );
               })()}
-
+              
               {customization.text && (
                 <div className="flex justify-between text-sm">
                   <span>টেক্সট প্রিন্টিং:</span>
                   <span>+{formatPrice(100)}</span>
                 </div>
               )}
-
+              
               {customization.engraving && (
                 <div className="flex justify-between text-sm">
                   <span>এনগ্রেভিং:</span>
                   <span>+{formatPrice(150)}</span>
                 </div>
               )}
-
+              
               {customization.gift_wrap && (
                 <div className="flex justify-between text-sm">
                   <span>গিফট র্যাপিং:</span>
                   <span>+{formatPrice(50)}</span>
                 </div>
               )}
-
+              
               {customization.express_delivery && (
                 <div className="flex justify-between text-sm">
                   <span>এক্সপ্রেস ডেলিভারি:</span>
                   <span>+{formatPrice(200)}</span>
                 </div>
               )}
-
+              
               <Separator />
-
+              
               <div className="flex justify-between text-lg font-bold text-primary">
                 <span>মোট দাম:</span>
                 <span>{formatPrice(totalPrice)}</span>
@@ -764,11 +764,11 @@ export default function PerfectCustomizeModal({
               বাতিল
             </Button>
             <Button
-              className="flex-1 order-1 sm:order-3 bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white"
+              className="flex-1 order-1 sm:order-3 bg-gradient-to-r from-primary to-orange-600 hover:from-primary/90 hover:to-orange-600/90 text-white"
               onClick={handleAddToCart}
             >
               <ShoppingCart className="w-3 h-3 lg:w-4 lg:h-4 mr-2" />
-              চেকআউটে যান
+              কার্টে যোগ করুন
             </Button>
           </div>
         </div>

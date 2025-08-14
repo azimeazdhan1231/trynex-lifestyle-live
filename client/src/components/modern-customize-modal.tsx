@@ -113,33 +113,33 @@ export default function ModernCustomizeModal({
   if (!product) return null;
 
   const basePrice = Number(product.price) || 0;
-
+  
   const calculateTotalPrice = useCallback(() => {
     let total = basePrice;
-
+    
     // Size pricing
     const sizeOption = sizeOptions.find(s => s.value === customization.size);
     if (sizeOption) total += sizeOption.price;
-
+    
     // Material pricing
     const materialOption = materialOptions.find(m => m.value === customization.material);
     if (materialOption) total += materialOption.price;
-
+    
     // Text customization
     if (customization.text.trim()) total += 100;
-
+    
     // Engraving
     if (customization.engraving.trim()) total += 200;
-
+    
     // Image upload
     if (customization.images.length > 0) total += customization.images.length * 150;
-
+    
     // Gift wrap
     if (customization.giftWrap) total += 80;
-
+    
     // Express delivery
     if (customization.expressDelivery) total += 120;
-
+    
     return total * customization.quantity;
   }, [customization, basePrice]);
 
@@ -148,7 +148,7 @@ export default function ModernCustomizeModal({
     if (!files) return;
 
     setIsUploading(true);
-
+    
     // Simulate upload (in real app, upload to cloud storage)
     setTimeout(() => {
       const newImages = Array.from(files).map(file => URL.createObjectURL(file));
@@ -157,7 +157,7 @@ export default function ModernCustomizeModal({
         images: [...prev.images, ...newImages].slice(0, 3) // Max 3 images
       }));
       setIsUploading(false);
-
+      
       toast({
         title: "ছবি আপলোড সফল",
         description: `${files.length}টি ছবি সফলভাবে যোগ করা হয়েছে`,
@@ -173,37 +173,28 @@ export default function ModernCustomizeModal({
   };
 
   const handleAddToCart = () => {
-    // Store custom order data in localStorage for checkout
-    const customOrderData = {
-      productId: product.id,
-      productName: product.name,
-      productPrice: basePrice,
-      quantity: customization.quantity,
-      totalAmount: totalPrice,
-      customization: {
-        size: customization.size,
-        color: customization.color,
-        material: customization.material,
-        text: customization.text,
-        font: customization.font,
-        textColor: customization.textColor,
-        engraving: customization.engraving,
-        giftWrap: customization.giftWrap,
-        expressDelivery: customization.expressDelivery,
-        specialInstructions: customization.specialInstructions,
-        images: customization.images,
-        timestamp: new Date().toISOString()
-      }
+    const customizedProduct = {
+      ...product,
+      price: calculateTotalPrice().toString(),
+      customization
     };
 
-    localStorage.setItem('pendingCustomOrder', JSON.stringify(customOrderData));
-
-    // Redirect to checkout with custom order flag
-    window.location.href = '/checkout?customOrder=true&total=' + totalPrice;
+    if (onAddToCart) {
+      onAddToCart(product, customization);
+    } else {
+      addToCart({
+        id: `${product.id}_custom_${Date.now()}`,
+        name: `${product.name} (কাস্টমাইজড)`,
+        price: calculateTotalPrice(),
+        quantity: customization.quantity,
+        image_url: product.image_url || undefined,
+        customization
+      });
+    }
 
     toast({
-      title: "চেকআউটে পুনর্নিদেশিত হচ্ছে!",
-      description: `আপনার কাস্টম অর্ডার প্রস্তুত, এখন চেকআউট সম্পূর্ণ করুন`,
+      title: "কার্টে যোগ করা হয়েছে!",
+      description: `কাস্টমাইজড ${product.name} সফলভাবে কার্টে যোগ করা হয়েছে`,
       duration: 3000,
     });
 
@@ -228,7 +219,7 @@ export default function ModernCustomizeModal({
                   আপনার পছন্দ অনুযায়ী পণ্যটি সাজিয়ে নিন
                 </DialogDescription>
               </div>
-
+              
               <div className="flex items-center gap-3">
                 <Badge className="bg-green-500 text-white px-3 py-1">
                   মোট: {formatPrice(totalPrice)}
@@ -258,13 +249,13 @@ export default function ModernCustomizeModal({
                         alt={product.name}
                         className="w-full h-full object-cover"
                       />
-
+                      
                       {/* Color overlay */}
                       <div 
                         className="absolute inset-0 mix-blend-multiply opacity-20"
                         style={{ backgroundColor: customization.color }}
                       />
-
+                      
                       {/* Text overlay */}
                       {customization.text && (
                         <div 
@@ -286,7 +277,7 @@ export default function ModernCustomizeModal({
                 <Card>
                   <CardContent className="p-4 space-y-3">
                     <h3 className="font-semibold text-lg">কাস্টমাইজেশন সারাংশ</h3>
-
+                    
                     <div className="grid grid-cols-2 gap-4 text-sm">
                       <div>
                         <span className="text-gray-600">সাইজ:</span>
@@ -294,19 +285,19 @@ export default function ModernCustomizeModal({
                           {sizeOptions.find(s => s.value === customization.size)?.label}
                         </span>
                       </div>
-
+                      
                       <div>
                         <span className="text-gray-600">উপাদান:</span>
                         <span className="ml-2 font-medium">
                           {materialOptions.find(m => m.value === customization.material)?.label}
                         </span>
                       </div>
-
+                      
                       <div>
                         <span className="text-gray-600">পরিমাণ:</span>
                         <span className="ml-2 font-medium">{customization.quantity}টি</span>
                       </div>
-
+                      
                       <div>
                         <span className="text-gray-600">ছবি:</span>
                         <span className="ml-2 font-medium">{customization.images.length}টি</span>
@@ -319,7 +310,7 @@ export default function ModernCustomizeModal({
                         গিফট র‍্যাপিং
                       </Badge>
                     )}
-
+                    
                     {customization.expressDelivery && (
                       <Badge className="bg-blue-500 text-white">
                         <Truck className="w-3 h-3 mr-1" />
@@ -437,11 +428,11 @@ export default function ModernCustomizeModal({
                         >
                           <Minus className="w-4 h-4" />
                         </Button>
-
+                        
                         <span className="font-semibold text-lg min-w-[2ch] text-center">
                           {customization.quantity}
                         </span>
-
+                        
                         <Button
                           variant="outline"
                           size="sm"
@@ -678,7 +669,7 @@ export default function ModernCustomizeModal({
                 >
                   বাতিল
                 </Button>
-
+                
                 <Button
                   onClick={handleAddToCart}
                   className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white min-w-[180px]"
