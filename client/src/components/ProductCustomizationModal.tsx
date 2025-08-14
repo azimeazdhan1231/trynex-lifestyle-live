@@ -405,11 +405,11 @@ export default function ProductCustomizationModal({
               <Button
                 type="submit"
                 disabled={isSubmitting}
-                className="flex-1 bg-gradient-to-r from-orange-500 to-red-500 text-white hover:from-orange-600 hover:to-red-600"
-                data-testid="button-place-order"
+                className="flex-1 bg-gradient-to-r from-green-500 to-blue-500 text-white hover:from-green-600 hover:to-blue-600"
+                data-testid="button-proceed-checkout"
               >
                 <ShoppingBag className="w-4 h-4 mr-2" />
-                {isSubmitting ? 'অর্ডার করা হচ্ছে...' : 'অর্ডার করুন'}
+                {isSubmitting ? 'প্রক্রিয়াকরণ...' : 'চেকআউটে যান'}
               </Button>
             </div>
           </form>

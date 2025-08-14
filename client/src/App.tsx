@@ -37,6 +37,7 @@ const SearchPage = lazy(() => import("./pages/search"));
 const WishlistPage = lazy(() => import("./pages/wishlist"));
 
 const CustomizeProduct = lazy(() => import("./pages/customize-product-enhanced"));
+const Checkout = lazy(() => import("./pages/checkout"));
 
 // Performance and Mobile Optimization Components
 // const PerformanceOptimizer = lazy(() => import("./components/PerformanceOptimizer"));
@@ -87,6 +88,7 @@ function Router() {
           <Route path="/search" component={SearchPage} />
           <Route path="/customize/:id" component={CustomizeProduct} />
           <Route path="/customize" component={CustomizeProduct} />
+          <Route path="/checkout" component={Checkout} />
           <Route component={NotFound} />
         </Switch>
       </Suspense>
