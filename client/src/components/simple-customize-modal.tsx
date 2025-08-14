@@ -26,6 +26,7 @@ interface CustomizationOption {
   id: string;
   name: string;
   nameBengali: string;
+  description?: string;
   options: Array<{
     value: string;
     label: string;

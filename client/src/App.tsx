@@ -11,11 +11,12 @@ import ErrorBoundary from "@/components/error-boundary";
 // import { PerformanceOptimizer } from './components/PerformanceOptimizer';
 import { UltraPerformanceLoader } from './components/ultra-performance-loader';
 import MobileResponsiveEnhancement from './components/mobile-responsive-enhancement';
+import UltraModernLayout from './components/ultra-modern-layout';
 
 // Dynamic imports for better code splitting
-const Home = lazy(() => import("./pages/home-modern"));
+const Home = lazy(() => import("./pages/ultra-modern-home"));
 const Product = lazy(() => import("./pages/product-enhanced"));
-const Products = lazy(() => import("./pages/products-modern"));
+const Products = lazy(() => import("./pages/ultra-modern-products"));
 const Contact = lazy(() => import("./pages/contact"));
 const OrderTracking = lazy(() => import("./pages/tracking"));
 const Admin = lazy(() => import("./pages/admin"));
@@ -54,38 +55,42 @@ function Router() {
   useAnalytics();
 
   return (
-    <Suspense fallback={<LoadingFallback />}>
-      <Switch>
-        <Route path="/" component={Home} />
-        <Route path="/product/:id" component={Product} />
-        <Route path="/product" component={Product} />
-        <Route path="/products" component={Products} />
-        <Route path="/offers" component={Offers} />
-        <Route path="/contact" component={Contact} />
-        <Route path="/about" component={About} />
-        <Route path="/blog" component={BlogPage} />
-        <Route path="/admin" component={Admin} />
-        <Route path="/tracking" component={OrderTracking} />
-        <Route path="/track/:id" component={OrderTracking} />
-        <Route path="/track" component={OrderTracking} />
+    <UltraModernLayout>
+      <UltraPerformanceLoader>
+        <Suspense fallback={<LoadingFallback />}>
+          <Switch>
+            <Route path="/" component={Home} />
+            <Route path="/product/:id" component={Product} />
+            <Route path="/product" component={Product} />
+            <Route path="/products" component={Products} />
+            <Route path="/offers" component={Offers} />
+            <Route path="/contact" component={Contact} />
+            <Route path="/about" component={About} />
+            <Route path="/blog" component={BlogPage} />
+            <Route path="/admin" component={Admin} />
+            <Route path="/tracking" component={OrderTracking} />
+            <Route path="/track/:id" component={OrderTracking} />
+            <Route path="/track" component={OrderTracking} />
 
-        <Route path="/custom-order" component={CustomOrderForm} />
-        <Route path="/customize" component={CustomizeProduct} />
-        <Route path="/customize/:id" component={CustomizeProduct} />
-        <Route path="/return-policy-old" component={ReturnPolicy} />
-        <Route path="/terms-conditions-old" component={TermsConditionsDynamic} />
-        <Route path="/terms-conditions" component={Terms} />
-        <Route path="/terms" component={Terms} />
-        <Route path="/refund-policy" component={RefundPolicy} />
-        <Route path="/refund-replacement" component={RefundPolicy} />
-        <Route path="/payment-policy" component={PaymentPolicy} />
-        <Route path="/payment" component={PaymentPolicy} />
-        <Route path="/search" component={SearchPage} />
-        <Route path="/customize/:id" component={CustomizeProduct} />
-        <Route path="/customize" component={CustomizeProduct} />
-        <Route component={NotFound} />
-      </Switch>
-    </Suspense>
+            <Route path="/custom-order" component={CustomOrderForm} />
+            <Route path="/customize" component={CustomizeProduct} />
+            <Route path="/customize/:id" component={CustomizeProduct} />
+            <Route path="/return-policy-old" component={ReturnPolicy} />
+            <Route path="/terms-conditions-old" component={TermsConditionsDynamic} />
+            <Route path="/terms-conditions" component={Terms} />
+            <Route path="/terms" component={Terms} />
+            <Route path="/refund-policy" component={RefundPolicy} />
+            <Route path="/refund-replacement" component={RefundPolicy} />
+            <Route path="/payment-policy" component={PaymentPolicy} />
+            <Route path="/payment" component={PaymentPolicy} />
+            <Route path="/search" component={SearchPage} />
+            <Route path="/customize/:id" component={CustomizeProduct} />
+            <Route path="/customize" component={CustomizeProduct} />
+            <Route component={NotFound} />
+          </Switch>
+        </Suspense>
+      </UltraPerformanceLoader>
+    </UltraModernLayout>
   );
 }
 
