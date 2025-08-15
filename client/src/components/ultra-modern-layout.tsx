@@ -61,7 +61,7 @@ export default function UltraModernLayout({
     <div className="min-h-screen bg-gray-50 ultra-modern-container">
       <ModernHeader />
       
-      <main className="pt-[140px] lg:pt-[180px]">
+      <main className="pt-[80px] lg:pt-[100px]">
         {children}
       </main>
 
@@ -92,12 +92,10 @@ export default function UltraModernLayout({
             aria-label="উপরে যান"
             data-testid="button-scroll-top"
           >
-            <ArrowUp className="w-6 h-6" />
+            <ArrowUp className="w-6 w-6" />
           </Button>
         )}
       </div>
-
-
     </div>
   );
 }

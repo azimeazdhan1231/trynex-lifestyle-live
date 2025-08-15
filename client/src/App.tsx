@@ -8,8 +8,6 @@ import { initGA, loadFacebookPixelFromSettings } from "./lib/analytics";
 import { useAnalytics } from "./hooks/use-analytics";
 import DebugInfo from "@/components/debug-info";
 import ErrorBoundary from "@/components/error-boundary";
-import MobileResponsiveEnhancement from './components/mobile-responsive-enhancement';
-import UltraModernLayout from './components/ultra-modern-layout';
 import { LoadingOverlay } from './components/EnhancedLoadingSkeleton';
 
 // Lazy load pages for better performance
@@ -43,26 +41,24 @@ function AppContent() {
 
   return (
     <ErrorBoundary>
-      <MobileResponsiveEnhancement>
-        <UltraModernLayout>
-          <Suspense fallback={<LoadingOverlay />}>
-            <Switch>
-              <Route path="/" component={Home} />
-              <Route path="/products" component={Products} />
-              <Route path="/product/:id" component={Product} />
-              <Route path="/about" component={About} />
-              <Route path="/contact" component={Contact} />
-              <Route path="/cart" component={Cart} />
-              <Route path="/checkout" component={Checkout} />
-              <Route path="/orders" component={Orders} />
-              <Route path="/profile" component={Profile} />
-              <Route path="/auth" component={Auth} />
-              <Route path="/admin" component={Admin} />
-              <Route component={NotFound} />
-            </Switch>
-          </Suspense>
-        </UltraModernLayout>
-      </MobileResponsiveEnhancement>
+      <div className="min-h-screen bg-gray-50">
+        <Suspense fallback={<LoadingOverlay />}>
+          <Switch>
+            <Route path="/" component={Home} />
+            <Route path="/products" component={Products} />
+            <Route path="/product/:id" component={Product} />
+            <Route path="/about" component={About} />
+            <Route path="/contact" component={Contact} />
+            <Route path="/cart" component={Cart} />
+            <Route path="/checkout" component={Checkout} />
+            <Route path="/orders" component={Orders} />
+            <Route path="/profile" component={Profile} />
+            <Route path="/auth" component={Auth} />
+            <Route path="/admin" component={Admin} />
+            <Route component={NotFound} />
+          </Switch>
+        </Suspense>
+      </div>
     </ErrorBoundary>
   );
 }
