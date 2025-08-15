@@ -1,78 +1,76 @@
-import React from 'react';
+import { Route, Switch } from "wouter";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { queryClient } from "./lib/queryClient";
+import { Toaster } from "@/components/ui";
+import { TooltipProvider } from "@/components/ui";
+import { useEffect, Suspense, lazy } from "react";
+import { initGA, loadFacebookPixelFromSettings } from "./lib/analytics";
+import { useAnalytics } from "./hooks/use-analytics";
+import DebugInfo from "@/components/debug-info";
+import ErrorBoundary from "@/components/error-boundary";
+import { LoadingOverlay } from './components/EnhancedLoadingSkeleton';
 
-function App() {
-  console.log('🔍 App component is rendering!');
-  
+// Lazy load pages for better performance
+const Home = lazy(() => import('./pages/PerfectHomePage'));
+const Products = lazy(() => import('./pages/products'));
+const Product = lazy(() => import('./pages/product'));
+const About = lazy(() => import('./pages/about'));
+const Contact = lazy(() => import('./pages/contact'));
+const Cart = lazy(() => import('./pages/cart'));
+const Checkout = lazy(() => import('./pages/checkout'));
+const Orders = lazy(() => import('./pages/orders'));
+const Profile = lazy(() => import('./pages/profile'));
+const Auth = lazy(() => import('./pages/auth'));
+const Admin = lazy(() => import('./pages/admin'));
+const NotFound = lazy(() => import('./pages/not-found'));
+
+// Analytics initialization
+try {
+  initGA();
+  loadFacebookPixelFromSettings();
+} catch (error) {
+  console.warn('Analytics initialization failed:', error);
+}
+
+function AppContent() {
+  const { trackPageView } = useAnalytics();
+
+  useEffect(() => {
+    trackPageView(window.location.pathname);
+  }, [trackPageView]);
+
   return (
-    <div style={{
-      minHeight: '100vh',
-      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      fontFamily: 'Arial, sans-serif'
-    }}>
-      <div style={{
-        background: 'rgba(255, 255, 255, 0.95)',
-        padding: '40px',
-        borderRadius: '20px',
-        textAlign: 'center',
-        boxShadow: '0 20px 40px rgba(0,0,0,0.1)',
-        maxWidth: '600px'
-      }}>
-        <h1 style={{ color: '#333', fontSize: '48px', marginBottom: '20px' }}>
-          🎉 TryneX Lifestyle Shop
-        </h1>
-        <p style={{ color: '#666', fontSize: '18px', marginBottom: '20px' }}>
-          <strong>React is now working!</strong>
-        </p>
-        <p style={{ color: '#666', fontSize: '18px', marginBottom: '20px' }}>
-          The black screen issue has been resolved.
-        </p>
-        
-        <div style={{
-          background: '#4CAF50',
-          color: 'white',
-          padding: '15px 25px',
-          borderRadius: '10px',
-          margin: '20px 0',
-          fontWeight: 'bold'
-        }}>
-          ✅ React Working | ✅ Component Rendering | ✅ Styling Working
-        </div>
-        
-        <div style={{
-          marginTop: '30px',
-          padding: '20px',
-          background: '#f8f9fa',
-          borderRadius: '10px',
-          textAlign: 'left'
-        }}>
-          <h3 style={{ color: '#333', marginTop: 0 }}>Status:</h3>
-          <p style={{ color: '#666', margin: '5px 0' }}>✅ React component loaded</p>
-          <p style={{ color: '#666', margin: '5px 0' }}>✅ JSX rendering working</p>
-          <p style={{ color: '#666', margin: '5px 0' }}>✅ Inline styles working</p>
-          <p style={{ color: '#666', margin: '5px 0' }}>✅ Component structure working</p>
-        </div>
-        
-        <button 
-          onClick={() => alert('🎉 React event handling is working!')}
-          style={{
-            background: '#007bff',
-            color: 'white',
-            border: 'none',
-            padding: '15px 30px',
-            borderRadius: '10px',
-            fontSize: '16px',
-            cursor: 'pointer',
-            marginTop: '20px'
-          }}
-        >
-          🧪 Test React Function
-        </button>
+    <ErrorBoundary>
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
+        <Suspense fallback={<LoadingOverlay />}>
+          <Switch>
+            <Route path="/" component={Home} />
+            <Route path="/products" component={Products} />
+            <Route path="/product/:id" component={Product} />
+            <Route path="/about" component={About} />
+            <Route path="/contact" component={Contact} />
+            <Route path="/cart" component={Cart} />
+            <Route path="/checkout" component={Checkout} />
+            <Route path="/orders" component={Orders} />
+            <Route path="/profile" component={Profile} />
+            <Route path="/auth" component={Auth} />
+            <Route path="/admin" component={Admin} />
+            <Route component={NotFound} />
+          </Switch>
+        </Suspense>
       </div>
-    </div>
+    </ErrorBoundary>
   );
 }
 
-export default App;
+export default function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <AppContent />
+        <Toaster />
+        {process.env.NODE_ENV === 'development' && <DebugInfo />}
+      </TooltipProvider>
+    </QueryClientProvider>
+  );
+}
