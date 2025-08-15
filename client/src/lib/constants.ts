@@ -1,77 +1,206 @@
-// Price formatting utility
-export const formatPrice = (price: number): string => {
-  return new Intl.NumberFormat('bn-BD', {
-    style: 'currency',
-    currency: 'BDT',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(price);
+// Company Information
+export const COMPANY_NAME = "TryneX Lifestyle";
+export const COMPANY_TAGLINE = "Premium Customization Shop";
+export const COMPANY_DESCRIPTION = "Your premium destination for personalized lifestyle products";
+
+// Contact Information
+export const WHATSAPP_NUMBER = "+880 1234-567890";
+export const PHONE_NUMBER = "+880 1234-567890";
+export const EMAIL = "support@trynex.com";
+export const ADDRESS = "Dhaka, Bangladesh";
+
+// Social Media
+export const FACEBOOK_PAGE = "https://facebook.com/trynexlifestyle";
+export const INSTAGRAM_PAGE = "https://instagram.com/trynexlifestyle";
+export const TWITTER_PAGE = "https://twitter.com/trynexlifestyle";
+export const YOUTUBE_PAGE = "https://youtube.com/trynexlifestyle";
+
+// Business Information
+export const BUSINESS_HOURS = "9:00 AM - 6:00 PM (GMT+6)";
+export const SHIPPING_TIME = "2-3 business days";
+export const RETURN_POLICY = "30 days return policy";
+
+// Product Categories
+export const PRODUCT_CATEGORIES = [
+  { id: 'clothing', name: 'Clothing', icon: '👕' },
+  { id: 'drinkware', name: 'Drinkware', icon: '☕' },
+  { id: 'artwork', name: 'Artwork', icon: '🎨' },
+  { id: 'accessories', name: 'Accessories', icon: '📱' }
+];
+
+// Customization Options
+export const CUSTOMIZATION_TYPES = {
+  clothing: {
+    sizes: ['XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL'],
+    colors: ['White', 'Black', 'Navy', 'Gray', 'Red', 'Blue', 'Green'],
+    materials: ['100% Cotton', 'Polyester Blend', 'Premium Cotton', 'Organic Cotton']
+  },
+  drinkware: {
+    sizes: ['12oz', '16oz', '20oz', '24oz', '32oz'],
+    colors: ['White', 'Black', 'Stainless Steel', 'Clear', 'Colored'],
+    materials: ['Ceramic', 'Stainless Steel', 'Glass', 'Plastic']
+  },
+  artwork: {
+    sizes: ['8x10"', '11x14"', '16x20"', '20x24"', '24x36"'],
+    colors: ['Full Color', 'Black & White', 'Sepia', 'Vintage'],
+    materials: ['Canvas', 'Photo Paper', 'Vinyl', 'Fabric']
+  }
 };
 
-// WhatsApp URL creation utility
+// Pricing
+export const CUSTOMIZATION_FEES = {
+  clothing: 15,
+  drinkware: 8,
+  artwork: 12,
+  accessories: 10
+};
+
+// Utility Functions
 export const createWhatsAppUrl = (message: string): string => {
-  const phoneNumber = '+8801234567890'; // Replace with your actual WhatsApp number
+  const phoneNumber = WHATSAPP_NUMBER.replace(/\D/g, '');
   const encodedMessage = encodeURIComponent(message);
   return `https://wa.me/${phoneNumber}?text=${encodedMessage}`;
 };
 
-// Company and contact constants
-export const COMPANY_NAME = 'TryneX Lifestyle Shop';
-export const COMPANY_TAGLINE = 'Your Premium Lifestyle Destination';
-export const WHATSAPP_NUMBER = '+8801234567890';
-export const PHONE_NUMBER = '+880 1234-567890';
-
-// App constants
-export const APP_NAME = 'TryneX Lifestyle Shop';
-export const APP_DESCRIPTION = 'Your premium lifestyle destination';
-export const APP_VERSION = '1.0.0';
-
-// Contact information
-export const CONTACT_PHONE = '+880 1234-567890';
-export const CONTACT_EMAIL = 'support@trynexlifestyle.com';
-export const CONTACT_ADDRESS = 'Dhaka, Bangladesh';
-
-// Social media links
-export const SOCIAL_LINKS = {
-  facebook: 'https://facebook.com/trynexlifestyle',
-  instagram: 'https://instagram.com/trynexlifestyle',
-  twitter: 'https://twitter.com/trynexlifestyle',
-  youtube: 'https://youtube.com/trynexlifestyle',
+export const formatPrice = (price: number | string): string => {
+  const numPrice = typeof price === 'string' ? parseFloat(price) : price;
+  if (isNaN(numPrice)) return '$0.00';
+  
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  }).format(numPrice);
 };
 
-// Social media page URLs
-export const FACEBOOK_PAGE = 'https://facebook.com/trynexlifestyle';
-export const INSTAGRAM_PAGE = 'https://instagram.com/trynexlifestyle';
-export const TWITTER_PAGE = 'https://twitter.com/trynexlifestyle';
-export const YOUTUBE_PAGE = 'https://youtube.com/trynexlifestyle';
-
-// API endpoints
-export const API_BASE_URL = process.env.NODE_ENV === 'production' 
-  ? 'https://your-production-domain.com/api' 
-  : 'http://localhost:5000/api';
-
-// Pagination
-export const DEFAULT_PAGE_SIZE = 12;
-export const MAX_PAGE_SIZE = 100;
-
-// File upload limits
-export const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
-export const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-
-// Validation constants
-export const MIN_PASSWORD_LENGTH = 8;
-export const MAX_PRODUCT_NAME_LENGTH = 100;
-export const MAX_PRODUCT_DESCRIPTION_LENGTH = 1000;
-
-// Cache durations (in milliseconds)
-export const CACHE_DURATIONS = {
-  PRODUCTS: 5 * 60 * 1000, // 5 minutes
-  CATEGORIES: 30 * 60 * 1000, // 30 minutes
-  USER_PROFILE: 10 * 60 * 1000, // 10 minutes
-  CART: 24 * 60 * 60 * 1000, // 24 hours
+export const formatDate = (date: Date | string): string => {
+  const dateObj = typeof date === 'string' ? new Date(date) : date;
+  return new Intl.DateTimeFormat('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  }).format(dateObj);
 };
 
-// Order statuses
+export const formatDateTime = (date: Date | string): string => {
+  const dateObj = typeof date === 'string' ? new Date(date) : date;
+  return new Intl.DateTimeFormat('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  }).format(dateObj);
+};
+
+export const truncateText = (text: string, maxLength: number): string => {
+  if (text.length <= maxLength) return text;
+  return text.slice(0, maxLength) + '...';
+};
+
+export const capitalizeFirst = (text: string): string => {
+  return text.charAt(0).toUpperCase() + text.slice(1).toLowerCase();
+};
+
+export const toSlug = (text: string): string => {
+  return text
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '');
+};
+
+export const isValidEmail = (email: string): boolean => {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
+};
+
+export const isValidPhone = (phone: string): boolean => {
+  const phoneRegex = /^[\+]?[1-9][\d]{0,15}$/;
+  return phoneRegex.test(phone.replace(/[\s\-\(\)]/g, ''));
+};
+
+export const formatPhone = (phone: string): string => {
+  const cleaned = phone.replace(/\D/g, '');
+  const match = cleaned.match(/^(\d{3})(\d{3})(\d{4})$/);
+  if (match) {
+    return '(' + match[1] + ') ' + match[2] + '-' + match[3];
+  }
+  return phone;
+};
+
+export const generateId = (): string => {
+  return Math.random().toString(36).substr(2, 9) + Date.now().toString(36);
+};
+
+export const debounce = <T extends (...args: any[]) => any>(
+  func: T,
+  wait: number
+): ((...args: Parameters<T>) => void) => {
+  let timeout: NodeJS.Timeout;
+  return (...args: Parameters<T>) => {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => func(...args), wait);
+  };
+};
+
+export const sleep = (ms: number): Promise<void> => {
+  return new Promise(resolve => setTimeout(resolve, ms));
+};
+
+export const retry = async <T>(
+  fn: () => Promise<T>,
+  maxAttempts: number = 3,
+  delay: number = 1000
+): Promise<T> => {
+  let lastError: Error;
+  
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      return await fn();
+    } catch (error) {
+      lastError = error as Error;
+      if (attempt === maxAttempts) break;
+      await sleep(delay * attempt);
+    }
+  }
+  
+  throw lastError!;
+};
+
+// API Endpoints
+export const API_ENDPOINTS = {
+  products: '/api/products',
+  categories: '/api/categories',
+  orders: '/api/orders',
+  users: '/api/users',
+  auth: '/api/auth',
+  health: '/api/health'
+};
+
+// Local Storage Keys
+export const STORAGE_KEYS = {
+  CART: 'trynex_cart',
+  WISHLIST: 'trynex_wishlist',
+  USER: 'trynex_user',
+  THEME: 'trynex_theme',
+  LANGUAGE: 'trynex_language'
+};
+
+// Theme Options
+export const THEMES = {
+  LIGHT: 'light',
+  DARK: 'dark',
+  AUTO: 'auto'
+} as const;
+
+// Language Options
+export const LANGUAGES = {
+  EN: 'en',
+  BN: 'bn'
+} as const;
+
+// Order Statuses
 export const ORDER_STATUSES = {
   PENDING: 'pending',
   CONFIRMED: 'confirmed',
@@ -82,109 +211,76 @@ export const ORDER_STATUSES = {
   REFUNDED: 'refunded',
 } as const;
 
-// Payment methods
-export const PAYMENT_METHODS = {
-  CASH_ON_DELIVERY: 'cash_on_delivery',
-  BANK_TRANSFER: 'bank_transfer',
-  MOBILE_BANKING: 'mobile_banking',
-  CREDIT_CARD: 'credit_card',
-} as const;
+// Pagination
+export const DEFAULT_PAGE_SIZE = 12;
+export const MAX_PAGE_SIZE = 100;
 
-// Delivery zones
-export const DELIVERY_ZONES = {
-  DHAKA_CITY: {
-    name: 'ঢাকা সিটি',
-    deliveryTime: '1-2 দিন',
-    deliveryFee: 60,
-  },
-  DHAKA_OUTSIDE: {
-    name: 'ঢাকার বাইরে',
-    deliveryTime: '3-5 দিন',
-    deliveryFee: 120,
-  },
-  OTHER_CITIES: {
-    name: 'অন্যান্য শহর',
-    deliveryTime: '5-7 দিন',
-    deliveryFee: 200,
-  },
-} as const;
+// File Upload
+export const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+export const ALLOWED_FILE_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 
-// Product categories
-export const PRODUCT_CATEGORIES = [
-  'Gifts',
-  'Electronics',
-  'Fashion',
-  'Home & Living',
-  'Beauty & Health',
-  'Sports & Outdoor',
-  'Books & Stationery',
-  'Automotive',
-  'Toys & Games',
-  'Food & Beverages',
-] as const;
+// Validation Rules
+export const VALIDATION_RULES = {
+  MIN_PASSWORD_LENGTH: 8,
+  MAX_PASSWORD_LENGTH: 128,
+  MIN_NAME_LENGTH: 2,
+  MAX_NAME_LENGTH: 50,
+  MIN_DESCRIPTION_LENGTH: 10,
+  MAX_DESCRIPTION_LENGTH: 1000
+};
 
-// Product badges
-export const PRODUCT_BADGES = {
-  FEATURED: 'featured',
-  NEW: 'new',
-  BEST_SELLING: 'best_selling',
-  SALE: 'sale',
-  LIMITED_EDITION: 'limited_edition',
-  PREMIUM: 'premium',
-} as const;
-
-// User roles
-export const USER_ROLES = {
-  CUSTOMER: 'customer',
-  ADMIN: 'admin',
-  MODERATOR: 'moderator',
-} as const;
-
-// Notification types
-export const NOTIFICATION_TYPES = {
-  ORDER_UPDATE: 'order_update',
-  PROMOTION: 'promotion',
-  SYSTEM: 'system',
-  SECURITY: 'security',
-} as const;
-
-// Error messages
+// Error Messages
 export const ERROR_MESSAGES = {
-  NETWORK_ERROR: 'নেটওয়ার্ক সমস্যা। অনুগ্রহ করে আবার চেষ্টা করুন।',
-  UNAUTHORIZED: 'আপনার অ্যাক্সেস নেই। অনুগ্রহ করে লগইন করুন।',
-  FORBIDDEN: 'এই কাজটি করার অনুমতি নেই।',
-  NOT_FOUND: 'অনুরোধকৃত তথ্য পাওয়া যায়নি।',
-  VALIDATION_ERROR: 'অনুগ্রহ করে সঠিক তথ্য দিন।',
-  SERVER_ERROR: 'সার্ভারে সমস্যা হয়েছে। অনুগ্রহ করে আবার চেষ্টা করুন।',
-  TIMEOUT_ERROR: 'অনুরোধ সময় শেষ হয়ে গেছে। অনুগ্রহ করে আবার চেষ্টা করুন।',
-} as const;
+  REQUIRED_FIELD: 'This field is required',
+  INVALID_EMAIL: 'Please enter a valid email address',
+  INVALID_PHONE: 'Please enter a valid phone number',
+  PASSWORD_TOO_SHORT: 'Password must be at least 8 characters long',
+  PASSWORD_TOO_LONG: 'Password must be less than 128 characters',
+  FILE_TOO_LARGE: 'File size must be less than 5MB',
+  INVALID_FILE_TYPE: 'Please upload a valid image file (JPEG, PNG, WebP)',
+  NETWORK_ERROR: 'Network error. Please check your connection and try again.',
+  SERVER_ERROR: 'Server error. Please try again later.',
+  UNAUTHORIZED: 'You are not authorized to perform this action.',
+  NOT_FOUND: 'The requested resource was not found.'
+};
 
-// Success messages
+// Success Messages
 export const SUCCESS_MESSAGES = {
-  ORDER_PLACED: 'আপনার অর্ডার সফলভাবে দেওয়া হয়েছে!',
-  PRODUCT_ADDED: 'পণ্য কার্টে যোগ করা হয়েছে!',
-  PROFILE_UPDATED: 'প্রোফাইল আপডেট করা হয়েছে!',
-  PASSWORD_CHANGED: 'পাসওয়ার্ড পরিবর্তন করা হয়েছে!',
-  ACCOUNT_CREATED: 'অ্যাকাউন্ট সফলভাবে তৈরি হয়েছে!',
-  LOGIN_SUCCESS: 'সফলভাবে লগইন হয়েছে!',
-  LOGOUT_SUCCESS: 'সফলভাবে লগআউট হয়েছে!',
+  PRODUCT_ADDED_TO_CART: 'Product added to cart successfully!',
+  PRODUCT_ADDED_TO_WISHLIST: 'Product added to wishlist successfully!',
+  ORDER_PLACED: 'Order placed successfully!',
+  PROFILE_UPDATED: 'Profile updated successfully!',
+  PASSWORD_CHANGED: 'Password changed successfully!',
+  LOGIN_SUCCESS: 'Logged in successfully!',
+  LOGOUT_SUCCESS: 'Logged out successfully!',
+  REGISTRATION_SUCCESS: 'Account created successfully!'
+};
+
+// Animation Durations
+export const ANIMATION_DURATIONS = {
+  FAST: 150,
+  NORMAL: 300,
+  SLOW: 500,
+  VERY_SLOW: 1000
 } as const;
 
-// Loading messages
-export const LOADING_MESSAGES = {
-  LOADING_PRODUCTS: 'পণ্য লোড হচ্ছে...',
-  LOADING_CART: 'কার্ট লোড হচ্ছে...',
-  PROCESSING_ORDER: 'অর্ডার প্রক্রিয়া হচ্ছে...',
-  UPLOADING_FILE: 'ফাইল আপলোড হচ্ছে...',
-  SAVING_CHANGES: 'পরিবর্তন সংরক্ষণ হচ্ছে...',
-  SEARCHING: 'অনুসন্ধান হচ্ছে...',
+// Breakpoints
+export const BREAKPOINTS = {
+  MOBILE: 640,
+  TABLET: 768,
+  LAPTOP: 1024,
+  DESKTOP: 1280,
+  WIDE: 1536
 } as const;
 
-// Empty state messages
-export const EMPTY_STATE_MESSAGES = {
-  NO_PRODUCTS: 'কোনো পণ্য পাওয়া যায়নি।',
-  NO_ORDERS: 'কোনো অর্ডার নেই।',
-  NO_WISHLIST: 'উইশলিস্টে কোনো পণ্য নেই।',
-  NO_SEARCH_RESULTS: 'অনুসন্ধানের ফলাফল পাওয়া যায়নি।',
-  CART_EMPTY: 'আপনার কার্ট খালি।',
+// Z-Index Scale
+export const Z_INDEX = {
+  DROPDOWN: 1000,
+  STICKY: 1020,
+  FIXED: 1030,
+  MODAL_BACKDROP: 1040,
+  MODAL: 1050,
+  POPOVER: 1060,
+  TOOLTIP: 1070,
+  TOAST: 1080
 } as const;
