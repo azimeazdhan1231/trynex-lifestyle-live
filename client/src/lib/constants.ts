@@ -15,6 +15,12 @@ export const createWhatsAppUrl = (message: string): string => {
   return `https://wa.me/${phoneNumber}?text=${encodedMessage}`;
 };
 
+// Company and contact constants
+export const COMPANY_NAME = 'TryneX Lifestyle Shop';
+export const COMPANY_TAGLINE = 'Your Premium Lifestyle Destination';
+export const WHATSAPP_NUMBER = '+8801234567890';
+export const PHONE_NUMBER = '+880 1234-567890';
+
 // App constants
 export const APP_NAME = 'TryneX Lifestyle Shop';
 export const APP_DESCRIPTION = 'Your premium lifestyle destination';
@@ -32,6 +38,12 @@ export const SOCIAL_LINKS = {
   twitter: 'https://twitter.com/trynexlifestyle',
   youtube: 'https://youtube.com/trynexlifestyle',
 };
+
+// Social media page URLs
+export const FACEBOOK_PAGE = 'https://facebook.com/trynexlifestyle';
+export const INSTAGRAM_PAGE = 'https://instagram.com/trynexlifestyle';
+export const TWITTER_PAGE = 'https://twitter.com/trynexlifestyle';
+export const YOUTUBE_PAGE = 'https://youtube.com/trynexlifestyle';
 
 // API endpoints
 export const API_BASE_URL = process.env.NODE_ENV === 'production' 

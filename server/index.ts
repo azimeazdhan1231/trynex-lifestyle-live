@@ -167,7 +167,7 @@ app.get('/api/health', async (req, res) => {
     const server = createServer(app);
 
     // Setup Vite in development
-    if (app.get("env") === "development") {
+    if (!process.env.NODE_ENV || process.env.NODE_ENV === "development") {
       console.log('🔧 Setting up Vite for development...');
       await setupVite(app, server);
     } else {

@@ -1,5 +1,4 @@
-import { Card, CardContent } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
+import { Card, CardContent, Skeleton } from '@/components/ui';
 
 interface LoadingSkeletonProps {
   variant?: 'product' | 'product-grid' | 'hero' | 'feature' | 'category';

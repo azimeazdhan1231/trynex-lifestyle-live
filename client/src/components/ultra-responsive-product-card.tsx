@@ -1,15 +1,13 @@
 import { useState, useCallback } from "react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { 
-  Star, 
-  Heart, 
-  Eye, 
-  ShoppingCart, 
-  Palette, 
-  Zap, 
-  Award, 
+import { Card, CardContent, Button, Badge } from "@/components/ui";
+import {
+  Star,
+  Heart,
+  Eye,
+  ShoppingCart,
+  Palette,
+  Zap,
+  Award,
   TrendingUp,
   Share2,
   Info

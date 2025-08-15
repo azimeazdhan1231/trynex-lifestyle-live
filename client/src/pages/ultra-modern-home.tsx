@@ -1,16 +1,14 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "wouter";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
-import { 
-  ArrowRight, 
-  Star, 
-  ShoppingBag, 
-  Truck, 
-  Shield, 
-  RefreshCw, 
+import { Button, Badge, Card, CardContent } from "@/components/ui";
+import {
+  ArrowRight,
+  Star,
+  ShoppingBag,
+  Truck,
+  Shield,
+  RefreshCw,
   Heart,
   TrendingUp,
   Award,
