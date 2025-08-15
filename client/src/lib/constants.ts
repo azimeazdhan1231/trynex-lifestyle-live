@@ -1,104 +1,178 @@
-export const WHATSAPP_NUMBER = "+8801747292277";
-export const COMPANY_NAME = "TryneX Shop";
-export const COMPANY_TAGLINE = "আপনার পছন্দের গিফট শপ";
-
-export const DISTRICTS = [
-  "ঢাকা",
-  "চট্টগ্রাম", 
-  "সিলেট",
-  "রাজশাহী",
-  "খুলনা",
-  "বরিশাল",
-  "রংপুর",
-  "ময়মনসিংহ"
-];
-
-export const PRODUCT_CATEGORIES = [
-  { id: "all", name: "সব পণ্য", bengaliName: "সব পণ্য", icon: "🛍️" },
-  { id: "gift-for-her", name: "Gift for Her", bengaliName: "তার জন্য উপহার", icon: "💝" },
-  { id: "gift-for-him", name: "Gift for Him", bengaliName: "তার জন্য উপহার", icon: "🎁" },
-  { id: "gift-for-babies", name: "Gift for Babies", bengaliName: "শিশুদের জন্য উপহার", icon: "👶" },
-  { id: "gift-for-parents", name: "Gift for Parents", bengaliName: "বাবা-মায়ের জন্য উপহার", icon: "👨‍👩‍👧‍👦" },
-  { id: "birthday-gift", name: "Birthday Gift", bengaliName: "জন্মদিনের উপহার", icon: "🎂" },
-  { id: "anniversary-gift", name: "Anniversary Gift", bengaliName: "বার্ষিকীর উপহার", icon: "💖" },
-  { id: "wedding-gift", name: "Wedding Gift", bengaliName: "বিয়ের উপহার", icon: "💒" },
-  { id: "valentine-gift", name: "Valentine Gift", bengaliName: "ভালোবাসা দিবসের উপহার", icon: "💕" },
-  { id: "friendship-gift", name: "Friendship Gift", bengaliName: "বন্ধুত্বের উপহার", icon: "🤝" },
-  { id: "graduation-gift", name: "Graduation Gift", bengaliName: "স্নাতকের উপহার", icon: "🎓" },
-  { id: "corporate-gift", name: "Corporate Gift", bengaliName: "কর্পোরেট উপহার", icon: "💼" },
-  { id: "mugs", name: "Mugs", bengaliName: "মগ", icon: "☕" },
-  { id: "t-shirts", name: "T-Shirts", bengaliName: "টি-শার্ট", icon: "👕" },
-  { id: "frames", name: "Photo Frames", bengaliName: "ফটো ফ্রেম", icon: "🖼️" },
-  { id: "keychains", name: "Keychains", bengaliName: "চাবির রিং", icon: "🔑" },
-  { id: "personalized-gifts", name: "Personalized Gifts", bengaliName: "ব্যক্তিগত উপহার", icon: "✨" },
-  { id: "home-decor", name: "Home Decor", bengaliName: "ঘর সাজানোর জিনিস", icon: "🏠" },
-  { id: "accessories", name: "Accessories", bengaliName: "এক্সেসরিজ", icon: "👜" },
-  { id: "seasonal-gifts", name: "Seasonal Gifts", bengaliName: "মৌসুমী উপহার", icon: "🌟" },
-];
-
-import { Clock, Package, Truck, CheckCircle, XCircle } from "lucide-react";
-
-export const ORDER_STATUSES = [
-  { id: "pending", name: "অপেক্ষমান", label: "অপেক্ষমান", color: "text-yellow-600", icon: Clock },
-  { id: "processing", name: "প্রসেসিং", label: "প্রসেসিং", color: "text-blue-600", icon: Package },
-  { id: "shipped", name: "পাঠানো হয়েছে", label: "পাঠানো হয়েছে", color: "text-purple-600", icon: Truck },
-  { id: "delivered", name: "ডেলিভার হয়েছে", label: "ডেলিভার হয়েছে", color: "text-green-600", icon: CheckCircle },
-  { id: "cancelled", name: "বাতিল", label: "বাতিল", color: "text-red-600", icon: XCircle }
-];
-
-export const formatPrice = (price: number | string): string => {
-  return `${price} ৳`;
+// Price formatting utility
+export const formatPrice = (price: number): string => {
+  return new Intl.NumberFormat('bn-BD', {
+    style: 'currency',
+    currency: 'BDT',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(price);
 };
 
+// WhatsApp URL creation utility
 export const createWhatsAppUrl = (message: string): string => {
-  return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
+  const phoneNumber = '+8801234567890'; // Replace with your actual WhatsApp number
+  const encodedMessage = encodeURIComponent(message);
+  return `https://wa.me/${phoneNumber}?text=${encodedMessage}`;
 };
 
-export const calculateDeliveryFee = (district: string, orderAmount: number): number => {
-  const dhakaDistricts = ["ঢাকা"];
-  const baseFee = dhakaDistricts.includes(district) ? 80 : 120;
-  
-  // Free delivery for orders above 2000tk
-  return orderAmount >= 2000 ? 0 : baseFee;
+// App constants
+export const APP_NAME = 'TryneX Lifestyle Shop';
+export const APP_DESCRIPTION = 'Your premium lifestyle destination';
+export const APP_VERSION = '1.0.0';
+
+// Contact information
+export const CONTACT_PHONE = '+880 1234-567890';
+export const CONTACT_EMAIL = 'support@trynexlifestyle.com';
+export const CONTACT_ADDRESS = 'Dhaka, Bangladesh';
+
+// Social media links
+export const SOCIAL_LINKS = {
+  facebook: 'https://facebook.com/trynexlifestyle',
+  instagram: 'https://instagram.com/trynexlifestyle',
+  twitter: 'https://twitter.com/trynexlifestyle',
+  youtube: 'https://youtube.com/trynexlifestyle',
 };
 
-export const FREE_DELIVERY_THRESHOLD = 2000;
+// API endpoints
+export const API_BASE_URL = process.env.NODE_ENV === 'production' 
+  ? 'https://your-production-domain.com/api' 
+  : 'http://localhost:5000/api';
 
-export const THANAS_BY_DISTRICT: Record<string, string[]> = {
-  "ঢাকা": [
-    "ধানমন্ডি", "গুলশান", "বনানী", "উত্তরা", "মিরপুর", "রামনা", "তেজগাঁও", "ওয়ারী", 
-    "সূত্রাপুর", "কোতোয়ালী", "শাহবাগ", "নিউমার্কেট", "হাজারীবাগ", "লালবাগ", "চকবাজার"
-  ],
-  "চট্টগ্রাম": [
-    "কোতোয়ালী", "পাঁচলাইশ", "ডবলমুরিং", "চান্দগাঁও", "বায়েজিদ", "হালিশহর", "আগ্রাবাদ", 
-    "সীতাকুণ্ড", "মীরসরাই", "সন্দ্বীপ", "বোয়ালখালী", "আনোয়ারা", "চন্দনাইশ", "সাতকানিয়া"
-  ],
-  "সিলেট": [
-    "সিলেট সদর", "জৈন্তাপুর", "কানাইঘাট", "বিশ্বনাথ", "বালাগঞ্জ", "বেলাইছড়ি", 
-    "ফেঞ্চুগঞ্জ", "গোলাপগঞ্জ", "গোয়াইনঘাট", "হবিগঞ্জ", "লাখাই", "নবীগঞ্জ"
-  ],
-  "রাজশাহী": [
-    "রাজশাহী সদর", "বাগমারা", "চারঘাট", "দুর্গাপুর", "গোদাগাড়ী", "মোহনপুর", 
-    "পুঠিয়া", "তানোর", "নাটোর", "সিংড়া", "বড়াইগ্রাম", "গুরুদাসপুর"
-  ],
-  "খুলনা": [
-    "খুলনা সদর", "সোনাডাঙ্গা", "খান জাহান আলী", "কয়রা", "পাইকগাছা", "রূপসা", 
-    "তেরখাদা", "বটিয়াঘাটা", "দাকোপ", "ডুমুরিয়া", "ফকিরহাট", "মোল্লাহাট"
-  ],
-  "বরিশাল": [
-    "বরিশাল সদর", "আগৈলঝাড়া", "বাবুগঞ্জ", "বাকেরগঞ্জ", "বানারীপাড়া", "গৌরনদী", 
-    "হিজলা", "মেহেন্দিগঞ্জ", "মুলাদী", "উজিরপুর", "ভোলা", "চরফ্যাশন"
-  ],
-  "রংপুর": [
-    "রংপুর সদর", "বদরগঞ্জ", "গঙ্গাচড়া", "কাউনিয়া", "মিঠাপুকুর", "পীরগঞ্জ", 
-    "পীরগাছা", "তারাগঞ্জ", "কুড়িগ্রাম", "ভুরুঙ্গামারী", "চিলমারী", "রাজারহাট"
-  ],
-  "ময়মনসিংহ": [
-    "ময়মনসিংহ সদর", "ভালুকা", "ত্রিশাল", "মুক্তাগাছা", "নান্দাইল", "তারাকান্দা", 
-    "গৌরীপুর", "গফরগাঁও", "ঈশ্বরগঞ্জ", "হালুয়াঘাট", "ফুলবাড়ীয়া", "ধোবাউড়া"
-  ]
+// Pagination
+export const DEFAULT_PAGE_SIZE = 12;
+export const MAX_PAGE_SIZE = 100;
+
+// File upload limits
+export const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+export const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+
+// Validation constants
+export const MIN_PASSWORD_LENGTH = 8;
+export const MAX_PRODUCT_NAME_LENGTH = 100;
+export const MAX_PRODUCT_DESCRIPTION_LENGTH = 1000;
+
+// Cache durations (in milliseconds)
+export const CACHE_DURATIONS = {
+  PRODUCTS: 5 * 60 * 1000, // 5 minutes
+  CATEGORIES: 30 * 60 * 1000, // 30 minutes
+  USER_PROFILE: 10 * 60 * 1000, // 10 minutes
+  CART: 24 * 60 * 60 * 1000, // 24 hours
 };
-export const PHONE_NUMBER = "+8801747292277";
-export const BKASH_NUMBER = "01747292277";
-export const NAGAD_NUMBER = "01747292277";
-export const FACEBOOK_PAGE = "https://www.facebook.com/profile.php?id=61576151563336";
+
+// Order statuses
+export const ORDER_STATUSES = {
+  PENDING: 'pending',
+  CONFIRMED: 'confirmed',
+  PROCESSING: 'processing',
+  SHIPPED: 'shipped',
+  DELIVERED: 'delivered',
+  CANCELLED: 'cancelled',
+  REFUNDED: 'refunded',
+} as const;
+
+// Payment methods
+export const PAYMENT_METHODS = {
+  CASH_ON_DELIVERY: 'cash_on_delivery',
+  BANK_TRANSFER: 'bank_transfer',
+  MOBILE_BANKING: 'mobile_banking',
+  CREDIT_CARD: 'credit_card',
+} as const;
+
+// Delivery zones
+export const DELIVERY_ZONES = {
+  DHAKA_CITY: {
+    name: 'ঢাকা সিটি',
+    deliveryTime: '1-2 দিন',
+    deliveryFee: 60,
+  },
+  DHAKA_OUTSIDE: {
+    name: 'ঢাকার বাইরে',
+    deliveryTime: '3-5 দিন',
+    deliveryFee: 120,
+  },
+  OTHER_CITIES: {
+    name: 'অন্যান্য শহর',
+    deliveryTime: '5-7 দিন',
+    deliveryFee: 200,
+  },
+} as const;
+
+// Product categories
+export const PRODUCT_CATEGORIES = [
+  'Gifts',
+  'Electronics',
+  'Fashion',
+  'Home & Living',
+  'Beauty & Health',
+  'Sports & Outdoor',
+  'Books & Stationery',
+  'Automotive',
+  'Toys & Games',
+  'Food & Beverages',
+] as const;
+
+// Product badges
+export const PRODUCT_BADGES = {
+  FEATURED: 'featured',
+  NEW: 'new',
+  BEST_SELLING: 'best_selling',
+  SALE: 'sale',
+  LIMITED_EDITION: 'limited_edition',
+  PREMIUM: 'premium',
+} as const;
+
+// User roles
+export const USER_ROLES = {
+  CUSTOMER: 'customer',
+  ADMIN: 'admin',
+  MODERATOR: 'moderator',
+} as const;
+
+// Notification types
+export const NOTIFICATION_TYPES = {
+  ORDER_UPDATE: 'order_update',
+  PROMOTION: 'promotion',
+  SYSTEM: 'system',
+  SECURITY: 'security',
+} as const;
+
+// Error messages
+export const ERROR_MESSAGES = {
+  NETWORK_ERROR: 'নেটওয়ার্ক সমস্যা। অনুগ্রহ করে আবার চেষ্টা করুন।',
+  UNAUTHORIZED: 'আপনার অ্যাক্সেস নেই। অনুগ্রহ করে লগইন করুন।',
+  FORBIDDEN: 'এই কাজটি করার অনুমতি নেই।',
+  NOT_FOUND: 'অনুরোধকৃত তথ্য পাওয়া যায়নি।',
+  VALIDATION_ERROR: 'অনুগ্রহ করে সঠিক তথ্য দিন।',
+  SERVER_ERROR: 'সার্ভারে সমস্যা হয়েছে। অনুগ্রহ করে আবার চেষ্টা করুন।',
+  TIMEOUT_ERROR: 'অনুরোধ সময় শেষ হয়ে গেছে। অনুগ্রহ করে আবার চেষ্টা করুন।',
+} as const;
+
+// Success messages
+export const SUCCESS_MESSAGES = {
+  ORDER_PLACED: 'আপনার অর্ডার সফলভাবে দেওয়া হয়েছে!',
+  PRODUCT_ADDED: 'পণ্য কার্টে যোগ করা হয়েছে!',
+  PROFILE_UPDATED: 'প্রোফাইল আপডেট করা হয়েছে!',
+  PASSWORD_CHANGED: 'পাসওয়ার্ড পরিবর্তন করা হয়েছে!',
+  ACCOUNT_CREATED: 'অ্যাকাউন্ট সফলভাবে তৈরি হয়েছে!',
+  LOGIN_SUCCESS: 'সফলভাবে লগইন হয়েছে!',
+  LOGOUT_SUCCESS: 'সফলভাবে লগআউট হয়েছে!',
+} as const;
+
+// Loading messages
+export const LOADING_MESSAGES = {
+  LOADING_PRODUCTS: 'পণ্য লোড হচ্ছে...',
+  LOADING_CART: 'কার্ট লোড হচ্ছে...',
+  PROCESSING_ORDER: 'অর্ডার প্রক্রিয়া হচ্ছে...',
+  UPLOADING_FILE: 'ফাইল আপলোড হচ্ছে...',
+  SAVING_CHANGES: 'পরিবর্তন সংরক্ষণ হচ্ছে...',
+  SEARCHING: 'অনুসন্ধান হচ্ছে...',
+} as const;
+
+// Empty state messages
+export const EMPTY_STATE_MESSAGES = {
+  NO_PRODUCTS: 'কোনো পণ্য পাওয়া যায়নি।',
+  NO_ORDERS: 'কোনো অর্ডার নেই।',
+  NO_WISHLIST: 'উইশলিস্টে কোনো পণ্য নেই।',
+  NO_SEARCH_RESULTS: 'অনুসন্ধানের ফলাফল পাওয়া যায়নি।',
+  CART_EMPTY: 'আপনার কার্ট খালি।',
+} as const;

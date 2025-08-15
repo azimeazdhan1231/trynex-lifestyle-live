@@ -8,12 +8,11 @@ import { initGA, loadFacebookPixelFromSettings } from "./lib/analytics";
 import { useAnalytics } from "./hooks/use-analytics";
 import DebugInfo from "@/components/debug-info";
 import ErrorBoundary from "@/components/error-boundary";
-// import { PerformanceOptimizer } from './components/PerformanceOptimizer';
-// Removed UltraPerformanceLoader as it doesn't accept children
 import MobileResponsiveEnhancement from './components/mobile-responsive-enhancement';
 import UltraModernLayout from './components/ultra-modern-layout';
+import { LoadingOverlay } from './components/EnhancedLoadingSkeleton';
 
-// Dynamic imports for better code splitting
+// Dynamic imports for better code splitting and performance
 const Home = lazy(() => import("./pages/ultra-modern-home"));
 const Product = lazy(() => import("./pages/product-enhanced"));
 const Products = lazy(() => import("./pages/ultra-modern-products"));
@@ -35,20 +34,14 @@ const RefundPolicy = lazy(() => import("./pages/refund-policy"));
 const PaymentPolicy = lazy(() => import("./pages/payment-policy"));
 const SearchPage = lazy(() => import("./pages/search"));
 const WishlistPage = lazy(() => import("./pages/wishlist"));
-
 const CustomizeProduct = lazy(() => import("./pages/customize-product-enhanced"));
 
-// Performance and Mobile Optimization Components
-// const PerformanceOptimizer = lazy(() => import("./components/PerformanceOptimizer"));
-
-// Loading fallback component
+// Enhanced loading fallback component
 const LoadingFallback = () => (
-  <div className="min-h-screen flex items-center justify-center bg-gray-50">
-    <div className="text-center">
-      <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-      <p className="text-gray-600">লোড হচ্ছে...</p>
-    </div>
-  </div>
+  <LoadingOverlay 
+    message="ওয়েবসাইট লোড হচ্ছে..." 
+    showSpinner={true}
+  />
 );
 
 function Router() {
@@ -72,7 +65,6 @@ function Router() {
           <Route path="/tracking" component={OrderTracking} />
           <Route path="/track/:id" component={OrderTracking} />
           <Route path="/track" component={OrderTracking} />
-
           <Route path="/custom-order" component={CustomOrderForm} />
           <Route path="/customize" component={CustomizeProduct} />
           <Route path="/customize/:id" component={CustomizeProduct} />
@@ -85,8 +77,6 @@ function Router() {
           <Route path="/payment-policy" component={PaymentPolicy} />
           <Route path="/payment" component={PaymentPolicy} />
           <Route path="/search" component={SearchPage} />
-          <Route path="/customize/:id" component={CustomizeProduct} />
-          <Route path="/customize" component={CustomizeProduct} />
           <Route component={NotFound} />
         </Switch>
       </Suspense>
@@ -97,13 +87,17 @@ function Router() {
 function App() {
   // Initialize analytics when app loads
   useEffect(() => {
-    // Initialize Google Analytics
-    if (import.meta.env.VITE_GA_MEASUREMENT_ID) {
-      initGA();
-    }
+    try {
+      // Initialize Google Analytics
+      if (import.meta.env.VITE_GA_MEASUREMENT_ID) {
+        initGA();
+      }
 
-    // Initialize Facebook Pixel from site settings
-    loadFacebookPixelFromSettings();
+      // Initialize Facebook Pixel from site settings
+      loadFacebookPixelFromSettings();
+    } catch (error) {
+      console.warn('Analytics initialization failed:', error);
+    }
   }, []);
 
   return (
@@ -112,10 +106,6 @@ function App() {
         <TooltipProvider>
           <MobileResponsiveEnhancement />
           <div className="font-bengali">
-            <Suspense fallback={null}>
-              {/* <PerformanceOptimizer /> */}
-            </Suspense>
-            {/* <UltraPerformanceLoader /> */}
             <Toaster />
             <Router />
             <DebugInfo />

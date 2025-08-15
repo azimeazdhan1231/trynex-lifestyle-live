@@ -20,10 +20,11 @@ import {
   Palette,
   Sparkles
 } from "lucide-react";
-import UltraModernProductCard from "@/components/ultra-modern-product-card";
+import UltraResponsiveProductCard from "@/components/ultra-responsive-product-card";
 import UltraDynamicProductModal from "@/components/ultra-dynamic-product-modal";
 import { useCart } from "@/hooks/use-cart";
 import { useToast } from "@/hooks/use-toast";
+import { ProductGridSkeleton, HeroSkeleton, FeatureSkeleton } from "@/components/EnhancedLoadingSkeleton";
 import type { Product } from "@shared/schema";
 
 interface SettingsData {
@@ -41,13 +42,18 @@ export default function UltraModernHome() {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [showProductModal, setShowProductModal] = useState(false);
 
-  // Fetch settings and products
-  const { data: settings } = useQuery<SettingsData>({
+  // Fetch settings and products with better error handling
+  const { data: settings, isLoading: settingsLoading } = useQuery<SettingsData>({
     queryKey: ['/api/settings'],
+    retry: 3,
+    retryDelay: 1000,
   });
 
-  const { data: products = [], isLoading: productsLoading } = useQuery<Product[]>({
+  const { data: products = [], isLoading: productsLoading, error: productsError } = useQuery<Product[]>({
     queryKey: ['/api/products'],
+    retry: 3,
+    retryDelay: 1000,
+    staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
   // Filter products for different sections
@@ -61,7 +67,7 @@ export default function UltraModernHome() {
   };
 
   const handleCustomize = (product: Product) => {
-    // Customization is now handled by the UltraModernProductCard internally
+    // Customization is now handled by the UltraResponsiveProductCard internally
     console.log('Customizing product:', product.name);
   };
 
@@ -80,14 +86,37 @@ export default function UltraModernHome() {
     });
   };
 
+  // Show loading states
   if (productsLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-orange-50 via-red-50 to-pink-50 flex items-center justify-center">
-        <div className="text-center space-y-4">
-          <div className="w-16 h-16 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
-          <h2 className="text-2xl font-bold text-gray-800">লোড হচ্ছে...</h2>
-          <p className="text-gray-600">আমাদের সেরা পণ্যগুলো আনছি আপনার জন্য</p>
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 via-red-50 to-pink-50">
+        <HeroSkeleton />
+        <div className="container mx-auto px-4 py-20">
+          <FeatureSkeleton />
         </div>
+        <div className="container mx-auto px-4 py-20">
+          <ProductGridSkeleton count={8} />
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state
+  if (productsError) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 via-red-50 to-pink-50 flex items-center justify-center">
+        <Card className="w-full max-w-md mx-4">
+          <CardContent className="p-8 text-center">
+            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Shield className="w-8 h-8 text-red-500" />
+            </div>
+            <h2 className="text-xl font-bold text-gray-900 mb-2">পণ্য লোড করতে সমস্যা হয়েছে</h2>
+            <p className="text-gray-600 mb-4">অনুগ্রহ করে পৃষ্ঠাটি পুনরায় লোড করুন</p>
+            <Button onClick={() => window.location.reload()} className="w-full">
+              পুনরায় লোড করুন
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     );
   }
@@ -116,7 +145,7 @@ export default function UltraModernHome() {
               <Link href="/products">
                 <Button 
                   size="lg" 
-                  className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white px-8 py-4 text-lg font-semibold transition-all duration-300 hover:scale-105 hover:shadow-2xl"
+                  className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white px-8 py-4 text-lg font-semibold transition-all duration-300 hover:scale-105 hover:shadow-2xl touch-manipulation"
                 >
                   <ShoppingBag className="w-6 h-6 mr-3" />
                   এখনই কিনুন
@@ -126,7 +155,7 @@ export default function UltraModernHome() {
               <Button 
                 variant="outline" 
                 size="lg" 
-                className="border-2 border-orange-300 text-orange-600 hover:bg-orange-50 px-8 py-4 text-lg font-semibold transition-all duration-300 hover:scale-105"
+                className="border-2 border-orange-300 text-orange-600 hover:bg-orange-50 px-8 py-4 text-lg font-semibold transition-all duration-300 hover:scale-105 touch-manipulation"
               >
                 <Gift className="w-6 h-6 mr-3" />
                 গিফট গাইড
@@ -227,15 +256,16 @@ export default function UltraModernHome() {
               </p>
             </div>
             
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {featuredProducts.map((product) => (
-                <UltraModernProductCard
+                <UltraResponsiveProductCard
                   key={product.id}
                   product={product}
                   onViewProduct={handleViewProduct}
                   onCustomize={handleCustomize}
                   onAddToCart={handleAddToCart}
                   variant="featured"
+                  priority={true}
                 />
               ))}
             </div>
@@ -260,9 +290,9 @@ export default function UltraModernHome() {
               </p>
             </div>
             
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {latestProducts.map((product) => (
-                <UltraModernProductCard
+                <UltraResponsiveProductCard
                   key={product.id}
                   product={product}
                   onViewProduct={handleViewProduct}
@@ -293,9 +323,9 @@ export default function UltraModernHome() {
               </p>
             </div>
             
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {bestSellingProducts.map((product) => (
-                <UltraModernProductCard
+                <UltraResponsiveProductCard
                   key={product.id}
                   product={product}
                   onViewProduct={handleViewProduct}
@@ -324,7 +354,7 @@ export default function UltraModernHome() {
                 <Button 
                   size="lg" 
                   variant="outline"
-                  className="bg-white text-orange-600 hover:bg-gray-50 border-2 border-white px-8 py-4 text-lg font-semibold transition-all duration-300 hover:scale-105"
+                  className="bg-white text-orange-600 hover:bg-gray-50 border-2 border-white px-8 py-4 text-lg font-semibold transition-all duration-300 hover:scale-105 touch-manipulation"
                 >
                   সব পণ্য দেখুন
                 </Button>
@@ -332,7 +362,7 @@ export default function UltraModernHome() {
               <Button 
                 size="lg" 
                 variant="outline"
-                className="bg-transparent text-white hover:bg-white/10 border-2 border-white px-8 py-4 text-lg font-semibold transition-all duration-300 hover:scale-105"
+                className="bg-transparent text-white hover:bg-white/10 border-2 border-white px-8 py-4 text-lg font-semibold transition-all duration-300 hover:scale-105 touch-manipulation"
               >
                 <Heart className="w-6 h-6 mr-3" />
                 কাস্টম অর্ডার

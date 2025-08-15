@@ -1,253 +1,208 @@
-import { Card, CardContent } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
-import { ShoppingCart, Heart, Eye, Star, Sparkles, TrendingUp, Gift } from "lucide-react";
-import { useEffect, useState } from "react";
+import { Card, CardContent } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
 
-interface EnhancedLoadingSkeletonProps {
+interface LoadingSkeletonProps {
+  variant?: 'product' | 'product-grid' | 'hero' | 'feature' | 'category';
   count?: number;
-  minimumDuration?: number; // Minimum loading time in ms
-  onLoadingComplete?: () => void;
+  className?: string;
 }
 
 export default function EnhancedLoadingSkeleton({ 
-  count = 6, 
-  minimumDuration = 5000,
-  onLoadingComplete 
-}: EnhancedLoadingSkeletonProps) {
-  const [loadingPhase, setLoadingPhase] = useState(0);
-  const [showContent, setShowContent] = useState(false);
+  variant = 'product', 
+  count = 1, 
+  className = '' 
+}: LoadingSkeletonProps) {
+  const renderProductSkeleton = () => (
+    <Card className="overflow-hidden bg-white border border-gray-200 hover:shadow-lg transition-all duration-300">
+      <div className="aspect-square bg-gray-200 animate-pulse relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-gray-200 via-gray-300 to-gray-200 animate-shimmer" />
+      </div>
+      <CardContent className="p-4 space-y-3">
+        <div className="space-y-2">
+          <Skeleton className="h-4 w-3/4" />
+          <Skeleton className="h-3 w-1/2" />
+        </div>
+        <div className="space-y-2">
+          <Skeleton className="h-4 w-1/3" />
+          <Skeleton className="h-3 w-2/3" />
+        </div>
+        <div className="flex items-center justify-between">
+          <Skeleton className="h-6 w-20" />
+          <Skeleton className="h-4 w-16" />
+        </div>
+        <Skeleton className="h-10 w-full rounded-lg" />
+      </CardContent>
+    </Card>
+  );
 
-  useEffect(() => {
-    // Phase 1: Initial connection (0-1s)
-    const phase1Timer = setTimeout(() => setLoadingPhase(1), 800);
-    
-    // Phase 2: Loading products (1-2.5s)
-    const phase2Timer = setTimeout(() => setLoadingPhase(2), 2000);
-    
-    // Phase 3: Optimizing display (2.5-4s)
-    const phase3Timer = setTimeout(() => setLoadingPhase(3), 3500);
-    
-    // Phase 4: Finalizing (4-5s)
-    const phase4Timer = setTimeout(() => setLoadingPhase(4), 4500);
-    
-    // Complete loading after minimum duration
-    const completeTimer = setTimeout(() => {
-      setShowContent(true);
-      onLoadingComplete?.();
-    }, minimumDuration);
+  const renderProductGridSkeleton = () => (
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      {Array.from({ length: count }).map((_, index) => (
+        <div key={index} className="animate-fade-in" style={{ animationDelay: `${index * 100}ms` }}>
+          {renderProductSkeleton()}
+        </div>
+      ))}
+    </div>
+  );
 
-    return () => {
-      clearTimeout(phase1Timer);
-      clearTimeout(phase2Timer);
-      clearTimeout(phase3Timer);
-      clearTimeout(phase4Timer);
-      clearTimeout(completeTimer);
-    };
-  }, [minimumDuration, onLoadingComplete]);
+  const renderHeroSkeleton = () => (
+    <div className="min-h-[60vh] bg-gradient-to-br from-gray-100 to-gray-200 rounded-2xl p-8 flex items-center justify-center">
+      <div className="text-center space-y-6 w-full max-w-2xl">
+        <Skeleton className="h-8 w-48 mx-auto" />
+        <Skeleton className="h-16 w-96 mx-auto" />
+        <Skeleton className="h-6 w-80 mx-auto" />
+        <div className="flex gap-4 justify-center">
+          <Skeleton className="h-12 w-32 rounded-full" />
+          <Skeleton className="h-12 w-32 rounded-full" />
+        </div>
+      </div>
+    </div>
+  );
 
-  const getLoadingText = () => {
-    switch (loadingPhase) {
-      case 0: return "ডাটাবেস সংযোগ স্থাপন করছি...";
-      case 1: return "সেরা পণ্য খুঁজে আনছি...";
-      case 2: return "দাম ও স্টক আপডেট করছি...";
-      case 3: return "ইমেজ অপ্টিমাইজ করছি...";
-      case 4: return "প্রায় সম্পন্ন...";
-      default: return "লোড হচ্ছে...";
+  const renderFeatureSkeleton = () => (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      {Array.from({ length: 4 }).map((_, index) => (
+        <Card key={index} className="text-center p-6 border-0 bg-white/80 backdrop-blur-sm">
+          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-200 animate-pulse" />
+          <Skeleton className="h-6 w-32 mx-auto mb-2" />
+          <Skeleton className="h-4 w-48 mx-auto" />
+        </Card>
+      ))}
+    </div>
+  );
+
+  const renderCategorySkeleton = () => (
+    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+      {Array.from({ length: count }).map((_, index) => (
+        <div key={index} className="text-center space-y-3">
+          <div className="w-20 h-20 mx-auto rounded-full bg-gray-200 animate-pulse" />
+          <Skeleton className="h-4 w-16 mx-auto" />
+        </div>
+      ))}
+    </div>
+  );
+
+  const renderContent = () => {
+    switch (variant) {
+      case 'product':
+        return renderProductSkeleton();
+      case 'product-grid':
+        return renderProductGridSkeleton();
+      case 'hero':
+        return renderHeroSkeleton();
+      case 'feature':
+        return renderFeatureSkeleton();
+      case 'category':
+        return renderCategorySkeleton();
+      default:
+        return renderProductSkeleton();
     }
   };
 
-  if (showContent) {
-    return null; // This component hides itself after loading
-  }
+  return (
+    <div className={`animate-fade-in ${className}`}>
+      {renderContent()}
+    </div>
+  );
+}
+
+// Specialized loading components
+export function ProductGridSkeleton({ count = 8, className = '' }: { count?: number; className?: string }) {
+  return (
+    <EnhancedLoadingSkeleton 
+      variant="product-grid" 
+      count={count} 
+      className={className} 
+    />
+  );
+}
+
+export function HeroSkeleton({ className = '' }: { className?: string }) {
+  return (
+    <EnhancedLoadingSkeleton 
+      variant="hero" 
+      className={className} 
+    />
+  );
+}
+
+export function FeatureSkeleton({ className = '' }: { className?: string }) {
+  return (
+    <EnhancedLoadingSkeleton 
+      variant="feature" 
+      className={className} 
+    />
+  );
+}
+
+export function CategorySkeleton({ count = 6, className = '' }: { count?: number; className?: string }) {
+  return (
+    <EnhancedLoadingSkeleton 
+      variant="category" 
+      count={count} 
+      className={className} 
+    />
+  );
+}
+
+// Loading overlay for modals and full-screen loading
+export function LoadingOverlay({ 
+  message = "লোড হচ্ছে...", 
+  showSpinner = true,
+  className = '' 
+}: { 
+  message?: string; 
+  showSpinner?: boolean;
+  className?: string;
+}) {
+  return (
+    <div className={`fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 ${className}`}>
+      <div className="bg-white rounded-2xl p-8 shadow-2xl text-center max-w-sm mx-4">
+        {showSpinner && (
+          <div className="w-16 h-16 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+        )}
+        <h3 className="text-lg font-semibold text-gray-900 mb-2">{message}</h3>
+        <p className="text-gray-600 text-sm">অনুগ্রহ করে অপেক্ষা করুন...</p>
+      </div>
+    </div>
+  );
+}
+
+// Inline loading spinner
+export function LoadingSpinner({ 
+  size = 'md', 
+  className = '' 
+}: { 
+  size?: 'sm' | 'md' | 'lg';
+  className?: string;
+}) {
+  const sizeClasses = {
+    sm: 'w-4 h-4',
+    md: 'w-6 h-6',
+    lg: 'w-8 h-8'
+  };
 
   return (
-    <div className="space-y-8">
-      {/* Loading header with animated text */}
-      <div className="text-center py-4">
-        <div className="flex items-center justify-center space-x-2 mb-3">
-          <div className="relative">
-            <div className="w-8 h-8 border-4 border-primary/30 border-t-primary rounded-full animate-spin"></div>
-            <Sparkles className="w-4 h-4 text-primary absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 animate-pulse" />
-          </div>
-          <h3 className="text-lg font-semibold text-gray-700 animate-pulse">
-            {getLoadingText()}
-          </h3>
-        </div>
-        
-        {/* Progress bar */}
-        <div className="w-80 mx-auto bg-gray-200 rounded-full h-3 overflow-hidden shadow-inner">
-          <div 
-            className="h-full bg-gradient-to-r from-primary via-blue-500 to-purple-500 rounded-full transition-all duration-800 ease-out shadow-lg"
-            style={{ 
-              width: `${Math.min(100, (loadingPhase + 1) * 20)}%`,
-              animation: 'shimmer 1.5s infinite'
-            }}
-          ></div>
-        </div>
-        
-        <p className="text-sm text-gray-500 mt-3 animate-pulse">
-          {loadingPhase < 3 ? "আমাদের প্রিমিয়াম কালেকশন প্রস্তুত করছি..." : "সবকিছু প্রস্তুত!"}
-        </p>
-        
-        <div className="flex items-center justify-center space-x-4 mt-4">
-          <div className="text-xs text-gray-400 flex items-center space-x-1">
-            <div className={`w-2 h-2 rounded-full ${loadingPhase >= 1 ? 'bg-green-400' : 'bg-gray-300'} transition-colors duration-300`}></div>
-            <span>ডাটাবেস</span>
-          </div>
-          <div className="text-xs text-gray-400 flex items-center space-x-1">
-            <div className={`w-2 h-2 rounded-full ${loadingPhase >= 2 ? 'bg-blue-400' : 'bg-gray-300'} transition-colors duration-300`}></div>
-            <span>পণ্য</span>
-          </div>
-          <div className="text-xs text-gray-400 flex items-center space-x-1">
-            <div className={`w-2 h-2 rounded-full ${loadingPhase >= 3 ? 'bg-purple-400' : 'bg-gray-300'} transition-colors duration-300`}></div>
-            <span>ইমেজ</span>
-          </div>
-          <div className="text-xs text-gray-400 flex items-center space-x-1">
-            <div className={`w-2 h-2 rounded-full ${loadingPhase >= 4 ? 'bg-orange-400' : 'bg-gray-300'} transition-colors duration-300`}></div>
-            <span>সম্পন্ন</span>
-          </div>
-        </div>
-      </div>
+    <div className={`${sizeClasses[size]} border-2 border-gray-300 border-t-orange-500 rounded-full animate-spin ${className}`} />
+  );
+}
 
-      {/* Enhanced product grid skeleton */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {Array.from({ length: count }).map((_, index) => (
-          <Card 
-            key={index} 
-            className="group relative overflow-hidden shadow-lg hover:shadow-xl transition-all duration-500 animate-pulse"
-            style={{
-              animationDelay: `${index * 200}ms`,
-              animationDuration: '2s'
-            }}
-          >
-            <div className="relative">
-              {/* Advanced shimmer image skeleton */}
-              <div className="aspect-[4/5] bg-gradient-to-br from-gray-200 via-gray-100 to-gray-200 relative overflow-hidden">
-                {/* Animated shimmer overlay */}
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent animate-shimmer"></div>
-                
-                {/* Floating icons animation */}
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="relative">
-                    <ShoppingCart 
-                      className="w-8 h-8 text-gray-400 animate-bounce" 
-                      style={{ animationDelay: `${index * 100}ms` }}
-                    />
-                    <Heart 
-                      className="w-4 h-4 text-red-300 absolute -top-2 -right-2 animate-ping" 
-                      style={{ animationDelay: `${index * 150}ms` }}
-                    />
-                  </div>
-                </div>
-                
-                {/* Corner badge skeleton */}
-                <div className="absolute top-3 left-3">
-                  <div className="px-2 py-1 bg-primary/20 rounded-full">
-                    <div className="flex items-center space-x-1">
-                      <Star className="w-3 h-3 text-primary/60 animate-pulse" />
-                      <Skeleton className="h-3 w-8 bg-primary/30" />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Stock indicator */}
-                <div className="absolute top-3 right-3">
-                  <Skeleton className="h-6 w-16 bg-green-200 rounded-full" />
-                </div>
-              </div>
-            </div>
-
-            <CardContent className="p-4 space-y-3">
-              {/* Product title with typewriter effect */}
-              <div className="space-y-2">
-                <Skeleton className="h-5 w-full bg-gradient-to-r from-gray-200 to-gray-300" />
-                <Skeleton className="h-4 w-3/4 bg-gradient-to-r from-gray-200 to-gray-300" />
-              </div>
-              
-              {/* Price and rating skeleton */}
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <TrendingUp className="w-4 h-4 text-green-400 animate-pulse" />
-                  <Skeleton className="h-6 w-20 bg-gradient-to-r from-primary/20 to-primary/40" />
-                </div>
-                <div className="flex items-center space-x-1">
-                  {[...Array(5)].map((_, i) => (
-                    <Star 
-                      key={i} 
-                      className="w-3 h-3 text-yellow-300 animate-pulse" 
-                      style={{ animationDelay: `${i * 100}ms` }}
-                    />
-                  ))}
-                </div>
-              </div>
-
-              {/* Action buttons skeleton */}
-              <div className="space-y-2">
-                <div className="flex space-x-2">
-                  <Skeleton className="h-9 flex-1 bg-gradient-to-r from-primary/30 to-primary/50 rounded-lg">
-                    <div className="flex items-center justify-center h-full">
-                      <ShoppingCart className="w-4 h-4 text-primary/60 animate-pulse" />
-                    </div>
-                  </Skeleton>
-                  <Skeleton className="h-9 w-9 bg-gray-200 rounded-lg">
-                    <div className="flex items-center justify-center h-full">
-                      <Eye className="w-4 h-4 text-gray-400 animate-pulse" />
-                    </div>
-                  </Skeleton>
-                </div>
-                
-                <Skeleton className="h-9 w-full bg-gradient-to-r from-purple-200 to-purple-300 rounded-lg">
-                  <div className="flex items-center justify-center h-full">
-                    <Gift className="w-4 h-4 text-purple-400 animate-bounce" />
-                  </div>
-                </Skeleton>
-              </div>
-
-              {/* Feature indicators */}
-              <div className="flex items-center justify-between pt-2">
-                <div className="flex space-x-2">
-                  <Skeleton className="h-4 w-4 bg-green-200 rounded-full animate-pulse" />
-                  <Skeleton className="h-3 w-16 bg-green-200" />
-                </div>
-                <Skeleton className="h-3 w-20 bg-blue-200" />
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      {/* Bottom loading indicators */}
-      <div className="text-center space-y-4">
-        <div className="flex items-center justify-center space-x-4">
-          <div className="flex space-x-1">
-            {[...Array(3)].map((_, i) => (
-              <div
-                key={i}
-                className="w-2 h-2 bg-primary rounded-full animate-bounce"
-                style={{ animationDelay: `${i * 200}ms` }}
-              ></div>
-            ))}
-          </div>
-          <span className="text-sm text-gray-500">
-            {count} টি পণ্য লোড হচ্ছে
-          </span>
-        </div>
-        
-        <div className="flex items-center justify-center space-x-6 text-xs text-gray-400">
-          <div className="flex items-center space-x-1">
-            <div className="w-2 h-2 bg-green-400 rounded-full animate-ping"></div>
-            <span>সর্বোচ্চ মানের পণ্য</span>
-          </div>
-          <div className="flex items-center space-x-1">
-            <div className="w-2 h-2 bg-blue-400 rounded-full animate-ping" style={{ animationDelay: '500ms' }}></div>
-            <span>দ্রুত ডেলিভারি</span>
-          </div>
-          <div className="flex items-center space-x-1">
-            <div className="w-2 h-2 bg-purple-400 rounded-full animate-ping" style={{ animationDelay: '1000ms' }}></div>
-            <span>সাশ্রয়ী দাম</span>
-          </div>
-        </div>
-      </div>
+// Skeleton for text content
+export function TextSkeleton({ 
+  lines = 3, 
+  className = '' 
+}: { 
+  lines?: number;
+  className?: string;
+}) {
+  return (
+    <div className={`space-y-2 ${className}`}>
+      {Array.from({ length: lines }).map((_, index) => (
+        <Skeleton 
+          key={index} 
+          className={`h-4 ${index === lines - 1 ? 'w-3/4' : 'w-full'}`} 
+        />
+      ))}
     </div>
   );
 }

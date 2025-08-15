@@ -1,250 +1,456 @@
-import { useState, memo } from "react";
+import { useState, useCallback } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { 
-  ShoppingCart, 
+  Star, 
   Heart, 
   Eye, 
-  Star, 
-  Zap,
-  Award,
-  Package,
-  Clock
+  ShoppingCart, 
+  Palette, 
+  Zap, 
+  Award, 
+  TrendingUp,
+  Share2,
+  Info
 } from "lucide-react";
 import { formatPrice } from "@/lib/constants";
 import type { Product } from "@shared/schema";
+import ImprovedCustomizeModal from './improved-customize-modal';
+import { useToast } from "@/hooks/use-toast";
+import { useCart } from "@/hooks/use-cart";
+import { useWishlist } from "@/hooks/use-wishlist";
 
 interface UltraResponsiveProductCardProps {
   product: Product;
-  onViewProduct: (product: Product) => void;
-  onAddToCart: (product: Product) => void;
-  onCustomize?: (product: Product) => void;
   className?: string;
+  onViewProduct: (product: Product) => void;
+  onCustomize: (product: Product) => void;
+  onAddToCart?: (product: Product) => void;
+  showBadge?: boolean;
+  variant?: 'default' | 'featured' | 'compact' | 'list';
+  priority?: boolean;
 }
 
-const UltraResponsiveProductCard = memo(function UltraResponsiveProductCard({ 
+export default function UltraResponsiveProductCard({ 
   product, 
+  className = "", 
   onViewProduct, 
-  onAddToCart, 
   onCustomize,
-  className = "" 
+  onAddToCart,
+  showBadge = true,
+  variant = 'default',
+  priority = false
 }: UltraResponsiveProductCardProps) {
   const [isHovered, setIsHovered] = useState(false);
-  const [isFavorite, setIsFavorite] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
-
-  const price = typeof product.price === 'string' ? parseFloat(product.price) : product.price;
+  const [imageError, setImageError] = useState(false);
+  const [showCustomizeModal, setShowCustomizeModal] = useState(false);
+  const [isAddingToCart, setIsAddingToCart] = useState(false);
   
-  const handleViewProduct = (e: React.MouseEvent) => {
+  const { toast } = useToast();
+  const { addToCart } = useCart();
+  const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
+
+  // Memoized handlers for better performance
+  const handleViewProduct = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     onViewProduct(product);
-  };
+  }, [onViewProduct, product]);
 
-  const handleAddToCart = (e: React.MouseEvent) => {
+  const handleCustomize = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    onAddToCart(product);
-  };
+    setShowCustomizeModal(true);
+  }, []);
 
-  const handleCustomize = (e: React.MouseEvent) => {
+  const handleAddToCart = useCallback(async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    if (onCustomize) {
-      onCustomize(product);
+    
+    if (isAddingToCart) return;
+    
+    setIsAddingToCart(true);
+    
+    try {
+      const cartItem = {
+        id: product.id,
+        name: product.name,
+        price: parseFloat(product.price),
+        image_url: product.image_url,
+        quantity: 1,
+      };
+      
+      addToCart(cartItem);
+      
+      toast({
+        title: "পণ্য যোগ করা হয়েছে!",
+        description: `${product.name} কার্টে যোগ করা হয়েছে।`,
+      });
+      
+      onAddToCart?.(product);
+    } catch (error) {
+      toast({
+        title: "সমস্যা হয়েছে",
+        description: "পণ্য কার্টে যোগ করতে সমস্যা হয়েছে।",
+        variant: "destructive",
+      });
+    } finally {
+      setIsAddingToCart(false);
     }
-  };
+  }, [addToCart, isAddingToCart, onAddToCart, product, toast]);
 
-  const handleToggleFavorite = (e: React.MouseEvent) => {
+  const handleToggleWishlist = useCallback(async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    setIsFavorite(!isFavorite);
+    
+    try {
+      if (isInWishlist(product.id)) {
+        await removeFromWishlist(product.id);
+        toast({
+          title: "উইশলিস্ট থেকে সরানো হয়েছে",
+          description: `${product.name} উইশলিস্ট থেকে সরানো হয়েছে।`,
+        });
+      } else {
+        await addToWishlist(product);
+        toast({
+          title: "উইশলিস্টে যোগ করা হয়েছে!",
+          description: `${product.name} উইশলিস্টে যোগ করা হয়েছে।`,
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "সমস্যা হয়েছে",
+        description: "উইশলিস্ট আপডেট করতে সমস্যা হয়েছে।",
+        variant: "destructive",
+      });
+    }
+  }, [addToWishlist, isInWishlist, product, removeFromWishlist, toast]);
+
+  const handleShare = useCallback(async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: product.name,
+          text: `${product.name} - ${formatPrice(parseFloat(product.price))}`,
+          url: window.location.href,
+        });
+      } catch (error) {
+        // User cancelled sharing
+      }
+    } else {
+      // Fallback: copy to clipboard
+      const shareText = `${product.name} - ${formatPrice(parseFloat(product.price))}\n${window.location.href}`;
+      await navigator.clipboard.writeText(shareText);
+      toast({
+        title: "লিংক কপি হয়েছে!",
+        description: "পণ্যের লিংক ক্লিপবোর্ডে কপি হয়েছে।",
+      });
+    }
+  }, [product, toast]);
+
+  // Product data calculations
+  const productPrice = parseFloat(product.price) || 0;
+  const discount = productPrice > 500 ? Math.floor(Math.random() * 30) + 10 : 0;
+  const originalPrice = discount > 0 ? productPrice + (productPrice * discount / 100) : productPrice;
+  const rating = 4.5 + (Math.random() * 0.5);
+  const reviewCount = Math.floor(Math.random() * 100) + 20;
+  const isWishlisted = isInWishlist(product.id);
+
+  // Responsive card variants
+  const cardVariants = {
+    default: "w-full",
+    featured: "w-full border-2 border-orange-200 shadow-lg",
+    compact: "w-full max-w-xs",
+    list: "w-full flex flex-col sm:flex-row"
   };
+
+  const imageVariants = {
+    default: "aspect-square",
+    featured: "aspect-square",
+    compact: "aspect-square",
+    list: "aspect-square sm:aspect-[4/3] sm:w-48"
+  };
+
+  const contentVariants = {
+    default: "p-4",
+    featured: "p-4",
+    compact: "p-3",
+    list: "p-4 flex-1"
+  };
+
+  // Handle image loading
+  const handleImageLoad = useCallback(() => {
+    setImageLoaded(true);
+    setImageError(false);
+  }, []);
+
+  const handleImageError = useCallback(() => {
+    setImageError(true);
+    setImageLoaded(false);
+  }, []);
 
   return (
-    <Card 
-      className={`group hover:shadow-2xl transition-all duration-500 cursor-pointer bg-white border-0 shadow-lg hover:shadow-primary/20 transform hover:-translate-y-2 overflow-hidden ${className}`}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-      onClick={handleViewProduct}
-      data-testid={`card-product-${product.id}`}
-    >
-      <div className="relative">
-        {/* Product Image */}
-        <div className="aspect-[4/5] overflow-hidden bg-gradient-to-br from-gray-100 to-gray-50 relative">
-          {!imageLoaded && (
-            <div className="absolute inset-0 bg-gray-200 animate-pulse flex items-center justify-center">
-              <Package className="w-12 h-12 text-gray-400" />
+    <>
+      <Card 
+        className={`ultra-responsive-product-card group cursor-pointer transition-all duration-500 ease-out hover:shadow-2xl hover:-translate-y-2 overflow-hidden bg-white border border-gray-200 hover:border-orange-300 relative ${cardVariants[variant]} ${className}`}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+        onClick={handleViewProduct}
+        data-testid={`card-product-${product.id}`}
+      >
+        {/* Product Image Container */}
+        <div className={`relative overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100 ${imageVariants[variant]}`}>
+          {product.image_url && !imageError ? (
+            <>
+              <img
+                src={product.image_url}
+                alt={product.name}
+                className={`w-full h-full object-cover transition-all duration-700 group-hover:scale-110 ${
+                  imageLoaded ? 'opacity-100' : 'opacity-0'
+                }`}
+                loading={priority ? "eager" : "lazy"}
+                onLoad={handleImageLoad}
+                onError={handleImageError}
+                decoding="async"
+                fetchPriority={priority ? "high" : "auto"}
+              />
+              {!imageLoaded && (
+                <div className="absolute inset-0 bg-gradient-to-br from-gray-100 to-gray-200 animate-pulse flex items-center justify-center">
+                  <Palette className="w-8 h-8 text-gray-300" />
+                </div>
+              )}
+            </>
+          ) : (
+            <div className="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
+              <Palette className="w-12 h-12 text-gray-300" />
             </div>
           )}
-          <img
-            src={product.image_url || "/placeholder.jpg"}
-            alt={product.name}
-            className={`w-full h-full object-cover transition-all duration-700 ${
-              imageLoaded ? 'opacity-100' : 'opacity-0'
-            } ${isHovered ? 'scale-110' : 'scale-100'}`}
-            onLoad={() => setImageLoaded(true)}
-            loading="lazy"
-          />
-          
-          {/* Gradient Overlay */}
-          <div className={`absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent transition-opacity duration-300 ${
+
+          {/* Hover Overlay */}
+          <div className={`absolute inset-0 bg-black/20 transition-all duration-300 ${
             isHovered ? 'opacity-100' : 'opacity-0'
           }`} />
-        </div>
 
-        {/* Product Badges */}
-        <div className="absolute top-3 left-3 flex flex-col gap-1 z-10">
-          {product.is_featured && (
-            <Badge className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white font-bold shadow-lg text-xs">
-              <Star className="w-3 h-3 mr-1" />
-              ফিচার্ড
-            </Badge>
-          )}
-          {product.is_latest && (
-            <Badge className="bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg text-xs">
-              <Zap className="w-3 h-3 mr-1" />
-              নতুন
-            </Badge>
-          )}
-          {product.is_best_selling && (
-            <Badge className="bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-lg text-xs">
-              <Award className="w-3 h-3 mr-1" />
-              বেস্ট সেলার
-            </Badge>
-          )}
-        </div>
-
-        {/* Stock Status */}
-        {product.stock === 0 && (
-          <div className="absolute inset-0 bg-gray-900/60 flex items-center justify-center z-10">
-            <Badge variant="destructive" className="text-sm font-bold">
-              স্টক নেই
-            </Badge>
+          {/* Badges */}
+          <div className="absolute top-3 left-3 flex flex-col space-y-2">
+            {showBadge && discount > 0 && (
+              <Badge className="bg-red-500 hover:bg-red-600 text-white text-xs font-bold px-2 py-1 animate-pulse">
+                -{discount}%
+              </Badge>
+            )}
+            {product.is_featured && (
+              <Badge className="bg-gradient-to-r from-orange-500 to-red-500 text-white text-xs font-bold px-2 py-1">
+                <Award className="w-3 h-3 mr-1" />
+                ফিচার্ড
+              </Badge>
+            )}
+            {product.is_latest && (
+              <Badge className="bg-green-500 hover:bg-green-600 text-white text-xs font-bold px-2 py-1">
+                <Zap className="w-3 h-3 mr-1" />
+                নতুন
+              </Badge>
+            )}
           </div>
-        )}
 
-        {/* Favorite Button */}
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={handleToggleFavorite}
-          className={`absolute top-3 right-3 w-10 h-10 p-0 rounded-full transition-all duration-300 z-20 ${
-            isHovered || isFavorite 
-              ? 'bg-white/90 hover:bg-white shadow-lg' 
-              : 'bg-white/60 hover:bg-white/80'
-          }`}
-          data-testid={`button-favorite-${product.id}`}
-        >
-          <Heart 
-            className={`w-4 h-4 transition-colors duration-200 ${
-              isFavorite ? 'fill-red-500 text-red-500' : 'text-gray-600'
-            }`} 
-          />
-        </Button>
+          {/* Action Buttons */}
+          <div className="absolute top-3 right-3 flex flex-col space-y-2">
+            {/* Wishlist Button */}
+            <button
+              onClick={handleToggleWishlist}
+              className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 ${
+                isWishlisted 
+                  ? 'bg-red-500 text-white shadow-lg' 
+                  : 'bg-white/80 text-gray-600 hover:bg-white hover:text-red-500'
+              } backdrop-blur-sm ${isHovered ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}
+              data-testid={`button-wishlist-${product.id}`}
+              aria-label={isWishlisted ? "উইশলিস্ট থেকে সরান" : "উইশলিস্টে যোগ করুন"}
+            >
+              <Heart className={`w-5 h-5 ${isWishlisted ? 'fill-current' : ''}`} />
+            </button>
 
-        {/* Quick Action Buttons - Shown on Hover */}
-        <div className={`absolute bottom-4 left-4 right-4 flex gap-2 transition-all duration-300 ${
-          isHovered ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
-        }`}>
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={handleViewProduct}
-            className="flex-1 bg-white/95 hover:bg-white shadow-lg backdrop-blur-sm border-0 font-medium"
-            data-testid={`button-view-${product.id}`}
-          >
-            <Eye className="w-4 h-4 mr-1" />
-            দেখুন
-          </Button>
-          
-          {onCustomize && (
+            {/* Share Button */}
+            <button
+              onClick={handleShare}
+              className={`w-10 h-10 rounded-full bg-white/80 text-gray-600 hover:bg-white hover:text-blue-500 backdrop-blur-sm transition-all duration-300 ${
+                isHovered ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
+              }`}
+              data-testid={`button-share-${product.id}`}
+              aria-label="শেয়ার করুন"
+            >
+              <Share2 className="w-5 h-5" />
+            </button>
+          </div>
+
+          {/* Quick Action Buttons - Mobile Optimized */}
+          <div className={`absolute bottom-3 left-3 right-3 flex space-x-2 transition-all duration-300 ${
+            isHovered ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'
+          }`}>
             <Button
+              size="sm"
               variant="secondary"
+              onClick={handleViewProduct}
+              className="flex-1 bg-white/90 hover:bg-white text-gray-700 font-medium backdrop-blur-sm touch-manipulation"
+              data-testid={`button-view-${product.id}`}
+            >
+              <Eye className="w-4 h-4 mr-1" />
+              <span className="hidden sm:inline">দেখুন</span>
+              <span className="sm:hidden">👁️</span>
+            </Button>
+            <Button
               size="sm"
               onClick={handleCustomize}
-              className="flex-1 bg-orange-500 hover:bg-orange-600 text-white shadow-lg font-medium"
+              className="flex-1 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-medium touch-manipulation"
               data-testid={`button-customize-${product.id}`}
             >
-              কাস্টমাইজ
+              <Palette className="w-4 h-4 mr-1" />
+              <span className="hidden sm:inline">কাস্টমাইজ</span>
+              <span className="sm:hidden">🎨</span>
             </Button>
-          )}
-        </div>
-      </div>
-
-      <CardContent className="p-4 space-y-3">
-        {/* Product Name */}
-        <h3 className="font-semibold text-gray-900 line-clamp-2 leading-tight text-sm sm:text-base group-hover:text-primary transition-colors duration-200">
-          {product.name}
-        </h3>
-
-        {/* Rating */}
-        <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1">
-            {[...Array(5)].map((_, i) => (
-              <Star key={i} className="w-3 h-3 fill-yellow-400 text-yellow-400" />
-            ))}
           </div>
-          <span className="text-xs text-gray-500">(4.8)</span>
-          <span className="text-xs text-gray-400">•</span>
-          <span className="text-xs text-gray-500">৮৫+ রিভিউ</span>
         </div>
 
-        {/* Price */}
-        <div className="flex items-center justify-between">
-          <div className="space-y-1">
-            <div className="text-xl font-bold text-primary">
-              {formatPrice(price)}
-            </div>
-            {/* Original price (if on sale) */}
-            {/* <div className="text-sm text-gray-400 line-through">
-              {formatPrice(price * 1.2)}
-            </div> */}
-          </div>
+        {/* Product Details */}
+        <CardContent className={`space-y-3 ${contentVariants[variant]}`}>
           
-          {/* Stock indicator */}
-          <div className="text-right">
-            <div className={`text-xs font-medium ${
-              product.stock && product.stock > 0 
-                ? 'text-green-600' 
-                : 'text-red-600'
-            }`}>
-              {product.stock && product.stock > 0 
-                ? `স্টক: ${product.stock}` 
-                : 'স্টক নেই'
-              }
+          {/* Category & Rating */}
+          <div className="flex items-center justify-between text-xs">
+            <Badge variant="secondary" className="text-orange-600 bg-orange-50 border-orange-200">
+              {product.category || 'পণ্য'}
+            </Badge>
+            <div className="flex items-center space-x-1">
+              <div className="flex items-center">
+                {[...Array(5)].map((_, i) => (
+                  <Star
+                    key={i}
+                    className={`w-3 h-3 ${
+                      i < Math.floor(rating) 
+                        ? 'text-yellow-400 fill-current' 
+                        : 'text-gray-300'
+                    }`}
+                  />
+                ))}
+              </div>
+              <span className="text-gray-500 text-xs hidden sm:inline">({reviewCount})</span>
             </div>
           </div>
-        </div>
 
-        {/* Action Buttons */}
-        <div className="flex gap-2 pt-2">
+          {/* Product Name */}
+          <h3 className="font-semibold text-gray-900 text-sm leading-tight group-hover:text-orange-600 transition-colors duration-200 line-clamp-2">
+            {product.name}
+          </h3>
+
+          {/* Description */}
+          {product.description && (
+            <p className="text-xs text-gray-600 line-clamp-2 hidden sm:block">
+              {product.description}
+            </p>
+          )}
+
+          {/* Price Section */}
+          <div className="flex items-center justify-between">
+            <div className="space-y-1">
+              <div className="flex items-center space-x-2">
+                <span className="text-lg font-bold text-gray-900">
+                  {formatPrice(productPrice)}
+                </span>
+                {discount > 0 && (
+                  <span className="text-sm text-gray-500 line-through hidden sm:inline">
+                    {formatPrice(originalPrice)}
+                  </span>
+                )}
+              </div>
+              {discount > 0 && (
+                <div className="text-xs text-green-600 font-medium">
+                  {formatPrice(originalPrice - productPrice)} সাশ্রয়!
+                </div>
+              )}
+            </div>
+            
+            {/* Trending Indicator */}
+            {rating > 4.7 && (
+              <div className="flex items-center space-x-1 text-xs text-green-600">
+                <TrendingUp className="w-3 h-3" />
+                <span className="font-medium hidden sm:inline">জনপ্রিয়</span>
+              </div>
+            )}
+          </div>
+
+          {/* Stock Status */}
+          {product.stock !== undefined && (
+            <div className="flex items-center space-x-2 text-xs">
+              <div className={`w-2 h-2 rounded-full ${
+                product.stock > 10 ? 'bg-green-500' : 
+                product.stock > 0 ? 'bg-yellow-500' : 'bg-red-500'
+              }`} />
+              <span className={`${
+                product.stock > 10 ? 'text-green-600' : 
+                product.stock > 0 ? 'text-yellow-600' : 'text-red-600'
+              }`}>
+                {product.stock > 10 ? 'স্টকে আছে' : 
+                 product.stock > 0 ? `${product.stock} টি বাকি` : 'স্টক শেষ'}
+              </span>
+            </div>
+          )}
+
+          {/* Add to Cart Button */}
           <Button
             onClick={handleAddToCart}
-            disabled={product.stock === 0}
-            className="flex-1 h-10 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-white font-medium shadow-md"
+            disabled={isAddingToCart || product.stock === 0}
+            className="w-full bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-medium transition-all duration-300 group-hover:shadow-lg touch-manipulation disabled:opacity-50 disabled:cursor-not-allowed"
+            size="sm"
             data-testid={`button-add-to-cart-${product.id}`}
           >
-            <ShoppingCart className="w-4 h-4 mr-2" />
-            কার্টে যোগ করুন
+            {isAddingToCart ? (
+              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+            ) : (
+              <ShoppingCart className="w-4 h-4 mr-2" />
+            )}
+            {product.stock === 0 ? 'স্টক শেষ' : 'কার্টে যোগ করুন'}
           </Button>
-        </div>
 
-        {/* Quick Info */}
-        <div className="flex items-center justify-between text-xs text-gray-500 pt-2 border-t">
-          <div className="flex items-center gap-1">
-            <Clock className="w-3 h-3" />
-            দ্রুত ডেলিভারি
+          {/* Mobile Quick Actions */}
+          <div className="flex space-x-2 sm:hidden">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleViewProduct}
+              className="flex-1 text-xs"
+            >
+              <Info className="w-3 h-3 mr-1" />
+              বিস্তারিত
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleCustomize}
+              className="flex-1 text-xs"
+            >
+              <Palette className="w-3 h-3 mr-1" />
+              কাস্টমাইজ
+            </Button>
           </div>
-          <div className="flex items-center gap-1">
-            <Package className="w-3 h-3" />
-            ফ্রি শিপিং
+        </CardContent>
+
+        {/* Loading Overlay */}
+        {!imageLoaded && !imageError && (
+          <div className="absolute inset-0 bg-white/50 backdrop-blur-sm flex items-center justify-center">
+            <div className="w-8 h-8 border-2 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
           </div>
-        </div>
-      </CardContent>
-    </Card>
+        )}
+      </Card>
+
+      {/* Customization Modal */}
+      <ImprovedCustomizeModal
+        isOpen={showCustomizeModal}
+        onClose={() => setShowCustomizeModal(false)}
+        product={product}
+        onAddToCart={onAddToCart}
+      />
+    </>
   );
-});
-
-export default UltraResponsiveProductCard;
+}
