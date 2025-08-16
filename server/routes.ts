@@ -201,6 +201,175 @@ class PerformanceCache {
 
 const performanceCache = PerformanceCache.getInstance();
 
+// Dummy static product data and a function to serve it
+const staticProductsData: Product[] = [
+  {
+    id: '1',
+    name: 'Classic T-Shirt',
+    description: 'A comfortable and stylish classic t-shirt made from 100% cotton.',
+    price: 19.99,
+    stock: 150,
+    image_url: '/images/tshirt_classic.jpg',
+    category: 'Apparel',
+    is_featured: true,
+    is_latest: true,
+    is_best_selling: false,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+    category_bengali: 'পোশাক',
+    tags: ['cotton', 'casual', 'everyday']
+  },
+  {
+    id: '2',
+    name: 'Slim Fit Jeans',
+    description: 'Modern slim fit jeans with a comfortable stretch for all-day wear.',
+    price: 49.99,
+    stock: 80,
+    image_url: '/images/jeans_slimfit.jpg',
+    category: 'Apparel',
+    is_featured: false,
+    is_latest: false,
+    is_best_selling: true,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+    category_bengali: 'পোশাক',
+    tags: ['denim', 'fashion', 'slim-fit']
+  },
+  {
+    id: '3',
+    name: 'Leather Wallet',
+    description: 'Genuine leather wallet with multiple card slots and a coin pocket.',
+    price: 29.99,
+    stock: 120,
+    image_url: '/images/wallet_leather.jpg',
+    category: 'Accessories',
+    is_featured: false,
+    is_latest: true,
+    is_best_selling: false,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+    category_bengali: 'এক্সেসরিজ',
+    tags: ['leather', 'wallet', 'gifts']
+  },
+  {
+    id: '4',
+    name: 'Ceramic Coffee Mug',
+    description: 'A large ceramic coffee mug, perfect for your morning brew. Dishwasher safe.',
+    price: 12.50,
+    stock: 200,
+    image_url: '/images/mug_ceramic.jpg',
+    category: 'Home Decor',
+    is_featured: false,
+    is_latest: false,
+    is_best_selling: false,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+    category_bengali: 'গৃহসজ্জা',
+    tags: ['mug', 'coffee', 'kitchen']
+  },
+  {
+    id: '5',
+    name: 'Designer Sunglasses',
+    description: 'Stylish designer sunglasses with UV protection. Available in multiple colors.',
+    price: 75.00,
+    stock: 50,
+    image_url: '/images/sunglasses_designer.jpg',
+    category: 'Accessories',
+    is_featured: true,
+    is_latest: false,
+    is_best_selling: true,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+    category_bengali: 'এক্সেসরিজ',
+    tags: ['sunglasses', 'fashion', 'uv-protection']
+  },
+  {
+    id: '6',
+    name: 'Wireless Bluetooth Headphones',
+    description: 'High-fidelity wireless headphones with noise-cancelling technology.',
+    price: 99.99,
+    stock: 65,
+    image_url: '/images/headphones_wireless.jpg',
+    category: 'Electronics',
+    is_featured: false,
+    is_latest: true,
+    is_best_selling: false,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+    category_bengali: 'ইলেকট্রনিক্স',
+    tags: ['audio', 'wireless', 'bluetooth', 'gadget']
+  },
+  {
+    id: '7',
+    name: 'Yoga Mat',
+    description: 'Eco-friendly yoga mat with excellent grip and cushioning.',
+    price: 35.00,
+    stock: 90,
+    image_url: '/images/yoga_mat.jpg',
+    category: 'Sports & Outdoors',
+    is_featured: false,
+    is_latest: false,
+    is_best_selling: false,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+    category_bengali: 'ক্রীড়া ও আউটডোর',
+    tags: ['yoga', 'fitness', 'eco-friendly']
+  },
+  {
+    id: '8',
+    name: 'Laptop Backpack',
+    description: 'Durable backpack with a padded compartment for laptops up to 15.6 inches.',
+    price: 55.00,
+    stock: 110,
+    image_url: '/images/backpack_laptop.jpg',
+    category: 'Accessories',
+    is_featured: false,
+    is_latest: true,
+    is_best_selling: false,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+    category_bengali: 'এক্সেসরিজ',
+    tags: ['backpack', 'laptop', 'travel', 'work']
+  },
+  {
+    id: '9',
+    name: 'Smartwatch',
+    description: 'Feature-rich smartwatch with fitness tracking, notifications, and long battery life.',
+    price: 149.00,
+    stock: 70,
+    image_url: '/images/smartwatch.jpg',
+    category: 'Electronics',
+    is_featured: true,
+    is_latest: false,
+    is_best_selling: false,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+    category_bengali: 'ইলেকট্রনিক্স',
+    tags: ['smartwatch', 'wearable', 'fitness-tracker', 'gadget']
+  },
+  {
+    id: '10',
+    name: 'Frying Pan Set',
+    description: 'Non-stick frying pan set for healthy cooking. Includes 3 sizes.',
+    price: 85.00,
+    stock: 40,
+    image_url: '/images/pan_set.jpg',
+    category: 'Home Decor',
+    is_featured: false,
+    is_latest: false,
+    is_best_selling: false,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+    category_bengali: 'গৃহসজ্জা',
+    tags: ['cookware', 'kitchen', 'non-stick']
+  }
+];
+
+function getStaticProducts(): Product[] {
+  console.log('📦 Serving static products data.');
+  return staticProductsData;
+}
+
 export async function registerRoutes(app: Express): Promise<Server> {
   // Initialize high-performance cache in background
   console.log('🚀 Initializing high-performance cache...');
@@ -260,7 +429,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      const products = await getCachedProducts();
+      const products = getStaticProducts();
 
       // YouTube-style search algorithm
       const searchResults = products
@@ -376,7 +545,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.json([]);
       }
 
-      const products = await getCachedProducts();
+      const products = getStaticProducts();
       const suggestions = generateSearchSuggestions(query, products);
 
       res.json(suggestions);
@@ -571,7 +740,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // const { getAIProductRecommendations } = await import("./ai-chat");
       const { userQuery, userBehavior, currentProduct } = req.body;
 
-      const products = await getCachedProducts();
+      const products = getStaticProducts();
       // Simple fallback recommendations based on category
       const recommendations = products.slice(0, 6);
 
@@ -617,7 +786,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/analytics', async (req, res) => {
     try {
       const orders = await storage.getOrders();
-      const products = await getCachedProducts(); // Use cache
+      const products = getStaticProducts(); // Use static data
 
       // Calculate real analytics from data
       const totalRevenue = orders
@@ -882,18 +1051,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/custom-orders', async (req, res) => {
     try {
       console.log('🔍 Fetching custom orders from database...');
-      
+
       // Set proper CORS headers
       res.header('Access-Control-Allow-Origin', '*');
       res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
       res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
-      
+
       const customOrdersResult = await storage.getCustomOrders();
       console.log(`✅ Custom orders fetched successfully: ${customOrdersResult.length} orders`);
       res.json(customOrdersResult);
     } catch (error: any) {
       console.error('Error fetching custom orders:', error);
-      
+
       // Return empty array as fallback to prevent UI crashes
       if (error.message && error.message.includes('column "tracking_id" does not exist')) {
         console.log('📝 Custom orders table needs migration, returning empty array');
@@ -1027,7 +1196,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Extract customization data from items
       let allCustomInstructions: string[] = [];
       let allCustomImages: string[] = [];
-      
+
       if (orderData.items) {
         const items = Array.isArray(orderData.items) ? orderData.items : JSON.parse(orderData.items);
         items.forEach((item: any) => {
