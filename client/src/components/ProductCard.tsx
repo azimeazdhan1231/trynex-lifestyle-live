@@ -66,7 +66,7 @@ const ProductCard = ({ product, className = "" }: ProductCardProps) => {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: isVisible ? 1 : 0, y: isVisible ? 0 : 20 }}
       whileHover={{ y: -5 }}
-      className={`group bg-white dark:bg-gray-800 rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden border border-gray-100 dark:border-gray-700 h-full flex flex-col ${className}`}
+      className={`group card-enhanced rounded-xl hover:shadow-2xl transition-all duration-300 overflow-hidden h-full flex flex-col ${className}`}
       data-testid={`product-card-${product.id}`}
     >
       <Link href={`/product/${product.id}`}>

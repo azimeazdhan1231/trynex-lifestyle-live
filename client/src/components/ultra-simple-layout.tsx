@@ -8,9 +8,9 @@ interface UltraSimpleLayoutProps {
 
 export default function UltraSimpleLayout({ children }: UltraSimpleLayoutProps) {
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
       <ModernHeader />
-      <main className="pt-20 lg:pt-24">
+      <main className="pt-24 lg:pt-28">
         {children}
       </main>
       <EnhancedFooter />

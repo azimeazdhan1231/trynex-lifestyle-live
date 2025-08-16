@@ -20,7 +20,7 @@ interface UserData {
 
 export default function ModernHeader() {
   const [location, navigate] = useLocation();
-  const { totalItems } = useCart();
+  const { getTotalItems } = useCart();
   const { totalItems: wishlistItems } = useWishlist();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
@@ -211,9 +211,9 @@ export default function ModernHeader() {
                 data-testid="button-cart"
               >
                 <ShoppingCart className="w-5 h-5" />
-                {totalItems > 0 && (
+                {getTotalItems() > 0 && (
                   <Badge className="absolute -top-1 -right-1 bg-orange-500 text-white text-xs min-w-5 h-5 flex items-center justify-center animate-pulse">
-                    {totalItems}
+                    {getTotalItems()}
                   </Badge>
                 )}
               </Button>

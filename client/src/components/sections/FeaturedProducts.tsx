@@ -15,9 +15,19 @@ const FeaturedProducts = () => {
     refetchOnWindowFocus: false,
   });
 
-  const featuredProducts = (products || []).filter((product: Product) => 
-    product.is_featured || product.is_best_selling
-  ).slice(0, 8);
+  const featuredProducts = (products || [])
+    .filter((product: Product) => 
+      product.is_featured || product.is_best_selling || product.is_latest
+    )
+    .sort((a, b) => {
+      // Prioritize featured, then latest, then best selling
+      if (a.is_featured && !b.is_featured) return -1;
+      if (!a.is_featured && b.is_featured) return 1;
+      if (a.is_latest && !b.is_latest) return -1;
+      if (!a.is_latest && b.is_latest) return 1;
+      return 0;
+    })
+    .slice(0, 8);
 
   if (isLoading) {
     return (
@@ -99,11 +109,16 @@ const FeaturedProducts = () => {
             viewport={{ once: true }}
             className="text-center py-12"
           >
-            <p className="text-gray-600 dark:text-gray-400 mb-6">
-              কোনো ফিচারড পণ্য পাওয়া যায়নি
-            </p>
+            <div className="mb-6">
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+                কোনো বিশেষ পণ্য পাওয়া যায়নি
+              </h3>
+              <p className="text-gray-600 dark:text-gray-400">
+                এই মুহূর্তে কোনো ফিচারড বা সর্বশেষ পণ্য নেই
+              </p>
+            </div>
             <Link href="/products">
-              <Button>সব পণ্য দেখুন</Button>
+              <Button className="btn-primary">সব পণ্য দেখুন</Button>
             </Link>
           </motion.div>
         )}

@@ -55,7 +55,7 @@ const Layout = ({ children, showScrollTop = true, className = "" }: LayoutProps)
     <div className={`min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300 ${className}`}>
       <Header />
       
-      <main className="pt-16 lg:pt-20">
+      <main className="pt-24 lg:pt-28">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}

@@ -36,7 +36,7 @@ const Header = () => {
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
-  const siteTitle = siteSettings?.site_title || "TryneX Lifestyle";
+  const siteTitle = (siteSettings as any)?.site_title || "TryneX Lifestyle";
   const cartItemCount = getTotalItems();
 
   useEffect(() => {
@@ -61,9 +61,17 @@ const Header = () => {
   };
 
   const toggleDarkMode = () => {
-    setIsDarkMode(!isDarkMode);
-    document.documentElement.classList.toggle('dark');
+    const newDarkMode = !isDarkMode;
+    setIsDarkMode(newDarkMode);
+    document.documentElement.classList.toggle('dark', newDarkMode);
+    localStorage.setItem('darkMode', String(newDarkMode));
   };
+
+  useEffect(() => {
+    const savedDarkMode = localStorage.getItem('darkMode') === 'true';
+    setIsDarkMode(savedDarkMode);
+    document.documentElement.classList.toggle('dark', savedDarkMode);
+  }, []);
 
   const navigation = [
     { name: "হোম", href: "/", bengali: true },
@@ -76,7 +84,7 @@ const Header = () => {
   return (
     <>
       {/* Top Bar */}
-      <div className="bg-primary text-white py-2 text-sm">
+      <div className="bg-gradient-to-r from-orange-500 to-red-500 text-white py-2 text-sm">
         <div className="container mx-auto px-4 flex justify-between items-center">
           <div className="flex items-center space-x-4">
             <span className="flex items-center gap-1">
@@ -89,7 +97,7 @@ const Header = () => {
             </span>
           </div>
           <div className="flex items-center space-x-2">
-            <span className="text-xs">ফ্রি ডেলিভারি ৫০০ টাকার উপরে</span>
+            <span className="text-xs font-medium">🎉 ফ্রি ডেলিভারি ৫০০ টাকার উপরে 🎉</span>
           </div>
         </div>
       </div>
@@ -98,7 +106,7 @@ const Header = () => {
       <motion.header
         className={`fixed top-8 left-0 right-0 z-50 transition-all duration-300 ${
           isScrolled
-            ? 'bg-white/95 dark:bg-gray-900/95 backdrop-blur-md shadow-lg'
+            ? 'header-glass shadow-lg'
             : 'bg-white dark:bg-gray-900'
         }`}
         initial={{ y: -100 }}
