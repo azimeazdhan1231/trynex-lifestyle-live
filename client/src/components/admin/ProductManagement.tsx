@@ -382,37 +382,67 @@ export default function ProductManagement() {
                 </div>
 
                 <div className="space-y-3">
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="is_featured"
-                      checked={addForm.watch("is_featured")}
-                      onCheckedChange={(checked) => addForm.setValue("is_featured", !!checked)}
-                    />
-                    <label htmlFor="is_featured" className="text-sm font-medium">
-                      ফিচারড পণ্য
-                    </label>
+                  <div className="flex items-center justify-between p-3 border rounded-lg">
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="is_featured"
+                        checked={addForm.watch("is_featured")}
+                        onCheckedChange={(checked) => addForm.setValue("is_featured", !!checked)}
+                      />
+                      <label htmlFor="is_featured" className="text-sm font-medium">
+                        ফিচারড পণ্য
+                      </label>
+                    </div>
+                    <Button
+                      type="button"
+                      variant={addForm.watch("is_featured") ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => addForm.setValue("is_featured", !addForm.watch("is_featured"))}
+                    >
+                      {addForm.watch("is_featured") ? "চালু" : "বন্ধ"}
+                    </Button>
                   </div>
 
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="is_latest"
-                      checked={addForm.watch("is_latest")}
-                      onCheckedChange={(checked) => addForm.setValue("is_latest", !!checked)}
-                    />
-                    <label htmlFor="is_latest" className="text-sm font-medium">
-                      নতুন পণ্য
-                    </label>
+                  <div className="flex items-center justify-between p-3 border rounded-lg">
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="is_latest"
+                        checked={addForm.watch("is_latest")}
+                        onCheckedChange={(checked) => addForm.setValue("is_latest", !!checked)}
+                      />
+                      <label htmlFor="is_latest" className="text-sm font-medium">
+                        নতুন পণ্য
+                      </label>
+                    </div>
+                    <Button
+                      type="button"
+                      variant={addForm.watch("is_latest") ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => addForm.setValue("is_latest", !addForm.watch("is_latest"))}
+                    >
+                      {addForm.watch("is_latest") ? "চালু" : "বন্ধ"}
+                    </Button>
                   </div>
 
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="is_best_selling"
-                      checked={addForm.watch("is_best_selling")}
-                      onCheckedChange={(checked) => addForm.setValue("is_best_selling", !!checked)}
-                    />
-                    <label htmlFor="is_best_selling" className="text-sm font-medium">
-                      বেস্ট সেলার
-                    </label>
+                  <div className="flex items-center justify-between p-3 border rounded-lg">
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="is_best_selling"
+                        checked={addForm.watch("is_best_selling")}
+                        onCheckedChange={(checked) => addForm.setValue("is_best_selling", !!checked)}
+                      />
+                      <label htmlFor="is_best_selling" className="text-sm font-medium">
+                        বেস্ট সেলার
+                      </label>
+                    </div>
+                    <Button
+                      type="button"
+                      variant={addForm.watch("is_best_selling") ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => addForm.setValue("is_best_selling", !addForm.watch("is_best_selling"))}
+                    >
+                      {addForm.watch("is_best_selling") ? "চালু" : "বন্ধ"}
+                    </Button>
                   </div>
                 </div>
 
@@ -752,37 +782,67 @@ export default function ProductManagement() {
               </div>
 
               <div className="space-y-3">
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="edit_is_featured"
-                    checked={editForm.watch("is_featured")}
-                    onCheckedChange={(checked) => editForm.setValue("is_featured", !!checked)}
-                  />
-                  <label htmlFor="edit_is_featured" className="text-sm font-medium">
-                    ফিচারড পণ্য
-                  </label>
+                <div className="flex items-center justify-between p-3 border rounded-lg">
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="edit_is_featured"
+                      checked={editForm.watch("is_featured")}
+                      onCheckedChange={(checked) => editForm.setValue("is_featured", !!checked)}
+                    />
+                    <label htmlFor="edit_is_featured" className="text-sm font-medium">
+                      ফিচারড পণ্য
+                    </label>
+                  </div>
+                  <Button
+                    type="button"
+                    variant={editForm.watch("is_featured") ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => editForm.setValue("is_featured", !editForm.watch("is_featured"))}
+                  >
+                    {editForm.watch("is_featured") ? "চালু" : "বন্ধ"}
+                  </Button>
                 </div>
 
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="edit_is_latest"
-                    checked={editForm.watch("is_latest")}
-                    onCheckedChange={(checked) => editForm.setValue("is_latest", !!checked)}
-                  />
-                  <label htmlFor="edit_is_latest" className="text-sm font-medium">
-                    নতুন পণ্য
-                  </label>
+                <div className="flex items-center justify-between p-3 border rounded-lg">
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="edit_is_latest"
+                      checked={editForm.watch("is_latest")}
+                      onCheckedChange={(checked) => editForm.setValue("is_latest", !!checked)}
+                    />
+                    <label htmlFor="edit_is_latest" className="text-sm font-medium">
+                      নতুন পণ্য
+                    </label>
+                  </div>
+                  <Button
+                    type="button"
+                    variant={editForm.watch("is_latest") ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => editForm.setValue("is_latest", !editForm.watch("is_latest"))}
+                  >
+                    {editForm.watch("is_latest") ? "চালু" : "বন্ধ"}
+                  </Button>
                 </div>
 
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="edit_is_best_selling"
-                    checked={editForm.watch("is_best_selling")}
-                    onCheckedChange={(checked) => editForm.setValue("is_best_selling", !!checked)}
-                  />
-                  <label htmlFor="edit_is_best_selling" className="text-sm font-medium">
-                    বেস্ট সেলার
-                  </label>
+                <div className="flex items-center justify-between p-3 border rounded-lg">
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="edit_is_best_selling"
+                      checked={editForm.watch("is_best_selling")}
+                      onCheckedChange={(checked) => editForm.setValue("is_best_selling", !!checked)}
+                    />
+                    <label htmlFor="edit_is_best_selling" className="text-sm font-medium">
+                      বেস্ট সেলার
+                    </label>
+                  </div>
+                  <Button
+                    type="button"
+                    variant={editForm.watch("is_best_selling") ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => editForm.setValue("is_best_selling", !editForm.watch("is_best_selling"))}
+                  >
+                    {editForm.watch("is_best_selling") ? "চালু" : "বন্ধ"}
+                  </Button>
                 </div>
               </div>
 
