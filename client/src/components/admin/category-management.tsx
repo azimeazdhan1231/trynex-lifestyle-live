@@ -12,7 +12,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { Plus, Pencil, Trash2, Tag } from "lucide-react";
+import { Plus, Pencil, Trash2, Tag, ImageIcon } from "lucide-react";
 import type { Category, InsertCategory } from "@shared/schema";
 
 interface CategoryManagementProps {
@@ -21,7 +21,6 @@ interface CategoryManagementProps {
 
 interface CategoryFormData {
   name: string;
-  name_bengali: string;
   description: string;
   image_url: string;
   is_active: boolean;
@@ -33,7 +32,6 @@ export default function CategoryManagement({ categories }: CategoryManagementPro
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [formData, setFormData] = useState<CategoryFormData>({
     name: "",
-    name_bengali: "",
     description: "",
     image_url: "",
     is_active: true,
@@ -48,12 +46,12 @@ export default function CategoryManagement({ categories }: CategoryManagementPro
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/categories"] });
-      setIsDialogOpen(false);
-      resetForm();
       toast({
         title: "সফল",
-        description: "ক্যাটেগরি সফলভাবে যোগ করা হয়েছে।",
+        description: "নতুন ক্যাটেগরি সফলভাবে যোগ করা হয়েছে।",
       });
+      setIsDialogOpen(false);
+      resetForm();
     },
     onError: (error: any) => {
       toast({
@@ -66,18 +64,17 @@ export default function CategoryManagement({ categories }: CategoryManagementPro
 
   // Update category mutation
   const updateCategoryMutation = useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: Partial<InsertCategory> }) => {
+    mutationFn: async ({ id, data }: { id: string; data: InsertCategory }) => {
       return apiRequest("PATCH", `/api/categories/${id}`, data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/categories"] });
-      setIsDialogOpen(false);
-      setEditingCategory(null);
-      resetForm();
       toast({
         title: "সফল",
         description: "ক্যাটেগরি সফলভাবে আপডেট করা হয়েছে।",
       });
+      setIsDialogOpen(false);
+      resetForm();
     },
     onError: (error: any) => {
       toast({
@@ -90,8 +87,8 @@ export default function CategoryManagement({ categories }: CategoryManagementPro
 
   // Delete category mutation
   const deleteCategoryMutation = useMutation({
-    mutationFn: async (id: string) => {
-      return apiRequest("DELETE", `/api/categories/${id}`);
+    mutationFn: async (categoryId: string) => {
+      return apiRequest("DELETE", `/api/categories/${categoryId}`);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/categories"] });
@@ -103,7 +100,7 @@ export default function CategoryManagement({ categories }: CategoryManagementPro
     onError: (error: any) => {
       toast({
         title: "ত্রুটি",
-        description: error.message || "ক্যাটেগরি মুছে ফেলতে সমস্যা হয়েছে।",
+        description: error.message || "ক্যাটেগরি মুছতে সমস্যা হয়েছে।",
         variant: "destructive",
       });
     },
@@ -112,35 +109,49 @@ export default function CategoryManagement({ categories }: CategoryManagementPro
   const resetForm = () => {
     setFormData({
       name: "",
-      name_bengali: "",
       description: "",
       image_url: "",
       is_active: true,
       sort_order: 0,
     });
+    setEditingCategory(null);
+  };
+
+  const handleInputChange = (key: keyof CategoryFormData, value: string | number | boolean) => {
+    setFormData(prev => ({
+      ...prev,
+      [key]: value
+    }));
   };
 
   const handleEdit = (category: Category) => {
     setEditingCategory(category);
     setFormData({
       name: category.name,
-      name_bengali: category.name_bengali,
       description: category.description || "",
       image_url: category.image_url || "",
-      is_active: category.is_active || true,
+      is_active: category.is_active !== false,
       sort_order: category.sort_order || 0,
     });
     setIsDialogOpen(true);
   };
 
   const handleSubmit = () => {
+    if (!formData.name.trim()) {
+      toast({
+        title: "ত্রুটি",
+        description: "ক্যাটেগরির নাম প্রয়োজন।",
+        variant: "destructive",
+      });
+      return;
+    }
+
     const categoryData: InsertCategory = {
-      name: formData.name,
-      name_bengali: formData.name_bengali,
-      description: formData.description || null,
-      image_url: formData.image_url || null,
+      name: formData.name.trim(),
+      description: formData.description.trim() || null,
+      image_url: formData.image_url.trim() || null,
       is_active: formData.is_active,
-      sort_order: formData.sort_order,
+      sort_order: formData.sort_order || 0,
     };
 
     if (editingCategory) {
@@ -160,14 +171,56 @@ export default function CategoryManagement({ categories }: CategoryManagementPro
     setIsDialogOpen(true);
   };
 
+  const activeCategories = categories.filter(category => category.is_active !== false);
+
   return (
     <div className="space-y-6">
+      {/* Statistics */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center space-x-2">
+              <Tag className="h-5 w-5 text-blue-500" />
+              <div>
+                <p className="text-sm font-medium">মোট ক্যাটেগরি</p>
+                <p className="text-2xl font-bold">{categories.length}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center space-x-2">
+              <Tag className="h-5 w-5 text-green-500" />
+              <div>
+                <p className="text-sm font-medium">সক্রিয় ক্যাটেগরি</p>
+                <p className="text-2xl font-bold text-green-600">{activeCategories.length}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center space-x-2">
+              <Tag className="h-5 w-5 text-gray-500" />
+              <div>
+                <p className="text-sm font-medium">নিষ্ক্রিয় ক্যাটেগরি</p>
+                <p className="text-2xl font-bold text-gray-600">{categories.length - activeCategories.length}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Main Categories Management */}
       <Card>
         <CardHeader>
           <div className="flex justify-between items-center">
             <div>
               <CardTitle>ক্যাটেগরি ব্যবস্থাপনা</CardTitle>
-              <CardDescription>পণ্যের ক্যাটেগরি যোগ এবং সম্পাদনা করুন</CardDescription>
+              <CardDescription>পণ্যের ক্যাটেগরি যোগ, সম্পাদনা এবং মুছে ফেলুন</CardDescription>
             </div>
             <Button onClick={openCreateDialog} data-testid="button-add-category">
               <Plus className="h-4 w-4 mr-2" />
@@ -182,46 +235,59 @@ export default function CategoryManagement({ categories }: CategoryManagementPro
               <TableHeader>
                 <TableRow>
                   <TableHead>ছবি</TableHead>
-                  <TableHead>নাম (ইংরেজি)</TableHead>
-                  <TableHead>নাম (বাংলা)</TableHead>
+                  <TableHead>নাম</TableHead>
                   <TableHead>বিবরণ</TableHead>
-                  <TableHead>অবস্থা</TableHead>
                   <TableHead>ক্রম</TableHead>
+                  <TableHead>স্ট্যাটাস</TableHead>
                   <TableHead>কার্যক্রম</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {categories.map((category) => (
+                {categories
+                  .sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0))
+                  .map((category) => (
                   <TableRow key={category.id}>
                     <TableCell>
-                      {category.image_url && (
+                      {category.image_url ? (
                         <img
                           src={category.image_url}
                           alt={category.name}
                           className="w-12 h-12 object-cover rounded"
                           data-testid={`img-category-${category.id}`}
                         />
+                      ) : (
+                        <div className="w-12 h-12 bg-gray-200 rounded flex items-center justify-center">
+                          <ImageIcon className="h-6 w-6 text-gray-400" />
+                        </div>
                       )}
                     </TableCell>
-                    <TableCell className="font-medium" data-testid={`text-category-name-${category.id}`}>
-                      {category.name}
-                    </TableCell>
-                    <TableCell data-testid={`text-category-bengali-${category.id}`}>
-                      {category.name_bengali}
-                    </TableCell>
-                    <TableCell data-testid={`text-category-description-${category.id}`}>
-                      {category.description || "—"}
+                    <TableCell>
+                      <p className="font-medium">{category.name}</p>
                     </TableCell>
                     <TableCell>
-                      <Badge variant={category.is_active ? "default" : "secondary"}>
-                        {category.is_active ? "সক্রিয়" : "নিষ্ক্রিয়"}
+                      {category.description ? (
+                        <p className="text-sm text-gray-600 max-w-xs truncate">
+                          {category.description}
+                        </p>
+                      ) : (
+                        <span className="text-gray-400">কোন বিবরণ নেই</span>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="outline">
+                        {category.sort_order || 0}
                       </Badge>
                     </TableCell>
-                    <TableCell data-testid={`text-category-order-${category.id}`}>
-                      {category.sort_order}
+                    <TableCell>
+                      <Badge 
+                        variant={category.is_active !== false ? "default" : "secondary"}
+                        className={category.is_active !== false ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"}
+                      >
+                        {category.is_active !== false ? "সক্রিয়" : "নিষ্ক্রিয়"}
+                      </Badge>
                     </TableCell>
                     <TableCell>
-                      <div className="flex space-x-2">
+                      <div className="flex items-center space-x-2">
                         <Button
                           variant="outline"
                           size="sm"
@@ -233,8 +299,9 @@ export default function CategoryManagement({ categories }: CategoryManagementPro
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
                             <Button
-                              variant="destructive"
+                              variant="outline"
                               size="sm"
+                              className="text-red-600 hover:text-red-700"
                               data-testid={`button-delete-category-${category.id}`}
                             >
                               <Trash2 className="h-4 w-4" />
@@ -244,7 +311,7 @@ export default function CategoryManagement({ categories }: CategoryManagementPro
                             <AlertDialogHeader>
                               <AlertDialogTitle>ক্যাটেগরি মুছে ফেলুন</AlertDialogTitle>
                               <AlertDialogDescription>
-                                আপনি কি নিশ্চিত যে আপনি "{category.name_bengali}" ক্যাটেগরিটি মুছে ফেলতে চান? এটি স্থায়ীভাবে মুছে যাবে।
+                                আপনি কি নিশ্চিত যে আপনি এই ক্যাটেগরিটি মুছে ফেলতে চান? এই কাজটি পূর্বাবস্থায় ফেরানো যাবে না।
                               </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
@@ -265,91 +332,90 @@ export default function CategoryManagement({ categories }: CategoryManagementPro
               </TableBody>
             </Table>
           </div>
+
+          {categories.length === 0 && (
+            <div className="text-center py-8">
+              <Tag className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+              <p className="text-gray-600">কোনো ক্যাটেগরি পাওয়া যায়নি।</p>
+            </div>
+          )}
         </CardContent>
       </Card>
 
-      {/* Category Form Dialog */}
+      {/* Add/Edit Category Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle>
               {editingCategory ? "ক্যাটেগরি সম্পাদনা করুন" : "নতুন ক্যাটেগরি যোগ করুন"}
             </DialogTitle>
             <DialogDescription>
-              ক্যাটেগরির তথ্য পূরণ করুন এবং সেভ করুন।
+              ক্যাটেগরির বিস্তারিত তথ্য পূরণ করুন
             </DialogDescription>
           </DialogHeader>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="name">নাম (ইংরেজি) *</Label>
-                <Input
-                  id="name"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  placeholder="Category name in English"
-                  data-testid="input-category-name"
-                />
-              </div>
 
-              <div>
-                <Label htmlFor="name_bengali">নাম (বাংলা) *</Label>
-                <Input
-                  id="name_bengali"
-                  value={formData.name_bengali}
-                  onChange={(e) => setFormData({ ...formData, name_bengali: e.target.value })}
-                  placeholder="বাংলায় ক্যাটেগরির নাম"
-                  data-testid="input-category-bengali"
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="image_url">ছবির URL</Label>
-                <Input
-                  id="image_url"
-                  value={formData.image_url}
-                  onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
-                  placeholder="ছবির লিঙ্ক"
-                  data-testid="input-category-image"
-                />
-              </div>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="name">ক্যাটেগরির নাম *</Label>
+              <Input
+                id="name"
+                value={formData.name}
+                onChange={(e) => handleInputChange("name", e.target.value)}
+                placeholder="ক্যাটেগরির নাম"
+                data-testid="input-category-name"
+              />
             </div>
 
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="description">বিবরণ</Label>
-                <Textarea
-                  id="description"
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  placeholder="ক্যাটেগরির বিবরণ লিখুন"
-                  rows={4}
-                  data-testid="textarea-category-description"
-                />
-              </div>
+            <div className="space-y-2">
+              <Label htmlFor="description">বিবরণ</Label>
+              <Textarea
+                id="description"
+                value={formData.description}
+                onChange={(e) => handleInputChange("description", e.target.value)}
+                placeholder="ক্যাটেগরির বিস্তারিত বিবরণ"
+                className="min-h-20"
+                data-testid="textarea-category-description"
+              />
+            </div>
 
-              <div>
-                <Label htmlFor="sort_order">ক্রম নম্বর</Label>
-                <Input
-                  id="sort_order"
-                  type="number"
-                  value={formData.sort_order}
-                  onChange={(e) => setFormData({ ...formData, sort_order: parseInt(e.target.value) || 0 })}
-                  placeholder="0"
-                  data-testid="input-category-order"
-                />
-              </div>
+            <div className="space-y-2">
+              <Label htmlFor="image_url">ছবির URL</Label>
+              <Input
+                id="image_url"
+                value={formData.image_url}
+                onChange={(e) => handleInputChange("image_url", e.target.value)}
+                placeholder="https://example.com/image.jpg"
+                data-testid="input-category-image"
+              />
+            </div>
 
-              <div className="flex items-center space-x-2">
-                <Switch
-                  id="is_active"
-                  checked={formData.is_active}
-                  onCheckedChange={(checked) => setFormData({ ...formData, is_active: checked })}
-                  data-testid="switch-category-active"
-                />
-                <Label htmlFor="is_active">সক্রিয় ক্যাটেগরি</Label>
+            <div className="space-y-2">
+              <Label htmlFor="sort_order">প্রদর্শন ক্রম</Label>
+              <Input
+                id="sort_order"
+                type="number"
+                min="0"
+                value={formData.sort_order}
+                onChange={(e) => handleInputChange("sort_order", parseInt(e.target.value) || 0)}
+                placeholder="0"
+                data-testid="input-category-sort-order"
+              />
+              <p className="text-sm text-gray-600">
+                কম সংখ্যা আগে দেখানো হবে
+              </p>
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div>
+                <Label htmlFor="is_active">ক্যাটেগরি সক্রিয় করুন</Label>
+                <p className="text-sm text-gray-600">এই ক্যাটেগরিটি ওয়েবসাইটে দেখান</p>
               </div>
+              <Switch
+                id="is_active"
+                checked={formData.is_active}
+                onCheckedChange={(checked) => handleInputChange("is_active", checked)}
+                data-testid="switch-category-active"
+              />
             </div>
           </div>
 
@@ -357,9 +423,9 @@ export default function CategoryManagement({ categories }: CategoryManagementPro
             <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
               বাতিল
             </Button>
-            <Button
+            <Button 
               onClick={handleSubmit}
-              disabled={!formData.name || !formData.name_bengali || createCategoryMutation.isPending || updateCategoryMutation.isPending}
+              disabled={createCategoryMutation.isPending || updateCategoryMutation.isPending}
               data-testid="button-save-category"
             >
               {createCategoryMutation.isPending || updateCategoryMutation.isPending ? "সেভ হচ্ছে..." : "সেভ করুন"}

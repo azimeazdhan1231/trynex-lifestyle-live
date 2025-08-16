@@ -6,7 +6,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Eye, EyeOff, Shield, Lock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { useQueryClient } from '@tanstack/react-query'; // Assuming you are using react-query
+import { useQueryClient } from '@tanstack/react-query';
+import ComprehensiveAdminPanel from "@/components/ComprehensiveAdminPanel";
 
 interface AdminLoginProps {
   onLoginSuccess: () => void;
@@ -103,6 +104,23 @@ export default function AdminLogin({ onLoginSuccess }: AdminLoginProps) {
   }, []);
 
 
+  // If logged in, show the comprehensive admin panel
+  if (isLoggedIn) {
+    return (
+      <ComprehensiveAdminPanel 
+        onLogout={() => {
+          localStorage.removeItem('admin_token');
+          localStorage.removeItem('admin_data');
+          setIsLoggedIn(false);
+          toast({
+            title: "লগআউট সফল",
+            description: "আপনি সফলভাবে লগআউট হয়েছেন।",
+          });
+        }}
+      />
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
@@ -136,6 +154,7 @@ export default function AdminLogin({ onLoginSuccess }: AdminLoginProps) {
                   onChange={(e) => setCredentials(prev => ({ ...prev, email: e.target.value }))}
                   required
                   className="h-11"
+                  data-testid="input-admin-email"
                 />
               </div>
 
@@ -150,11 +169,13 @@ export default function AdminLogin({ onLoginSuccess }: AdminLoginProps) {
                     onChange={(e) => setCredentials(prev => ({ ...prev, password: e.target.value }))}
                     required
                     className="h-11 pr-10"
+                    data-testid="input-admin-password"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
                     className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                    data-testid="button-toggle-password"
                   >
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
@@ -171,6 +192,7 @@ export default function AdminLogin({ onLoginSuccess }: AdminLoginProps) {
                 type="submit"
                 className="w-full h-11 bg-blue-600 hover:bg-blue-700"
                 disabled={isLoading}
+                data-testid="button-admin-login"
               >
                 {isLoading ? "লগইন হচ্ছে..." : "লগইন করুন"}
               </Button>

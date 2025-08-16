@@ -2,17 +2,16 @@ import React, { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { formatPrice } from "@/lib/constants";
-import { 
-  Eye, Package, Phone, MapPin, Calendar, User, CreditCard, 
-  Clock, Truck, CheckCircle, XCircle, ImageIcon, AlertTriangle
-} from "lucide-react";
+import { Eye, ShoppingCart, Clock, Package, Truck, CheckCircle, XCircle, Search, Filter } from "lucide-react";
 import type { Order } from "@shared/schema";
 
 interface OrderManagementProps {
@@ -28,23 +27,17 @@ const ORDER_STATUSES = {
   cancelled: "বাতিল"
 };
 
-const STATUS_COLORS = {
-  pending: "bg-yellow-100 text-yellow-800",
-  processing: "bg-blue-100 text-blue-800",
-  shipped: "bg-purple-100 text-purple-800",
-  delivered: "bg-green-100 text-green-800",
-  cancelled: "bg-red-100 text-red-800"
-};
-
 export default function OrderManagement({ orders }: OrderManagementProps) {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [orderDetailsOpen, setOrderDetailsOpen] = useState(false);
+  const [filterStatus, setFilterStatus] = useState<string>("all");
+  const [searchTerm, setSearchTerm] = useState("");
   const { toast } = useToast();
 
   // Update order status mutation
   const updateOrderStatusMutation = useMutation({
     mutationFn: async ({ orderId, status }: { orderId: string; status: string }) => {
-      return apiRequest("PATCH", `/api/orders/${orderId}/status`, { status });
+      return apiRequest("PATCH", `/api/orders/${orderId}`, { status });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/orders"] });
@@ -52,6 +45,7 @@ export default function OrderManagement({ orders }: OrderManagementProps) {
         title: "সফল",
         description: "অর্ডার স্ট্যাটাস সফলভাবে আপডেট করা হয়েছে।",
       });
+      setOrderDetailsOpen(false);
     },
     onError: (error: any) => {
       toast({
@@ -62,33 +56,198 @@ export default function OrderManagement({ orders }: OrderManagementProps) {
     },
   });
 
-  const handleViewOrder = (order: Order) => {
+  // Helper functions
+  const parseOrderItems = (items: any) => {
+    if (typeof items === 'string') {
+      try {
+        const parsed = JSON.parse(items);
+        if (Array.isArray(parsed)) return parsed;
+        return [parsed];
+      } catch {
+        return [{
+          productName: items,
+          name: items,
+          quantity: 1, 
+          productPrice: 0, 
+          customization: null, 
+          customizationCost: 0, 
+          totalPrice: 0,
+          custom_images: null,
+          special_instructions: null
+        }];
+      }
+    }
+    if (Array.isArray(items)) {
+      return items.map((item: any) => ({
+        productName: item.productName || item.name || 'কাস্টম আইটেম',
+        name: item.name || item.productName || 'কাস্টম আইটেম',
+        quantity: item.quantity || 1,
+        productPrice: Number(item.productPrice || item.price || 0),
+        customization: item.customization || item.custom_options || null,
+        customizationCost: Number(item.customizationCost || item.customization_cost || 0),
+        totalPrice: Number(item.totalPrice || (item.productPrice * item.quantity) || 0),
+        custom_images: item.custom_images || null,
+        special_instructions: item.special_instructions || null
+      }));
+    }
+    return [];
+  };
+
+  const handleViewOrderDetails = (order: Order) => {
     setSelectedOrder(order);
     setOrderDetailsOpen(true);
   };
 
-  const handleStatusUpdate = (orderId: string, newStatus: string) => {
+  const handleStatusChange = (orderId: string, newStatus: string) => {
     updateOrderStatusMutation.mutate({ orderId, status: newStatus });
   };
 
-  const formatDate = (dateInput: string | Date | null | undefined) => {
-    if (!dateInput) return "";
-    const date = typeof dateInput === 'string' ? new Date(dateInput) : dateInput;
-    return date.toLocaleString('bn-BD', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+  // Filter orders based on search and status
+  const filteredOrders = orders.filter(order => {
+    const matchesSearch = searchTerm === "" || 
+      order.customer_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      order.tracking_id?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      order.phone?.includes(searchTerm);
+    
+    const matchesStatus = filterStatus === "all" || order.status === filterStatus;
+    
+    return matchesSearch && matchesStatus;
+  });
+
+  // Calculate statistics
+  const pendingOrders = orders.filter(order => order.status === "pending").length;
+  const processingOrders = orders.filter(order => order.status === "processing").length;
+  const shippedOrders = orders.filter(order => order.status === "shipped").length;
+  const deliveredOrders = orders.filter(order => order.status === "delivered").length;
+  const cancelledOrders = orders.filter(order => order.status === "cancelled").length;
+
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case "pending": return <Clock className="h-4 w-4" />;
+      case "processing": return <Package className="h-4 w-4" />;
+      case "shipped": return <Truck className="h-4 w-4" />;
+      case "delivered": return <CheckCircle className="h-4 w-4" />;
+      case "cancelled": return <XCircle className="h-4 w-4" />;
+      default: return <Clock className="h-4 w-4" />;
+    }
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "pending": return "bg-yellow-100 text-yellow-800";
+      case "processing": return "bg-blue-100 text-blue-800";
+      case "shipped": return "bg-purple-100 text-purple-800";
+      case "delivered": return "bg-green-100 text-green-800";
+      case "cancelled": return "bg-red-100 text-red-800";
+      default: return "bg-gray-100 text-gray-800";
+    }
   };
 
   return (
     <div className="space-y-6">
+      {/* Statistics Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center space-x-2">
+              <Clock className="h-5 w-5 text-orange-500" />
+              <div>
+                <p className="text-sm font-medium">অপেক্ষমান</p>
+                <p className="text-2xl font-bold text-orange-600">{pendingOrders}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center space-x-2">
+              <Package className="h-5 w-5 text-blue-500" />
+              <div>
+                <p className="text-sm font-medium">প্রক্রিয়াধীন</p>
+                <p className="text-2xl font-bold text-blue-600">{processingOrders}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center space-x-2">
+              <Truck className="h-5 w-5 text-purple-500" />
+              <div>
+                <p className="text-sm font-medium">পাঠানো</p>
+                <p className="text-2xl font-bold text-purple-600">{shippedOrders}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center space-x-2">
+              <CheckCircle className="h-5 w-5 text-green-500" />
+              <div>
+                <p className="text-sm font-medium">ডেলিভার</p>
+                <p className="text-2xl font-bold text-green-600">{deliveredOrders}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center space-x-2">
+              <XCircle className="h-5 w-5 text-red-500" />
+              <div>
+                <p className="text-sm font-medium">বাতিল</p>
+                <p className="text-2xl font-bold text-red-600">{cancelledOrders}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Main Orders Management */}
       <Card>
         <CardHeader>
-          <CardTitle>অর্ডার ব্যবস্থাপনা</CardTitle>
-          <CardDescription>অর্ডার দেখুন এবং স্ট্যাটাস আপডেট করুন</CardDescription>
+          <div className="flex justify-between items-center">
+            <div>
+              <CardTitle>অর্ডার ব্যবস্থাপনা</CardTitle>
+              <CardDescription>সকল অর্ডার দেখুন এবং পরিচালনা করুন</CardDescription>
+            </div>
+          </div>
+          
+          {/* Filters */}
+          <div className="flex flex-col sm:flex-row gap-4 mt-4">
+            <div className="flex-1">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                <Input
+                  placeholder="নাম, ট্র্যাকিং ID বা ফোন নম্বর দিয়ে খুঁজুন..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10"
+                  data-testid="input-search-orders"
+                />
+              </div>
+            </div>
+            <div className="w-full sm:w-48">
+              <Select value={filterStatus} onValueChange={setFilterStatus}>
+                <SelectTrigger data-testid="select-filter-status">
+                  <SelectValue placeholder="স্ট্যাটাস ফিল্টার" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">সব অর্ডার</SelectItem>
+                  <SelectItem value="pending">অপেক্ষমান</SelectItem>
+                  <SelectItem value="processing">প্রক্রিয়াধীন</SelectItem>
+                  <SelectItem value="shipped">পাঠানো হয়েছে</SelectItem>
+                  <SelectItem value="delivered">ডেলিভার হয়েছে</SelectItem>
+                  <SelectItem value="cancelled">বাতিল</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
           {/* Orders Table */}
@@ -99,56 +258,56 @@ export default function OrderManagement({ orders }: OrderManagementProps) {
                   <TableHead>ট্র্যাকিং ID</TableHead>
                   <TableHead>গ্রাহক</TableHead>
                   <TableHead>ফোন</TableHead>
-                  <TableHead>মোট</TableHead>
+                  <TableHead>মোট পরিমাণ</TableHead>
                   <TableHead>স্ট্যাটাস</TableHead>
                   <TableHead>তারিখ</TableHead>
                   <TableHead>কার্যক্রম</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {orders.map((order) => (
+                {filteredOrders.map((order) => (
                   <TableRow key={order.id}>
-                    <TableCell className="font-mono" data-testid={`text-order-tracking-${order.id}`}>
-                      {order.tracking_id}
-                    </TableCell>
-                    <TableCell className="font-medium" data-testid={`text-order-customer-${order.id}`}>
-                      {order.customer_name}
-                    </TableCell>
-                    <TableCell data-testid={`text-order-phone-${order.id}`}>
-                      {order.phone}
-                    </TableCell>
-                    <TableCell data-testid={`text-order-total-${order.id}`}>
-                      {formatPrice(Number(order.total))}
+                    <TableCell>
+                      <code className="bg-gray-100 px-2 py-1 rounded text-sm font-mono">
+                        {order.tracking_id}
+                      </code>
                     </TableCell>
                     <TableCell>
-                      <Select
-                        value={order.status || "pending"}
-                        onValueChange={(newStatus) => handleStatusUpdate(order.id, newStatus)}
-                        disabled={updateOrderStatusMutation.isPending}
-                      >
-                        <SelectTrigger className="w-32" data-testid={`select-order-status-${order.id}`}>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {Object.entries(ORDER_STATUSES).map(([value, label]) => (
-                            <SelectItem key={value} value={value}>
-                              {label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <div>
+                        <p className="font-medium">{order.customer_name}</p>
+                        <p className="text-sm text-gray-600">{order.district}, {order.thana}</p>
+                      </div>
                     </TableCell>
-                    <TableCell data-testid={`text-order-date-${order.id}`}>
-                        {formatDate(order.created_at)}
-                      </TableCell>
+                    <TableCell>
+                      <p className="font-mono text-sm">{order.phone}</p>
+                    </TableCell>
+                    <TableCell>
+                      <p className="font-medium">{formatPrice(Number(order.total))}</p>
+                    </TableCell>
+                    <TableCell>
+                      <Badge 
+                        variant="secondary"
+                        className={getStatusColor(order.status || "pending")}
+                      >
+                        <span className="flex items-center gap-1">
+                          {getStatusIcon(order.status || "pending")}
+                          {ORDER_STATUSES[order.status as keyof typeof ORDER_STATUSES] || order.status}
+                        </span>
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <p className="text-sm">
+                        {order.created_at ? new Date(order.created_at).toLocaleDateString('bn-BD') : ''}
+                      </p>
+                    </TableCell>
                     <TableCell>
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => handleViewOrder(order)}
+                        onClick={() => handleViewOrderDetails(order)}
                         data-testid={`button-view-order-${order.id}`}
                       >
-                        <Eye className="h-4 w-4 mr-2" />
+                        <Eye className="h-4 w-4 mr-1" />
                         বিস্তারিত
                       </Button>
                     </TableCell>
@@ -157,6 +316,18 @@ export default function OrderManagement({ orders }: OrderManagementProps) {
               </TableBody>
             </Table>
           </div>
+
+          {filteredOrders.length === 0 && (
+            <div className="text-center py-8">
+              <ShoppingCart className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+              <p className="text-gray-600">
+                {searchTerm || filterStatus !== "all" 
+                  ? "কোনো অর্ডার খুঁজে পাওয়া যায়নি।"
+                  : "কোনো অর্ডার পাওয়া যায়নি।"
+                }
+              </p>
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -166,315 +337,164 @@ export default function OrderManagement({ orders }: OrderManagementProps) {
           <DialogHeader>
             <DialogTitle>অর্ডার বিস্তারিত</DialogTitle>
             <DialogDescription>
-              ট্র্যাকিং ID: {selectedOrder?.tracking_id}
+              অর্ডার ID: {selectedOrder?.tracking_id}
             </DialogDescription>
           </DialogHeader>
 
           {selectedOrder && (
             <div className="space-y-6">
-              {/* Customer Information */}
+              {/* Customer Info */}
               <Card>
                 <CardHeader>
-                  <CardTitle className="flex items-center">
-                    <User className="h-5 w-5 mr-2" />
-                    গ্রাহকের তথ্য
-                  </CardTitle>
+                  <CardTitle className="text-base">গ্রাহক তথ্য</CardTitle>
                 </CardHeader>
-                <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-sm text-gray-600">নাম</p>
-                    <p className="font-medium" data-testid="text-order-detail-customer">
-                      {selectedOrder.customer_name}
-                    </p>
+                <CardContent className="space-y-2">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <p><strong>নাম:</strong> {selectedOrder.customer_name}</p>
+                      <p><strong>ফোন:</strong> {selectedOrder.phone}</p>
+                      <p><strong>জেলা:</strong> {selectedOrder.district}</p>
+                      <p><strong>থানা:</strong> {selectedOrder.thana}</p>
+                    </div>
+                    <div>
+                      {selectedOrder.address && <p><strong>ঠিকানা:</strong> {selectedOrder.address}</p>}
+                      <p><strong>অর্ডারের তারিখ:</strong> {new Date(selectedOrder.created_at || '').toLocaleDateString('bn-BD')}</p>
+                      <p><strong>মোট পরিমাণ:</strong> {formatPrice(Number(selectedOrder.total))}</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-sm text-gray-600">ফোন</p>
-                    <p className="font-medium" data-testid="text-order-detail-phone">
-                      {selectedOrder.phone}
-                    </p>
+                  
+                  <div className="mt-4">
+                    <Label className="text-base font-medium">অর্ডার স্ট্যাটাস আপডেট করুন:</Label>
+                    <Select
+                      value={selectedOrder.status || "pending"}
+                      onValueChange={(value) => handleStatusChange(selectedOrder.id, value)}
+                    >
+                      <SelectTrigger className="mt-2" data-testid="select-order-status">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="pending">অপেক্ষমান</SelectItem>
+                        <SelectItem value="processing">প্রক্রিয়াধীন</SelectItem>
+                        <SelectItem value="shipped">পাঠানো হয়েছে</SelectItem>
+                        <SelectItem value="delivered">ডেলিভার হয়েছে</SelectItem>
+                        <SelectItem value="cancelled">বাতিল</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
-                  <div>
-                    <p className="text-sm text-gray-600">জেলা</p>
-                    <p className="font-medium" data-testid="text-order-detail-district">
-                      {selectedOrder.district}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-600">থানা</p>
-                    <p className="font-medium" data-testid="text-order-detail-thana">
-                      {selectedOrder.thana}
-                    </p>
-                  </div>
-                  {selectedOrder.address && (
-                    <div className="md:col-span-2">
-                      <p className="text-sm text-gray-600">ঠিকানা</p>
-                      <p className="font-medium" data-testid="text-order-detail-address">
-                        {selectedOrder.address}
-                      </p>
+
+                  {selectedOrder.custom_instructions && (
+                    <div className="mt-4">
+                      <strong>বিশেষ নির্দেশনা:</strong>
+                      <p className="mt-1 p-2 bg-gray-50 rounded text-sm">{selectedOrder.custom_instructions}</p>
                     </div>
                   )}
                 </CardContent>
               </Card>
 
               {/* Order Items */}
-              <Card data-testid="card-order-items">
+              <Card>
                 <CardHeader>
-                  <CardTitle className="flex items-center">
-                    <Package className="h-5 w-5 mr-2" />
-                    অর্ডার আইটেম
-                  </CardTitle>
+                  <CardTitle className="text-base">অর্ডারকৃত পণ্য</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3">
-                    {Array.isArray(selectedOrder.items) && selectedOrder.items.map((item: any, index: number) => {
-                      return (
-                      <div key={index} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                        <div>
-                          <p className="font-medium" data-testid={`text-order-item-name-${index}`}>
-                            {item.name || 'অজানা পণ্য'}
-                          </p>
-                          <p className="text-sm text-gray-600">
-                            পরিমাণ: {item.quantity || 0} × {formatPrice(Number(item.price || 0))}
-                          </p>
+                    {parseOrderItems(selectedOrder.items).map((item: any, idx: number) => (
+                      <div key={idx} className="p-4 border rounded-lg bg-gray-50">
+                        <div className="flex justify-between items-start mb-2">
+                          <div className="flex-1">
+                            <p className="font-medium text-lg">{item.productName}</p>
+                            <div className="grid grid-cols-2 gap-2 mt-2 text-sm">
+                              <p><span className="font-medium">পরিমাণ:</span> {item.quantity}</p>
+                              <p><span className="font-medium">দাম:</span> {formatPrice(item.productPrice)}</p>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <p className="font-bold text-lg">{formatPrice(item.totalPrice)}</p>
+                          </div>
                         </div>
-                        <p className="font-medium" data-testid={`text-order-item-total-${index}`}>
-                          {formatPrice(Number(item.price || 0) * (item.quantity || 0))}
-                        </p>
-                      </div>
-                      );
-                    })}
-                  </div>
-                  <div className="mt-4 pt-4 border-t">
-                    <div className="flex justify-between items-center">
-                      <p className="text-lg font-semibold">মোট:</p>
-                      <p className="text-lg font-bold text-green-600" data-testid="text-order-detail-total">
-                        {formatPrice(Number(selectedOrder.total))}
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
 
-              {/* Payment Information */}
-              {selectedOrder.payment_info && (
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center">
-                      <CreditCard className="h-5 w-5 mr-2" />
-                      পেমেন্ট তথ্য
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {typeof selectedOrder.payment_info === 'object' && selectedOrder.payment_info && Object.entries(selectedOrder.payment_info).map(([key, value]) => (
-                        <div key={key}>
-                          <p className="text-sm text-gray-600 capitalize">{key}</p>
-                          <p className="font-medium" data-testid={`text-payment-${key}`}>
-                            {value ? String(value) : "—"}
-                          </p>
-                        </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
+                        {/* Show customization details if available */}
+                        {item.customization && (
+                          <div className="mt-3 p-3 bg-blue-50 rounded border-l-4 border-blue-400">
+                            <p className="font-medium text-blue-800 mb-2">কাস্টমাইজেশন বিবরণ:</p>
+                            
+                            {/* Text customization */}
+                            {item.customization.text && (
+                              <div className="mb-2">
+                                <span className="text-blue-700 font-medium">টেক্সট:</span>
+                                <p className="text-blue-600 bg-white p-2 rounded border mt-1">"{item.customization.text}"</p>
+                              </div>
+                            )}
 
-              {/* Custom Instructions and Images from Order Items */}
-              {selectedOrder.items && Array.isArray(selectedOrder.items) && selectedOrder.items.some((item: any) => {
-                const hasCustomization = item.customization && (
-                  item.customization.color || 
-                  item.customization.size || 
-                  item.customization.customText || 
-                  item.customization.specialInstructions || 
-                  item.customization.customImage ||
-                  (item.customization.uploaded_images && Array.isArray(item.customization.uploaded_images) && item.customization.uploaded_images.length > 0)
-                );
-                return hasCustomization;
-              }) && (
-                <Card data-testid="card-customization-details">
-                  <CardHeader>
-                    <CardTitle>কাস্টমাইজেশন বিস্তারিত</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-6">
-                    {Array.isArray(selectedOrder.items) && selectedOrder.items.map((item: any, itemIndex: number) => {
-                      if (!item.customization) return null;
+                            {/* Font and color */}
+                            {(item.customization.font || item.customization.color) && (
+                              <div className="grid grid-cols-2 gap-2 mb-2 text-sm">
+                                {item.customization.font && (
+                                  <p><span className="font-medium text-blue-700">ফন্ট:</span> {item.customization.font}</p>
+                                )}
+                                {item.customization.color && (
+                                  <p><span className="font-medium text-blue-700">রং:</span> 
+                                    <span 
+                                      className="inline-block w-4 h-4 rounded ml-2 border" 
+                                      style={{ backgroundColor: item.customization.color }}
+                                    ></span>
+                                    {item.customization.color}
+                                  </p>
+                                )}
+                              </div>
+                            )}
 
-                      const customization = item.customization;
-                      const hasCustomizations = customization.color || customization.size || 
-                        customization.text || customization.special_instructions || 
-                        (customization.uploaded_images && customization.uploaded_images.length > 0);
+                            {/* Special instructions */}
+                            {item.customization.specialInstructions && (
+                              <div className="mb-2">
+                                <span className="text-blue-700 font-medium">বিশেষ নির্দেশনা:</span>
+                                <p className="text-blue-600 text-sm mt-1">{item.customization.specialInstructions}</p>
+                              </div>
+                            )}
 
-                      if (!hasCustomizations) return null;
-
-                      return (
-                        <div key={itemIndex} className="border rounded-lg p-4 bg-gray-50">
-                          <h4 className="font-semibold text-lg mb-3">{item.name}</h4>
-
-                          {/* Customization Details */}
-                          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4 text-sm">
-                            {customization.color && (
+                            {/* Custom images */}
+                            {item.customization.uploaded_images && item.customization.uploaded_images.length > 0 && (
                               <div>
-                                <span className="text-gray-600">রং:</span>
-                                <div className="flex items-center gap-2 mt-1">
-                                  <div 
-                                    className="w-4 h-4 rounded border"
-                                    style={{ 
-                                      backgroundColor: customization.color === 'white' ? '#FFFFFF' : 
-                                                     customization.color === 'black' ? '#000000' :
-                                                     customization.color === 'red' ? '#EF4444' :
-                                                     customization.color === 'blue' ? '#3B82F6' :
-                                                     customization.color === 'green' ? '#10B981' :
-                                                     customization.color === 'yellow' ? '#F59E0B' :
-                                                     customization.color === 'pink' ? '#EC4899' :
-                                                     customization.color === 'purple' ? '#8B5CF6' :
-                                                     customization.color 
-                                    }}
-                                  />
-                                  <span className="font-medium capitalize">{customization.color}</span>
+                                <span className="text-blue-700 font-medium">আপলোড করা ছবি:</span>
+                                <div className="grid grid-cols-4 gap-2 mt-2">
+                                  {item.customization.uploaded_images.map((imageData: any, imageIndex: number) => {
+                                    const imageUrl = imageData.dataUrl || imageData.url || imageData;
+                                    return (
+                                      <div key={imageIndex} className="relative group">
+                                        <img
+                                          src={imageUrl}
+                                          alt={`Custom image ${imageIndex + 1}`}
+                                          className="w-full h-16 object-cover rounded border cursor-pointer hover:opacity-75"
+                                          onClick={() => window.open(imageUrl, '_blank')}
+                                        />
+                                        <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 rounded transition-all duration-200 flex items-center justify-center">
+                                          <Eye className="w-4 h-4 text-white opacity-0 group-hover:opacity-100" />
+                                        </div>
+                                      </div>
+                                    );
+                                  })}
                                 </div>
                               </div>
                             )}
 
-                            {customization.size && (
-                              <div>
-                                <span className="text-gray-600">সাইজ:</span>
-                                <span className="font-medium ml-1">{customization.size}</span>
-                              </div>
-                            )}
-
-                            {(customization.text || customization.customText) && (
-                              <div className="col-span-2">
-                                <span className="text-gray-600">কাস্টম টেক্সট:</span>
-                                <span className="font-medium ml-1">"{customization.text || customization.customText}"</span>
-                              </div>
-                            )}
-
-                            {customization.font && customization.font !== 'default' && (
-                              <div>
-                                <span className="text-gray-600">ফন্ট:</span>
-                                <span className="font-medium ml-1">{customization.font}</span>
+                            {/* Customization Cost */}
+                            {item.customizationCost > 0 && (
+                              <div className="text-xs text-blue-600 mt-2">
+                                অতিরিক্ত চার্জ: {formatPrice(item.customizationCost)}
                               </div>
                             )}
                           </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
 
-                          {/* Special Instructions */}
-                          {(customization.special_instructions || customization.specialInstructions) && (
-                            <div className="mb-4">
-                              <h5 className="font-medium text-gray-800 mb-2">বিশেষ নির্দেশনা:</h5>
-                              <p className="text-gray-700 bg-white p-3 rounded border">
-                                {customization.special_instructions || customization.specialInstructions}
-                              </p>
-                            </div>
-                          )}
-
-                          {/* Custom Image */}
-                          {customization.customImage && (
-                            <div className="mb-4">
-                              <h5 className="font-medium text-gray-800 mb-2">কাস্টম ইমেজ:</h5>
-                              <div className="bg-gray-100 p-3 rounded border">
-                                <p className="text-sm text-gray-600">✅ ছবি আপলোড করা হয়েছে</p>
-                              </div>
-                            </div>
-                          )}
-
-                          {/* Custom Uploaded Images */}
-                          {customization.uploaded_images && Array.isArray(customization.uploaded_images) && customization.uploaded_images.length > 0 && (
-                            <div>
-                              <h5 className="font-medium text-gray-800 mb-3">আপলোড করা ছবি:</h5>
-                              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                                {customization.uploaded_images.map((imageData: any, imageIndex: number) => {
-                                  // Handle different image data formats
-                                  let imageUrl = '';
-                                  if (typeof imageData === 'string') {
-                                    imageUrl = imageData;
-                                  } else if (imageData && typeof imageData === 'object') {
-                                    // Handle File object or blob URL
-                                    if (imageData.name || imageData.type) {
-                                      // This is a File object - we can't display it directly
-                                      return (
-                                        <div key={imageIndex} className="bg-gray-200 rounded-lg p-4 text-center">
-                                          <ImageIcon className="w-8 h-8 mx-auto text-gray-500 mb-2" />
-                                          <p className="text-xs text-gray-600">
-                                            {imageData.name || 'আপলোড করা ফাইল'}
-                                          </p>
-                                          <p className="text-xs text-gray-500 mt-1">
-                                            (ফাইল সেভ করা হয়নি)
-                                          </p>
-                                        </div>
-                                      );
-                                    }
-                                  }
-
-                                  if (!imageUrl) return null;
-
-                                  return (
-                                    <div key={imageIndex} className="relative group">
-                                      <img
-                                        src={imageUrl}
-                                        alt={`Custom image ${imageIndex + 1}`}
-                                        className="w-full h-24 object-cover rounded-lg border"
-                                        data-testid={`img-custom-${itemIndex}-${imageIndex}`}
-                                        onError={(e) => {
-                                          // Handle broken image URLs
-                                          const target = e.target as HTMLImageElement;
-                                          target.style.display = 'none';
-                                          target.nextElementSibling?.classList.remove('hidden');
-                                        }}
-                                      />
-                                      <div className="hidden w-full h-24 bg-gray-200 rounded-lg border flex items-center justify-center">
-                                        <div className="text-center">
-                                          <ImageIcon className="w-6 h-6 mx-auto text-gray-400 mb-1" />
-                                          <p className="text-xs text-gray-500">ছবি লোড করা যায়নি</p>
-                                        </div>
-                                      </div>
-
-                                      {/* Image preview on hover */}
-                                      <div className="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center">
-                                        <Button
-                                          size="sm"
-                                          variant="secondary"
-                                          onClick={() => window.open(imageUrl, '_blank')}
-                                          className="text-xs"
-                                        >
-                                          <Eye className="w-3 h-3 mr-1" />
-                                          দেখুন
-                                        </Button>
-                                      </div>
-                                    </div>
-                                  );
-                                })}
-                              </div>
-
-                              {/* Note about image storage */}
-                              <div className="mt-3 p-2 bg-yellow-50 border border-yellow-200 rounded text-xs text-yellow-800">
-                                <AlertTriangle className="w-3 h-3 inline mr-1" />
-                                নোট: শুধুমাত্র সার্ভারে সংরক্ষিত ছবি প্রদর্শিত হবে। লোকাল ফাইল প্রদর্শিত হবে না।
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </CardContent>
-                </Card>
-              )}
-
-              {/* Order Status and Timeline */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center">
-                    <Calendar className="h-5 w-5 mr-2" />
-                    অর্ডার স্ট্যাটাস
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center space-x-4">
-                    <Badge className={STATUS_COLORS[selectedOrder.status as keyof typeof STATUS_COLORS]}>
-                      {ORDER_STATUSES[selectedOrder.status as keyof typeof ORDER_STATUSES] || selectedOrder.status}
-                    </Badge>
-                    <p className="text-sm text-gray-600">
-                      অর্ডার তারিখ: {formatDate(selectedOrder.created_at)}
-                    </p>
+                  {/* Order total */}
+                  <div className="mt-4 pt-4 border-t">
+                    <div className="flex justify-between text-lg font-bold">
+                      <span>মোট:</span>
+                      <span>{formatPrice(Number(selectedOrder.total))}</span>
+                    </div>
                   </div>
                 </CardContent>
               </Card>

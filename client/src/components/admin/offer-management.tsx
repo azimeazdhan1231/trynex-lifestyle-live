@@ -13,7 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { formatPrice } from "@/lib/constants";
-import { Plus, Pencil, Trash2, Gift, Percent, Calendar, MousePointer } from "lucide-react";
+import { Plus, Pencil, Trash2, Gift, ImageIcon } from "lucide-react";
 import type { Offer, InsertOffer } from "@shared/schema";
 
 interface OfferManagementProps {
@@ -23,15 +23,15 @@ interface OfferManagementProps {
 interface OfferFormData {
   title: string;
   description: string;
-  image_url: string;
   discount_percentage: number;
-  min_order_amount: string;
-  button_text: string;
-  button_link: string;
-  is_popup: boolean;
-  popup_delay: number;
+  discount_amount: number;
+  image_url: string;
+  min_purchase_amount: number;
+  max_discount_amount: number;
+  start_date: string;
+  end_date: string;
   active: boolean;
-  expiry: string;
+  terms_conditions: string;
 }
 
 export default function OfferManagement({ offers }: OfferManagementProps) {
@@ -40,15 +40,15 @@ export default function OfferManagement({ offers }: OfferManagementProps) {
   const [formData, setFormData] = useState<OfferFormData>({
     title: "",
     description: "",
-    image_url: "",
     discount_percentage: 0,
-    min_order_amount: "",
-    button_text: "অর্ডার করুন",
-    button_link: "/products",
-    is_popup: false,
-    popup_delay: 3000,
+    discount_amount: 0,
+    image_url: "",
+    min_purchase_amount: 0,
+    max_discount_amount: 0,
+    start_date: "",
+    end_date: "",
     active: true,
-    expiry: "",
+    terms_conditions: "",
   });
   const { toast } = useToast();
 
@@ -59,12 +59,12 @@ export default function OfferManagement({ offers }: OfferManagementProps) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/offers"] });
-      setIsDialogOpen(false);
-      resetForm();
       toast({
         title: "সফল",
-        description: "অফার সফলভাবে যোগ করা হয়েছে।",
+        description: "নতুন অফার সফলভাবে যোগ করা হয়েছে।",
       });
+      setIsDialogOpen(false);
+      resetForm();
     },
     onError: (error: any) => {
       toast({
@@ -77,18 +77,17 @@ export default function OfferManagement({ offers }: OfferManagementProps) {
 
   // Update offer mutation
   const updateOfferMutation = useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: Partial<InsertOffer> }) => {
+    mutationFn: async ({ id, data }: { id: string; data: InsertOffer }) => {
       return apiRequest("PATCH", `/api/offers/${id}`, data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/offers"] });
-      setIsDialogOpen(false);
-      setEditingOffer(null);
-      resetForm();
       toast({
         title: "সফল",
         description: "অফার সফলভাবে আপডেট করা হয়েছে।",
       });
+      setIsDialogOpen(false);
+      resetForm();
     },
     onError: (error: any) => {
       toast({
@@ -101,8 +100,8 @@ export default function OfferManagement({ offers }: OfferManagementProps) {
 
   // Delete offer mutation
   const deleteOfferMutation = useMutation({
-    mutationFn: async (id: string) => {
-      return apiRequest("DELETE", `/api/offers/${id}`);
+    mutationFn: async (offerId: string) => {
+      return apiRequest("DELETE", `/api/offers/${offerId}`);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/offers"] });
@@ -114,7 +113,7 @@ export default function OfferManagement({ offers }: OfferManagementProps) {
     onError: (error: any) => {
       toast({
         title: "ত্রুটি",
-        description: error.message || "অফার মুছে ফেলতে সমস্যা হয়েছে।",
+        description: error.message || "অফার মুছতে সমস্যা হয়েছে।",
         variant: "destructive",
       });
     },
@@ -124,16 +123,24 @@ export default function OfferManagement({ offers }: OfferManagementProps) {
     setFormData({
       title: "",
       description: "",
-      image_url: "",
       discount_percentage: 0,
-      min_order_amount: "",
-      button_text: "অর্ডার করুন",
-      button_link: "/products",
-      is_popup: false,
-      popup_delay: 3000,
+      discount_amount: 0,
+      image_url: "",
+      min_purchase_amount: 0,
+      max_discount_amount: 0,
+      start_date: "",
+      end_date: "",
       active: true,
-      expiry: "",
+      terms_conditions: "",
     });
+    setEditingOffer(null);
+  };
+
+  const handleInputChange = (key: keyof OfferFormData, value: string | number | boolean) => {
+    setFormData(prev => ({
+      ...prev,
+      [key]: value
+    }));
   };
 
   const handleEdit = (offer: Offer) => {
@@ -141,32 +148,50 @@ export default function OfferManagement({ offers }: OfferManagementProps) {
     setFormData({
       title: offer.title,
       description: offer.description || "",
-      image_url: offer.image_url || "",
       discount_percentage: offer.discount_percentage || 0,
-      min_order_amount: offer.min_order_amount || "",
-      button_text: offer.button_text || "অর্ডার করুন",
-      button_link: offer.button_link || "/products",
-      is_popup: offer.is_popup || false,
-      popup_delay: offer.popup_delay || 3000,
-      active: offer.active || true,
-      expiry: offer.expiry ? new Date(offer.expiry).toISOString().slice(0, 16) : "",
+      discount_amount: offer.discount_amount || 0,
+      image_url: offer.image_url || "",
+      min_purchase_amount: offer.min_purchase_amount || 0,
+      max_discount_amount: offer.max_discount_amount || 0,
+      start_date: offer.start_date ? new Date(offer.start_date).toISOString().split('T')[0] : "",
+      end_date: offer.end_date ? new Date(offer.end_date).toISOString().split('T')[0] : "",
+      active: offer.active !== false,
+      terms_conditions: offer.terms_conditions || "",
     });
     setIsDialogOpen(true);
   };
 
   const handleSubmit = () => {
+    if (!formData.title.trim()) {
+      toast({
+        title: "ত্রুটি",
+        description: "অফারের শিরোনাম প্রয়োজন।",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (formData.discount_percentage <= 0 && formData.discount_amount <= 0) {
+      toast({
+        title: "ত্রুটি",
+        description: "ছাড়ের পরিমাণ বা শতাংশ প্রয়োজন।",
+        variant: "destructive",
+      });
+      return;
+    }
+
     const offerData: InsertOffer = {
-      title: formData.title,
-      description: formData.description || null,
-      image_url: formData.image_url || null,
-      discount_percentage: formData.discount_percentage,
-      min_order_amount: formData.min_order_amount || null,
-      button_text: formData.button_text,
-      button_link: formData.button_link,
-      is_popup: formData.is_popup,
-      popup_delay: formData.popup_delay,
+      title: formData.title.trim(),
+      description: formData.description.trim() || null,
+      discount_percentage: formData.discount_percentage || null,
+      discount_amount: formData.discount_amount || null,
+      image_url: formData.image_url.trim() || null,
+      min_purchase_amount: formData.min_purchase_amount || null,
+      max_discount_amount: formData.max_discount_amount || null,
+      start_date: formData.start_date || null,
+      end_date: formData.end_date || null,
       active: formData.active,
-      expiry: formData.expiry ? new Date(formData.expiry).toISOString() : null,
+      terms_conditions: formData.terms_conditions.trim() || null,
     };
 
     if (editingOffer) {
@@ -186,19 +211,59 @@ export default function OfferManagement({ offers }: OfferManagementProps) {
     setIsDialogOpen(true);
   };
 
-  const formatDate = (dateString: string | null) => {
-    if (!dateString) return "—";
-    return new Date(dateString).toLocaleDateString('bn-BD');
-  };
+  const activeOffers = offers.filter(offer => offer.active);
+  const expiredOffers = offers.filter(offer => 
+    offer.end_date && new Date(offer.end_date) < new Date()
+  );
 
   return (
     <div className="space-y-6">
+      {/* Statistics */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center space-x-2">
+              <Gift className="h-5 w-5 text-blue-500" />
+              <div>
+                <p className="text-sm font-medium">মোট অফার</p>
+                <p className="text-2xl font-bold">{offers.length}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center space-x-2">
+              <Gift className="h-5 w-5 text-green-500" />
+              <div>
+                <p className="text-sm font-medium">সক্রিয় অফার</p>
+                <p className="text-2xl font-bold text-green-600">{activeOffers.length}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center space-x-2">
+              <Gift className="h-5 w-5 text-red-500" />
+              <div>
+                <p className="text-sm font-medium">মেয়াদ শেষ</p>
+                <p className="text-2xl font-bold text-red-600">{expiredOffers.length}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Main Offers Management */}
       <Card>
         <CardHeader>
           <div className="flex justify-between items-center">
             <div>
               <CardTitle>অফার ব্যবস্থাপনা</CardTitle>
-              <CardDescription>বিশেষ অফার তৈরি এবং ব্যবস্থাপনা করুন</CardDescription>
+              <CardDescription>অফার যোগ, সম্পাদনা এবং মুছে ফেলুন</CardDescription>
             </div>
             <Button onClick={openCreateDialog} data-testid="button-add-offer">
               <Plus className="h-4 w-4 mr-2" />
@@ -214,11 +279,9 @@ export default function OfferManagement({ offers }: OfferManagementProps) {
                 <TableRow>
                   <TableHead>ছবি</TableHead>
                   <TableHead>শিরোনাম</TableHead>
-                  <TableHead>ডিসকাউন্ট</TableHead>
-                  <TableHead>ন্যূনতম অর্ডার</TableHead>
-                  <TableHead>টাইপ</TableHead>
+                  <TableHead>ছাড়</TableHead>
                   <TableHead>মেয়াদ</TableHead>
-                  <TableHead>অবস্থা</TableHead>
+                  <TableHead>স্ট্যাটাস</TableHead>
                   <TableHead>কার্যক্রম</TableHead>
                 </TableRow>
               </TableHeader>
@@ -226,44 +289,65 @@ export default function OfferManagement({ offers }: OfferManagementProps) {
                 {offers.map((offer) => (
                   <TableRow key={offer.id}>
                     <TableCell>
-                      {offer.image_url && (
+                      {offer.image_url ? (
                         <img
                           src={offer.image_url}
                           alt={offer.title}
                           className="w-12 h-12 object-cover rounded"
                           data-testid={`img-offer-${offer.id}`}
                         />
+                      ) : (
+                        <div className="w-12 h-12 bg-gray-200 rounded flex items-center justify-center">
+                          <ImageIcon className="h-6 w-6 text-gray-400" />
+                        </div>
                       )}
                     </TableCell>
-                    <TableCell className="font-medium" data-testid={`text-offer-title-${offer.id}`}>
-                      {offer.title}
-                    </TableCell>
-                    <TableCell data-testid={`text-offer-discount-${offer.id}`}>
-                      {offer.discount_percentage}%
-                    </TableCell>
-                    <TableCell data-testid={`text-offer-min-amount-${offer.id}`}>
-                      {offer.min_order_amount ? formatPrice(Number(offer.min_order_amount)) : "—"}
-                    </TableCell>
                     <TableCell>
-                      <div className="flex space-x-1">
-                        {offer.is_popup && (
-                          <Badge variant="secondary">
-                            <MousePointer className="h-3 w-3 mr-1" />
-                            পপআপ
-                          </Badge>
+                      <div>
+                        <p className="font-medium">{offer.title}</p>
+                        {offer.description && (
+                          <p className="text-sm text-gray-600 max-w-xs truncate">
+                            {offer.description}
+                          </p>
                         )}
                       </div>
                     </TableCell>
-                    <TableCell data-testid={`text-offer-expiry-${offer.id}`}>
-                      {formatDate(offer.expiry)}
+                    <TableCell>
+                      {offer.discount_percentage ? (
+                        <Badge variant="outline" className="text-green-600">
+                          {offer.discount_percentage}% ছাড়
+                        </Badge>
+                      ) : offer.discount_amount ? (
+                        <Badge variant="outline" className="text-green-600">
+                          {formatPrice(offer.discount_amount)} ছাড়
+                        </Badge>
+                      ) : (
+                        <span className="text-gray-400">কোন ছাড় নেই</span>
+                      )}
                     </TableCell>
                     <TableCell>
-                      <Badge variant={offer.active ? "default" : "secondary"}>
+                      <div className="text-sm">
+                        {offer.start_date && (
+                          <p>শুরু: {new Date(offer.start_date).toLocaleDateString('bn-BD')}</p>
+                        )}
+                        {offer.end_date && (
+                          <p>শেষ: {new Date(offer.end_date).toLocaleDateString('bn-BD')}</p>
+                        )}
+                        {!offer.start_date && !offer.end_date && (
+                          <span className="text-gray-400">সব সময়</span>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <Badge 
+                        variant={offer.active ? "default" : "secondary"}
+                        className={offer.active ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"}
+                      >
                         {offer.active ? "সক্রিয়" : "নিষ্ক্রিয়"}
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      <div className="flex space-x-2">
+                      <div className="flex items-center space-x-2">
                         <Button
                           variant="outline"
                           size="sm"
@@ -275,8 +359,9 @@ export default function OfferManagement({ offers }: OfferManagementProps) {
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
                             <Button
-                              variant="destructive"
+                              variant="outline"
                               size="sm"
+                              className="text-red-600 hover:text-red-700"
                               data-testid={`button-delete-offer-${offer.id}`}
                             >
                               <Trash2 className="h-4 w-4" />
@@ -286,7 +371,7 @@ export default function OfferManagement({ offers }: OfferManagementProps) {
                             <AlertDialogHeader>
                               <AlertDialogTitle>অফার মুছে ফেলুন</AlertDialogTitle>
                               <AlertDialogDescription>
-                                আপনি কি নিশ্চিত যে আপনি "{offer.title}" অফারটি মুছে ফেলতে চান? এটি স্থায়ীভাবে মুছে যাবে।
+                                আপনি কি নিশ্চিত যে আপনি এই অফারটি মুছে ফেলতে চান? এই কাজটি পূর্বাবস্থায় ফেরানো যাবে না।
                               </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
@@ -307,151 +392,169 @@ export default function OfferManagement({ offers }: OfferManagementProps) {
               </TableBody>
             </Table>
           </div>
+
+          {offers.length === 0 && (
+            <div className="text-center py-8">
+              <Gift className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+              <p className="text-gray-600">কোনো অফার পাওয়া যায়নি।</p>
+            </div>
+          )}
         </CardContent>
       </Card>
 
-      {/* Offer Form Dialog */}
+      {/* Add/Edit Offer Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
               {editingOffer ? "অফার সম্পাদনা করুন" : "নতুন অফার যোগ করুন"}
             </DialogTitle>
             <DialogDescription>
-              অফারের তথ্য পূরণ করুন এবং সেভ করুন।
+              অফারের বিস্তারিত তথ্য পূরণ করুন
             </DialogDescription>
           </DialogHeader>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="title">শিরোনাম *</Label>
+
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="title">অফারের শিরোনাম *</Label>
                 <Input
                   id="title"
                   value={formData.title}
-                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  placeholder="অফারের শিরোনাম"
+                  onChange={(e) => handleInputChange("title", e.target.value)}
+                  placeholder="বিশেষ ছাড়"
                   data-testid="input-offer-title"
                 />
               </div>
 
-              <div>
-                <Label htmlFor="description">বিবরণ</Label>
-                <Textarea
-                  id="description"
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  placeholder="অফারের বিবরণ"
-                  rows={3}
-                  data-testid="textarea-offer-description"
-                />
-              </div>
-
-              <div>
+              <div className="space-y-2">
                 <Label htmlFor="image_url">ছবির URL</Label>
                 <Input
                   id="image_url"
                   value={formData.image_url}
-                  onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
-                  placeholder="ছবির লিঙ্ক"
+                  onChange={(e) => handleInputChange("image_url", e.target.value)}
+                  placeholder="https://example.com/image.jpg"
                   data-testid="input-offer-image"
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="discount_percentage">ডিসকাউন্ট শতাংশ *</Label>
-                <Input
-                  id="discount_percentage"
-                  type="number"
-                  value={formData.discount_percentage}
-                  onChange={(e) => setFormData({ ...formData, discount_percentage: parseInt(e.target.value) || 0 })}
-                  placeholder="10"
-                  data-testid="input-offer-discount"
                 />
               </div>
             </div>
 
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="min_order_amount">ন্যূনতম অর্ডার পরিমাণ</Label>
+            <div className="space-y-2">
+              <Label htmlFor="description">বিবরণ</Label>
+              <Textarea
+                id="description"
+                value={formData.description}
+                onChange={(e) => handleInputChange("description", e.target.value)}
+                placeholder="অফারের বিস্তারিত বিবরণ"
+                className="min-h-20"
+                data-testid="textarea-offer-description"
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="discount_percentage">ছাড়ের শতাংশ (%)</Label>
                 <Input
-                  id="min_order_amount"
+                  id="discount_percentage"
                   type="number"
-                  value={formData.min_order_amount}
-                  onChange={(e) => setFormData({ ...formData, min_order_amount: e.target.value })}
+                  min="0"
+                  max="100"
+                  value={formData.discount_percentage}
+                  onChange={(e) => handleInputChange("discount_percentage", parseFloat(e.target.value) || 0)}
+                  placeholder="20"
+                  data-testid="input-discount-percentage"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="discount_amount">ছাড়ের পরিমাণ (টাকা)</Label>
+                <Input
+                  id="discount_amount"
+                  type="number"
+                  min="0"
+                  value={formData.discount_amount}
+                  onChange={(e) => handleInputChange("discount_amount", parseFloat(e.target.value) || 0)}
                   placeholder="500"
-                  data-testid="input-offer-min-amount"
+                  data-testid="input-discount-amount"
                 />
               </div>
+            </div>
 
-              <div>
-                <Label htmlFor="button_text">বাটন টেক্সট</Label>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="min_purchase_amount">ন্যূনতম ক্রয় (টাকা)</Label>
                 <Input
-                  id="button_text"
-                  value={formData.button_text}
-                  onChange={(e) => setFormData({ ...formData, button_text: e.target.value })}
-                  placeholder="অর্ডার করুন"
-                  data-testid="input-offer-button-text"
+                  id="min_purchase_amount"
+                  type="number"
+                  min="0"
+                  value={formData.min_purchase_amount}
+                  onChange={(e) => handleInputChange("min_purchase_amount", parseFloat(e.target.value) || 0)}
+                  placeholder="1000"
+                  data-testid="input-min-purchase"
                 />
               </div>
 
-              <div>
-                <Label htmlFor="button_link">বাটন লিঙ্ক</Label>
+              <div className="space-y-2">
+                <Label htmlFor="max_discount_amount">সর্বোচ্চ ছাড় (টাকা)</Label>
                 <Input
-                  id="button_link"
-                  value={formData.button_link}
-                  onChange={(e) => setFormData({ ...formData, button_link: e.target.value })}
-                  placeholder="/products"
-                  data-testid="input-offer-button-link"
+                  id="max_discount_amount"
+                  type="number"
+                  min="0"
+                  value={formData.max_discount_amount}
+                  onChange={(e) => handleInputChange("max_discount_amount", parseFloat(e.target.value) || 0)}
+                  placeholder="2000"
+                  data-testid="input-max-discount"
                 />
               </div>
+            </div>
 
-              <div>
-                <Label htmlFor="expiry">মেয়াদ শেষ</Label>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="start_date">শুরুর তারিখ</Label>
                 <Input
-                  id="expiry"
-                  type="datetime-local"
-                  value={formData.expiry}
-                  onChange={(e) => setFormData({ ...formData, expiry: e.target.value })}
-                  data-testid="input-offer-expiry"
+                  id="start_date"
+                  type="date"
+                  value={formData.start_date}
+                  onChange={(e) => handleInputChange("start_date", e.target.value)}
+                  data-testid="input-start-date"
                 />
               </div>
 
-              <div className="space-y-3">
-                <div className="flex items-center space-x-2">
-                  <Switch
-                    id="is_popup"
-                    checked={formData.is_popup}
-                    onCheckedChange={(checked) => setFormData({ ...formData, is_popup: checked })}
-                    data-testid="switch-offer-popup"
-                  />
-                  <Label htmlFor="is_popup">পপআপ হিসেবে দেখান</Label>
-                </div>
-
-                {formData.is_popup && (
-                  <div>
-                    <Label htmlFor="popup_delay">পপআপ দেরি (মিলিসেকেন্ড)</Label>
-                    <Input
-                      id="popup_delay"
-                      type="number"
-                      value={formData.popup_delay}
-                      onChange={(e) => setFormData({ ...formData, popup_delay: parseInt(e.target.value) || 3000 })}
-                      placeholder="3000"
-                      data-testid="input-offer-popup-delay"
-                    />
-                  </div>
-                )}
-
-                <div className="flex items-center space-x-2">
-                  <Switch
-                    id="active"
-                    checked={formData.active}
-                    onCheckedChange={(checked) => setFormData({ ...formData, active: checked })}
-                    data-testid="switch-offer-active"
-                  />
-                  <Label htmlFor="active">সক্রিয় অফার</Label>
-                </div>
+              <div className="space-y-2">
+                <Label htmlFor="end_date">শেষের তারিখ</Label>
+                <Input
+                  id="end_date"
+                  type="date"
+                  value={formData.end_date}
+                  onChange={(e) => handleInputChange("end_date", e.target.value)}
+                  data-testid="input-end-date"
+                />
               </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="terms_conditions">শর্তাবলী</Label>
+              <Textarea
+                id="terms_conditions"
+                value={formData.terms_conditions}
+                onChange={(e) => handleInputChange("terms_conditions", e.target.value)}
+                placeholder="অফারের শর্তাবলী"
+                className="min-h-20"
+                data-testid="textarea-terms-conditions"
+              />
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div>
+                <Label htmlFor="active">অফার সক্রিয় করুন</Label>
+                <p className="text-sm text-gray-600">এই অফারটি ওয়েবসাইটে দেখান</p>
+              </div>
+              <Switch
+                id="active"
+                checked={formData.active}
+                onCheckedChange={(checked) => handleInputChange("active", checked)}
+                data-testid="switch-offer-active"
+              />
             </div>
           </div>
 
@@ -459,9 +562,9 @@ export default function OfferManagement({ offers }: OfferManagementProps) {
             <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
               বাতিল
             </Button>
-            <Button
+            <Button 
               onClick={handleSubmit}
-              disabled={!formData.title || createOfferMutation.isPending || updateOfferMutation.isPending}
+              disabled={createOfferMutation.isPending || updateOfferMutation.isPending}
               data-testid="button-save-offer"
             >
               {createOfferMutation.isPending || updateOfferMutation.isPending ? "সেভ হচ্ছে..." : "সেভ করুন"}
