@@ -16,9 +16,12 @@ interface ProductGridProps {
 }
 
 const ProductGrid = ({ filters = {}, limit }: ProductGridProps) => {
-  const { data: products, isLoading, error } = useQuery({
+  const { data: products, isLoading, error } = useQuery<Product[]>({
     queryKey: ['/api/products', filters],
     staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000, // Cache for 10 minutes
+    refetchOnWindowFocus: false,
+    retry: 2,
   });
 
   if (isLoading) {
@@ -51,7 +54,9 @@ const ProductGrid = ({ filters = {}, limit }: ProductGridProps) => {
     );
   }
 
-  if (!products || products.length === 0) {
+  const productList = products || [];
+
+  if (productList.length === 0 && !isLoading) {
     return (
       <div className="text-center py-12">
         <Package className="w-16 h-16 mx-auto mb-4 text-gray-400" />
@@ -64,7 +69,7 @@ const ProductGrid = ({ filters = {}, limit }: ProductGridProps) => {
   }
 
   // Apply filters
-  let filteredProducts = [...products];
+  let filteredProducts = [...productList];
 
   if (filters.category && filters.category !== 'all') {
     filteredProducts = filteredProducts.filter((product: Product) =>

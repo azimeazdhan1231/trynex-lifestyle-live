@@ -1,227 +1,213 @@
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
+import { motion } from "framer-motion";
+import { useQuery } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
-import { useQuery } from "@tanstack/react-query";
-import { formatPrice } from "@/lib/constants";
-import { Filter, X, Star, Zap, Award } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
+import { FilterX, Package2 } from "lucide-react";
+
+interface FilterState {
+  category: string;
+  priceRange: [number, number];
+  sortBy: string;
+}
 
 interface ProductFiltersProps {
-  filters: {
-    category: string;
-    priceRange: [number, number];
-    sortBy: string;
-  };
-  onFiltersChange: (filters: any) => void;
+  filters: FilterState;
+  onFiltersChange: (filters: FilterState) => void;
 }
 
 const ProductFilters = ({ filters, onFiltersChange }: ProductFiltersProps) => {
-  const [isExpanded, setIsExpanded] = useState(false);
-  
-  const { data: categories } = useQuery({
+  const [tempPriceRange, setTempPriceRange] = useState(filters.priceRange);
+
+  // Fetch categories for filter options
+  const { data: categories } = useQuery<any[]>({
     queryKey: ['/api/categories'],
-    staleTime: 5 * 60 * 1000,
+    staleTime: 10 * 60 * 1000, // Cache for 10 minutes
+    gcTime: 30 * 60 * 1000, // Keep categories in memory for 30 minutes
+    refetchOnWindowFocus: false,
   });
 
   const sortOptions = [
-    { value: 'featured', label: 'ফিচারড' },
-    { value: 'newest', label: 'নতুন' },
-    { value: 'price-low', label: 'দাম: কম থেকে বেশি' },
-    { value: 'price-high', label: 'দাম: বেশি থেকে কম' },
-    { value: 'name', label: 'নাম অনুসারে' },
-  ];
-
-  const defaultCategories = [
-    { name: 'Gift Items', name_bengali: 'গিফট আইটেম' },
-    { name: 'Electronics', name_bengali: 'ইলেকট্রনিক্স' },
-    { name: 'Fashion', name_bengali: 'ফ্যাশন' },
-    { name: 'Home & Living', name_bengali: 'ঘর সাজানো' },
-    { name: 'Beauty', name_bengali: 'সৌন্দর্য' },
-    { name: 'Others', name_bengali: 'অন্যান্য' },
-  ];
-
-  const categoriesToShow = categories && categories.length > 0 ? categories : defaultCategories;
-
-  const specialFilters = [
-    {
-      id: 'featured',
-      label: 'ফিচারড পণ্য',
-      icon: Star,
-      checked: false
-    },
-    {
-      id: 'latest',
-      label: 'নতুন পণ্য',
-      icon: Zap,
-      checked: false
-    },
-    {
-      id: 'bestselling',
-      label: 'বেস্ট সেলার',
-      icon: Award,
-      checked: false
-    }
+    { value: "featured", label: "ফিচারড পণ্য" },
+    { value: "newest", label: "নতুন পণ্য" },
+    { value: "price-low", label: "দাম: কম থেকে বেশি" },
+    { value: "price-high", label: "দাম: বেশি থেকে কম" },
+    { value: "name", label: "নাম অনুযায়ী" },
   ];
 
   const handleCategoryChange = (category: string) => {
-    onFiltersChange({
-      ...filters,
-      category: category === filters.category ? '' : category
-    });
-  };
-
-  const handlePriceRangeChange = (range: [number, number]) => {
-    onFiltersChange({
-      ...filters,
-      priceRange: range
-    });
+    onFiltersChange({ ...filters, category });
   };
 
   const handleSortChange = (sortBy: string) => {
-    onFiltersChange({
-      ...filters,
-      sortBy
-    });
+    onFiltersChange({ ...filters, sortBy });
+  };
+
+  const handlePriceRangeChange = (value: number[]) => {
+    setTempPriceRange([value[0], value[1]]);
+  };
+
+  const applyPriceRange = () => {
+    onFiltersChange({ ...filters, priceRange: tempPriceRange });
   };
 
   const clearFilters = () => {
-    onFiltersChange({
-      category: '',
-      priceRange: [0, 10000],
-      sortBy: 'featured'
-    });
+    const defaultFilters = {
+      category: "",
+      priceRange: [0, 10000] as [number, number],
+      sortBy: "featured"
+    };
+    setTempPriceRange(defaultFilters.priceRange);
+    onFiltersChange(defaultFilters);
   };
 
-  const hasActiveFilters = filters.category || 
-    filters.priceRange[0] > 0 || 
-    filters.priceRange[1] < 10000 ||
-    filters.sortBy !== 'featured';
+  const activeFiltersCount = [
+    filters.category && filters.category !== "",
+    filters.priceRange[0] > 0 || filters.priceRange[1] < 10000,
+  ].filter(Boolean).length;
 
   return (
-    <div className="space-y-6">
-      {/* Mobile Filter Toggle */}
-      <div className="lg:hidden">
-        <Button
-          variant="outline"
-          onClick={() => setIsExpanded(!isExpanded)}
-          className="w-full justify-between"
-        >
-          <div className="flex items-center">
-            <Filter className="w-4 h-4 mr-2" />
+    <motion.div
+      initial={{ opacity: 0, x: -20 }}
+      animate={{ opacity: 1, x: 0 }}
+      className="space-y-6"
+    >
+      <Card className="p-6">
+        <div className="flex items-center justify-between mb-6">
+          <h3 className="text-lg font-semibold flex items-center">
+            <Package2 className="w-5 h-5 mr-2" />
             ফিল্টার
-          </div>
-          {hasActiveFilters && (
-            <Badge variant="destructive" className="ml-2">
-              সক্রিয়
-            </Badge>
-          )}
-        </Button>
-      </div>
-
-      {/* Filter Content */}
-      <div className={`space-y-6 ${isExpanded ? 'block' : 'hidden lg:block'}`}>
-        {/* Sort By */}
-        <Card className="p-4">
-          <h3 className="font-semibold mb-3 flex items-center">
-            <Filter className="w-4 h-4 mr-2" />
-            সর্ট করুন
           </h3>
-          <Select value={filters.sortBy} onValueChange={handleSortChange}>
-            <SelectTrigger>
-              <SelectValue placeholder="সর্ট অপশন বেছে নিন" />
-            </SelectTrigger>
-            <SelectContent>
-              {sortOptions.map((option) => (
-                <SelectItem key={option.value} value={option.value}>
-                  {option.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </Card>
-
-        {/* Categories */}
-        <Card className="p-4">
-          <h3 className="font-semibold mb-3">ক্যাটেগরি</h3>
-          <div className="space-y-2">
+          {activeFiltersCount > 0 && (
             <Button
-              variant={filters.category === '' ? 'default' : 'ghost'}
-              className="w-full justify-start"
-              onClick={() => handleCategoryChange('')}
+              variant="outline"
+              size="sm"
+              onClick={clearFilters}
+              className="text-xs"
             >
-              সব ক্যাটেগরি
+              <FilterX className="w-4 h-4 mr-1" />
+              পরিষ্কার ({activeFiltersCount})
             </Button>
-            {categoriesToShow.map((category: any) => (
-              <Button
-                key={category.name}
-                variant={filters.category === category.name.toLowerCase() ? 'default' : 'ghost'}
-                className="w-full justify-start"
-                onClick={() => handleCategoryChange(category.name.toLowerCase())}
-              >
-                {category.name_bengali || category.name}
-              </Button>
-            ))}
-          </div>
-        </Card>
+          )}
+        </div>
 
-        {/* Price Range */}
-        <Card className="p-4">
-          <h3 className="font-semibold mb-3">দামের রেঞ্জ</h3>
-          <div className="space-y-4">
-            <Slider
-              value={filters.priceRange}
-              onValueChange={(value) => handlePriceRangeChange(value as [number, number])}
-              max={10000}
-              min={0}
-              step={100}
-              className="w-full"
-            />
-            <div className="flex justify-between text-sm text-gray-600">
-              <span>{formatPrice(filters.priceRange[0])}</span>
-              <span>{formatPrice(filters.priceRange[1])}</span>
+        <div className="space-y-6">
+          {/* Sort By */}
+          <div>
+            <label className="text-sm font-medium mb-3 block">সাজান</label>
+            <Select value={filters.sortBy} onValueChange={handleSortChange}>
+              <SelectTrigger>
+                <SelectValue placeholder="সাজানোর পদ্ধতি নির্বাচন করুন" />
+              </SelectTrigger>
+              <SelectContent>
+                {sortOptions.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <Separator />
+
+          {/* Categories */}
+          <div>
+            <label className="text-sm font-medium mb-3 block">ক্যাটেগরি</label>
+            <div className="space-y-2">
+              <Button
+                variant={filters.category === "" ? "default" : "outline"}
+                size="sm"
+                onClick={() => handleCategoryChange("")}
+                className="w-full justify-start"
+              >
+                সব ক্যাটেগরি
+              </Button>
+              {(categories || []).map((category: any) => (
+                <Button
+                  key={category.id}
+                  variant={filters.category === category.name ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => handleCategoryChange(category.name)}
+                  className="w-full justify-start"
+                >
+                  {category.name}
+                </Button>
+              ))}
             </div>
           </div>
-        </Card>
 
-        {/* Special Filters */}
-        <Card className="p-4">
-          <h3 className="font-semibold mb-3">বিশেষ ফিল্টার</h3>
-          <div className="space-y-3">
-            {specialFilters.map((filter) => (
-              <div key={filter.id} className="flex items-center space-x-2">
-                <Checkbox
-                  id={filter.id}
-                  checked={filter.checked}
-                  onCheckedChange={() => {}}
-                />
-                <label
-                  htmlFor={filter.id}
-                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex items-center cursor-pointer"
-                >
-                  <filter.icon className="w-4 h-4 mr-2" />
-                  {filter.label}
-                </label>
+          <Separator />
+
+          {/* Price Range */}
+          <div>
+            <div className="flex items-center justify-between mb-3">
+              <label className="text-sm font-medium">মূল্য পরিসীমা</label>
+              <Badge variant="secondary" className="text-xs">
+                ৳{tempPriceRange[0]} - ৳{tempPriceRange[1]}
+              </Badge>
+            </div>
+            <div className="px-2">
+              <Slider
+                value={tempPriceRange}
+                onValueChange={handlePriceRangeChange}
+                max={10000}
+                min={0}
+                step={100}
+                className="mb-4"
+              />
+              <div className="flex justify-between text-xs text-gray-500 mb-3">
+                <span>৳০</span>
+                <span>৳১০,০০০+</span>
               </div>
-            ))}
+              <Button
+                size="sm"
+                onClick={applyPriceRange}
+                className="w-full"
+                variant="outline"
+              >
+                প্রয়োগ করুন
+              </Button>
+            </div>
+          </div>
+        </div>
+      </Card>
+
+      {/* Active Filters Display */}
+      {activeFiltersCount > 0 && (
+        <Card className="p-4">
+          <h4 className="text-sm font-medium mb-3">সক্রিয় ফিল্টার</h4>
+          <div className="flex flex-wrap gap-2">
+            {filters.category && filters.category !== "" && (
+              <Badge variant="secondary" className="text-xs">
+                {filters.category}
+                <button
+                  onClick={() => handleCategoryChange("")}
+                  className="ml-1 hover:text-red-500"
+                >
+                  ×
+                </button>
+              </Badge>
+            )}
+            {(filters.priceRange[0] > 0 || filters.priceRange[1] < 10000) && (
+              <Badge variant="secondary" className="text-xs">
+                ৳{filters.priceRange[0]} - ৳{filters.priceRange[1]}
+                <button
+                  onClick={() => onFiltersChange({ ...filters, priceRange: [0, 10000] })}
+                  className="ml-1 hover:text-red-500"
+                >
+                  ×
+                </button>
+              </Badge>
+            )}
           </div>
         </Card>
-
-        {/* Clear Filters */}
-        {hasActiveFilters && (
-          <Button
-            variant="outline"
-            onClick={clearFilters}
-            className="w-full"
-          >
-            <X className="w-4 h-4 mr-2" />
-            সব ফিল্টার মুছুন
-          </Button>
-        )}
-      </div>
-    </div>
+      )}
+    </motion.div>
   );
 };
 

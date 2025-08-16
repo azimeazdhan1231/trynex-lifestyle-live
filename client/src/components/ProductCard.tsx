@@ -1,9 +1,11 @@
 import { motion } from "framer-motion";
 import { Link } from "wouter";
+import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useCart } from "@/hooks/use-cart";
 import { formatPrice } from "@/lib/constants";
+import { optimizeImageUrl, createIntersectionObserver } from "@/lib/performance";
 import { 
   ShoppingCart, 
   Heart, 
@@ -20,6 +22,29 @@ interface ProductCardProps {
 
 const ProductCard = ({ product, className = "" }: ProductCardProps) => {
   const { addItem } = useCart();
+  const [imageLoaded, setImageLoaded] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
+  const cardRef = useRef<HTMLDivElement>(null);
+
+  // Lazy loading with intersection observer
+  useEffect(() => {
+    if (!cardRef.current) return;
+
+    const observer = createIntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setIsVisible(true);
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { rootMargin: '100px' }
+    );
+
+    observer.observe(cardRef.current);
+    return () => observer.disconnect();
+  }, []);
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -37,23 +62,33 @@ const ProductCard = ({ product, className = "" }: ProductCardProps) => {
 
   return (
     <motion.div
+      ref={cardRef}
       initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
+      animate={{ opacity: isVisible ? 1 : 0, y: isVisible ? 0 : 20 }}
       whileHover={{ y: -5 }}
-      className={`group bg-white dark:bg-gray-800 rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden border border-gray-100 dark:border-gray-700 ${className}`}
+      className={`group bg-white dark:bg-gray-800 rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden border border-gray-100 dark:border-gray-700 h-full flex flex-col ${className}`}
       data-testid={`product-card-${product.id}`}
     >
       <Link href={`/product/${product.id}`}>
         <div className="relative">
           {/* Product Image */}
-          <div className="relative w-full h-48 bg-gray-100 dark:bg-gray-700 overflow-hidden">
-            {product.image_url ? (
-              <img
-                src={product.image_url}
-                alt={product.name}
-                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                loading="lazy"
-              />
+          <div className="relative w-full h-48 bg-gray-100 dark:bg-gray-700 overflow-hidden flex-shrink-0">
+            {product.image_url && isVisible ? (
+              <>
+                {!imageLoaded && (
+                  <div className="absolute inset-0 bg-gradient-to-r from-gray-200 to-gray-300 dark:from-gray-700 dark:to-gray-600 animate-pulse" />
+                )}
+                <img
+                  src={optimizeImageUrl(product.image_url, 300, 80)}
+                  alt={product.name}
+                  className={`w-full h-full object-cover group-hover:scale-110 transition-all duration-500 ${
+                    imageLoaded ? 'opacity-100' : 'opacity-0'
+                  }`}
+                  loading="lazy"
+                  onLoad={() => setImageLoaded(true)}
+                  onError={() => setImageLoaded(true)}
+                />
+              </>
             ) : (
               <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-600">
                 <div className="text-center">
@@ -121,7 +156,7 @@ const ProductCard = ({ product, className = "" }: ProductCardProps) => {
           </div>
 
           {/* Product Info */}
-          <div className="p-4 space-y-3">
+          <div className="p-4 space-y-3 flex-grow flex flex-col">
             {/* Category */}
             {product.category && (
               <p className="text-xs text-primary font-medium uppercase tracking-wide">
@@ -130,19 +165,19 @@ const ProductCard = ({ product, className = "" }: ProductCardProps) => {
             )}
 
             {/* Product Name */}
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white line-clamp-2 group-hover:text-primary transition-colors">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white line-clamp-2 group-hover:text-primary transition-colors min-h-[3.5rem]">
               {product.name}
             </h3>
 
             {/* Description */}
             {product.description && (
-              <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
+              <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2 min-h-[2.5rem]">
                 {product.description}
               </p>
             )}
 
             {/* Rating */}
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-2 flex-shrink-0">
               <div className="flex items-center">
                 {Array.from({ length: 5 }).map((_, i) => (
                   <Star
@@ -160,8 +195,11 @@ const ProductCard = ({ product, className = "" }: ProductCardProps) => {
               </span>
             </div>
 
+            {/* Spacer to push price to bottom */}
+            <div className="flex-grow"></div>
+
             {/* Price and Stock */}
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between flex-shrink-0">
               <div className="space-y-1">
                 <div className="flex items-center space-x-2">
                   <span className="text-2xl font-bold text-gray-900 dark:text-white">
@@ -181,7 +219,7 @@ const ProductCard = ({ product, className = "" }: ProductCardProps) => {
       </Link>
 
       {/* Add to Cart Button */}
-      <div className="p-4 pt-0">
+      <div className="p-4 pt-0 flex-shrink-0">
         <Button
           onClick={handleAddToCart}
           className="w-full group-hover:bg-primary group-hover:text-white transition-colors"

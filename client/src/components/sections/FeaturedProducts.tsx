@@ -8,14 +8,16 @@ import { ArrowRight } from "lucide-react";
 import type { Product } from "@shared/schema";
 
 const FeaturedProducts = () => {
-  const { data: products, isLoading } = useQuery({
+  const { data: products, isLoading } = useQuery<Product[]>({
     queryKey: ['/api/products'],
-    staleTime: 5 * 60 * 1000,
+    staleTime: 5 * 60 * 1000, // Cache for 5 minutes
+    gcTime: 10 * 60 * 1000, // Keep in memory for 10 minutes
+    refetchOnWindowFocus: false,
   });
 
-  const featuredProducts = products?.filter((product: Product) => 
+  const featuredProducts = (products || []).filter((product: Product) => 
     product.is_featured || product.is_best_selling
-  ).slice(0, 8) || [];
+  ).slice(0, 8);
 
   if (isLoading) {
     return (
