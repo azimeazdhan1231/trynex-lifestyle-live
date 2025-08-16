@@ -447,7 +447,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         performanceCache.clearCache();
         // Also clear the PerformanceCache instance cache
         const perfCache = PerformanceCache.getInstance();
-        perfCache.clearAllCache();
+        perfCache.clearCache();
       }
 
       const products = await getCachedProducts();
@@ -1025,8 +1025,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const trackingId = `TRX${Date.now()}${Math.floor(Math.random() * 1000)}`;
 
       // Extract customization data from items
-      let allCustomInstructions = [];
-      let allCustomImages = [];
+      let allCustomInstructions: string[] = [];
+      let allCustomImages: string[] = [];
       
       if (orderData.items) {
         const items = Array.isArray(orderData.items) ? orderData.items : JSON.parse(orderData.items);
