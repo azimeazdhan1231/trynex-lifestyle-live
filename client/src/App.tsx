@@ -3,98 +3,81 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "./lib/queryClient";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { useEffect, Suspense, lazy } from "react";
-import { initGA, loadFacebookPixelFromSettings } from "./lib/analytics";
-import { useAnalytics } from "./hooks/use-analytics";
-import DebugInfo from "@/components/debug-info";
+import { Suspense, lazy, useEffect } from "react";
 import ErrorBoundary from "@/components/error-boundary";
-// import { PerformanceOptimizer } from './components/PerformanceOptimizer';
-// Removed UltraPerformanceLoader as it doesn't accept children
-import MobileResponsiveEnhancement from './components/mobile-responsive-enhancement';
-import UltraModernLayout from './components/ultra-modern-layout';
+import LoadingSpinner from "@/components/LoadingSpinner";
+import { useAnalytics } from "./hooks/use-analytics";
+import { initGA, loadFacebookPixelFromSettings } from "./lib/analytics";
 
-// Dynamic imports for better code splitting
-const Home = lazy(() => import("./pages/ultra-modern-home"));
-const Product = lazy(() => import("./pages/product-enhanced"));
-const Products = lazy(() => import("./pages/ultra-modern-products"));
-const Contact = lazy(() => import("./pages/contact"));
-const OrderTracking = lazy(() => import("./pages/tracking"));
-const Admin = lazy(() => import("./pages/admin"));
-const Offers = lazy(() => import("./pages/offers"));
-const Profile = lazy(() => import("./pages/profile"));
-const Orders = lazy(() => import("./pages/orders"));
-const CustomOrderForm = lazy(() => import("./components/CustomOrderForm"));
-const About = lazy(() => import("./pages/about"));
-const BlogPage = lazy(() => import("./pages/blog"));
-const NotFound = lazy(() => import("./pages/not-found"));
-const RefundPolicyDynamic = lazy(() => import("./pages/refund-policy-dynamic"));
-const ReturnPolicy = lazy(() => import("./pages/return-policy"));
-const TermsConditionsDynamic = lazy(() => import("./pages/terms-conditions-dynamic"));
-const Terms = lazy(() => import("./pages/terms"));
-const RefundPolicy = lazy(() => import("./pages/refund-policy"));
-const PaymentPolicy = lazy(() => import("./pages/payment-policy"));
-const SearchPage = lazy(() => import("./pages/search"));
-const WishlistPage = lazy(() => import("./pages/wishlist"));
+// Lazy load all pages for better performance
+const HomePage = lazy(() => import("./pages/HomePage"));
+const ProductsPage = lazy(() => import("./pages/ProductsPage"));
+const ProductDetailPage = lazy(() => import("./pages/ProductDetailPage"));
+const CartPage = lazy(() => import("./pages/CartPage"));
+const CheckoutPage = lazy(() => import("./pages/CheckoutPage"));
+const UserProfilePage = lazy(() => import("./pages/UserProfilePage"));
+const OrderTrackingPage = lazy(() => import("./pages/OrderTrackingPage"));
+const ContactPage = lazy(() => import("./pages/ContactPage"));
+const AboutPage = lazy(() => import("./pages/AboutPage"));
+const OffersPage = lazy(() => import("./pages/OffersPage"));
+const BlogPage = lazy(() => import("./pages/BlogPage"));
+const SearchPage = lazy(() => import("./pages/SearchPage"));
+const WishlistPage = lazy(() => import("./pages/WishlistPage"));
+const CustomOrderPage = lazy(() => import("./pages/CustomOrderPage"));
+const AuthPage = lazy(() => import("./pages/AuthPage"));
+const AdminPage = lazy(() => import("./pages/admin"));
+const PolicyPage = lazy(() => import("./pages/PolicyPage"));
+const NotFoundPage = lazy(() => import("./pages/NotFoundPage"));
 
-const CustomizeProduct = lazy(() => import("./pages/customize-product-enhanced"));
-
-// Performance and Mobile Optimization Components
-// const PerformanceOptimizer = lazy(() => import("./components/PerformanceOptimizer"));
-
-// Loading fallback component
-const LoadingFallback = () => (
-  <div className="min-h-screen flex items-center justify-center bg-gray-50">
-    <div className="text-center">
-      <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-      <p className="text-gray-600">লোড হচ্ছে...</p>
-    </div>
-  </div>
-);
-
-function Router() {
+const Router = () => {
   // Track page views when routes change
   useAnalytics();
 
   return (
-    <UltraModernLayout>
-      <Suspense fallback={<LoadingFallback />}>
-        <Switch>
-          <Route path="/" component={Home} />
-          <Route path="/product/:id" component={Product} />
-          <Route path="/product" component={Product} />
-          <Route path="/products" component={Products} />
-          <Route path="/wishlist" component={WishlistPage} />
-          <Route path="/offers" component={Offers} />
-          <Route path="/contact" component={Contact} />
-          <Route path="/about" component={About} />
-          <Route path="/blog" component={BlogPage} />
-          <Route path="/admin" component={Admin} />
-          <Route path="/tracking" component={OrderTracking} />
-          <Route path="/track/:id" component={OrderTracking} />
-          <Route path="/track" component={OrderTracking} />
-
-          <Route path="/custom-order" component={CustomOrderForm} />
-          <Route path="/customize" component={CustomizeProduct} />
-          <Route path="/customize/:id" component={CustomizeProduct} />
-          <Route path="/return-policy-old" component={ReturnPolicy} />
-          <Route path="/terms-conditions-old" component={TermsConditionsDynamic} />
-          <Route path="/terms-conditions" component={Terms} />
-          <Route path="/terms" component={Terms} />
-          <Route path="/refund-policy" component={RefundPolicy} />
-          <Route path="/refund-replacement" component={RefundPolicy} />
-          <Route path="/payment-policy" component={PaymentPolicy} />
-          <Route path="/payment" component={PaymentPolicy} />
-          <Route path="/search" component={SearchPage} />
-          <Route path="/customize/:id" component={CustomizeProduct} />
-          <Route path="/customize" component={CustomizeProduct} />
-          <Route component={NotFound} />
-        </Switch>
-      </Suspense>
-    </UltraModernLayout>
+    <Suspense fallback={<LoadingSpinner />}>
+      <Switch>
+        <Route path="/" component={HomePage} />
+        <Route path="/products" component={ProductsPage} />
+        <Route path="/products/:category" component={ProductsPage} />
+        <Route path="/product/:id" component={ProductDetailPage} />
+        <Route path="/cart" component={CartPage} />
+        <Route path="/checkout" component={CheckoutPage} />
+        <Route path="/profile" component={UserProfilePage} />
+        <Route path="/orders" component={UserProfilePage} />
+        <Route path="/tracking" component={OrderTrackingPage} />
+        <Route path="/track/:id" component={OrderTrackingPage} />
+        <Route path="/track" component={OrderTrackingPage} />
+        <Route path="/contact" component={ContactPage} />
+        <Route path="/about" component={AboutPage} />
+        <Route path="/offers" component={OffersPage} />
+        <Route path="/blog" component={BlogPage} />
+        <Route path="/blog/:slug" component={BlogPage} />
+        <Route path="/search" component={SearchPage} />
+        <Route path="/wishlist" component={WishlistPage} />
+        <Route path="/customize/:id" component={CustomOrderPage} />
+        <Route path="/customize" component={CustomOrderPage} />
+        <Route path="/custom-order" component={CustomOrderPage} />
+        <Route path="/auth" component={AuthPage} />
+        <Route path="/login" component={AuthPage} />
+        <Route path="/register" component={AuthPage} />
+        <Route path="/admin" component={AdminPage} />
+        <Route path="/privacy" component={PolicyPage} />
+        <Route path="/terms" component={PolicyPage} />
+        <Route path="/terms-conditions" component={PolicyPage} />
+        <Route path="/refund" component={PolicyPage} />
+        <Route path="/refund-policy" component={PolicyPage} />
+        <Route path="/refund-replacement" component={PolicyPage} />
+        <Route path="/return" component={PolicyPage} />
+        <Route path="/return-policy" component={PolicyPage} />
+        <Route path="/payment-policy" component={PolicyPage} />
+        <Route path="/payment" component={PolicyPage} />
+        <Route component={NotFoundPage} />
+      </Switch>
+    </Suspense>
   );
-}
+};
 
-function App() {
+const App = () => {
   // Initialize analytics when app loads
   useEffect(() => {
     // Initialize Google Analytics
@@ -110,20 +93,14 @@ function App() {
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
         <TooltipProvider>
-          <MobileResponsiveEnhancement />
-          <div className="font-bengali">
-            <Suspense fallback={null}>
-              {/* <PerformanceOptimizer /> */}
-            </Suspense>
-            {/* <UltraPerformanceLoader /> */}
-            <Toaster />
+          <div className="font-bengali min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
             <Router />
-            <DebugInfo />
+            <Toaster />
           </div>
         </TooltipProvider>
       </QueryClientProvider>
     </ErrorBoundary>
   );
-}
+};
 
 export default App;
