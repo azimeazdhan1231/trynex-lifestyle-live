@@ -28,6 +28,11 @@ const FeaturedProducts = () => {
       return 0;
     })
     .slice(0, 8);
+  
+  // If no featured products, show the first 8 products anyway
+  const displayProducts = featuredProducts.length > 0 
+    ? featuredProducts 
+    : (products || []).slice(0, 8);
 
   if (isLoading) {
     return (
@@ -65,7 +70,7 @@ const FeaturedProducts = () => {
           </p>
         </motion.div>
 
-        {featuredProducts.length > 0 ? (
+        {displayProducts.length > 0 ? (
           <>
             <motion.div
               initial={{ opacity: 0 }}
@@ -74,7 +79,7 @@ const FeaturedProducts = () => {
               transition={{ duration: 0.6, delay: 0.2 }}
               className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12"
             >
-              {featuredProducts.map((product: Product, index: number) => (
+              {displayProducts.map((product: Product, index: number) => (
                 <motion.div
                   key={product.id}
                   initial={{ opacity: 0, y: 30 }}

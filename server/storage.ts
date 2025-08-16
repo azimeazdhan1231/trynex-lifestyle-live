@@ -182,6 +182,12 @@ export class DatabaseStorage implements IStorage {
 
   async updateProduct(id: string, product: Partial<InsertProduct>): Promise<Product> {
     const result = await this.db.update(products).set(product).where(eq(products.id, id)).returning();
+    // Clear cache when product is updated
+    cache.del('products_all');
+    if (result[0] && result[0].category) {
+      cache.del(`products_category_${result[0].category}`);
+    }
+    console.log(`✅ Product updated: ${id}`, product);
     return result[0];
   }
 
