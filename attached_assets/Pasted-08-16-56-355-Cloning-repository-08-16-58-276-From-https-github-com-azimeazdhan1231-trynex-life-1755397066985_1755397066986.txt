@@ -1,0 +1,97 @@
+08:16:56.355	Cloning repository...
+08:16:58.276	From https://github.com/azimeazdhan1231/trynex-lifestyle-live
+08:16:58.277	 * branch            f97ba4ee96ba078063ccff6e53f09f18e4fba130 -> FETCH_HEAD
+08:16:58.277	
+08:16:58.483	HEAD is now at f97ba4e ccccurjiRRysorr
+08:16:58.483	
+08:16:58.561	
+08:16:58.561	Using v2 root directory strategy
+08:16:58.582	Success: Finished cloning repository files
+08:17:00.235	Checking for configuration in a Wrangler configuration file (BETA)
+08:17:00.236	
+08:17:01.345	No wrangler.toml file found. Continuing.
+08:17:01.419	Detected the following tools from environment: nodejs@20.19.2, npm@10.9.2
+08:17:01.420	Installing nodejs 20.19.2
+08:17:02.449	Trying to update node-build... ok
+08:17:02.540	To follow progress, use 'tail -f /tmp/node-build.20250817021702.494.log' or pass --verbose
+08:17:02.640	Downloading node-v20.19.2-linux-x64.tar.gz...
+08:17:02.879	-> https://nodejs.org/dist/v20.19.2/node-v20.19.2-linux-x64.tar.gz
+08:17:04.655	
+08:17:04.655	WARNING: node-v20.19.2-linux-x64 is in LTS Maintenance mode and nearing its end of life.
+08:17:04.655	It only receives *critical* security updates, *critical* bug fixes and documentation updates.
+08:17:04.655	
+08:17:04.656	Installing node-v20.19.2-linux-x64...
+08:17:05.055	Installed node-v20.19.2-linux-x64 to /opt/buildhome/.asdf/installs/nodejs/20.19.2
+08:17:05.055	
+08:17:06.005	Installing project dependencies: npm clean-install --progress=false
+08:17:10.271	npm warn deprecated @esbuild-kit/esm-loader@2.6.5: Merged into tsx: https://tsx.is
+08:17:10.312	npm warn deprecated @esbuild-kit/core-utils@3.3.2: Merged into tsx: https://tsx.is
+08:17:19.523	
+08:17:19.524	added 546 packages, and audited 547 packages in 13s
+08:17:19.524	
+08:17:19.524	72 packages are looking for funding
+08:17:19.524	  run `npm fund` for details
+08:17:19.550	
+08:17:19.550	5 moderate severity vulnerabilities
+08:17:19.550	
+08:17:19.550	To address all issues (including breaking changes), run:
+08:17:19.550	  npm audit fix --force
+08:17:19.550	
+08:17:19.550	Run `npm audit` for details.
+08:17:19.569	Executing user command: npm ci && npm run build && ls -la dist/ && ls -la dist/public/ && echo "Build completed successfully"
+08:17:24.936	npm warn deprecated @esbuild-kit/esm-loader@2.6.5: Merged into tsx: https://tsx.is
+08:17:25.027	npm warn deprecated @esbuild-kit/core-utils@3.3.2: Merged into tsx: https://tsx.is
+08:17:28.105	
+08:17:28.105	added 546 packages, and audited 547 packages in 8s
+08:17:28.105	
+08:17:28.106	72 packages are looking for funding
+08:17:28.106	  run `npm fund` for details
+08:17:28.131	
+08:17:28.131	5 moderate severity vulnerabilities
+08:17:28.131	
+08:17:28.131	To address all issues (including breaking changes), run:
+08:17:28.132	  npm audit fix --force
+08:17:28.132	
+08:17:28.132	Run `npm audit` for details.
+08:17:28.526	
+08:17:28.526	> rest-express@1.0.0 build
+08:17:28.526	> vite build && esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist
+08:17:28.526	
+08:17:28.802	vite v5.4.19 building for production...
+08:17:28.853	transforming...
+08:17:31.092	✓ 41 modules transformed.
+08:17:31.094	x Build failed in 2.27s
+08:17:31.094	error during build:
+08:17:31.094	[vite:esbuild] Transform failed with 2 errors:
+08:17:31.095	/opt/buildhome/repo/client/src/pages/OffersPage.tsx:38:6: ERROR: The symbol "OffersPage" has already been declared
+08:17:31.095	/opt/buildhome/repo/client/src/pages/OffersPage.tsx:193:7: ERROR: Multiple exports with the same name "default"
+08:17:31.095	file: /opt/buildhome/repo/client/src/pages/OffersPage.tsx:38:6
+08:17:31.095	
+08:17:31.095	The symbol "OffersPage" has already been declared
+08:17:31.095	36 |  }
+08:17:31.095	37 |  
+08:17:31.095	38 |  const OffersPage = () => {
+08:17:31.095	   |        ^
+08:17:31.095	39 |    const [, setLocation] = useLocation();
+08:17:31.095	40 |  
+08:17:31.096	
+08:17:31.096	Multiple exports with the same name "default"
+08:17:31.096	191|  };
+08:17:31.096	192|  
+08:17:31.096	193|  export default OffersPage;
+08:17:31.096	   |         ^
+08:17:31.096	194|  
+08:17:31.096	
+08:17:31.097	    at failureErrorWithLog (/opt/buildhome/repo/node_modules/vite/node_modules/esbuild/lib/main.js:1472:15)
+08:17:31.097	    at /opt/buildhome/repo/node_modules/vite/node_modules/esbuild/lib/main.js:755:50
+08:17:31.097	    at responseCallbacks.<computed> (/opt/buildhome/repo/node_modules/vite/node_modules/esbuild/lib/main.js:622:9)
+08:17:31.097	    at handleIncomingPacket (/opt/buildhome/repo/node_modules/vite/node_modules/esbuild/lib/main.js:677:12)
+08:17:31.097	    at Socket.readFromStdout (/opt/buildhome/repo/node_modules/vite/node_modules/esbuild/lib/main.js:600:7)
+08:17:31.097	    at Socket.emit (node:events:524:28)
+08:17:31.098	    at addChunk (node:internal/streams/readable:561:12)
+08:17:31.098	    at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+08:17:31.098	    at Readable.push (node:internal/streams/readable:392:5)
+08:17:31.098	    at Pipe.onStreamRead (node:internal/stream_base_commons:191:23)
+08:17:31.119	Failed: Error while executing user command. Exited with error code: 1
+08:17:31.128	Failed: build command exited with code: 1
+08:17:32.330	Failed: error occurred while running build command
