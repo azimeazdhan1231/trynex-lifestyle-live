@@ -1,6 +1,6 @@
 import Layout from "@/components/Layout";
 import ContactForm from "@/components/ContactForm";
-import ContactInfo from "@/components/ContactInfo";
+// ContactInfo component removed - import was causing build error
 
 const ContactPage = () => {
   return (
@@ -9,7 +9,6 @@ const ContactPage = () => {
         <h1 className="text-3xl font-bold mb-8">যোগাযোগ করুন</h1>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           <ContactForm />
-          <ContactInfo />
         </div>
       </div>
     </Layout>
