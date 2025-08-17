@@ -30,26 +30,44 @@ export default function EnhancedProductLoading({ children }: EnhancedProductLoad
     isFetching
   } = useQuery<Product[]>({
     queryKey: ['/api/products', retryCount],
-    staleTime: 3 * 60 * 1000, // 3 minutes for fresher data
-    gcTime: 15 * 60 * 1000, // 15 minutes cache retention
+    queryFn: async () => {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second max timeout
+      
+      try {
+        const response = await fetch('/api/products', {
+          signal: controller.signal,
+          headers: {
+            'Cache-Control': 'max-age=60',
+            'Accept': 'application/json'
+          }
+        });
+        
+        clearTimeout(timeoutId);
+        
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+        
+        const data = await response.json();
+        console.log(`✅ Products loaded: ${data.length} items`);
+        setLastSuccessTime(Date.now());
+        return data;
+        
+      } catch (error) {
+        clearTimeout(timeoutId);
+        console.warn('⚠️ Product fetch failed:', error.message);
+        throw error;
+      }
+    },
+    staleTime: 2 * 60 * 1000, // 2 minutes for faster updates
+    gcTime: 10 * 60 * 1000, // 10 minutes cache retention
     refetchOnWindowFocus: false,
     refetchOnReconnect: true,
     refetchOnMount: true,
     networkMode: 'online',
-    retry: (failureCount, error) => {
-      // Enhanced retry logic with better error handling
-      if (failureCount < 3) {
-        console.log(`🔄 Retrying product fetch (attempt ${failureCount + 1})`);
-        return true;
-      }
-      console.warn('🚫 Max retry attempts reached for product loading');
-      return false;
-    },
-    retryDelay: (attemptIndex) => {
-      const delay = Math.min(1000 * 2 ** attemptIndex, 15000);
-      console.log(`⏳ Retrying in ${delay}ms...`);
-      return delay;
-    },
+    retry: 1, // Only retry once for faster failure
+    retryDelay: 1000, // Quick retry
     meta: {
       errorMessage: 'পণ্য লোড করতে সমস্যা হচ্ছে'
     }

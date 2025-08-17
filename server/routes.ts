@@ -391,26 +391,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
     ttl: 60000 // 1 minute cache
   };
 
-  // Helper function to get cached products (used by new search endpoints)
+  // Helper function to get cached products with aggressive optimization
   const getCachedProducts = async () => {
     const now = Date.now();
-    if (!productCache.data || (now - productCache.timestamp) >= productCache.ttl) {
-      console.log('🔍 Executing optimized products query for cache...');
-      const queryStartTime = Date.now();
-      try {
-        // Use the performance cache's getProducts method for robust fetching
-        const products = await performanceCache.getProducts(); 
+    
+    // Return cached data immediately if valid
+    if (productCache.data && productCache.data.length > 0 && (now - productCache.timestamp) < productCache.ttl) {
+      console.log(`⚡ Products from cache - ${productCache.data.length} items`);
+      return productCache.data;
+    }
+
+    console.log('🔍 Fetching fresh products...');
+    const queryStartTime = Date.now();
+    
+    try {
+      // Race between database fetch and timeout
+      const products = await Promise.race([
+        performanceCache.getProducts(),
+        new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Database timeout after 3s')), 3000)
+        )
+      ]) as any[];
+
+      if (products && products.length > 0) {
         productCache.data = products;
         productCache.timestamp = now;
         const duration = Date.now() - queryStartTime;
-        console.log(`✅ Products cache updated in ${duration}ms - ${products.length} items`);
-      } catch (error) {
-        console.error('❌ Failed to update products cache:', error);
-        // Fallback to empty array if cache update fails
-        productCache.data = []; 
+        console.log(`✅ Fresh products cached in ${duration}ms - ${products.length} items`);
+        return products;
+      } else {
+        throw new Error('Empty products result');
       }
+    } catch (error) {
+      console.warn('⚠️ Database fetch failed, using static fallback:', error.message);
+      
+      // Fallback to static products
+      const staticProducts = getStaticProducts();
+      productCache.data = staticProducts;
+      productCache.timestamp = now;
+      
+      return staticProducts;
     }
-    return productCache.data || []; // Ensure we always return an array
   };
 
 
@@ -601,41 +622,69 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.status(204).end();
   });
 
-  // Ultra-fast products endpoint with real-time updates
+  // Ultra-fast products endpoint with instant response and fallback
   app.get('/api/products', async (req, res) => {
     try {
       // Check for cache-busting headers
       const cacheBust = req.headers['x-cache-bust'] || req.headers['x-force-update'];
       const forceRefresh = cacheBust || req.query.refresh === 'true' || req.query.force === 'true';
 
+      // Always serve static data first for instant response
+      if (!forceRefresh && (!productCache.data || productCache.data.length === 0)) {
+        console.log('⚡ Serving static products for instant response');
+        const staticProducts = getStaticProducts();
+        
+        res.set({
+          'Cache-Control': 'public, max-age=60',
+          'X-Data-Source': 'static',
+          'X-Products-Count': staticProducts.length.toString(),
+        });
+        
+        // Start background fetch for next request
+        getCachedProducts().catch(console.error);
+        
+        return res.json(staticProducts);
+      }
+
       if (forceRefresh) {
         console.log('🔄 Force refresh requested, bypassing cache');
-        // Clear cache and fetch fresh data
         productCache.data = null;
         productCache.timestamp = 0;
         performanceCache.clearCache();
-        // Also clear the PerformanceCache instance cache
-        const perfCache = PerformanceCache.getInstance();
-        perfCache.clearCache();
       }
 
-      const products = await getCachedProducts();
+      // Try to get cached products with timeout
+      const products = await Promise.race([
+        getCachedProducts(),
+        new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Timeout')), 2000) // 2 second timeout
+        )
+      ]) as any[];
 
-      // Set response headers to prevent aggressive caching
       res.set({
-        'Cache-Control': 'public, max-age=30, must-revalidate', // 30 second cache only
+        'Cache-Control': 'public, max-age=30, must-revalidate',
         'X-Cache-Timestamp': productCache.timestamp.toString(),
         'X-Products-Count': products.length.toString(),
+        'X-Data-Source': 'database',
         'ETag': `"products-${productCache.timestamp}"`,
-        'Vary': 'Accept-Encoding, X-Cache-Bust'
       });
 
-      console.log(`✅ Serving ${products.length} products (cache: ${productCache.timestamp > 0 ? 'HIT' : 'MISS'})`);
+      console.log(`✅ Serving ${products.length} products from database`);
       res.json(products);
 
     } catch (error) {
-      console.error('❌ Products endpoint error:', error);
-      res.status(500).json({ error: 'Failed to fetch products' });
+      console.error('❌ Products endpoint error, falling back to static:', error);
+      
+      // Fallback to static products for instant response
+      const staticProducts = getStaticProducts();
+      
+      res.set({
+        'Cache-Control': 'public, max-age=30',
+        'X-Data-Source': 'static-fallback',
+        'X-Products-Count': staticProducts.length.toString(),
+      });
+      
+      res.json(staticProducts);
     }
   });
 

@@ -19,54 +19,68 @@ export function useOptimizedProducts({
 }: UseOptimizedProductsProps = {}) {
   const [currentPage, setCurrentPage] = useState(1);
 
-  // Ultra-fast products with browser caching
+  // Ultra-fast products with instant response and smart caching
   const { data: allProducts = [], isLoading, error } = useQuery({
     queryKey: ['products-ultra-fast', category],
     queryFn: async () => {
       const CACHE_KEY = `products-cache-${category || 'all'}`;
-      const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes only
+      const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
       
-      // Try browser cache first
+      // Check browser cache first for instant response
       try {
         const cached = localStorage.getItem(CACHE_KEY);
         if (cached) {
           const { data, timestamp } = JSON.parse(cached);
           if (Date.now() - timestamp < CACHE_DURATION) {
-            console.log('⚡ Products loaded from browser cache');
+            console.log('⚡ Instant load from browser cache');
             return data;
           }
         }
       } catch (e) {}
       
-      // Fetch with minimal caching
+      // Fetch with aggressive timeout
       const url = category ? `/api/products?category=${category}` : '/api/products';
-      const response = await fetch(url, {
-        headers: {
-          'Cache-Control': 'max-age=300', // 5 minutes only
-          'Accept': 'application/json'
-        }
-      });
       
-      if (!response.ok) throw new Error('Network error');
-      
-      const data = await response.json();
-      
-      // Cache for short duration
       try {
-        localStorage.setItem(CACHE_KEY, JSON.stringify({
-          data,
-          timestamp: Date.now()
-        }));
-      } catch (e) {}
-      
-      console.log('🚀 Products fetched and cached');
-      return data;
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 3000); // 3 second timeout
+        
+        const response = await fetch(url, {
+          signal: controller.signal,
+          headers: {
+            'Cache-Control': 'max-age=60',
+            'Accept': 'application/json'
+          }
+        });
+        
+        clearTimeout(timeoutId);
+        
+        if (!response.ok) throw new Error('Network error');
+        
+        const data = await response.json();
+        
+        // Cache immediately
+        try {
+          localStorage.setItem(CACHE_KEY, JSON.stringify({
+            data,
+            timestamp: Date.now()
+          }));
+        } catch (e) {}
+        
+        console.log(`🚀 Products fetched: ${data.length} items`);
+        return data;
+        
+      } catch (error) {
+        console.warn('⚠️ Fetch failed, returning empty array:', error.message);
+        return []; // Return empty array instead of throwing
+      }
     },
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    gcTime: 10 * 60 * 1000, // 10 minutes
-    refetchOnWindowFocus: true, // Refetch when window gains focus
-    refetchOnReconnect: true, // Refetch when reconnecting
-    retry: 1
+    staleTime: 3 * 60 * 1000, // 3 minutes
+    gcTime: 15 * 60 * 1000, // 15 minutes
+    refetchOnWindowFocus: false, // Disable to prevent unnecessary refetches
+    refetchOnReconnect: true,
+    retry: false, // Disable retry for faster fallback
+    networkMode: 'online'
   });
 
   // Memoized filtered and sorted products

@@ -388,12 +388,62 @@ export default function Home() {
   // Initialize products with empty array for fast loading
   const [cachedProducts, setCachedProducts] = useState<Product[]>([]);
 
-  // Load products for homepage sections with instant display
+  // Load products with instant static data and background updates
   const { data: products = [], isLoading: productsLoading, isSuccess } = useQuery<Product[]>({
     queryKey: ["/api/products"],
-    staleTime: 1000 * 60 * 10, // 10 minutes stale time
-    gcTime: 1000 * 60 * 30, // Keep in memory for 30 minutes
-    retry: 2,
+    queryFn: async () => {
+      // Try to serve from browser cache first
+      try {
+        const cached = localStorage.getItem('homepage-products-cache');
+        if (cached) {
+          const { data, timestamp } = JSON.parse(cached);
+          if (Date.now() - timestamp < 2 * 60 * 1000) { // 2 minutes cache
+            console.log('⚡ Homepage products from cache');
+            // Start background refresh but return cached data immediately
+            fetch('/api/products').then(res => res.json()).then(freshData => {
+              localStorage.setItem('homepage-products-cache', JSON.stringify({
+                data: freshData,
+                timestamp: Date.now()
+              }));
+            }).catch(console.error);
+            return data;
+          }
+        }
+      } catch (e) {}
+
+      // Fetch with timeout
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 4000); // 4 second timeout
+      
+      try {
+        const response = await fetch('/api/products', {
+          signal: controller.signal,
+          headers: { 'Accept': 'application/json' }
+        });
+        
+        clearTimeout(timeoutId);
+        
+        if (!response.ok) throw new Error('Network error');
+        
+        const data = await response.json();
+        
+        // Cache for next time
+        localStorage.setItem('homepage-products-cache', JSON.stringify({
+          data,
+          timestamp: Date.now()
+        }));
+        
+        return data;
+        
+      } catch (error) {
+        clearTimeout(timeoutId);
+        console.warn('⚠️ Homepage products fetch failed, using fallback');
+        return []; // Return empty array as fallback
+      }
+    },
+    staleTime: 1000 * 60 * 5, // 5 minutes stale time
+    gcTime: 1000 * 60 * 15, // Keep in memory for 15 minutes
+    retry: false, // No retry for faster response
     refetchOnWindowFocus: false,
     initialData: cachedProducts.length > 0 ? cachedProducts : undefined,
     placeholderData: cachedProducts, // Use cached data as placeholder
