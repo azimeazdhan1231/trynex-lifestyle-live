@@ -2,11 +2,10 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 import express, { type Request, Response, NextFunction } from "express";
-import { registerRoutes } from "./routes-optimized";
+import { setupRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import cors from "cors";
 import { createServer } from "http";
-import { ultraFastStorage } from "./ultra-fast-storage";
 
 const app = express();
 
@@ -78,8 +77,8 @@ app.use((req, res, next) => {
 });
 
 (async () => {
-  // Register all routes
-  registerRoutes(app);
+  // Setup all routes directly without caching
+  setupRoutes(app);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
@@ -110,8 +109,6 @@ app.use((req, res, next) => {
     log(`serving on port ${port}`);
     console.log("✅ Database initialization complete");
 
-    // Start ultra-fast product preloading immediately
-    console.log("🚀 Starting ultra-fast product preloading...");
-    ultraFastStorage.preload();
+    // No caching preload needed - using direct Supabase access
   });
 })();

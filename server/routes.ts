@@ -1,5 +1,4 @@
 import type { Express } from "express";
-import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuthRoutes } from "./auth-routes";
 import express from "express";
@@ -11,9 +10,7 @@ import { insertProductSchema, insertOrderSchema } from "@shared/schema";
 // JWT Secret for authentication
 const JWT_SECRET = process.env.JWT_SECRET_KEY || process.env.JWT_SECRET || "trynex_secret_key_2025";
 
-export function setupRoutes(app: Express): Server {
-  const server = createServer(app);
-
+export function setupRoutes(app: Express) {
   // Setup authentication routes
   setupAuthRoutes(app);
 
@@ -233,5 +230,4 @@ export function setupRoutes(app: Express): Server {
     }
   });
 
-  return server;
 }
