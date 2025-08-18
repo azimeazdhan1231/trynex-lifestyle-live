@@ -11,11 +11,13 @@ import {
   Trash2, 
   ShoppingCart,
   ShoppingBag,
-  Package2
+  Package2,
+  CreditCard
 } from "lucide-react";
 import { formatPrice } from "@/lib/constants";
 import { useCart } from "@/hooks/use-cart";
 import { useToast } from "@/hooks/use-toast";
+import CheckoutModal from "./checkout-modal";
 
 interface SimpleCartModalProps {
   isOpen: boolean;
@@ -31,6 +33,7 @@ export default function SimpleCartModal({
   const { items, updateQuantity, removeItem, clearCart, getTotalPrice, getTotalItems } = useCart();
   const { toast } = useToast();
   const [showClearConfirm, setShowClearConfirm] = useState(false);
+  const [showCheckout, setShowCheckout] = useState(false);
 
   const total = getTotalPrice();
   const totalItems = getTotalItems();
@@ -86,9 +89,17 @@ ${itemsText}
     if (onCheckout) {
       onCheckout();
     } else {
-      // Default WhatsApp checkout
-      window.open(createWhatsAppUrl(), '_blank');
+      setShowCheckout(true);
     }
+  };
+
+  const handleOrderComplete = (orderId: string) => {
+    setShowCheckout(false);
+    onClose();
+    toast({
+      title: 'অর্ডার সফল! 🎉',
+      description: `অর্ডার নম্বর: ${orderId}. শীঘ্রই আমরা আপনার সাথে যোগাযোগ করব।`,
+    });
   };
 
   console.log('🛒 SimpleCartModal rendered with:', { items, totalItems, total, isOpen });
@@ -336,6 +347,13 @@ ${itemsText}
           )}
         </div>
       </DialogContent>
+      
+      {/* Checkout Modal */}
+      <CheckoutModal
+        isOpen={showCheckout}
+        onClose={() => setShowCheckout(false)}
+        onOrderComplete={handleOrderComplete}
+      />
     </Dialog>
   );
 }

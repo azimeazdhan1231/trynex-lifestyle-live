@@ -3,6 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuthRoutes } from "./auth-routes";
 import { cacheService } from "./cache-service";
+import { fastProductService } from "./fast-products";
 import express from "express"; // Added import
 import bcrypt from "bcryptjs"; // Added import
 import jwt from "jsonwebtoken"; // Added import
@@ -389,47 +390,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     ttl: 60000 // 1 minute cache
   };
 
-  // Helper function to get cached products with aggressive optimization
+  // Helper function to get cached products with ultra-fast optimization
   const getCachedProducts = async () => {
-    const now = Date.now();
-    
-    // Return cached data immediately if valid
-    if (productCache.data && productCache.data.length > 0 && (now - productCache.timestamp) < productCache.ttl) {
-      console.log(`⚡ Products from cache - ${productCache.data.length} items`);
-      return productCache.data;
-    }
-
-    console.log('🔍 Fetching fresh products...');
-    const queryStartTime = Date.now();
-    
-    try {
-      // Race between database fetch and timeout
-      const products = await Promise.race([
-        performanceCache.getProducts(),
-        new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('Database timeout after 3s')), 3000)
-        )
-      ]) as any[];
-
-      if (products && products.length > 0) {
-        productCache.data = products;
-        productCache.timestamp = now;
-        const duration = Date.now() - queryStartTime;
-        console.log(`✅ Fresh products cached in ${duration}ms - ${products.length} items`);
-        return products;
-      } else {
-        throw new Error('Empty products result');
-      }
-    } catch (error) {
-      console.warn('⚠️ Database fetch failed, using static fallback:', error.message);
-      
-      // Fallback to static products
-      const staticProducts = getStaticProducts();
-      productCache.data = staticProducts;
-      productCache.timestamp = now;
-      
-      return staticProducts;
-    }
+    return await fastProductService.getProducts();
   };
 
 
@@ -1221,61 +1184,57 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Order management endpoints (fixed to match database schema)
+  // Order management endpoints with enhanced checkout flow
   app.post("/api/orders", async (req, res) => {
     try {
-      console.log('Creating order with data:', req.body);
+      console.log('🔄 Creating new order with data:', req.body);
       const orderData = req.body;
 
-      // Validate required fields
-      if (!orderData.customer_name || !orderData.phone || !orderData.district || !orderData.thana || !orderData.items || !orderData.total) {
+      // Validate required fields from checkout form
+      const requiredFields = ['customerName', 'customerPhone', 'customerAddress', 'district', 'thana', 'items', 'totalPrice', 'paymentMethod', 'paymentAmount', 'transactionId'];
+      const missingFields = requiredFields.filter(field => !orderData[field]);
+      
+      if (missingFields.length > 0) {
         return res.status(400).json({ 
           error: "Missing required fields", 
-          required: ["customer_name", "phone", "district", "thana", "items", "total"]
+          required: missingFields
         });
       }
 
-      // Generate tracking ID
-      const trackingId = `TRX${Date.now()}${Math.floor(Math.random() * 1000)}`;
+      // Generate unique tracking ID  
+      const orderId = `TRX${Date.now()}${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}`;
 
-      // Extract customization data from items
-      let allCustomInstructions: string[] = [];
-      let allCustomImages: string[] = [];
+      // Prepare payment information
+      const paymentInfo = {
+        method: orderData.paymentMethod,
+        amount: orderData.paymentAmount,
+        transactionId: orderData.transactionId,
+        minimumPaid: orderData.paymentAmount >= 100,
+        timestamp: new Date().toISOString()
+      };
 
-      if (orderData.items) {
-        const items = Array.isArray(orderData.items) ? orderData.items : JSON.parse(orderData.items);
-        items.forEach((item: any) => {
-          if (item.customization) {
-            if (item.customization.customText || item.customization.specialInstructions) {
-              allCustomInstructions.push(`${item.product_name}: ${item.customization.customText || item.customization.specialInstructions}`);
-            }
-            if (item.customization.uploadedImages && item.customization.uploadedImages.length > 0) {
-              allCustomImages.push(...item.customization.uploadedImages);
-            }
-          }
-        });
-      }
+      // Process items and custom instructions
+      const items = Array.isArray(orderData.items) ? orderData.items : [];
+      const customInstructions = orderData.customInstructions || '';
 
-      // Prepare order data matching database schema
+      // Prepare order data for database
       const orderDataForDB = {
-        tracking_id: trackingId,
-        customer_name: orderData.customer_name,
-        district: orderData.district || "ঢাকা", // Default district
-        thana: orderData.thana || "ঢাকা", // Default thana
-        address: orderData.address || "",
-        phone: orderData.phone,
-        payment_info: orderData.payment_info ? JSON.stringify(orderData.payment_info) : null,
-        status: "pending",
-        items: typeof orderData.items === 'string' ? orderData.items : JSON.stringify(orderData.items),
-        total: (orderData.total_amount || orderData.total || 0).toString(),
-        delivery_fee: orderData.delivery_fee || 60,
-        custom_instructions: allCustomInstructions.length > 0 
-          ? allCustomInstructions.join('\n') 
-          : orderData.custom_instructions || null,
-        custom_images: allCustomImages.length > 0 
-          ? JSON.stringify(allCustomImages) 
-          : orderData.custom_images ? JSON.stringify(orderData.custom_images) : null,
-        user_id: orderData.user_id || null
+        tracking_id: orderId,
+        customer_name: orderData.customerName.trim(),
+        district: orderData.district.trim(),
+        thana: orderData.thana.trim(), 
+        address: orderData.customerAddress.trim(),
+        phone: orderData.customerPhone.trim(),
+        payment_info: JSON.stringify(paymentInfo),
+        status: "pending", // Will be updated to confirmed after admin review
+        items: JSON.stringify(items),
+        total: orderData.totalPrice.toString(),
+        delivery_fee: orderData.totalPrice >= 1600 ? 0 : 120,
+        custom_instructions: customInstructions || null,
+        custom_images: orderData.customPhoto ? JSON.stringify([`custom_${orderId}.jpg`]) : null,
+        payment_screenshot: orderData.paymentScreenshot ? `payment_${orderId}.jpg` : null,
+        order_type: orderData.orderType || 'regular',
+        user_id: null
       };
 
       const newOrder = await storage.createOrder(orderDataForDB);
@@ -1284,11 +1243,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(201).json({ 
         success: true, 
         order: newOrder,
-        tracking_id: newOrder.tracking_id
+        orderId: newOrder.tracking_id,
+        tracking_id: newOrder.tracking_id,
+        message: 'অর্ডার সফলভাবে তৈরি হয়েছে! আমরা শীঘ্রই যোগাযোগ করব।'
       });
     } catch (error) {
       console.error("❌ Order creation error:", error);
-      res.status(500).json({ error: "Failed to create order", details: (error as Error).message });
+      res.status(500).json({ 
+        success: false,
+        error: "Failed to create order", 
+        message: 'অর্ডার তৈরি করতে সমস্যা হয়েছে। পুনরায় চেষ্টা করুন।',
+        details: (error as Error).message 
+      });
     }
   });
 

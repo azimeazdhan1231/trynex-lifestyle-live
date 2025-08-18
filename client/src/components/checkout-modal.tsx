@@ -1,444 +1,406 @@
+import React, { useState } from 'react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
+import { Badge } from '@/components/ui/badge';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { useCart } from '@/hooks/use-cart';
+import { useToast } from '@/hooks/use-toast';
+import { apiRequest } from '@/lib/queryClient';
+import { formatPrice } from '@/lib/constants';
+import { Upload, Phone, MapPin, User, MessageSquare, CreditCard, CheckCircle } from 'lucide-react';
 
-import { useState, useEffect } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Separator } from "@/components/ui/separator";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { useToast } from "@/hooks/use-toast";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
-import { DISTRICTS, THANAS_BY_DISTRICT, formatPrice, calculateDeliveryFee } from "@/lib/constants";
-import OrderSuccessModal from "@/components/order-success-modal";
-import { trackInitiateCheckout, trackPurchase } from "@/lib/analytics";
-import { ShoppingCart, MapPin, Phone, User, CreditCard, Package, Truck, AlertCircle, CheckCircle } from "lucide-react";
-import type { Order } from "@shared/schema";
+const checkoutSchema = z.object({
+  customerName: z.string().min(2, 'নাম কমপক্ষে ২টি অক্ষর হতে হবে'),
+  customerPhone: z.string().min(11, 'সঠিক ফোন নম্বর দিন'),
+  customerAddress: z.string().min(10, 'সম্পূর্ণ ঠিকানা দিন'),
+  district: z.string().min(2, 'জেলা নির্বাচন করুন'),
+  thana: z.string().min(2, 'থানা নির্বাচন করুন'),
+  customInstructions: z.string().optional(),
+  paymentMethod: z.enum(['bkash', 'nagad', 'upay']),
+  paymentAmount: z.number().min(100, 'ন্যূনতম ১০০ টাকা পেমেন্ট করতে হবে'),
+  transactionId: z.string().min(4, 'ট্রানজেকশন আইডি বা শেষ ৪ ডিজিট দিন'),
+  paymentScreenshot: z.any().optional()
+});
 
-interface CartItem {
-  id: string;
-  name: string;
-  price: number;
-  quantity: number;
-  image_url?: string;
-  customization?: any;
-}
+type CheckoutFormData = z.infer<typeof checkoutSchema>;
 
 interface CheckoutModalProps {
   isOpen: boolean;
   onClose: () => void;
-  cart: CartItem[];
-  onOrderComplete: () => void;
+  onOrderComplete: (orderId: string) => void;
 }
 
-export default function CheckoutModal({ isOpen, onClose, cart, onOrderComplete }: CheckoutModalProps) {
-  const [currentStep, setCurrentStep] = useState(1);
-  const [formData, setFormData] = useState({
-    customer_name: "",
-    phone: "",
-    district: "",
-    thana: "",
-    address: "",
-    payment_number: "",
-    trx_id: "",
-    special_instructions: ""
-  });
-  const [deliveryFee, setDeliveryFee] = useState(80);
-  const [availableThanas, setAvailableThanas] = useState<string[]>([]);
-  const [completedOrder, setCompletedOrder] = useState<Order | null>(null);
-  const [showSuccessModal, setShowSuccessModal] = useState(false);
-  const [errors, setErrors] = useState<Record<string, string>>({});
-
+export default function CheckoutModal({ isOpen, onClose, onOrderComplete }: CheckoutModalProps) {
+  const { items, getTotalPrice, clearCart } = useCart();
   const { toast } = useToast();
-  const queryClient = useQueryClient();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [step, setStep] = useState<'info' | 'payment' | 'confirm'>('info');
+  const [customPhoto, setCustomPhoto] = useState<File | null>(null);
+  const [paymentScreenshot, setPaymentScreenshot] = useState<File | null>(null);
 
-  const subtotal = cart?.reduce((sum, item) => sum + (item.price * item.quantity), 0) || 0;
-  const totalPrice = subtotal + deliveryFee;
-
-  // Update delivery fee and available thanas when district changes
-  useEffect(() => {
-    if (formData.district) {
-      const fee = calculateDeliveryFee(formData.district, subtotal);
-      setDeliveryFee(fee);
-      setAvailableThanas(THANAS_BY_DISTRICT[formData.district] || []);
-      setFormData(prev => ({ ...prev, thana: "" }));
-    } else {
-      setAvailableThanas([]);
-      setDeliveryFee(80);
+  const form = useForm<CheckoutFormData>({
+    resolver: zodResolver(checkoutSchema),
+    defaultValues: {
+      customerName: '',
+      customerPhone: '',
+      customerAddress: '',
+      district: '',
+      thana: '',
+      customInstructions: '',
+      paymentMethod: 'bkash',
+      paymentAmount: Math.max(100, getTotalPrice()),
+      transactionId: ''
     }
-  }, [formData.district, subtotal]);
-
-  const validateStep = (step: number): boolean => {
-    const newErrors: Record<string, string> = {};
-
-    if (step === 1) {
-      if (!formData.customer_name.trim()) newErrors.customer_name = "নাম লিখুন";
-      if (!formData.phone.trim()) newErrors.phone = "ফোন নম্বর লিখুন";
-      else if (!/^01[3-9]\d{8}$/.test(formData.phone.trim())) {
-        newErrors.phone = "সঠিক বাংলাদেশি ফোন নম্বর লিখুন";
-      }
-    }
-
-    if (step === 2) {
-      if (!formData.district) newErrors.district = "জেলা নির্বাচন করুন";
-      if (!formData.thana) newErrors.thana = "থানা নির্বাচন করুন";
-      if (!formData.address.trim()) newErrors.address = "বিস্তারিত ঠিকানা লিখুন";
-    }
-
-    if (step === 3) {
-      if (!formData.payment_number.trim()) newErrors.payment_number = "পেমেন্ট নম্বর লিখুন";
-      if (!formData.trx_id.trim()) newErrors.trx_id = "ট্রানজেকশন আইডি লিখুন";
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleNextStep = () => {
-    if (validateStep(currentStep)) {
-      setCurrentStep(prev => Math.min(prev + 1, 4));
-    }
-  };
-
-  const handlePrevStep = () => {
-    setCurrentStep(prev => Math.max(prev - 1, 1));
-  };
-
-  const createOrderMutation = useMutation({
-    mutationFn: async (orderData: any) => {
-      const response = await apiRequest("/api/orders", "POST", orderData);
-      return response;
-    },
-    onSuccess: (order) => {
-      console.log('Order created successfully:', order);
-      console.log('Order tracking_id:', order.tracking_id);
-      console.log('Full order object:', JSON.stringify(order, null, 2));
-      
-      setCompletedOrder(order);
-      setShowSuccessModal(true);
-      queryClient.invalidateQueries({ queryKey: ['/api/orders'] });
-      
-      // Show tracking ID in toast
-      const trackingId = order.tracking_id || order.id || 'অজানা';
-      toast({
-        title: "✅ অর্ডার সফল হয়েছে!",
-        description: `ট্র্যাকিং আইডি: ${trackingId}\nআমরা শীঘ্রই আপনার সাথে যোগাযোগ করব।`,
-        duration: 8000,
-      });
-
-      onOrderComplete();
-      onClose();
-    },
-    onError: (error: any) => {
-      console.error('Order creation error:', error);
-      toast({
-        title: "অর্ডার সমস্যা",
-        description: "দয়া করে আবার চেষ্টা করুন বা সাপোর্টে যোগাযোগ করুন",
-        variant: "destructive",
-      });
-    },
   });
 
-  const handleSubmit = () => {
-    if (!validateStep(3)) return;
+  const totalPrice = getTotalPrice();
+  const minimumPayment = 100;
+  const suggestedPayment = Math.max(minimumPayment, totalPrice);
 
-    const orderData = {
-      items: JSON.stringify(cart.map(item => ({
-        id: item.id,
-        name: item.name,
-        price: item.price,
-        quantity: item.quantity,
-        customization: item.customization || null
-      }))),
-      customer_name: formData.customer_name,
-      phone: formData.phone,
-      district: formData.district,
-      thana: formData.thana,
-      address: formData.address,
-      total: totalPrice.toString(),
-      payment_info: JSON.stringify({
-        method: "bkash_nagad",
-        payment_number: formData.payment_number,
-        trx_id: formData.trx_id,
-        amount_paid: totalPrice
-      }),
-      special_instructions: formData.special_instructions || '',
-      status: "pending"
-    };
-
-    createOrderMutation.mutate(orderData);
+  const paymentNumbers = {
+    bkash: '01765555593',
+    nagad: '01765555593', 
+    upay: '01765555593'
   };
 
-  const stepTitles = [
-    "ব্যক্তিগত তথ্য",
-    "ডেলিভারি ঠিকানা", 
-    "পেমেন্ট তথ্য",
-    "অর্ডার সম্পূর্ণ করুন"
-  ];
+  const handleCustomPhotoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setCustomPhoto(file);
+    }
+  };
+
+  const handlePaymentScreenshotUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setPaymentScreenshot(file);
+      form.setValue('paymentScreenshot', file);
+    }
+  };
+
+  const onSubmit = async (data: CheckoutFormData) => {
+    setIsSubmitting(true);
+
+    try {
+      const formData = new FormData();
+      
+      // Add order data
+      formData.append('orderData', JSON.stringify({
+        ...data,
+        items,
+        totalPrice,
+        orderType: customPhoto ? 'custom' : 'regular'
+      }));
+
+      // Add custom photo if exists
+      if (customPhoto) {
+        formData.append('customPhoto', customPhoto);
+      }
+
+      // Add payment screenshot if exists  
+      if (paymentScreenshot) {
+        formData.append('paymentScreenshot', paymentScreenshot);
+      }
+
+      const response = await fetch('/api/orders', {
+        method: 'POST',
+        body: formData
+      }).then(res => res.json());
+
+      clearCart();
+      onOrderComplete(response.orderId);
+      
+      toast({
+        title: 'অর্ডার সফল! 🎉',
+        description: `অর্ডার নম্বর: ${response.orderId}`,
+      });
+
+      onClose();
+
+    } catch (error) {
+      toast({
+        title: 'অর্ডার ব্যর্থ',
+        description: 'আবার চেষ্টা করুন',
+        variant: 'destructive'
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   const renderStepContent = () => {
-    switch (currentStep) {
-      case 1:
+    switch (step) {
+      case 'info':
         return (
           <div className="space-y-6">
-            <div className="text-center pb-4">
-              <User className="w-12 h-12 mx-auto text-blue-500 mb-2" />
-              <h3 className="text-lg font-semibold text-gray-900">আপনার তথ্য দিন</h3>
-              <p className="text-gray-600">অর্ডার সম্পূর্ণ করতে প্রয়োজনীয় তথ্য প্রদান করুন</p>
-            </div>
-
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="customer_name" className="text-gray-700 font-medium">পূর্ণ নাম *</Label>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="customerName" className="flex items-center gap-2">
+                  <User className="w-4 h-4" />
+                  সম্পূর্ণ নাম *
+                </Label>
                 <Input
-                  id="customer_name"
-                  placeholder="আপনার পূর্ণ নাম লিখুন"
-                  value={formData.customer_name}
-                  onChange={(e) => setFormData(prev => ({ ...prev, customer_name: e.target.value }))}
-                  className={`mt-1 ${errors.customer_name ? 'border-red-500' : ''}`}
+                  id="customerName"
+                  placeholder="আপনার সম্পূর্ণ নাম লিখুন"
+                  {...form.register('customerName')}
+                  data-testid="input-customer-name"
                 />
-                {errors.customer_name && <p className="text-red-500 text-sm mt-1">{errors.customer_name}</p>}
+                {form.formState.errors.customerName && (
+                  <p className="text-sm text-red-500">{form.formState.errors.customerName.message}</p>
+                )}
               </div>
 
-              <div>
-                <Label htmlFor="phone" className="text-gray-700 font-medium">ফোন নম্বর *</Label>
+              <div className="space-y-2">
+                <Label htmlFor="customerPhone" className="flex items-center gap-2">
+                  <Phone className="w-4 h-4" />
+                  মোবাইল নম্বর *
+                </Label>
                 <Input
-                  id="phone"
+                  id="customerPhone"
                   placeholder="01XXXXXXXXX"
-                  value={formData.phone}
-                  onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
-                  className={`mt-1 ${errors.phone ? 'border-red-500' : ''}`}
+                  {...form.register('customerPhone')}
+                  data-testid="input-customer-phone"
                 />
-                {errors.phone && <p className="text-red-500 text-sm mt-1">{errors.phone}</p>}
+                {form.formState.errors.customerPhone && (
+                  <p className="text-sm text-red-500">{form.formState.errors.customerPhone.message}</p>
+                )}
               </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="district">জেলা *</Label>
+                <Input
+                  id="district"
+                  placeholder="আপনার জেলার নাম"
+                  {...form.register('district')}
+                  data-testid="input-district"
+                />
+                {form.formState.errors.district && (
+                  <p className="text-sm text-red-500">{form.formState.errors.district.message}</p>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="thana">থানা/উপজেলা *</Label>
+                <Input
+                  id="thana"
+                  placeholder="আপনার থানার নাম"
+                  {...form.register('thana')}
+                  data-testid="input-thana"
+                />
+                {form.formState.errors.thana && (
+                  <p className="text-sm text-red-500">{form.formState.errors.thana.message}</p>
+                )}
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="customerAddress" className="flex items-center gap-2">
+                <MapPin className="w-4 h-4" />
+                সম্পূর্ণ ঠিকানা *
+              </Label>
+              <Textarea
+                id="customerAddress"
+                placeholder="বাসা/রোড নম্বর, এলাকার নাম, ল্যান্ডমার্ক"
+                rows={3}
+                {...form.register('customerAddress')}
+                data-testid="input-customer-address"
+              />
+              {form.formState.errors.customerAddress && (
+                <p className="text-sm text-red-500">{form.formState.errors.customerAddress.message}</p>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="customInstructions" className="flex items-center gap-2">
+                <MessageSquare className="w-4 h-4" />
+                বিশেষ নির্দেশনা (ঐচ্ছিক)
+              </Label>
+              <Textarea
+                id="customInstructions"
+                placeholder="কাস্টমাইজেশন বা বিশেষ কোন নির্দেশনা থাকলে লিখুন"
+                rows={3}
+                {...form.register('customInstructions')}
+                data-testid="input-custom-instructions"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label className="flex items-center gap-2">
+                <Upload className="w-4 h-4" />
+                কাস্টম ডিজাইনের ছবি (ঐচ্ছিক)
+              </Label>
+              <Input
+                type="file"
+                accept="image/*"
+                onChange={handleCustomPhotoUpload}
+                data-testid="input-custom-photo"
+              />
+              {customPhoto && (
+                <p className="text-sm text-green-600">✓ ছবি আপলোড হয়েছে: {customPhoto.name}</p>
+              )}
             </div>
           </div>
         );
 
-      case 2:
+      case 'payment':
+        const selectedPaymentMethod = form.watch('paymentMethod');
+        
         return (
           <div className="space-y-6">
-            <div className="text-center pb-4">
-              <MapPin className="w-12 h-12 mx-auto text-green-500 mb-2" />
-              <h3 className="text-lg font-semibold text-gray-900">ডেলিভারি ঠিকানা</h3>
-              <p className="text-gray-600">পণ্য পৌঁছানোর ঠিকানা দিন</p>
-            </div>
-
-            <div className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Label className="text-gray-700 font-medium">জেলা *</Label>
-                  <Select value={formData.district} onValueChange={(value) => setFormData(prev => ({ ...prev, district: value }))}>
-                    <SelectTrigger className={`mt-1 ${errors.district ? 'border-red-500' : ''}`}>
-                      <SelectValue placeholder="জেলা নির্বাচন করুন" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {DISTRICTS.map((district) => (
-                        <SelectItem key={district} value={district}>{district}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  {errors.district && <p className="text-red-500 text-sm mt-1">{errors.district}</p>}
-                </div>
-
-                <div>
-                  <Label className="text-gray-700 font-medium">থানা *</Label>
-                  <Select value={formData.thana} onValueChange={(value) => setFormData(prev => ({ ...prev, thana: value }))} disabled={!formData.district}>
-                    <SelectTrigger className={`mt-1 ${errors.thana ? 'border-red-500' : ''}`}>
-                      <SelectValue placeholder="থানা নির্বাচন করুন" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {availableThanas.map((thana) => (
-                        <SelectItem key={thana} value={thana}>{thana}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  {errors.thana && <p className="text-red-500 text-sm mt-1">{errors.thana}</p>}
-                </div>
-              </div>
-
-              <div>
-                <Label htmlFor="address" className="text-gray-700 font-medium">বিস্তারিত ঠিকানা *</Label>
-                <Textarea
-                  id="address"
-                  placeholder="বাড়ির নম্বর, রাস্তার নাম, এলাকার নাম লিখুন"
-                  value={formData.address}
-                  onChange={(e) => setFormData(prev => ({ ...prev, address: e.target.value }))}
-                  className={`mt-1 ${errors.address ? 'border-red-500' : ''}`}
-                  rows={3}
-                />
-                {errors.address && <p className="text-red-500 text-sm mt-1">{errors.address}</p>}
-              </div>
-
-              <Card className="bg-blue-50 border-blue-200">
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center">
-                      <Truck className="w-5 h-5 text-blue-500 mr-2" />
-                      <span className="text-blue-700 font-medium">ডেলিভারি চার্জ</span>
-                    </div>
-                    <Badge variant="secondary" className="bg-blue-100 text-blue-800">
-                      {formatPrice(deliveryFee)}
-                    </Badge>
-                  </div>
-                  <p className="text-sm text-blue-600 mt-1">
-                    {formData.district === "ঢাকা" ? "ঢাকার মধ্যে" : "ঢাকার বাইরে"} ডেলিভারি
-                  </p>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-        );
-
-      case 3:
-        return (
-          <div className="space-y-6">
-            <div className="text-center pb-4">
-              <CreditCard className="w-12 h-12 mx-auto text-purple-500 mb-2" />
-              <h3 className="text-lg font-semibold text-gray-900">পেমেন্ট করুন</h3>
-              <p className="text-gray-600">bKash/Nagad দিয়ে পেমেন্ট সম্পূর্ণ করুন</p>
-            </div>
-
-            <Card className="bg-orange-50 border-orange-200">
+            <Card className="bg-yellow-50 border-yellow-200">
               <CardHeader className="pb-3">
-                <CardTitle className="text-orange-800 text-base">পেমেন্ট নির্দেশনা</CardTitle>
+                <CardTitle className="text-lg text-yellow-800">
+                  পেমেন্ট করুন
+                </CardTitle>
               </CardHeader>
-              <CardContent className="pt-0">
-                <div className="space-y-3 text-sm text-orange-700">
-                  <p><strong>bKash Personal:</strong> 01747292277</p>
-                  <p><strong>Nagad Personal:</strong> 01747292277</p>
-                  <div className="flex items-start space-x-2 mt-3">
-                    <AlertCircle className="w-4 h-4 mt-0.5 text-orange-600" />
-                    <div>
-                      <p className="font-medium">পেমেন্ট করার পদ্ধতি:</p>
-                      <ol className="list-decimal list-inside space-y-1 mt-1">
-                        <li>"Send Money" নির্বাচন করুন</li>
-                        <li>উপরের নম্বরে {formatPrice(totalPrice)} টাকা পাঠান</li>
-                        <li>Transaction ID কপি করুন</li>
-                        <li>নিচের ফর্মে তথ্য দিন</li>
-                      </ol>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-3 gap-3">
+                  {(['bkash', 'nagad', 'upay'] as const).map((method) => (
+                    <Button
+                      key={method}
+                      type="button"
+                      variant={selectedPaymentMethod === method ? "default" : "outline"}
+                      className={`h-16 ${
+                        selectedPaymentMethod === method 
+                          ? 'bg-primary text-primary-foreground' 
+                          : 'hover:bg-gray-50'
+                      }`}
+                      onClick={() => form.setValue('paymentMethod', method)}
+                      data-testid={`button-payment-${method}`}
+                    >
+                      <div className="text-center">
+                        <div className="text-sm font-semibold capitalize">{method}</div>
+                        <div className="text-xs opacity-70">{paymentNumbers[method]}</div>
+                      </div>
+                    </Button>
+                  ))}
+                </div>
+
+                <div className="bg-white p-4 rounded-lg border space-y-3">
+                  <div className="text-sm font-medium text-gray-700">পেমেন্ট তথ্য:</div>
+                  <div className="space-y-2">
+                    <div className="flex justify-between">
+                      <span>মোট অর্ডার:</span>
+                      <span className="font-semibold">৳{formatPrice(totalPrice)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>ন্যূনতম পেমেন্ট:</span>
+                      <span className="font-semibold text-red-600">৳{formatPrice(minimumPayment)}</span>
+                    </div>
+                    <div className="flex justify-between border-t pt-2">
+                      <span>প্রস্তাবিত পেমেন্ট:</span>
+                      <span className="font-bold text-green-600">৳{formatPrice(suggestedPayment)}</span>
                     </div>
                   </div>
+                </div>
+
+                <div className="space-y-3">
+                  <Label htmlFor="paymentAmount">পেমেন্ট পরিমাণ (টাকা) *</Label>
+                  <Input
+                    id="paymentAmount"
+                    type="number"
+                    min={minimumPayment}
+                    placeholder={`ন্যূনতম ${minimumPayment} টাকা`}
+                    {...form.register('paymentAmount', { valueAsNumber: true })}
+                    data-testid="input-payment-amount"
+                  />
+                  {form.formState.errors.paymentAmount && (
+                    <p className="text-sm text-red-500">{form.formState.errors.paymentAmount.message}</p>
+                  )}
+                </div>
+
+                <div className="space-y-3">
+                  <Label htmlFor="transactionId">ট্রানজেকশন ID বা শেষ ৪ ডিজিট *</Label>
+                  <Input
+                    id="transactionId"
+                    placeholder="TXN123456789 বা 6789"
+                    {...form.register('transactionId')}
+                    data-testid="input-transaction-id"
+                  />
+                  {form.formState.errors.transactionId && (
+                    <p className="text-sm text-red-500">{form.formState.errors.transactionId.message}</p>
+                  )}
+                </div>
+
+                <div className="space-y-3">
+                  <Label className="flex items-center gap-2">
+                    <Upload className="w-4 h-4" />
+                    পেমেন্টের স্ক্রিনশট (ঐচ্ছিক)
+                  </Label>
+                  <Input
+                    type="file"
+                    accept="image/*"
+                    onChange={handlePaymentScreenshotUpload}
+                    data-testid="input-payment-screenshot"
+                  />
+                  {paymentScreenshot && (
+                    <p className="text-sm text-green-600">✓ স্ক্রিনশট আপলোড হয়েছে: {paymentScreenshot.name}</p>
+                  )}
                 </div>
               </CardContent>
             </Card>
-
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="payment_number" className="text-gray-700 font-medium">যে নম্বর থেকে পেমেন্ট করেছেন *</Label>
-                <Input
-                  id="payment_number"
-                  placeholder="01XXXXXXXXX"
-                  value={formData.payment_number}
-                  onChange={(e) => setFormData(prev => ({ ...prev, payment_number: e.target.value }))}
-                  className={`mt-1 ${errors.payment_number ? 'border-red-500' : ''}`}
-                />
-                {errors.payment_number && <p className="text-red-500 text-sm mt-1">{errors.payment_number}</p>}
-              </div>
-
-              <div>
-                <Label htmlFor="trx_id" className="text-gray-700 font-medium">Transaction ID *</Label>
-                <Input
-                  id="trx_id"
-                  placeholder="যেমন: 8G5A7X9B1C"
-                  value={formData.trx_id}
-                  onChange={(e) => setFormData(prev => ({ ...prev, trx_id: e.target.value }))}
-                  className={`mt-1 ${errors.trx_id ? 'border-red-500' : ''}`}
-                />
-                {errors.trx_id && <p className="text-red-500 text-sm mt-1">{errors.trx_id}</p>}
-              </div>
-
-              <div>
-                <Label htmlFor="special_instructions" className="text-gray-700 font-medium">বিশেষ নির্দেশনা (ঐচ্ছিক)</Label>
-                <Textarea
-                  id="special_instructions"
-                  placeholder="কোনো বিশেষ নির্দেশনা থাকলে লিখুন"
-                  value={formData.special_instructions}
-                  onChange={(e) => setFormData(prev => ({ ...prev, special_instructions: e.target.value }))}
-                  className="mt-1"
-                  rows={3}
-                />
-              </div>
-            </div>
           </div>
         );
 
-      case 4:
+      case 'confirm':
+        const formData = form.getValues();
         return (
           <div className="space-y-6">
-            <div className="text-center pb-4">
-              <CheckCircle className="w-12 h-12 mx-auto text-green-500 mb-2" />
-              <h3 className="text-lg font-semibold text-gray-900">অর্ডার সম্পূর্ণ করুন</h3>
-              <p className="text-gray-600">সব তথ্য চেক করে অর্ডার কনফার্ম করুন</p>
-            </div>
-
             <Card>
               <CardHeader>
-                <CardTitle className="text-base">অর্ডার সামারি</CardTitle>
+                <CardTitle className="flex items-center gap-2 text-green-700">
+                  <CheckCircle className="w-5 h-5" />
+                  অর্ডার সম্পূর্ণ করুন
+                </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="space-y-3">
-                  {cart.map((item) => (
-                    <div key={item.id} className="flex justify-between items-center py-2">
-                      <div>
-                        <p className="font-medium text-gray-900">{item.name}</p>
-                        <p className="text-sm text-gray-500">পরিমাণ: {item.quantity}</p>
-                        {item.customization && (
-                          <div className="text-xs text-blue-600 mt-1">
-                            {item.customization.size && <span>সাইজ: {item.customization.size} </span>}
-                            {item.customization.color && <span>রং: {item.customization.color}</span>}
-                          </div>
-                        )}
-                      </div>
-                      <p className="font-medium">{formatPrice(item.price * item.quantity)}</p>
-                    </div>
-                  ))}
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <strong>নাম:</strong> {formData.customerName}
+                  </div>
+                  <div>
+                    <strong>ফোন:</strong> {formData.customerPhone}
+                  </div>
+                  <div className="col-span-2">
+                    <strong>ঠিকানা:</strong> {formData.customerAddress}
+                  </div>
+                  <div>
+                    <strong>পেমেন্ট পদ্ধতি:</strong> {formData.paymentMethod?.toUpperCase()}
+                  </div>
+                  <div>
+                    <strong>পেমেন্ট পরিমাণ:</strong> ৳{formatPrice(formData.paymentAmount)}
+                  </div>
+                  <div className="col-span-2">
+                    <strong>ট্রানজেকশন ID:</strong> {formData.transactionId}
+                  </div>
                 </div>
 
                 <Separator />
 
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span>সাবটোটাল:</span>
-                    <span>{formatPrice(subtotal)}</span>
+                <div>
+                  <strong>অর্ডার আইটেমস:</strong>
+                  <div className="mt-2 space-y-2">
+                    {items.map((item) => (
+                      <div key={item.id} className="flex justify-between text-sm">
+                        <span>{item.name} x{item.quantity}</span>
+                        <span>৳{formatPrice(item.price * item.quantity)}</span>
+                      </div>
+                    ))}
                   </div>
-                  <div className="flex justify-between text-sm">
-                    <span>ডেলিভারি চার্জ:</span>
-                    <span>{formatPrice(deliveryFee)}</span>
-                  </div>
-                  <Separator />
-                  <div className="flex justify-between font-semibold text-lg">
-                    <span>মোট প্রদেয় অর্থ:</span>
-                    <span className="text-green-600">{formatPrice(totalPrice)}</span>
+                  <div className="border-t mt-2 pt-2 flex justify-between font-semibold">
+                    <span>মোট:</span>
+                    <span>৳{formatPrice(totalPrice)}</span>
                   </div>
                 </div>
               </CardContent>
             </Card>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-sm">গ্রাহকের তথ্য</CardTitle>
-                </CardHeader>
-                <CardContent className="pt-0 space-y-2 text-sm">
-                  <p><strong>নাম:</strong> {formData.customer_name}</p>
-                  <p><strong>ফোন:</strong> {formData.phone}</p>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-sm">ডেলিভারি ঠিকানা</CardTitle>
-                </CardHeader>
-                <CardContent className="pt-0 space-y-2 text-sm">
-                  <p>{formData.address}</p>
-                  <p>{formData.thana}, {formData.district}</p>
-                </CardContent>
-              </Card>
-            </div>
           </div>
         );
 
@@ -447,76 +409,100 @@ export default function CheckoutModal({ isOpen, onClose, cart, onOrderComplete }
     }
   };
 
+  const canProceedToNext = () => {
+    switch (step) {
+      case 'info':
+        return form.watch('customerName') && form.watch('customerPhone') && form.watch('customerAddress');
+      case 'payment':
+        return form.watch('paymentAmount') >= minimumPayment && form.watch('transactionId');
+      default:
+        return true;
+    }
+  };
+
+  const handleNext = () => {
+    if (step === 'info') setStep('payment');
+    else if (step === 'payment') setStep('confirm');
+    else if (step === 'confirm') form.handleSubmit(onSubmit)();
+  };
+
+  const handleBack = () => {
+    if (step === 'payment') setStep('info');
+    else if (step === 'confirm') setStep('payment');
+  };
+
   return (
-    <>
-      <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto p-6">
-          <DialogHeader>
-            <DialogTitle className="text-xl font-bold text-gray-900">
-              অর্ডার সম্পূর্ণ করুন
-            </DialogTitle>
-            <DialogDescription>
-              {stepTitles[currentStep - 1]} - ধাপ {currentStep}/4
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="w-full bg-gray-200 rounded-full h-2 mb-6">
-            <div 
-              className="bg-gradient-to-r from-orange-500 to-red-500 h-2 rounded-full transition-all duration-500"
-              style={{ width: `${(currentStep / 4) * 100}%` }}
-            />
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="text-xl font-bold text-center">
+            অর্ডার সম্পূর্ণ করুন
+          </DialogTitle>
+          
+          {/* Progress Indicator */}
+          <div className="flex items-center justify-center space-x-2 mt-4">
+            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
+              step === 'info' ? 'bg-blue-500 text-white' : 'bg-green-500 text-white'
+            }`}>
+              1
+            </div>
+            <div className="w-8 h-1 bg-gray-200">
+              <div className={`h-full transition-all duration-300 ${
+                ['payment', 'confirm'].includes(step) ? 'bg-blue-500 w-full' : 'bg-gray-200 w-0'
+              }`} />
+            </div>
+            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
+              step === 'payment' ? 'bg-blue-500 text-white' : 
+              step === 'confirm' ? 'bg-green-500 text-white' : 'bg-gray-300 text-gray-500'
+            }`}>
+              2
+            </div>
+            <div className="w-8 h-1 bg-gray-200">
+              <div className={`h-full transition-all duration-300 ${
+                step === 'confirm' ? 'bg-blue-500 w-full' : 'bg-gray-200 w-0'
+              }`} />
+            </div>
+            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
+              step === 'confirm' ? 'bg-blue-500 text-white' : 'bg-gray-300 text-gray-500'
+            }`}>
+              3
+            </div>
           </div>
 
-          <div className="py-4">
-            {renderStepContent()}
+          <div className="text-center text-sm text-gray-600 mt-2">
+            {step === 'info' && 'তথ্য পূরণ করুন'}
+            {step === 'payment' && 'পেমেন্ট সম্পূর্ণ করুন'}
+            {step === 'confirm' && 'অর্ডার নিশ্চিত করুন'}
           </div>
+        </DialogHeader>
+
+        <form className="space-y-6">
+          {renderStepContent()}
 
           <div className="flex justify-between pt-6 border-t">
             <Button
+              type="button"
               variant="outline"
-              onClick={handlePrevStep}
-              disabled={currentStep === 1}
+              onClick={step === 'info' ? onClose : handleBack}
+              disabled={isSubmitting}
+              data-testid="button-back"
             >
-              পূর্ববর্তী
+              {step === 'info' ? 'বাতিল' : 'পূর্ববর্তী'}
             </Button>
 
-            {currentStep < 4 ? (
-              <Button
-                onClick={handleNextStep}
-                className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600"
-              >
-                পরবর্তী
-              </Button>
-            ) : (
-              <Button
-                onClick={handleSubmit}
-                disabled={createOrderMutation.isPending}
-                className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600"
-              >
-                {createOrderMutation.isPending ? (
-                  <div className="flex items-center">
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                    অর্ডার করা হচ্ছে...
-                  </div>
-                ) : (
-                  <>
-                    <Package className="w-4 h-4 mr-2" />
-                    অর্ডার কনফার্ম করুন
-                  </>
-                )}
-              </Button>
-            )}
+            <Button
+              type="button"
+              onClick={handleNext}
+              disabled={!canProceedToNext() || isSubmitting}
+              data-testid="button-next"
+            >
+              {isSubmitting ? 'অপেক্ষা করুন...' : (
+                step === 'confirm' ? 'অর্ডার সম্পূর্ণ করুন' : 'পরবর্তী'
+              )}
+            </Button>
           </div>
-        </DialogContent>
-      </Dialog>
-
-      {showSuccessModal && completedOrder && (
-        <OrderSuccessModal
-          isOpen={showSuccessModal}
-          onClose={() => setShowSuccessModal(false)}
-          order={completedOrder}
-        />
-      )}
-    </>
+        </form>
+      </DialogContent>
+    </Dialog>
   );
 }
