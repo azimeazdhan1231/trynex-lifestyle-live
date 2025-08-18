@@ -84,8 +84,8 @@ const Header = () => {
   const navigation = [
     { name: "হোম", href: "/", bengali: true },
     { name: "পণ্য", href: "/products", bengali: true },
+    { name: "ট্র্যাকিং", href: "/tracking", bengali: true },
     { name: "অফার", href: "/offers", bengali: true },
-    { name: "ব্লগ", href: "/blog", bengali: true },
     { name: "যোগাযোগ", href: "/contact", bengali: true },
   ];
 

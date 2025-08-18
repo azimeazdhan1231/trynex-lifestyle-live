@@ -1,6 +1,7 @@
 
 import React, { useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams } from "wouter";
+import { useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -54,9 +55,30 @@ const statusConfig = {
   },
 };
 
+// Helper functions
+const getStatusInfo = (status: string) => {
+  return statusConfig[status as keyof typeof statusConfig] || statusConfig.pending;
+};
+
+const formatDate = (dateString: string | null) => {
+  if (!dateString) return 'তারিখ পাওয়া যায়নি';
+  try {
+    return new Date(dateString).toLocaleDateString('bn-BD', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  } catch {
+    return 'তারিখ পাওয়া যায়নি';
+  }
+};
+
 export default function TrackingPage() {
-  const { trackingId: urlTrackingId } = useParams();
-  const navigate = useNavigate();
+  const params = useParams();
+  const urlTrackingId = params.trackingId;
+  const [location, navigate] = useLocation();
   const [localTrackingId, setLocalTrackingId] = useState(urlTrackingId || "");
   const [searchId, setSearchId] = useState(urlTrackingId || "");
   const { toast } = useToast();
