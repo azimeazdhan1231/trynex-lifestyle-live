@@ -23,6 +23,7 @@ import DynamicProductCarousel from "@/components/dynamic-product-carousel";
 import GiftCategoryShowcase from "@/components/gift-category-showcase";
 // Optimized imports - removed heavy utilities
 import type { Product, Offer } from "@shared/schema";
+import { useUltraFastProducts } from "../hooks/useUltraFastProducts";
 
 interface ProductCardProps {
   product: Product;
@@ -251,7 +252,7 @@ function ProductSection({
             backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23059669' fill-opacity='0.1'%3E%3Ccircle cx='30' cy='30' r='4'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
           }} />
         </div>
-        
+
         <div className="container mx-auto px-4 relative z-10">
           {/* Premium Loading Header */}
           <div className="text-center mb-16">
@@ -282,7 +283,7 @@ function ProductSection({
             </div>
           </div>
         </div>
-        
+
         {/* Premium Loading Overlay */}
         <div className="absolute inset-0 bg-gradient-to-br from-transparent via-white/20 to-transparent pointer-events-none animate-shine" />
       </section>
@@ -373,6 +374,10 @@ export default function Home() {
   const { toast } = useToast();
   const { addToCart, totalItems } = useCart();
 
+  // Dummy state for category and search query to satisfy the hook's expected parameters
+  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [searchQuery, setSearchQuery] = useState('');
+
   // Simple initialization - run only once
   useEffect(() => {
     // Home page initialized
@@ -389,93 +394,49 @@ export default function Home() {
   const [cachedProducts, setCachedProducts] = useState<Product[]>([]);
 
   // Load products with instant static data and background updates
-  const { data: products = [], isLoading: productsLoading, isSuccess } = useQuery<Product[]>({
-    queryKey: ["/api/products"],
-    queryFn: async () => {
-      // Try to serve from browser cache first
-      try {
-        const cached = localStorage.getItem('homepage-products-cache');
-        if (cached) {
-          const { data, timestamp } = JSON.parse(cached);
-          if (Date.now() - timestamp < 2 * 60 * 1000) { // 2 minutes cache
-            console.log('⚡ Homepage products from cache');
-            // Start background refresh but return cached data immediately
-            fetch('/api/products').then(res => res.json()).then(freshData => {
-              localStorage.setItem('homepage-products-cache', JSON.stringify({
-                data: freshData,
-                timestamp: Date.now()
-              }));
-            }).catch(console.error);
-            return data;
-          }
-        }
-      } catch (e) {}
-
-      // Fetch with timeout
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 4000); // 4 second timeout
-      
-      try {
-        const response = await fetch('/api/products', {
-          signal: controller.signal,
-          headers: { 'Accept': 'application/json' }
-        });
-        
-        clearTimeout(timeoutId);
-        
-        if (!response.ok) throw new Error('Network error');
-        
-        const data = await response.json();
-        
-        // Cache for next time
-        localStorage.setItem('homepage-products-cache', JSON.stringify({
-          data,
-          timestamp: Date.now()
-        }));
-        
-        return data;
-        
-      } catch (error) {
-        clearTimeout(timeoutId);
-        console.warn('⚠️ Homepage products fetch failed, using fallback');
-        return []; // Return empty array as fallback
-      }
-    },
-    staleTime: 1000 * 60 * 5, // 5 minutes stale time
-    gcTime: 1000 * 60 * 15, // Keep in memory for 15 minutes
-    retry: false, // No retry for faster response
-    refetchOnWindowFocus: false,
-    initialData: cachedProducts.length > 0 ? cachedProducts : undefined,
-    placeholderData: cachedProducts, // Use cached data as placeholder
-    networkMode: 'always', // Always try to fetch fresh data
+  const { 
+    products, 
+    isLoading: productsLoading, 
+    error: productsError,
+    isFetching,
+    allProducts
+  } = useUltraFastProducts({
+    category: selectedCategory === 'all' ? undefined : selectedCategory,
+    searchTerm: searchQuery,
+    sortBy: 'created_at',
+    sortOrder: 'desc'
   });
 
-  // Show products immediately when loaded - no artificial delays
 
   // Optimize loading state management
   useEffect(() => {
     let timeoutId: NodeJS.Timeout;
-    
+
     if (productsLoading) {
       setShowLoadingSkeleton(true);
       setProductsReady(false);
-    } else if (isSuccess && products.length > 0) {
+    } else if (products && products.length > 0) {
       // Reduce loading animation time for better performance
       timeoutId = setTimeout(() => {
         setShowLoadingSkeleton(false);
         setProductsReady(true);
       }, 600); // Reduced from 1200ms to 600ms
+    } else if (productsError) {
+      // Handle error state, maybe show a message or fallback
+      setShowLoadingSkeleton(false);
+      setProductsReady(false);
+      console.error("Failed to load products:", productsError);
     }
-    
+
     return () => {
       if (timeoutId) {
         clearTimeout(timeoutId);
       }
     };
-  }, [productsLoading, isSuccess, products.length]);
+  }, [productsLoading, products, productsError]); // Adjusted dependencies
 
   // Always show loading when products are being fetched for premium UX
-  const shouldShowLoading = showLoadingSkeleton;
+  const shouldShowLoading = showLoadingSkeleton || isFetching; // Consider isFetching for background updates
 
   // Cache products when successfully loaded - optimize dependency array
   useEffect(() => {
@@ -515,7 +476,7 @@ export default function Home() {
   useEffect(() => {
     let timeoutId: NodeJS.Timeout;
     let isScrolling = false;
-    
+
     const handleScroll = () => {
       if (!isScrolling) {
         isScrolling = true;
@@ -528,7 +489,7 @@ export default function Home() {
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
-    
+
     return () => {
       window.removeEventListener('scroll', handleScroll);
       if (timeoutId) {
@@ -542,7 +503,7 @@ export default function Home() {
     if (product.stock === 0) {
       toast({
         title: "স্টক নেই",
-        description: "এই পণ্যটি বর্তমানে স্টকে নেই",
+        description: "এই পণ্যটি currently স্টকে নেই",
         variant: "destructive",
       });
       return;
@@ -617,7 +578,7 @@ export default function Home() {
             backgroundImage: `url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.1'%3E%3Ccircle cx='20' cy='20' r='3'/%3E%3Ccircle cx='80' cy='80' r='2'/%3E%3Ccircle cx='50' cy='10' r='1.5'/%3E%3Ccircle cx='10' cy='70' r='2.5'/%3E%3Ccircle cx='90' cy='30' r='1'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
           }} />
         </div>
-        
+
         {/* Premium Gradient Overlay */}
         <div className="absolute inset-0 bg-gradient-to-r from-primary/20 via-transparent to-emerald-600/20 animate-shimmer-wave" style={{ animationDuration: '8s' }} />
 
