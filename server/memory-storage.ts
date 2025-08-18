@@ -112,12 +112,23 @@ class MemoryStorage {
   }
 
   async updateOrderStatus(id: string, status: string): Promise<Order> {
-    const order = this.orders.find(o => o.id === id);
-    if (order) {
-      order.status = status;
-      return order;
+    const orderIndex = this.orders.findIndex(order => order.id === id);
+    if (orderIndex === -1) {
+      throw new Error('Order not found');
     }
-    throw new Error('Order not found');
+
+    this.orders[orderIndex] = {
+      ...this.orders[orderIndex],
+      status,
+      updated_at: new Date(),
+    };
+
+    return this.orders[orderIndex];
+  }
+
+  async getOrderByTrackingId(trackingId: string): Promise<Order | null> {
+    const order = this.orders.find(order => order.tracking_id === trackingId);
+    return order || null;
   }
 
   async getOffers(): Promise<Offer[]> {

@@ -374,9 +374,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       console.log(`🔍 Tracking order with ID: ${trackingId}`);
 
-      const order = await supabaseStorage.getOrderByTrackingId(trackingId);
+      // Try both Supabase and memory storage
+      let order;
+      try {
+        order = await supabaseStorage.getOrderByTrackingId(trackingId);
+      } catch (dbError) {
+        console.warn('⚠️ Supabase unavailable for tracking, trying memory storage');
+        order = await memoryStorage.getOrderByTrackingId(trackingId);
+      }
 
       if (!order) {
+        console.log(`❌ Order not found for tracking ID: ${trackingId}`);
         return res.status(404).json({ 
           success: false,
           message: 'এই ট্র্যাকিং আইডি দিয়ে কোনো অর্ডার খুঁজে পাওয়া যায়নি' 
@@ -386,9 +394,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Parse JSON fields for frontend consumption
       const enhancedOrder = {
         ...order,
-        items: typeof order.items === 'string' ? JSON.parse(order.items) : order.items,
-        payment_info: typeof order.payment_info === 'string' ? JSON.parse(order.payment_info) : order.payment_info,
-        custom_images: typeof order.custom_images === 'string' ? JSON.parse(order.custom_images) : order.custom_images
+        items: typeof order.items === 'string' ? JSON.parse(order.items || '[]') : order.items || [],
+        payment_info: typeof order.payment_info === 'string' ? JSON.parse(order.payment_info || '{}') : order.payment_info || {},
+        custom_images: typeof order.custom_images === 'string' ? JSON.parse(order.custom_images || '[]') : order.custom_images || []
       };
 
       console.log(`✅ Order found: ${order.customer_name} - ${order.status}`);
@@ -399,6 +407,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error) {
       console.error('❌ Error tracking order:', error);
+      res.status(500).json({ 
+        success: false,
+        message: 'অর্ডার ট্র্যাকিং করতে সমস্যা হয়েছে' 
+      });
+    }
+  });
+
+  // Alternative tracking endpoint for compatibility
+  app.get('/api/track/:trackingId', async (req, res) => {
+    // Redirect to the main tracking endpoint
+    const trackingId = req.params.trackingId;
+    try {
+      const response = await fetch(`${req.protocol}://${req.get('host')}/api/orders/track/${trackingId}`);
+      const data = await response.json();
+      res.status(response.status).json(data);
+    } catch (error) {
+      console.error('❌ Error in alternative tracking endpoint:', error);
       res.status(500).json({ 
         success: false,
         message: 'অর্ডার ট্র্যাকিং করতে সমস্যা হয়েছে' 

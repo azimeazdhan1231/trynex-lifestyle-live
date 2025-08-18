@@ -9,6 +9,7 @@ import LoadingSpinner from "@/components/LoadingSpinner";
 import { useAnalytics } from "./hooks/use-analytics";
 import { initGA, loadFacebookPixelFromSettings } from "./lib/analytics";
 import PremiumLiveTracking from "./pages/premium-live-tracking";
+import TrackingPage from "@/pages/TrackingPage";
 
 // Lazy load all pages for better performance
 const HomePage = lazy(() => import("./pages/HomePage"));
@@ -46,8 +47,11 @@ const Router = () => {
         <Route path="/checkout" component={CheckoutPage} />
         <Route path="/profile" component={UserProfilePage} />
         <Route path="/orders" element={<OrderTrackingPage />} />
-        <Route path="/tracking" element={<PremiumLiveTracking />} />
-        <Route path="/tracking/:trackingId" element={<PremiumLiveTracking />} />
+        <Route path="/tracking" element={<TrackingPage />} />
+        <Route path="/tracking/:trackingId" element={<TrackingPage />} />
+        <Route path="/track/:trackingId" element={<TrackingPage />} />
+        <Route path="/live-tracking" element={<PremiumLiveTracking />} />
+        <Route path="/live-tracking/:trackingId" element={<PremiumLiveTracking />} />
         <Route path="/contact" component={ContactPage} />
         <Route path="/about" component={AboutPage} />
         <Route path="/offers" component={OffersPage} />
