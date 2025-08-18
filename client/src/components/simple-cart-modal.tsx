@@ -86,10 +86,12 @@ ${itemsText}
   };
 
   const handleCheckout = () => {
+    console.log('🛒 Checkout button clicked!', { hasOnCheckout: !!onCheckout, showCheckout });
     if (onCheckout) {
       onCheckout();
     } else {
       setShowCheckout(true);
+      console.log('🛒 Opening checkout modal');
     }
   };
 
@@ -347,13 +349,48 @@ ${itemsText}
           )}
         </div>
       </DialogContent>
+    </Dialog>
+  );
+}
+
+// Separate component to handle both cart and checkout modals
+export function CartWithCheckout({ isOpen, onClose }: { isOpen: boolean; onClose: () => void; }) {
+  const [showCheckout, setShowCheckout] = useState(false);
+  const { toast } = useToast();
+
+  const handleCheckout = () => {
+    console.log('🛒 Opening checkout from cart', { showCheckout });
+    setShowCheckout(true);
+    console.log('🛒 Checkout state updated to:', true);
+  };
+
+  const handleOrderComplete = (orderId: string) => {
+    setShowCheckout(false);
+    onClose();
+    toast({
+      title: 'অর্ডার সফল! 🎉',
+      description: `অর্ডার নম্বর: ${orderId}. শীঘ্রই আমরা আপনার সাথে যোগাযোগ করব।`,
+    });
+  };
+
+  console.log('🛒 CartWithCheckout render:', { isOpen, showCheckout });
+
+  return (
+    <>
+      <SimpleCartModal
+        isOpen={isOpen}
+        onClose={onClose}
+        onCheckout={handleCheckout}
+      />
       
-      {/* Checkout Modal */}
       <CheckoutModal
         isOpen={showCheckout}
-        onClose={() => setShowCheckout(false)}
+        onClose={() => {
+          console.log('🛒 Closing checkout modal');
+          setShowCheckout(false);
+        }}
         onOrderComplete={handleOrderComplete}
       />
-    </Dialog>
+    </>
   );
 }

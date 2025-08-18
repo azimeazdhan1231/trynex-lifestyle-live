@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { ShoppingCart } from "lucide-react";
 import { useCart } from "@/hooks/use-cart";
 import { useToast } from "@/hooks/use-toast";
-import SimpleCartModal from "./simple-cart-modal";
+import { CartWithCheckout } from "./simple-cart-modal";
 import { cn } from "@/lib/utils";
 
 interface IntegratedCartSystemProps {
@@ -70,11 +70,10 @@ export default function IntegratedCartSystem({ className = "" }: IntegratedCartS
         )}
       </Button>
 
-      {/* Simple Cart Modal */}
-      <SimpleCartModal
+      {/* Cart with Checkout */}
+      <CartWithCheckout
         isOpen={isCartOpen}
         onClose={handleCloseCart}
-        onCheckout={handleProceedToCheckout}
       />
 
 
