@@ -70,175 +70,224 @@ export default function UltraResponsiveCartModal({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent 
         className={cn(
-          "max-w-md w-full mx-auto bg-white border-0 shadow-xl",
+          "p-0 gap-0 border-0 shadow-2xl overflow-hidden",
           isMobile 
-            ? "h-[95vh] max-h-[95vh] w-[95vw] rounded-lg" 
-            : "max-h-[90vh] rounded-xl"
+            ? "w-screen h-screen max-w-none max-h-none rounded-none" 
+            : "w-[95vw] h-[95vh] max-w-6xl max-h-[95vh] rounded-2xl"
         )}
         data-testid="cart-modal"
       >
-        <DialogHeader className="flex flex-row items-center justify-between p-4 border-b bg-gradient-to-r from-orange-50 to-red-50">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-gradient-to-r from-orange-500 to-red-500 rounded-full text-white">
-              <ShoppingCart className="w-4 h-4" />
+        {/* Header */}
+        <DialogHeader className="flex flex-row items-center justify-between p-6 border-b bg-gradient-to-r from-orange-50 to-red-50 sticky top-0 z-10">
+          <div className="flex items-center gap-4">
+            <div className="p-3 bg-gradient-to-r from-orange-500 to-red-500 rounded-full text-white">
+              <ShoppingCart className="w-6 h-6" />
             </div>
             <div>
-              <DialogTitle className="text-lg font-bold text-gray-900">
+              <DialogTitle className="text-2xl font-bold text-gray-900">
                 আপনার কার্ট
               </DialogTitle>
-              <DialogDescription className="text-sm text-gray-600">
-                {items.length} টি পণ্য
+              <DialogDescription className="text-lg text-gray-600">
+                {items.length} টি পণ্য নির্বাচিত
               </DialogDescription>
             </div>
           </div>
           <Button
             variant="ghost"
-            size="sm"
+            size="lg"
             onClick={onClose}
-            className="rounded-full h-8 w-8 p-0"
+            className="rounded-full h-12 w-12 p-0 hover:bg-white/50"
             data-testid="close-cart"
           >
-            <X className="h-4 w-4" />
+            <X className="h-6 w-6" />
           </Button>
         </DialogHeader>
 
-        <div className="flex flex-col h-full">
+        {/* Content */}
+        <div className="flex flex-1 h-full min-h-0">
           {items.length === 0 ? (
-            <div className="flex-1 flex flex-col items-center justify-center p-8 text-center">
-              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-                <Package2 className="w-8 h-8 text-gray-400" />
+            <div className="flex-1 flex flex-col items-center justify-center p-12 text-center bg-gray-50">
+              <div className="w-32 h-32 bg-white rounded-full flex items-center justify-center mb-8 shadow-lg">
+                <Package2 className="w-16 h-16 text-gray-400" />
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">আপনার কার্ট খালি</h3>
-              <p className="text-gray-600 mb-4">কেনাকাটা শুরু করতে পণ্য যোগ করুন</p>
-              <Button onClick={onClose} className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600">
-                কেনাকাটা চালিয়ে যান
+              <h3 className="text-3xl font-bold text-gray-900 mb-4">আপনার কার্ট খালি</h3>
+              <p className="text-xl text-gray-600 mb-8 max-w-md">
+                কেনাকাটা শুরু করতে আমাদের দুর্দান্ত পণ্যগুলি দেখুন এবং কার্টে যোগ করুন
+              </p>
+              <Button 
+                onClick={onClose} 
+                size="lg"
+                className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-lg px-8 py-4 h-auto"
+              >
+                কেনাকাটা শুরু করুন
+                <ArrowRight className="ml-2 w-5 h-5" />
               </Button>
             </div>
           ) : (
             <>
-              <ScrollArea className="flex-1 px-4">
-                <div className="space-y-4 py-4">
-                  {items.map((item) => (
-                    <div 
-                      key={item.id} 
-                      className="flex gap-3 p-3 bg-gray-50 rounded-lg border"
-                      data-testid={`cart-item-${item.id}`}
-                    >
-                      <div className="w-16 h-16 rounded-lg overflow-hidden bg-white border flex-shrink-0">
-                        <img
-                          src={item.image_url || item.image || '/placeholder.png'}
-                          alt={item.name}
-                          className="w-full h-full object-cover"
-                          loading="lazy"
-                        />
-                      </div>
-
-                      <div className="flex-1 min-w-0">
-                        <h4 className="font-semibold text-gray-900 text-sm line-clamp-2 mb-1">
-                          {item.name}
-                        </h4>
-                        <p className="font-bold text-orange-600 text-sm mb-2">
-                          {formatPrice(item.price)}
-                        </p>
-
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-1">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleQuantityChange(item.id, item.quantity - 1)}
-                              disabled={item.quantity <= 1}
-                              className="h-6 w-6 p-0 rounded-full"
-                              data-testid={`decrease-quantity-${item.id}`}
-                            >
-                              <Minus className="h-3 w-3" />
-                            </Button>
-                            <Badge variant="secondary" className="px-2 py-0 text-xs min-w-[32px] justify-center">
-                              {item.quantity}
-                            </Badge>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleQuantityChange(item.id, item.quantity + 1)}
-                              className="h-6 w-6 p-0 rounded-full"
-                              data-testid={`increase-quantity-${item.id}`}
-                            >
-                              <Plus className="h-3 w-3" />
-                            </Button>
-                          </div>
-
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleRemoveItem(item.id)}
-                            className="text-red-500 hover:text-red-600 hover:bg-red-50 h-6 w-6 p-0 rounded-full"
-                            data-testid={`remove-item-${item.id}`}
-                          >
-                            <Trash2 className="h-3 w-3" />
-                          </Button>
-                        </div>
-
-                        <div className="text-right mt-1">
-                          <span className="font-bold text-gray-900 text-sm">
-                            {formatPrice(item.price * item.quantity)}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </ScrollArea>
-
-              <div className="border-t bg-white p-4">
-                {items.length > 0 && (
-                  <div className="mb-3">
+              {/* Cart Items - Left Side */}
+              <div className="flex-1 p-6 bg-gray-50">
+                <div className="mb-6 flex items-center justify-between">
+                  <h2 className="text-xl font-semibold text-gray-900">নির্বাচিত পণ্যসমূহ</h2>
+                  {items.length > 0 && (
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={handleClearCart}
-                      className="text-red-500 hover:text-red-600 hover:bg-red-50 border-red-200 text-xs"
+                      className="text-red-500 hover:text-red-600 hover:bg-red-50 border-red-200"
                       data-testid="clear-cart"
                     >
-                      <Trash2 className="w-3 h-3 mr-1" />
-                      কার্ট খালি করুন
+                      <Trash2 className="w-4 h-4 mr-2" />
+                      সব সরান
                     </Button>
-                  </div>
-                )}
-
-                <div className="space-y-2 mb-4">
-                  <div className="flex justify-between text-sm text-gray-600">
-                    <span>সাবটোটাল:</span>
-                    <span>{formatPrice(total)}</span>
-                  </div>
-                  <div className="flex justify-between text-sm text-gray-600">
-                    <span>ডেলিভারি ফি:</span>
-                    <span className={deliveryFee === 0 ? "text-green-600 font-medium" : ""}>
-                      {deliveryFee === 0 ? "ফ্রি" : formatPrice(deliveryFee)}
-                    </span>
-                  </div>
-                  {deliveryFee === 0 && (
-                    <p className="text-xs text-green-600">🎉 ১৬০০+ টাকার অর্ডারে ফ্রি ডেলিভারি!</p>
                   )}
-                  <Separator />
-                  <div className="flex justify-between font-bold text-gray-900">
-                    <span>মোট:</span>
-                    <span className="text-orange-600">{formatPrice(grandTotal)}</span>
+                </div>
+
+                <ScrollArea className="h-full pr-4">
+                  <div className="space-y-6">
+                    {items.map((item) => (
+                      <div 
+                        key={item.id} 
+                        className="flex gap-6 p-6 bg-white rounded-xl border shadow-sm hover:shadow-md transition-shadow"
+                        data-testid={`cart-item-${item.id}`}
+                      >
+                        {/* Product Image */}
+                        <div className="w-24 h-24 rounded-xl overflow-hidden bg-gray-100 border flex-shrink-0">
+                          <img
+                            src={item.image_url || item.image || '/placeholder.png'}
+                            alt={item.name}
+                            className="w-full h-full object-cover"
+                            loading="lazy"
+                          />
+                        </div>
+
+                        {/* Product Details */}
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-semibold text-gray-900 text-lg mb-2 line-clamp-2">
+                            {item.name}
+                          </h4>
+                          <p className="font-bold text-orange-600 text-lg mb-4">
+                            {formatPrice(item.price)} প্রতিটি
+                          </p>
+
+                          {/* Quantity Controls */}
+                          <div className="flex items-center gap-4 mb-4">
+                            <span className="text-sm font-medium text-gray-700">পরিমাণ:</span>
+                            <div className="flex items-center gap-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleQuantityChange(item.id, item.quantity - 1)}
+                                disabled={item.quantity <= 1}
+                                className="h-8 w-8 p-0 rounded-full"
+                                data-testid={`decrease-quantity-${item.id}`}
+                              >
+                                <Minus className="h-4 w-4" />
+                              </Button>
+                              <Badge variant="secondary" className="px-4 py-1 text-base min-w-[48px] justify-center">
+                                {item.quantity}
+                              </Badge>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleQuantityChange(item.id, item.quantity + 1)}
+                                className="h-8 w-8 p-0 rounded-full"
+                                data-testid={`increase-quantity-${item.id}`}
+                              >
+                                <Plus className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </div>
+
+                          {/* Subtotal & Remove */}
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <span className="text-sm text-gray-600">সাবটোটাল: </span>
+                              <span className="font-bold text-gray-900 text-lg">
+                                {formatPrice(item.price * item.quantity)}
+                              </span>
+                            </div>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleRemoveItem(item.id)}
+                              className="text-red-500 hover:text-red-600 hover:bg-red-50 h-10 px-4"
+                              data-testid={`remove-item-${item.id}`}
+                            >
+                              <Trash2 className="h-4 w-4 mr-2" />
+                              সরান
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </ScrollArea>
+              </div>
+
+              {/* Order Summary - Right Side */}
+              <div className="w-96 bg-white border-l flex flex-col">
+                <div className="p-6 border-b">
+                  <h2 className="text-xl font-bold text-gray-900 mb-4">অর্ডার সারসংক্ষেপ</h2>
+                  
+                  <div className="space-y-4">
+                    <div className="flex justify-between text-lg">
+                      <span className="text-gray-600">সাবটোটাল:</span>
+                      <span className="font-semibold">{formatPrice(total)}</span>
+                    </div>
+                    
+                    <div className="flex justify-between text-lg">
+                      <span className="text-gray-600">ডেলিভারি চার্জ:</span>
+                      <span className={cn(
+                        "font-semibold",
+                        deliveryFee === 0 ? "text-green-600" : "text-gray-900"
+                      )}>
+                        {deliveryFee === 0 ? "ফ্রি" : formatPrice(deliveryFee)}
+                      </span>
+                    </div>
+                    
+                    {deliveryFee === 0 && (
+                      <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+                        <p className="text-sm text-green-700 font-medium">
+                          🎉 অভিনন্দন! আপনি ফ্রি ডেলিভারি পেয়েছেন
+                        </p>
+                      </div>
+                    )}
+                    
+                    {deliveryFee > 0 && (
+                      <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                        <p className="text-sm text-blue-700">
+                          আরও {formatPrice(1600 - total)} কিনলে ফ্রি ডেলিভারি পাবেন!
+                        </p>
+                      </div>
+                    )}
+                    
+                    <Separator />
+                    
+                    <div className="flex justify-between text-xl font-bold">
+                      <span>মোট:</span>
+                      <span className="text-orange-600">{formatPrice(grandTotal)}</span>
+                    </div>
                   </div>
                 </div>
 
-                <div className="space-y-2">
+                {/* Action Buttons */}
+                <div className="flex-1 flex flex-col justify-end p-6 space-y-4">
                   <Button
                     onClick={onCheckout}
-                    className="w-full bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 font-semibold h-12"
+                    size="lg"
+                    className="w-full bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 font-bold text-lg h-14"
                     data-testid="checkout-button"
                   >
                     চেকআউট করুন
-                    <ArrowRight className="ml-2 w-4 h-4" />
+                    <ArrowRight className="ml-3 w-5 h-5" />
                   </Button>
+                  
                   <Button
                     variant="outline"
+                    size="lg"
                     onClick={onClose}
-                    className="w-full h-10"
+                    className="w-full h-12 text-lg"
                     data-testid="continue-shopping"
                   >
                     কেনাকাটা চালিয়ে যান
