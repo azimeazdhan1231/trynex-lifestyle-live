@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { useCart } from "@/hooks/use-cart";
+import IntegratedCartSystem from "./integrated-cart-system";
 import { useQuery } from "@tanstack/react-query";
 import EnhancedCartModal from "@/components/EnhancedCartModal";
 import {
@@ -96,11 +97,11 @@ const Header = () => {
           <div className="flex items-center space-x-4">
             <span className="flex items-center gap-1">
               <Phone className="w-3 h-3" />
-              <span className="hidden sm:inline">+880 1234-567890</span>
+              <span className="hidden sm:inline">01747292277</span>
             </span>
             <span className="flex items-center gap-1">
               <Mail className="w-3 h-3" />
-              <span className="hidden md:inline">info@trynexlifestyle.com</span>
+              <span className="hidden md:inline">trynexlifestyle@gmail.com</span>
             </span>
           </div>
           <div className="flex items-center space-x-2">
@@ -201,21 +202,8 @@ const Header = () => {
                 </Button>
               </Link>
 
-              {/* Cart */}
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                className="relative" 
-                data-testid="cart-button"
-                onClick={() => setShowCartModal(true)}
-              >
-                <ShoppingCart className="w-5 h-5" />
-                {cartItemCount > 0 && (
-                  <Badge className="absolute -top-2 -right-2 w-5 h-5 flex items-center justify-center text-xs bg-primary">
-                    {cartItemCount}
-                  </Badge>
-                )}
-              </Button>
+              {/* Integrated Cart System */}
+              <IntegratedCartSystem />
 
               {/* User Account */}
               <Link href="/profile">

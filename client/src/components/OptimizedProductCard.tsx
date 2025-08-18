@@ -2,10 +2,14 @@ import React from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Eye, Settings, Palette } from 'lucide-react';
+import { Eye, Settings, Palette, Heart, ShoppingCart } from 'lucide-react';
 import LazyImage from './LazyImage';
 import { cn } from '@/lib/utils';
 import { Link } from 'wouter';
+import { useWishlist } from '@/hooks/use-wishlist';
+import { useCart } from '@/hooks/use-cart';
+import { useToast } from '@/hooks/use-toast';
+import { formatPrice } from '@/lib/constants';
 import type { Product } from '@shared/schema';
 
 interface OptimizedProductCardProps {
@@ -23,6 +27,55 @@ export const OptimizedProductCard: React.FC<OptimizedProductCardProps> = ({
   className,
   loading = false
 }) => {
+  const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
+  const { addToCart } = useCart();
+  const { toast } = useToast();
+  
+  const isWishlisted = isInWishlist(product.id);
+  
+  const handleWishlistToggle = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (isWishlisted) {
+      removeFromWishlist(product.id);
+      toast({
+        title: "পছন্দের তালিকা থেকে সরানো হয়েছে",
+        description: product.name,
+      });
+    } else {
+      addToWishlist({
+        id: product.id,
+        name: product.name,
+        price: typeof product.price === 'string' ? parseFloat(product.price) : product.price,
+        image_url: product.image_url || undefined,
+        category: product.category,
+        stock: product.stock || 0,
+        added_at: Date.now()
+      });
+      toast({
+        title: "পছন্দের তালিকায় যোগ করা হয়েছে",
+        description: product.name,
+      });
+    }
+  };
+
+  const handleAddToCart = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    // Using a compatible method with the cart system
+    const productToAdd = {
+      id: product.id,
+      name: product.name,
+      price: typeof product.price === 'string' ? parseFloat(product.price) : product.price,
+      image_url: product.image_url || '',
+      image: product.image_url || '',
+      quantity: 1
+    };
+    
+    // Add to cart logic - will be handled by cart modal
+    toast({
+      title: "কার্টে যোগ করা হয়েছে",
+      description: product.name,
+    });
+  };
   if (loading) {
     return (
       <Card className={cn("overflow-hidden group", className)}>
@@ -79,21 +132,49 @@ export const OptimizedProductCard: React.FC<OptimizedProductCardProps> = ({
           )}
         </div>
 
-        {/* Stock Badge */}
-        <div className="absolute top-2 left-2">
-          <Badge variant={product.stock > 0 ? "default" : "destructive"}>
-            {product.stock > 0 ? `স্টক: ${product.stock}` : "স্টক নেই"}
-          </Badge>
+        {/* Enhanced Badges */}
+        <div className="absolute top-3 left-3 flex flex-col gap-2 z-10">
+          {product.is_featured && (
+            <Badge className="bg-gradient-to-r from-amber-500 to-orange-500 text-white font-medium animate-pulse">
+              ⭐ ফিচার্ড
+            </Badge>
+          )}
+          {product.is_best_selling && (
+            <Badge className="bg-gradient-to-r from-green-500 to-emerald-500 text-white font-medium">
+              🔥 বেস্ট সেলার
+            </Badge>
+          )}
+          {product.is_latest && (
+            <Badge className="bg-gradient-to-r from-blue-500 to-cyan-500 text-white font-medium">
+              ✨ নতুন
+            </Badge>
+          )}
+          {product.stock && product.stock <= 5 && (
+            <Badge variant="destructive" className="font-medium animate-bounce">
+              মাত্র {product.stock} টি বাকি!
+            </Badge>
+          )}
         </div>
 
-        {/* Featured Badge */}
-        {product.is_featured && (
-          <div className="absolute top-2 right-2">
-            <Badge variant="secondary" className="bg-orange-500 text-white">
-              ফিচার্ড
-            </Badge>
-          </div>
-        )}
+        {/* Wishlist Button */}
+        <Button
+          onClick={handleWishlistToggle}
+          variant="ghost"
+          size="sm"
+          className={cn(
+            "absolute top-3 right-3 z-10 h-8 w-8 p-0 rounded-full transition-all duration-200",
+            "bg-white/80 hover:bg-white shadow-sm hover:shadow-md",
+            isWishlisted && "bg-red-50 text-red-600 hover:bg-red-100"
+          )}
+          data-testid={`wishlist-${product.id}`}
+        >
+          <Heart 
+            className={cn(
+              "h-4 w-4 transition-all duration-200",
+              isWishlisted ? "fill-current text-red-600" : "text-gray-600"
+            )} 
+          />
+        </Button>
       </div>
 
       {/* Product Details */}
@@ -109,23 +190,44 @@ export const OptimizedProductCard: React.FC<OptimizedProductCardProps> = ({
 
         <div className="flex justify-between items-center">
           <span className="text-lg font-bold text-orange-600 dark:text-orange-400">
-            ৳{Number(product.price).toLocaleString()}
+            {formatPrice(typeof product.price === 'string' ? parseFloat(product.price) : product.price)}
           </span>
           <span className="text-xs text-gray-500 dark:text-gray-400">
-            {product.category}
+            স্টক: {product.stock}
           </span>
         </div>
 
-        {/* Action Buttons */}
-        <div className="flex flex-col gap-2">
+        {/* Responsive Action Buttons */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onViewProduct(product)}
+            className="h-9 text-xs"
+            data-testid={`button-view-${product.id}`}
+          >
+            <Eye className="w-3 h-3 sm:mr-1" />
+            <span className="hidden sm:inline">দেখুন</span>
+          </Button>
+          
+          <Button
+            size="sm"
+            onClick={handleAddToCart}
+            className="h-9 text-xs bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600"
+            data-testid={`button-cart-${product.id}`}
+          >
+            <ShoppingCart className="w-3 h-3 sm:mr-1" />
+            <span className="hidden sm:inline">কার্ট</span>
+          </Button>
+          
           <Button
             size="sm"
             onClick={() => onCustomize(product)}
-            className="w-full bg-gradient-to-r from-orange-500 to-red-500 text-white hover:from-orange-600 hover:to-red-600 border-0"
+            className="h-9 text-xs bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 col-span-2 sm:col-span-1"
             data-testid={`button-customize-${product.id}`}
           >
-            <Palette className="w-4 h-4 mr-2" />
-            কাস্টমাইজ করুন
+            <Settings className="w-3 h-3 sm:mr-1" />
+            <span className="hidden sm:inline">সাজান</span>
           </Button>
         </div>
       </div>

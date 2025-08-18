@@ -168,7 +168,7 @@ export default function EnhancedFooter() {
                 <div className="flex items-center space-x-3">
                   <Phone className="w-5 h-5 text-primary flex-shrink-0" />
                   <div>
-                    <p className="text-white font-medium">{WHATSAPP_NUMBER}</p>
+                    <p className="text-white font-medium">01747292277</p>
                     <p className="text-gray-400 text-sm">২৪/৭ সাপোর্ট</p>
                   </div>
                 </div>
@@ -176,7 +176,7 @@ export default function EnhancedFooter() {
                 <div className="flex items-center space-x-3">
                   <Mail className="w-5 h-5 text-primary flex-shrink-0" />
                   <div>
-                    <p className="text-white">info@trynexlifestyle.com</p>
+                    <p className="text-white">trynexlifestyle@gmail.com</p>
                     <p className="text-gray-400 text-sm">সাপোর্ট ইমেইল</p>
                   </div>
                 </div>

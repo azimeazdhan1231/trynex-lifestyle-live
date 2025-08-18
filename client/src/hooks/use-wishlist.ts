@@ -33,39 +33,67 @@ export function useWishlist(): UseWishlistReturn {
       if (savedWishlist) {
         const parsedWishlist = JSON.parse(savedWishlist);
         if (Array.isArray(parsedWishlist)) {
-          setWishlist(parsedWishlist);
+          // Validate and clean wishlist data
+          const validWishlist = parsedWishlist.filter(item => 
+            item && 
+            item.id && 
+            item.name && 
+            typeof item.price === 'number' &&
+            typeof item.stock === 'number'
+          );
+          setWishlist(validWishlist);
         }
       }
     } catch (error) {
       console.error('Failed to load wishlist from storage:', error);
+      // Reset to empty array on error
+      setWishlist([]);
     } finally {
       setIsLoaded(true);
     }
   }, []);
 
-  // Save wishlist to localStorage whenever it changes
+  // Save wishlist to localStorage whenever it changes (debounced)
   useEffect(() => {
     if (isLoaded) {
-      try {
-        localStorage.setItem(WISHLIST_STORAGE_KEY, JSON.stringify(wishlist));
-      } catch (error) {
-        console.error('Failed to save wishlist to storage:', error);
-      }
+      const timeoutId = setTimeout(() => {
+        try {
+          localStorage.setItem(WISHLIST_STORAGE_KEY, JSON.stringify(wishlist));
+          console.log(`💖 Wishlist saved: ${wishlist.length} items`);
+        } catch (error) {
+          console.error('Failed to save wishlist to storage:', error);
+        }
+      }, 100); // Debounce saves
+
+      return () => clearTimeout(timeoutId);
     }
   }, [wishlist, isLoaded]);
 
   const addToWishlist = useCallback((item: WishlistItem) => {
     setWishlist(prev => {
       // Check if item already exists
-      if (prev.some(existingItem => existingItem.id === item.id)) {
-        return prev; // Don't add duplicate
+      const existingIndex = prev.findIndex(existingItem => existingItem.id === item.id);
+      if (existingIndex >= 0) {
+        // Update existing item with latest data
+        const updated = [...prev];
+        updated[existingIndex] = { ...item, added_at: prev[existingIndex].added_at };
+        return updated;
       }
-      return [...prev, { ...item, added_at: Date.now() }];
+      // Add new item
+      const newItem = { ...item, added_at: Date.now() };
+      console.log(`💖 Added to wishlist: ${item.name}`);
+      return [...prev, newItem];
     });
   }, []);
 
   const removeFromWishlist = useCallback((id: string) => {
-    setWishlist(prev => prev.filter(item => item.id !== id));
+    setWishlist(prev => {
+      const filtered = prev.filter(item => item.id !== id);
+      if (filtered.length !== prev.length) {
+        console.log(`💔 Removed from wishlist: ${id}`);
+      }
+      return filtered;
+    });
   }, []);
 
   const isInWishlist = useCallback((id: string) => {
@@ -73,8 +101,9 @@ export function useWishlist(): UseWishlistReturn {
   }, [wishlist]);
 
   const clearWishlist = useCallback(() => {
+    console.log(`💔 Cleared wishlist: ${wishlist.length} items removed`);
     setWishlist([]);
-  }, []);
+  }, [wishlist.length]);
 
   const totalItems = wishlist.length;
 
