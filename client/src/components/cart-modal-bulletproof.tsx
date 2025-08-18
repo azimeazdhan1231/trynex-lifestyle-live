@@ -1,104 +1,89 @@
-import { useState, useEffect } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+
+import React from "react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { ShoppingCart, Plus, Minus, Trash2, Palette, Upload, CreditCard, ChevronDown, ChevronUp } from "lucide-react";
-import { formatPrice } from "@/lib/constants";
+import { Badge } from "@/components/ui/badge";
 import { useCart } from "@/hooks/use-cart-bulletproof";
-import CheckoutModal from "@/components/checkout-modal";
+import { useToast } from "@/hooks/use-toast";
+import { 
+  ShoppingCart, Plus, Minus, Trash2, 
+  ShoppingBag, X, Heart, Package, CreditCard,
+  ArrowRight, Star
+} from "lucide-react";
+import { formatPrice } from "@/lib/constants";
+import { useLocation } from "wouter";
 
-import type { Product } from "@shared/schema";
-
-interface CartModalProps {
+interface CartModalBulletproofProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-export default function CartModalBulletproof({ isOpen, onClose }: CartModalProps) {
-  const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
-  const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
-  const [customizationData, setCustomizationData] = useState<Record<string, any>>({});
-  const { cart, updateQuantity, removeFromCart, totalItems, totalPrice, clearCart, isLoaded, refreshCart, updateCartItemCustomization } = useCart();
+export default function CartModalBulletproof({ isOpen, onClose }: CartModalBulletproofProps) {
+  const { cart: items, totalPrice, totalItems, updateQuantity, removeFromCart, clearCart } = useCart();
+  const { toast } = useToast();
+  const [, setLocation] = useLocation();
 
-  // Force cart refresh when modal opens
-  useEffect(() => {
-    if (isOpen) {
-      refreshCart();
-    }
-  }, [isOpen, refreshCart]);
+  const deliveryCharge = totalPrice > 1000 ? 0 : 60;
+  const finalTotal = totalPrice + deliveryCharge;
+
+  const handleRemoveItem = (id: string) => {
+    removeFromCart(id);
+    toast({
+      title: "পণ্য সরানো হয়েছে",
+      description: "পণ্যটি আপনার কার্ট থেকে সরিয়ে দেওয়া হয়েছে",
+    });
+  };
+
+  const handleClearCart = () => {
+    clearCart();
+    toast({
+      title: "কার্ট খালি করা হয়েছে",
+      description: "সব পণ্য কার্ট থেকে সরানো হয়েছে",
+    });
+  };
 
   const handleCheckout = () => {
-    if (cart.length === 0) {
-      return;
-    }
     onClose();
-    setIsCheckoutOpen(true);
+    setLocation('/checkout');
   };
 
-  const handleQuantityChange = (id: string, newQuantity: number) => {
-    if (newQuantity < 1) {
-      removeFromCart(id);
-    } else {
-      updateQuantity(id, newQuantity);
-    }
+  const handleContinueShopping = () => {
+    onClose();
+    setLocation('/products');
   };
 
-  const toggleItemExpansion = (itemId: string) => {
-    const newExpandedItems = new Set(expandedItems);
-    if (newExpandedItems.has(itemId)) {
-      newExpandedItems.delete(itemId);
-    } else {
-      newExpandedItems.add(itemId);
-    }
-    setExpandedItems(newExpandedItems);
-  };
-
-  const handleInlineCustomization = (itemId: string, field: string, value: string) => {
-    const currentData = customizationData[itemId] || {};
-    const updatedData = { ...currentData, [field]: value };
-    setCustomizationData(prev => ({ ...prev, [itemId]: updatedData }));
-    
-    // Update cart item immediately
-    updateCartItemCustomization(itemId, updatedData);
-  };
-
-  const handleFileUpload = (itemId: string, file: File) => {
-    // Handle file upload for customization
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const result = e.target?.result as string;
-      handleInlineCustomization(itemId, 'customImage', result);
-    };
-    reader.readAsDataURL(file);
-  };
-
-  const isItemCustomizable = (itemName: string) => {
-    const customizableTypes = ['t-shirt', 'tshirt', 'mug', 'photo canvas', 'canvas'];
-    return customizableTypes.some(type => itemName.toLowerCase().includes(type));
-  };
-
-
-
-  if (!isLoaded) {
+  // Empty cart state
+  if (!items || items.length === 0) {
     return (
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="w-[95vw] max-w-lg sm:max-w-xl lg:max-w-2xl max-h-[95vh] overflow-hidden flex flex-col">
-          <DialogHeader className="flex-shrink-0 px-4 py-4 border-b">
-            <DialogTitle className="text-xl font-bold text-gray-800 flex items-center gap-2">
-              🛒 আপনার কার্ট 
+        <DialogContent className="max-w-md w-[95vw] sm:w-[90vw] rounded-xl bg-white dark:bg-gray-900 border-0 shadow-2xl">
+          <DialogHeader className="text-center pb-4">
+            <DialogTitle className="flex items-center justify-center gap-3 text-xl font-bold text-gray-900 dark:text-white">
+              <ShoppingCart className="w-6 h-6 text-orange-500" />
+              আপনার কার্ট
             </DialogTitle>
-            <DialogDescription className="text-sm text-gray-600">
-              কার্ট লোড হচ্ছে...
-            </DialogDescription>
           </DialogHeader>
-          <div className="flex-1 overflow-y-auto px-4 py-4">
-            <div className="text-center py-12">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+          
+          <div className="text-center py-8 px-4">
+            <div className="w-20 h-20 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-6">
+              <ShoppingBag className="w-10 h-10 text-gray-400" />
             </div>
+            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3">
+              কার্ট খালি
+            </h3>
+            <p className="text-gray-600 dark:text-gray-400 mb-8">
+              আপনার কার্টে কোনো পণ্য নেই। কেনাকাটা শুরু করুন!
+            </p>
+            <Button 
+              onClick={handleContinueShopping}
+              className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-medium py-3 rounded-xl transition-all duration-200 transform hover:scale-105"
+              size="lg"
+            >
+              <Package className="w-5 h-5 mr-2" />
+              পণ্য দেখুন
+            </Button>
           </div>
         </DialogContent>
       </Dialog>
@@ -106,256 +91,214 @@ export default function CartModalBulletproof({ isOpen, onClose }: CartModalProps
   }
 
   return (
-    <>
-      <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="w-[95vw] max-w-lg sm:max-w-xl lg:max-w-2xl max-h-[95vh] overflow-hidden flex flex-col">
-          <DialogHeader className="flex-shrink-0 px-4 py-4 border-b bg-gradient-to-r from-primary/5 to-primary/10">
-            <DialogTitle className="text-xl font-bold text-gray-800 flex items-center gap-2">
-              🛒 আপনার কার্ট 
-              <span className="bg-primary/20 text-primary px-2 py-1 rounded-full text-sm font-medium">
-                {cart.length}টি পণ্য
-              </span>
-            </DialogTitle>
-            <DialogDescription className="text-sm text-gray-600">
-              আপনার শপিং কার্টে থাকা পণ্যসমূহ দেখুন এবং পরিচালনা করুন
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="flex-1 overflow-y-auto px-4 py-4">
-            {cart.length === 0 ? (
-              <div className="text-center py-12">
-                <ShoppingCart className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                <p className="text-gray-500 text-lg mb-4">আপনার কার্ট খালি</p>
-                <p className="text-gray-400 text-sm mb-6">কোন পণ্য যুক্ত করা হয়নি</p>
-                <Button onClick={onClose} variant="outline">
-                  কেনাকাটা শুরু করুন
-                </Button>
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="max-w-4xl w-[95vw] sm:w-[90vw] lg:w-[85vw] max-h-[95vh] rounded-xl bg-white dark:bg-gray-900 border-0 shadow-2xl p-0 overflow-hidden">
+        
+        {/* Header */}
+        <DialogHeader className="sticky top-0 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 px-6 py-4 z-10">
+          <DialogTitle className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center">
+                <ShoppingCart className="w-5 h-5 text-white" />
               </div>
-            ) : (
-              <div className="space-y-6">
-                {/* Cart Items */}
-                <div className="space-y-4">
-                  {cart.map((item) => (
-                    <div
-                      key={`${item.id}-${JSON.stringify(item.customization)}`}
-                      className="flex items-start gap-3 p-4 border border-gray-200 rounded-xl bg-white shadow-sm hover:shadow-md transition-all duration-200"
-                    >
-                      {/* Product Image */}
-                      {(item.image_url || item.image) && (
-                        <div className="flex-shrink-0">
-                          <img
-                            src={item.image_url || item.image}
-                            alt={item.name}
-                            className="w-16 h-16 md:w-20 md:h-20 object-cover rounded-lg border border-gray-200"
-                            loading="lazy"
-                            onError={(e) => {
-                              e.currentTarget.style.display = 'none';
-                            }}
-                          />
+              <div>
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+                  আপনার কার্ট
+                </h2>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  {totalItems} টি পণ্য
+                </p>
+              </div>
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onClose}
+              className="w-8 h-8 p-0 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            >
+              <X className="w-5 h-5 text-gray-500" />
+            </Button>
+          </DialogTitle>
+        </DialogHeader>
+
+        {/* Content */}
+        <div className="flex flex-col h-full">
+          
+          {/* Cart Items */}
+          <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4 max-h-[50vh]">
+            {items.map((item: any, index: number) => (
+              <Card key={`${item.id}-${index}`} className="border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden hover:shadow-md transition-shadow duration-200">
+                <CardContent className="p-4">
+                  <div className="flex items-start gap-4">
+                    
+                    {/* Product Image */}
+                    <div className="flex-shrink-0">
+                      <img
+                        src={item.image_url || item.image || '/placeholder-product.png'}
+                        alt={item.name}
+                        className="w-20 h-20 sm:w-24 sm:h-24 object-cover rounded-lg border border-gray-200 dark:border-gray-700"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.src = '/placeholder-product.png';
+                        }}
+                      />
+                    </div>
+                    
+                    {/* Product Info */}
+                    <div className="flex-1 min-w-0">
+                      <h4 className="font-semibold text-gray-900 dark:text-white text-base truncate mb-1">
+                        {item.name}
+                      </h4>
+                      <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                        একক মূল্য: {formatPrice(item.price)}
+                      </p>
+                      
+                      {/* Customization Info */}
+                      {item.customization && (
+                        <div className="mb-3">
+                          <Badge variant="outline" className="text-xs bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-700">
+                            কাস্টমাইজড
+                          </Badge>
+                          <div className="mt-2 text-xs text-gray-600 dark:text-gray-400 space-y-1">
+                            {item.customization.color && (
+                              <p><span className="font-medium">রং:</span> {item.customization.color}</p>
+                            )}
+                            {item.customization.size && (
+                              <p><span className="font-medium">সাইজ:</span> {item.customization.size}</p>
+                            )}
+                            {item.customization.text && (
+                              <p><span className="font-medium">টেক্সট:</span> "{item.customization.text}"</p>
+                            )}
+                          </div>
                         </div>
                       )}
-
-                      {/* Product Details */}
-                      <div className="flex-1 min-w-0">
-                        <h5 className="font-semibold text-base text-gray-900 line-clamp-2">
-                          {item.name}
-                        </h5>
-                        <p className="text-primary font-medium text-base mt-1">
-                          {formatPrice(item.price)} প্রতিটি
-                        </p>
-
-                        {/* Customization Display */}
-                        {item.customization && (
-                          <div className="mt-2 p-2 bg-blue-50 rounded-lg text-sm border border-blue-100">
-                            <p className="font-semibold text-blue-800 mb-1">কাস্টমাইজেশন:</p>
-                            <div className="space-y-1">
-                              {item.customization.size && (
-                                <p className="text-blue-700">সাইজ: {item.customization.size}</p>
-                              )}
-                              {item.customization.color && (
-                                <p className="text-blue-700">রং: {item.customization.color}</p>
-                              )}
-                              {item.customization.customText && (
-                                <p className="text-blue-700">কাস্টম টেক্সট: {item.customization.customText}</p>
-                              )}
-                            </div>
-                          </div>
-                        )}
-
-                        {/* Customize Section Toggle */}
-                        {isItemCustomizable(item.name) && (
+                      
+                      {/* Quantity and Price */}
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => toggleItemExpansion(item.id)}
-                            className="mt-2 h-8 px-3 text-xs bg-blue-50 hover:bg-blue-100 border-blue-200 text-blue-700"
+                            onClick={() => updateQuantity(item.id, Math.max(1, item.quantity - 1))}
+                            disabled={item.quantity <= 1}
+                            className="w-8 h-8 p-0 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800"
                           >
-                            <Palette className="w-3 h-3 mr-1" />
-                            কাস্টমাইজ করুন
-                            {expandedItems.has(item.id) ? 
-                              <ChevronUp className="w-3 h-3 ml-1" /> : 
-                              <ChevronDown className="w-3 h-3 ml-1" />
-                            }
+                            <Minus className="w-4 h-4" />
                           </Button>
-                        )}
-                      </div>
-
-                      {/* Quantity Controls */}
-                      <div className="flex flex-col items-end gap-2">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => removeFromCart(item.id)}
-                          className="text-red-500 hover:text-red-600 hover:bg-red-50 p-1"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                        
-                        <div className="flex items-center gap-2 bg-gray-50 rounded-lg p-1">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleQuantityChange(item.id, item.quantity - 1)}
-                            className="w-8 h-8 p-0 hover:bg-gray-200"
-                          >
-                            <Minus className="w-3 h-3" />
-                          </Button>
-                          
-                          <span className="w-8 text-center font-medium text-sm">
+                          <span className="w-12 text-center text-sm font-medium py-1 px-2 bg-gray-50 dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700">
                             {item.quantity}
                           </span>
-                          
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                            className="w-8 h-8 p-0 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800"
+                          >
+                            <Plus className="w-4 h-4" />
+                          </Button>
+                        </div>
+                        
+                        <div className="text-right">
+                          <p className="font-bold text-lg text-orange-600 dark:text-orange-400">
+                            {formatPrice(item.price * item.quantity)}
+                          </p>
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => handleQuantityChange(item.id, item.quantity + 1)}
-                            className="w-8 h-8 p-0 hover:bg-gray-200"
+                            onClick={() => handleRemoveItem(item.id)}
+                            className="text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 p-1 mt-1"
                           >
-                            <Plus className="w-3 h-3" />
+                            <Trash2 className="w-4 h-4" />
                           </Button>
                         </div>
-
-                        <p className="text-primary font-semibold text-sm">
-                          {formatPrice(item.price * item.quantity)}
-                        </p>
                       </div>
-                      
-                      {/* Inline Customization Section */}
-                      {expandedItems.has(item.id) && isItemCustomizable(item.name) && (
-                        <div className="col-span-full mt-4">
-                          <Card className="bg-gradient-to-br from-blue-50 to-purple-50 border-blue-200">
-                            <CardContent className="p-4">
-                              <h4 className="text-sm font-semibold text-blue-800 mb-3 flex items-center">
-                                <Palette className="w-4 h-4 mr-2" />
-                                আপনার পছন্দ মতো কাস্টমাইজ করুন
-                              </h4>
-                              
-                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                  <Label className="text-xs font-medium text-gray-700">কাস্টম টেক্সট/নির্দেশনা</Label>
-                                  <Textarea
-                                    placeholder="আপনার পছন্দমতো লেখা বা নির্দেশনা দিন..."
-                                    className="text-xs h-20"
-                                    value={customizationData[item.id]?.customInstructions || ''}
-                                    onChange={(e) => handleInlineCustomization(item.id, 'customInstructions', e.target.value)}
-                                  />
-                                </div>
-                                
-                                <div className="space-y-2">
-                                  <Label className="text-xs font-medium text-gray-700">ছবি আপলোড করুন</Label>
-                                  <div className="border-2 border-dashed border-blue-300 rounded-lg p-3 text-center">
-                                    <input
-                                      type="file"
-                                      id={`file-upload-${item.id}`}
-                                      accept="image/*"
-                                      className="hidden"
-                                      onChange={(e) => {
-                                        const file = e.target.files?.[0];
-                                        if (file) handleFileUpload(item.id, file);
-                                      }}
-                                    />
-                                    <label 
-                                      htmlFor={`file-upload-${item.id}`} 
-                                      className="cursor-pointer flex flex-col items-center"
-                                    >
-                                      <Upload className="w-6 h-6 text-blue-500 mb-1" />
-                                      <span className="text-xs text-blue-600">ছবি যোগ করুন</span>
-                                    </label>
-                                  </div>
-                                </div>
-                              </div>
-
-                              {/* Advance Payment Info */}
-                              <div className="mt-4 p-3 bg-orange-50 rounded-lg border border-orange-200">
-                                <div className="flex items-center mb-2">
-                                  <CreditCard className="w-4 h-4 text-orange-600 mr-2" />
-                                  <span className="text-sm font-semibold text-orange-800">অগ্রিম পেমেন্ট প্রয়োজন</span>
-                                </div>
-                                <div className="text-xs text-orange-700 space-y-1">
-                                  <p>কাস্টমাইজেশনের জন্য ১০০ টাকা অগ্রিম প্রদান করুন</p>
-                                  <p className="font-medium">bKash/Nagad: <span className="bg-orange-200 px-2 py-1 rounded">01747292277</span></p>
-                                  <p className="text-xs italic">অগ্রিম প্রদানের পর আমরা আপনার কাস্টমাইজেশন শুরু করব।</p>
-                                </div>
-                              </div>
-                            </CardContent>
-                          </Card>
-                        </div>
-                      )}
                     </div>
-                  ))}
-                </div>
-
-                <Separator />
-
-                {/* Cart Summary */}
-                <div className="space-y-4 bg-gray-50 p-4 rounded-xl">
-                  <div className="flex justify-between items-center">
-                    <span className="font-medium text-gray-700">মোট পণ্য:</span>
-                    <span className="font-semibold">{totalItems}টি</span>
                   </div>
-                  
-                  <div className="flex justify-between items-center text-lg">
-                    <span className="font-semibold text-gray-800">মোট মূল্য:</span>
-                    <span className="font-bold text-primary text-xl">
-                      {formatPrice(totalPrice)}
-                    </span>
-                  </div>
-
-                  <div className="flex gap-2 pt-2">
-                    <Button
-                      variant="outline"
-                      onClick={clearCart}
-                      className="flex-1"
-                    >
-                      কার্ট পরিষ্কার করুন
-                    </Button>
-                    
-                    <Button
-                      onClick={handleCheckout}
-                      className="flex-1 bg-primary hover:bg-primary/90"
-                    >
-                      চেকআউট
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            )}
+                </CardContent>
+              </Card>
+            ))}
           </div>
-        </DialogContent>
-      </Dialog>
 
-      {/* Checkout Modal */}
-      <CheckoutModal
-        isOpen={isCheckoutOpen}
-        onClose={() => setIsCheckoutOpen(false)}
-        cart={cart}
-        onOrderComplete={() => {
-          clearCart();
-          setIsCheckoutOpen(false);
-        }}
-      />
+          <Separator className="bg-gray-200 dark:bg-gray-700" />
 
+          {/* Summary Section */}
+          <div className="px-6 py-4 bg-gray-50 dark:bg-gray-800/50">
+            <Card className="border-0 bg-white dark:bg-gray-900 shadow-sm">
+              <CardContent className="p-4 space-y-3">
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600 dark:text-gray-400">পণ্যের মূল্য:</span>
+                  <span className="font-medium text-gray-900 dark:text-white">{formatPrice(totalPrice)}</span>
+                </div>
+                
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600 dark:text-gray-400">ডেলিভারি চার্জ:</span>
+                  <span className={`font-medium ${deliveryCharge === 0 ? "text-green-600 dark:text-green-400" : "text-gray-900 dark:text-white"}`}>
+                    {deliveryCharge === 0 ? "ফ্রি ডেলিভারি!" : formatPrice(deliveryCharge)}
+                  </span>
+                </div>
 
-    </>
+                {totalPrice < 1000 && (
+                  <div className="text-xs text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-900/20 p-3 rounded-lg border border-orange-200 dark:border-orange-700">
+                    <p className="font-medium">
+                      আরও {formatPrice(1000 - totalPrice)} কিনলে ফ্রি ডেলিভারি পাবেন! 🚚
+                    </p>
+                  </div>
+                )}
+
+                <Separator className="bg-gray-200 dark:bg-gray-700" />
+
+                <div className="flex justify-between text-lg font-bold">
+                  <span className="text-gray-900 dark:text-white">সর্বমোট:</span>
+                  <span className="text-2xl text-green-600 dark:text-green-400">
+                    {formatPrice(finalTotal)}
+                  </span>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="px-6 py-4 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 space-y-3">
+            <div className="grid grid-cols-2 gap-3">
+              <Button
+                variant="outline"
+                onClick={handleContinueShopping}
+                className="border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 font-medium"
+              >
+                <ShoppingBag className="w-4 h-4 mr-2" />
+                আরো কিনুন
+              </Button>
+              
+              <Button
+                variant="outline"
+                onClick={handleClearCart}
+                className="border-red-300 dark:border-red-600 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 font-medium"
+              >
+                <Trash2 className="w-4 h-4 mr-2" />
+                কার্ট খালি করুন
+              </Button>
+            </div>
+
+            <Button
+              onClick={handleCheckout}
+              className="w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white py-4 text-lg font-semibold rounded-xl transition-all duration-200 transform hover:scale-105 shadow-lg"
+              size="lg"
+            >
+              <CreditCard className="w-5 h-5 mr-3" />
+              চেকআউট করুন
+              <ArrowRight className="w-5 h-5 ml-3" />
+            </Button>
+
+            <div className="text-center pt-2">
+              <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center justify-center gap-2">
+                <Heart className="w-3 h-3 text-red-500" />
+                ১০০% নিরাপদ ও সুরক্ষিত লেনদেন
+                <Star className="w-3 h-3 text-yellow-500" />
+              </p>
+            </div>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }
