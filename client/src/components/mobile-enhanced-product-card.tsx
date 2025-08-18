@@ -171,40 +171,41 @@ const MobileEnhancedProductCard = memo(function MobileEnhancedProductCard({
           </div>
 
           {/* Action Buttons - Mobile Optimized */}
-          <div className="px-2 sm:px-3 pb-2 sm:pb-3 pt-0">
-            <div className="flex gap-1 sm:gap-1.5">
+          <div className="p-2 sm:p-3 pt-0 product-card-actions">
+            <div className="flex flex-col gap-1.5 w-full">
               <Button
                 size="sm"
                 onClick={handleAddToCart}
                 disabled={isOutOfStock}
-                className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold text-xs h-7 sm:h-8 touch-button px-2 sm:px-3"
+                className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-medium text-xs h-7 sm:h-8 touch-button"
                 data-testid={`button-cart-${product.id}`}
               >
-                <ShoppingCart className="w-3 h-3 mr-1" />
-                <span className="hidden xs:inline">{isOutOfStock ? 'স্টক নেই' : 'কার্ট'}</span>
-                <span className="xs:hidden">{isOutOfStock ? 'নেই' : 'ক'}</span>
+                <ShoppingCart className="w-3 h-3 mr-1 flex-shrink-0" />
+                <span className="truncate">{isOutOfStock ? 'স্টক নেই' : 'কার্টে যোগ করুন'}</span>
               </Button>
 
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={handleCustomize}
-                className="px-2 sm:px-3 h-7 sm:h-8 text-xs border-purple-500 text-purple-600 hover:bg-purple-50 touch-button flex-shrink-0"
-                data-testid={`button-customize-${product.id}`}
-              >
-                <Settings className="w-3 h-3" />
-                <span className="hidden sm:inline ml-1">সাজান</span>
-              </Button>
+              <div className="flex gap-1.5 w-full">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={handleCustomize}
+                  className="flex-1 text-xs border-purple-500 text-purple-600 hover:bg-purple-50 touch-button h-7 sm:h-8"
+                  data-testid={`button-customize-${product.id}`}
+                >
+                  <Settings className="w-3 h-3 mr-1 flex-shrink-0" />
+                  <span className="truncate">কাস্টমাইজ</span>
+                </Button>
 
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={handleToggleWishlist}
-                className={`px-2 sm:px-3 h-7 sm:h-8 touch-button flex-shrink-0 ${isWishlisted ? 'text-red-500' : 'text-gray-500'}`}
-                data-testid={`button-wishlist-${product.id}`}
-              >
-                <Heart className={`w-3 h-3 ${isWishlisted ? 'fill-current' : ''}`} />
-              </Button>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={handleToggleWishlist}
+                  className={`px-2 h-7 sm:h-8 touch-button flex-shrink-0 ${isWishlisted ? 'text-red-500' : 'text-gray-500'}`}
+                  data-testid={`button-wishlist-${product.id}`}
+                >
+                  <Heart className={`w-3 h-3 ${isWishlisted ? 'fill-current' : ''}`} />
+                </Button>
+              </div>
             </div>
           </div>
 

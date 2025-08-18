@@ -239,44 +239,44 @@ export default function UnifiedProductCard({
           <div className="flex-1"></div>
 
           {/* Action Buttons - Fixed at bottom with responsive sizing */}
-          <div className="p-3 sm:p-4 pt-0 space-y-2">
-          <div className="flex gap-1.5 sm:gap-2">
-            <Button
-              onClick={handleAddToCart}
-              disabled={isOutOfStock}
-              className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold py-2 sm:py-2.5 px-2 sm:px-4 rounded-lg transition-all duration-300 disabled:opacity-50 text-xs sm:text-sm"
-              data-testid={`button-cart-${product.id}`}
-            >
-              <ShoppingCart className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-1" />
-              <span className="hidden xs:inline">{isOutOfStock ? 'স্টক নেই' : 'কার্টে যোগ করুন'}</span>
-              <span className="xs:hidden">{isOutOfStock ? 'নেই' : 'কার্ট'}</span>
-            </Button>
+          <div className="p-2 sm:p-3 pt-0 product-card-actions">
+            <div className="flex flex-col gap-1.5 w-full">
+              <Button
+                onClick={handleAddToCart}
+                disabled={isOutOfStock}
+                className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-medium py-1.5 sm:py-2 rounded-md transition-all duration-300 disabled:opacity-50 text-xs min-h-[28px] sm:min-h-[32px]"
+                data-testid={`button-cart-${product.id}`}
+              >
+                <ShoppingCart className="w-3 h-3 mr-1 flex-shrink-0" />
+                <span className="truncate">{isOutOfStock ? 'স্টক নেই' : 'কার্টে যোগ করুন'}</span>
+              </Button>
 
-            <Button
-              variant="outline"
-              onClick={handleToggleWishlist}
-              className={`px-2 sm:px-3 py-2 sm:py-2.5 rounded-lg transition-all duration-300 flex-shrink-0 ${
-                isWishlisted ? 'bg-red-50 border-red-200 text-red-600' : ''
-              }`}
-              data-testid={`button-wishlist-${product.id}`}
-            >
-              <Heart 
-                className={`w-3 h-3 sm:w-4 sm:h-4 ${isWishlisted ? 'fill-current' : ''}`} 
-              />
-            </Button>
+              <div className="flex gap-1.5 w-full">
+                <Button
+                  variant="outline"
+                  onClick={handleCustomize}
+                  className="flex-1 border-purple-500 text-purple-600 hover:bg-purple-50 py-1.5 sm:py-2 rounded-md text-xs min-h-[28px] sm:min-h-[32px]"
+                  data-testid={`button-customize-${product.id}`}
+                >
+                  <Palette className="w-3 h-3 mr-1 flex-shrink-0" />
+                  <span className="truncate">কাস্টমাইজ</span>
+                </Button>
+
+                <Button
+                  variant="outline"
+                  onClick={handleToggleWishlist}
+                  className={`px-2 py-1.5 sm:py-2 rounded-md transition-all duration-300 flex-shrink-0 min-h-[28px] sm:min-h-[32px] ${
+                    isWishlisted ? 'bg-red-50 border-red-200 text-red-600' : ''
+                  }`}
+                  data-testid={`button-wishlist-${product.id}`}
+                >
+                  <Heart 
+                    className={`w-3 h-3 ${isWishlisted ? 'fill-current' : ''}`} 
+                  />
+                </Button>
+              </div>
+            </div>
           </div>
-
-          <Button
-            variant="outline"
-            onClick={handleCustomize}
-            className="w-full border-dashed border-purple-500 text-purple-600 hover:bg-purple-50 py-2 sm:py-2.5 rounded-lg text-xs sm:text-sm"
-            data-testid={`button-customize-${product.id}`}
-          >
-            <Palette className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-1" />
-            <span className="hidden xs:inline">কাস্টমাইজ করুন</span>
-            <span className="xs:hidden">কাস্টমাইজ</span>
-          </Button>
-        </div>
         </CardContent>
     </Card>
   );

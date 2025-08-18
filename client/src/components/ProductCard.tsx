@@ -246,30 +246,30 @@ const ProductCard = ({ product, className = "" }: ProductCardProps) => {
       </Link>
 
       {/* Action Buttons */}
-      <div className="p-3 sm:p-4 pt-0 flex-shrink-0">
-        <div className="flex gap-1.5 sm:gap-2">
+      <div className="p-2 sm:p-3 pt-0 flex-shrink-0">
+        <div className="flex flex-col gap-1.5 w-full">
           <Button
             onClick={handleAddToCart}
             disabled={isAddingToCart}
-            className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold py-2 sm:py-3 px-2 sm:px-4 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl disabled:opacity-70 disabled:scale-100 btn-premium-light text-xs sm:text-sm"
+            className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-medium py-1.5 sm:py-2 px-2 rounded-md transition-all duration-300 disabled:opacity-70 text-xs min-h-[28px] sm:min-h-[32px]"
             data-testid={`add-to-cart-${product.id}`}
           >
-            <ShoppingCart className={`w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 ${isAddingToCart ? 'animate-spin' : ''}`} />
-            <span className="hidden xs:inline">{isAddingToCart ? 'যোগ করা হচ্ছে...' : 'কার্টে যোগ করুন'}</span>
-            <span className="xs:hidden">{isAddingToCart ? 'যোগ...' : 'কার্ট'}</span>
+            <ShoppingCart className={`w-3 h-3 mr-1 flex-shrink-0 ${isAddingToCart ? 'animate-spin' : ''}`} />
+            <span className="truncate">
+              {isAddingToCart ? 'যোগ করা হচ্ছে...' : 'কার্টে যোগ করুন'}
+            </span>
           </Button>
 
-          <Link href={`/customize/${product.id}`} className="flex-shrink-0">
+          <Link href={`/customize/${product.id}`} className="w-full">
             <Button
               variant="outline"
-              className="px-2 sm:px-4 py-2 sm:py-3 rounded-lg transition-all duration-300 transform hover:scale-105 border-2 border-purple-500 text-purple-600 hover:bg-gradient-to-r hover:from-purple-600 hover:to-pink-600 hover:text-white font-semibold text-xs sm:text-sm whitespace-nowrap"
+              className="w-full px-2 py-1.5 sm:py-2 rounded-md transition-all duration-300 border border-purple-500 text-purple-600 hover:bg-purple-50 font-medium text-xs min-h-[28px] sm:min-h-[32px]"
               data-testid={`customize-${product.id}`}
             >
-              <svg className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-3 h-3 mr-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zM21 5a2 2 0 00-2-2h-4a2 2 0 00-2 2v12a4 4 0 004 4h4a4 4 0 004-4V9a2 2 0 00-2-2z" />
               </svg>
-              <span className="hidden sm:inline">কাস্টমাইজ</span>
-              <span className="sm:hidden">সাজান</span>
+              <span className="truncate">কাস্টমাইজ করুন</span>
             </Button>
           </Link>
         </div>
