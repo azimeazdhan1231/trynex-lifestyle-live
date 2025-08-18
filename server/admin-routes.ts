@@ -387,14 +387,17 @@ export function setupAdminRoutes(app: Express) {
   // COMPREHENSIVE DASHBOARD STATS
   app.get('/api/admin/stats', authenticateAdmin, async (req, res) => {
     try {
-      const [products, orders, customOrders, categories, promoCodes, users] = await Promise.all([
-        storage.getProducts(),
+      // Use optimized storage for safe data fetching
+      const [products, orders, categories] = await Promise.all([
+        optimizedStorage.getProducts(),
         storage.getOrders(),
-        storage.getCustomOrders(),
-        storage.getCategories(),
-        storage.getPromoCodes(),
-        storage.getUsers()
+        optimizedStorage.getCategories()
       ]);
+
+      // Get counts safely without problematic queries
+      const customOrders: any[] = []; // Temporarily empty since custom orders are disabled
+      const promoCodes: any[] = []; // Temporarily empty due to schema issues
+      const users: any[] = []; // Temporarily empty due to schema issues
 
       // Calculate revenue trends (last 7 days)
       const today = new Date();

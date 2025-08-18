@@ -487,7 +487,17 @@ export default function OrderManagement() {
                                 </CardHeader>
                                 <CardContent>
                                   <div className="space-y-3">
-                                    {JSON.parse(selectedOrder.items || '[]').map((item: any, index: number) => (
+                                    {(() => {
+                                      try {
+                                        const items = typeof selectedOrder.items === 'string' 
+                                          ? JSON.parse(selectedOrder.items || '[]') 
+                                          : (Array.isArray(selectedOrder.items) ? selectedOrder.items : []);
+                                        return items;
+                                      } catch (e) {
+                                        console.error('Error parsing order items:', e);
+                                        return [];
+                                      }
+                                    })().map((item: any, index: number) => (
                                       <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                                         <div className="flex items-center space-x-3">
                                           {item.image_url && (
@@ -535,7 +545,17 @@ export default function OrderManagement() {
                                       <div>
                                         <label className="text-sm font-medium text-gray-600">আপলোড করা ছবি</label>
                                         <div className="mt-2 grid grid-cols-2 md:grid-cols-4 gap-2">
-                                          {JSON.parse(selectedOrder.custom_images).map((imageUrl: string, index: number) => (
+                                          {(() => {
+                                            try {
+                                              const images = typeof selectedOrder.custom_images === 'string' 
+                                                ? JSON.parse(selectedOrder.custom_images || '[]') 
+                                                : (Array.isArray(selectedOrder.custom_images) ? selectedOrder.custom_images : []);
+                                              return images;
+                                            } catch (e) {
+                                              console.error('Error parsing custom images:', e);
+                                              return [];
+                                            }
+                                          })().map((imageUrl: string, index: number) => (
                                             <img
                                               key={index}
                                               src={imageUrl}

@@ -687,6 +687,7 @@ export class DatabaseStorage implements IStorage {
       return result;
     } catch (error) {
       console.error('❌ Error fetching promo codes:', error);
+      // Return empty array if table doesn't exist yet
       return [];
     }
   }
