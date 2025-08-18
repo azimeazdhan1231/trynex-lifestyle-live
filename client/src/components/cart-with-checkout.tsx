@@ -1,7 +1,7 @@
 import { useState } from "react";
 import SimpleCartModal from "./simple-cart-modal";
 import CheckoutModal from "./checkout-modal";
-import OrderSuccessModal from "./order-success-modal";
+import EnhancedOrderSuccessModal from "./enhanced-order-success-modal";
 
 interface CartWithCheckoutProps {
   isOpen: boolean;
@@ -17,18 +17,20 @@ export default function CartWithCheckout({ isOpen, onClose }: CartWithCheckoutPr
     setShowCheckout(true);
   };
 
-  const handleOrderComplete = (trackingId: string) => {
-    // This would typically get order details from the API response
-    // For now, we'll create mock details based on the tracking ID
-    const mockOrderDetails = {
-      tracking_id: trackingId,
-      customer_name: "গ্রাহক", // This should come from the checkout form
-      phone: "01XXXXXXXXX", // This should come from the checkout form  
-      total: "0", // This should come from cart total
-      items: [] // This should come from cart items
+  const handleOrderComplete = (orderData: any) => {
+    // Use the actual order data from checkout instead of mock data
+    const orderDetails = {
+      tracking_id: orderData.tracking_id || orderData.orderId || `TRX-${Date.now()}`,
+      customer_name: orderData.customer_name || orderData.customerName || "গ্রাহক",
+      phone: orderData.phone || orderData.customerPhone || "01XXXXXXXXX",
+      total: orderData.total || orderData.totalAmount || "0",
+      items: orderData.items || [],
+      address: orderData.address || orderData.customerAddress,
+      district: orderData.district,
+      thana: orderData.thana
     };
     
-    setOrderDetails(mockOrderDetails);
+    setOrderDetails(orderDetails);
     setShowOrderSuccess(true);
     setShowCheckout(false);
   };
@@ -54,7 +56,7 @@ export default function CartWithCheckout({ isOpen, onClose }: CartWithCheckoutPr
       />
       
       {orderDetails && (
-        <OrderSuccessModal
+        <EnhancedOrderSuccessModal
           isOpen={showOrderSuccess}
           onClose={handleCloseAll}
           orderDetails={orderDetails}

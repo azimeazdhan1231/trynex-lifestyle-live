@@ -395,7 +395,33 @@ export default function UltraDynamicProductModal({
 
               {/* Action Buttons */}
               <div className="space-y-2 sm:space-y-3">
+                {/* Primary Action Row - Add to Cart & Customize */}
                 <div className="flex gap-2 sm:gap-3">
+                  <Button
+                    onClick={() => {
+                      // Add to cart functionality
+                      const cartItem = {
+                        id: product.id,
+                        name: product.name,
+                        price: price,
+                        quantity: quantity,
+                        image_url: product.image_url
+                      };
+                      
+                      toast({
+                        title: "কার্টে যোগ হয়েছে!",
+                        description: `${product.name} (${quantity} টি) কার্টে যোগ করা হয়েছে`,
+                      });
+                    }}
+                    disabled={product.stock === 0}
+                    className="flex-1 h-10 sm:h-12 text-sm sm:text-base font-medium bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white touch-manipulation"
+                    data-testid="button-add-to-cart"
+                  >
+                    <ShoppingCart className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2" />
+                    <span className="hidden sm:inline">কার্টে যোগ করুন</span>
+                    <span className="sm:hidden">কার্ট</span>
+                  </Button>
+
                   {onCustomize && (
                     <Button
                       onClick={handleCustomizeProduct}

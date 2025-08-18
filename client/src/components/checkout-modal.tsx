@@ -134,12 +134,15 @@ export default function CheckoutModal({ isOpen, onClose, onOrderComplete }: Chec
 
       const result = await response.json();
       
-      // Show order success modal with comprehensive details
+      // Prepare comprehensive order details for the success modal
       const orderDetails = {
         tracking_id: result.tracking_id || trackingId,
         customer_name: data.customerName,
         phone: data.customerPhone,
         total: (getTotalPrice() + (getTotalPrice() >= 1600 ? 0 : 120)).toString(),
+        address: data.customerAddress,
+        district: data.district,
+        thana: data.thana,
         items: items.map(item => ({
           name: item.name,
           quantity: item.quantity,
@@ -148,15 +151,13 @@ export default function CheckoutModal({ isOpen, onClose, onOrderComplete }: Chec
       };
       
       clearCart();
-      onOrderComplete(result.tracking_id || trackingId);
+      
+      // Pass complete order details to parent instead of just tracking ID
+      onOrderComplete(orderDetails);
       onClose();
       
-      // Show success toast first
-      toast({
-        title: "🎉 অর্ডার সফল হয়েছে!",
-        description: `ট্র্যাকিং আইডি: ${result.tracking_id || trackingId}`,
-        duration: 8000,
-      });
+      // Remove toast since the enhanced modal will show instead
+      // Enhanced modal provides much better user experience
 
     } catch (error) {
       console.error('Order submission error:', error);
