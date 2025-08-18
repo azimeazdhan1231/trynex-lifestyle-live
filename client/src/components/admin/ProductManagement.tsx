@@ -445,7 +445,7 @@ export default function ProductManagement() {
                   <TableHead>ক্যাটেগরি</TableHead>
                   <TableHead>দাম</TableHead>
                   <TableHead>স্টক</TableHead>
-                  <TableHead>স্ট্যাটাস</TableHead>
+                  <TableHead>কুইক টগল</TableHead>
                   <TableHead>অ্যাকশন</TableHead>
                 </TableRow>
               </TableHeader>
@@ -490,22 +490,39 @@ export default function ProductManagement() {
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      <div className="flex flex-wrap gap-1">
-                        {product.is_featured && (
-                          <Badge className="bg-yellow-100 text-yellow-800 border-yellow-300">
-                            ফিচার্ড
-                          </Badge>
-                        )}
-                        {product.is_latest && (
-                          <Badge className="bg-green-100 text-green-800 border-green-300">
-                            সর্বশেষ
-                          </Badge>
-                        )}
-                        {product.is_best_selling && (
-                          <Badge className="bg-blue-100 text-blue-800 border-blue-300">
-                            বেস্ট সেলিং
-                          </Badge>
-                        )}
+                      <div className="flex flex-col space-y-2">
+                        {/* Featured Toggle */}
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs text-gray-600">ফিচার্ড</span>
+                          <Switch
+                            data-testid={`toggle-featured-${product.id}`}
+                            checked={product.is_featured || false}
+                            onCheckedChange={(checked) => toggleProductFlag(product, 'is_featured', checked)}
+                            className="scale-75"
+                          />
+                        </div>
+                        
+                        {/* Latest Toggle */}
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs text-gray-600">সর্বশেষ</span>
+                          <Switch
+                            data-testid={`toggle-latest-${product.id}`}
+                            checked={product.is_latest || false}
+                            onCheckedChange={(checked) => toggleProductFlag(product, 'is_latest', checked)}
+                            className="scale-75"
+                          />
+                        </div>
+                        
+                        {/* Best Selling Toggle */}
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs text-gray-600">বেস্ট সেলিং</span>
+                          <Switch
+                            data-testid={`toggle-bestselling-${product.id}`}
+                            checked={product.is_best_selling || false}
+                            onCheckedChange={(checked) => toggleProductFlag(product, 'is_best_selling', checked)}
+                            className="scale-75"
+                          />
+                        </div>
                       </div>
                     </TableCell>
                     <TableCell>
