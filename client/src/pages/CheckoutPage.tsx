@@ -2,14 +2,14 @@ import Layout from "@/components/Layout";
 import CheckoutForm from "@/components/CheckoutForm";
 import OrderSummary from "@/components/OrderSummary";
 import { useCart } from "@/hooks/use-cart";
-import { Navigate } from "wouter";
+import { Redirect } from "wouter";
 
 const CheckoutPage = () => {
   const { items } = useCart();
 
   // Redirect to cart if no items
   if (items.length === 0) {
-    return <Navigate to="/cart" replace />;
+    return <Redirect to="/cart" />;
   }
 
   return (
