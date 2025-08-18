@@ -21,7 +21,7 @@ export interface CartItem {
 
 interface UseCartReturn {
   cart: CartItem[];
-  addToCart: (item: CartItem) => void;
+  addToCart: (item: CartItem) => Promise<void>;
   removeFromCart: (id: string) => void;
   updateQuantity: (id: string, quantity: number) => void;
   clearCart: () => void;
@@ -223,8 +223,14 @@ export function useCart(): UseCartReturn {
     };
   }, [isLoaded]);
 
-  const addToCart = useCallback((item: CartItem) => {
-    cartManager.addItem(item);
+  const addToCart = useCallback(async (item: CartItem): Promise<void> => {
+    return new Promise((resolve) => {
+      cartManager.addItem(item);
+      // Small delay for smooth UX
+      setTimeout(() => {
+        resolve();
+      }, 100);
+    });
   }, []);
 
   const removeFromCart = useCallback((id: string) => {

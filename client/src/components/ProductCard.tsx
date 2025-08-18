@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useCart } from "@/hooks/use-cart";
+import { useToast } from "@/hooks/use-toast";
 import { formatPrice } from "@/lib/constants";
 import { optimizeImageUrl, createIntersectionObserver } from "@/lib/performance";
 import { 
@@ -22,8 +23,10 @@ interface ProductCardProps {
 
 const ProductCard = ({ product, className = "" }: ProductCardProps) => {
   const { addItem } = useCart();
+  const { toast } = useToast();
   const [imageLoaded, setImageLoaded] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
+  const [isAddingToCart, setIsAddingToCart] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
 
   // Lazy loading with intersection observer
@@ -46,16 +49,40 @@ const ProductCard = ({ product, className = "" }: ProductCardProps) => {
     return () => observer.disconnect();
   }, []);
 
-  const handleAddToCart = (e: React.MouseEvent) => {
+  const handleAddToCart = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    addItem({
-      id: product.id,
-      name: product.name,
-      price: parseFloat(product.price),
-      image: product.image_url || "",
-      quantity: 1
-    });
+    
+    if (isAddingToCart) return;
+    
+    setIsAddingToCart(true);
+    
+    try {
+      await addItem({
+        id: product.id,
+        name: product.name,
+        price: parseFloat(product.price),
+        image_url: product.image_url || "",
+        quantity: 1
+      });
+      
+      // Show success toast
+      toast({
+        title: "কার্টে যোগ হয়েছে!",
+        description: `${product.name} কার্টে যোগ করা হয়েছে`,
+        duration: 1000,
+      });
+    } catch (error) {
+      console.error('Failed to add item to cart:', error);
+      toast({
+        title: "ত্রুটি",
+        description: "কার্টে যোগ করতে সমস্যা হয়েছে",
+        variant: "destructive",
+        duration: 1000,
+      });
+    } finally {
+      setIsAddingToCart(false);
+    }
   };
 
   const discountPercentage = Math.floor(Math.random() * 30) + 10; // Mock discount
@@ -217,6 +244,19 @@ const ProductCard = ({ product, className = "" }: ProductCardProps) => {
           </div>
         </div>
       </Link>
+
+      {/* Add to Cart Button - Outside Link */}
+      <div className="p-4 pt-0">
+        <Button
+          onClick={handleAddToCart}
+          disabled={isAddingToCart}
+          className="w-full bg-primary hover:bg-primary/90 text-white font-semibold py-3 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl disabled:opacity-70 disabled:scale-100"
+          data-testid={`add-to-cart-${product.id}`}
+        >
+          <ShoppingCart className={`w-4 h-4 mr-2 ${isAddingToCart ? 'animate-spin' : ''}`} />
+          {isAddingToCart ? 'যোগ করা হচ্ছে...' : 'কার্টে যোগ করুন'}
+        </Button>
+      </div>
 
       {/* Add to Cart Button */}
       <div className="p-4 pt-0 flex-shrink-0">
