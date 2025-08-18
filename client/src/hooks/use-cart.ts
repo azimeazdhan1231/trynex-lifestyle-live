@@ -1,4 +1,4 @@
-import { useCart as useBulletproofCart } from './use-cart-bulletproof';
+import { useSimpleCart } from './use-simple-cart';
 
 export interface CartItem {
   id: string;
@@ -33,29 +33,18 @@ export interface UseCartReturn {
 }
 
 export function useCart(): UseCartReturn {
-  const bulletproofCart = useBulletproofCart();
+  const simpleCart = useSimpleCart();
 
   return {
-    items: bulletproofCart.cart || [],
-    addItem: bulletproofCart.addToCart,
-    removeItem: bulletproofCart.removeFromCart,
-    updateQuantity: bulletproofCart.updateQuantity,
-    clearCart: bulletproofCart.clearCart,
-    getTotalItems: () => bulletproofCart.totalItems || 0,
-    getTotalPrice: () => bulletproofCart.totalPrice || 0,
-    isLoaded: true, // Cart is always loaded after first render
-    refreshCart: () => {}, // No-op for bulletproof cart as it's always up to date
-    updateItemCustomization: (itemId: string, customization: any) => {
-      // Update item with new customization
-      const currentItems = bulletproofCart.cart || [];
-      const itemIndex = currentItems.findIndex(item => item.id === itemId);
-      if (itemIndex > -1) {
-        const updatedItem = { ...currentItems[itemIndex], customization };
-        bulletproofCart.updateQuantity(itemId, updatedItem.quantity);
-        // Remove old item and add updated one
-        bulletproofCart.removeFromCart(itemId);
-        bulletproofCart.addToCart(updatedItem);
-      }
-    },
+    items: simpleCart.items,
+    addItem: simpleCart.addItem,
+    removeItem: simpleCart.removeItem,
+    updateQuantity: simpleCart.updateQuantity,
+    clearCart: simpleCart.clearCart,
+    getTotalItems: simpleCart.getTotalItems,
+    getTotalPrice: simpleCart.getTotalPrice,
+    isLoaded: simpleCart.isLoaded,
+    refreshCart: simpleCart.refreshCart,
+    updateItemCustomization: simpleCart.updateItemCustomization,
   };
 }
