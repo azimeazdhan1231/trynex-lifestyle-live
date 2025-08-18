@@ -382,65 +382,95 @@ export default function ProductManagement() {
                 </div>
 
                 <div className="space-y-3">
-                  <div className="flex items-center justify-between p-3 border rounded-lg">
-                    <div className="flex items-center space-x-2">
+                  <div className="flex items-center justify-between p-4 border rounded-lg bg-gradient-to-r from-yellow-50 to-orange-50">
+                    <div className="flex items-center space-x-3">
                       <Checkbox
                         id="is_featured"
-                        checked={addForm.watch("is_featured")}
-                        onCheckedChange={(checked) => addForm.setValue("is_featured", !!checked)}
+                        checked={addForm.watch("is_featured") || false}
+                        onCheckedChange={(checked) => {
+                          addForm.setValue("is_featured", !!checked);
+                        }}
                       />
-                      <label htmlFor="is_featured" className="text-sm font-medium">
-                        ফিচারড পণ্য
-                      </label>
+                      <div>
+                        <label htmlFor="is_featured" className="text-sm font-medium text-gray-900">
+                          ফিচারড পণ্য
+                        </label>
+                        <p className="text-xs text-gray-600">হোম পেইজে বিশেষভাবে প্রদর্শিত হবে</p>
+                      </div>
                     </div>
                     <Button
                       type="button"
                       variant={addForm.watch("is_featured") ? "default" : "outline"}
                       size="sm"
-                      onClick={() => addForm.setValue("is_featured", !addForm.watch("is_featured"))}
+                      className={addForm.watch("is_featured") ? "bg-yellow-500 hover:bg-yellow-600" : ""}
+                      onClick={() => {
+                        const currentValue = addForm.watch("is_featured");
+                        addForm.setValue("is_featured", !currentValue);
+                      }}
                     >
+                      <Star className="w-4 h-4 mr-1" />
                       {addForm.watch("is_featured") ? "চালু" : "বন্ধ"}
                     </Button>
                   </div>
 
-                  <div className="flex items-center justify-between p-3 border rounded-lg">
-                    <div className="flex items-center space-x-2">
+                  <div className="flex items-center justify-between p-4 border rounded-lg bg-gradient-to-r from-green-50 to-emerald-50">
+                    <div className="flex items-center space-x-3">
                       <Checkbox
                         id="is_latest"
-                        checked={addForm.watch("is_latest")}
-                        onCheckedChange={(checked) => addForm.setValue("is_latest", !!checked)}
+                        checked={addForm.watch("is_latest") || false}
+                        onCheckedChange={(checked) => {
+                          addForm.setValue("is_latest", !!checked);
+                        }}
                       />
-                      <label htmlFor="is_latest" className="text-sm font-medium">
-                        নতুন পণ্য
-                      </label>
+                      <div>
+                        <label htmlFor="is_latest" className="text-sm font-medium text-gray-900">
+                          নতুন পণ্য
+                        </label>
+                        <p className="text-xs text-gray-600">নতুন পণ্য হিসেবে চিহ্নিত হবে</p>
+                      </div>
                     </div>
                     <Button
                       type="button"
                       variant={addForm.watch("is_latest") ? "default" : "outline"}
                       size="sm"
-                      onClick={() => addForm.setValue("is_latest", !addForm.watch("is_latest"))}
+                      className={addForm.watch("is_latest") ? "bg-green-500 hover:bg-green-600" : ""}
+                      onClick={() => {
+                        const currentValue = addForm.watch("is_latest");
+                        addForm.setValue("is_latest", !currentValue);
+                      }}
                     >
+                      <Zap className="w-4 h-4 mr-1" />
                       {addForm.watch("is_latest") ? "চালু" : "বন্ধ"}
                     </Button>
                   </div>
 
-                  <div className="flex items-center justify-between p-3 border rounded-lg">
-                    <div className="flex items-center space-x-2">
+                  <div className="flex items-center justify-between p-4 border rounded-lg bg-gradient-to-r from-blue-50 to-cyan-50">
+                    <div className="flex items-center space-x-3">
                       <Checkbox
                         id="is_best_selling"
-                        checked={addForm.watch("is_best_selling")}
-                        onCheckedChange={(checked) => addForm.setValue("is_best_selling", !!checked)}
+                        checked={addForm.watch("is_best_selling") || false}
+                        onCheckedChange={(checked) => {
+                          addForm.setValue("is_best_selling", !!checked);
+                        }}
                       />
-                      <label htmlFor="is_best_selling" className="text-sm font-medium">
-                        বেস্ট সেলার
-                      </label>
+                      <div>
+                        <label htmlFor="is_best_selling" className="text-sm font-medium text-gray-900">
+                          বেস্ট সেলার
+                        </label>
+                        <p className="text-xs text-gray-600">সর্বাধিক বিক্রীত পণ্য হিসেবে চিহ্নিত</p>
+                      </div>
                     </div>
                     <Button
                       type="button"
                       variant={addForm.watch("is_best_selling") ? "default" : "outline"}
                       size="sm"
-                      onClick={() => addForm.setValue("is_best_selling", !addForm.watch("is_best_selling"))}
+                      className={addForm.watch("is_best_selling") ? "bg-blue-500 hover:bg-blue-600" : ""}
+                      onClick={() => {
+                        const currentValue = addForm.watch("is_best_selling");
+                        addForm.setValue("is_best_selling", !currentValue);
+                      }}
                     >
+                      <TrendingUp className="w-4 h-4 mr-1" />
                       {addForm.watch("is_best_selling") ? "চালু" : "বন্ধ"}
                     </Button>
                   </div>
@@ -782,65 +812,95 @@ export default function ProductManagement() {
               </div>
 
               <div className="space-y-3">
-                <div className="flex items-center justify-between p-3 border rounded-lg">
-                  <div className="flex items-center space-x-2">
+                <div className="flex items-center justify-between p-4 border rounded-lg bg-gradient-to-r from-yellow-50 to-orange-50">
+                  <div className="flex items-center space-x-3">
                     <Checkbox
                       id="edit_is_featured"
-                      checked={editForm.watch("is_featured")}
-                      onCheckedChange={(checked) => editForm.setValue("is_featured", !!checked)}
+                      checked={editForm.watch("is_featured") || false}
+                      onCheckedChange={(checked) => {
+                        editForm.setValue("is_featured", !!checked);
+                      }}
                     />
-                    <label htmlFor="edit_is_featured" className="text-sm font-medium">
-                      ফিচারড পণ্য
-                    </label>
+                    <div>
+                      <label htmlFor="edit_is_featured" className="text-sm font-medium text-gray-900">
+                        ফিচারড পণ্য
+                      </label>
+                      <p className="text-xs text-gray-600">হোম পেইজে বিশেষভাবে প্রদর্শিত হবে</p>
+                    </div>
                   </div>
                   <Button
                     type="button"
                     variant={editForm.watch("is_featured") ? "default" : "outline"}
                     size="sm"
-                    onClick={() => editForm.setValue("is_featured", !editForm.watch("is_featured"))}
+                    className={editForm.watch("is_featured") ? "bg-yellow-500 hover:bg-yellow-600" : ""}
+                    onClick={() => {
+                      const currentValue = editForm.watch("is_featured");
+                      editForm.setValue("is_featured", !currentValue);
+                    }}
                   >
+                    <Star className="w-4 h-4 mr-1" />
                     {editForm.watch("is_featured") ? "চালু" : "বন্ধ"}
                   </Button>
                 </div>
 
-                <div className="flex items-center justify-between p-3 border rounded-lg">
-                  <div className="flex items-center space-x-2">
+                <div className="flex items-center justify-between p-4 border rounded-lg bg-gradient-to-r from-green-50 to-emerald-50">
+                  <div className="flex items-center space-x-3">
                     <Checkbox
                       id="edit_is_latest"
-                      checked={editForm.watch("is_latest")}
-                      onCheckedChange={(checked) => editForm.setValue("is_latest", !!checked)}
+                      checked={editForm.watch("is_latest") || false}
+                      onCheckedChange={(checked) => {
+                        editForm.setValue("is_latest", !!checked);
+                      }}
                     />
-                    <label htmlFor="edit_is_latest" className="text-sm font-medium">
-                      নতুন পণ্য
-                    </label>
+                    <div>
+                      <label htmlFor="edit_is_latest" className="text-sm font-medium text-gray-900">
+                        নতুন পণ্য
+                      </label>
+                      <p className="text-xs text-gray-600">নতুন পণ্য হিসেবে চিহ্নিত হবে</p>
+                    </div>
                   </div>
                   <Button
                     type="button"
                     variant={editForm.watch("is_latest") ? "default" : "outline"}
                     size="sm"
-                    onClick={() => editForm.setValue("is_latest", !editForm.watch("is_latest"))}
+                    className={editForm.watch("is_latest") ? "bg-green-500 hover:bg-green-600" : ""}
+                    onClick={() => {
+                      const currentValue = editForm.watch("is_latest");
+                      editForm.setValue("is_latest", !currentValue);
+                    }}
                   >
+                    <Zap className="w-4 h-4 mr-1" />
                     {editForm.watch("is_latest") ? "চালু" : "বন্ধ"}
                   </Button>
                 </div>
 
-                <div className="flex items-center justify-between p-3 border rounded-lg">
-                  <div className="flex items-center space-x-2">
+                <div className="flex items-center justify-between p-4 border rounded-lg bg-gradient-to-r from-blue-50 to-cyan-50">
+                  <div className="flex items-center space-x-3">
                     <Checkbox
                       id="edit_is_best_selling"
-                      checked={editForm.watch("is_best_selling")}
-                      onCheckedChange={(checked) => editForm.setValue("is_best_selling", !!checked)}
+                      checked={editForm.watch("is_best_selling") || false}
+                      onCheckedChange={(checked) => {
+                        editForm.setValue("is_best_selling", !!checked);
+                      }}
                     />
-                    <label htmlFor="edit_is_best_selling" className="text-sm font-medium">
-                      বেস্ট সেলার
-                    </label>
+                    <div>
+                      <label htmlFor="edit_is_best_selling" className="text-sm font-medium text-gray-900">
+                        বেস্ট সেলার
+                      </label>
+                      <p className="text-xs text-gray-600">সর্বাধিক বিক্রীত পণ্য হিসেবে চিহ্নিত</p>
+                    </div>
                   </div>
                   <Button
                     type="button"
                     variant={editForm.watch("is_best_selling") ? "default" : "outline"}
                     size="sm"
-                    onClick={() => editForm.setValue("is_best_selling", !editForm.watch("is_best_selling"))}
+                    className={editForm.watch("is_best_selling") ? "bg-blue-500 hover:bg-blue-600" : ""}
+                    onClick={() => {
+                      const currentValue = editForm.watch("is_best_selling");
+                      editForm.setValue("is_best_selling", !currentValue);
+                    }}
                   >
+                    <TrendingUp className="w-4 h-4 mr-1" />
                     {editForm.watch("is_best_selling") ? "চালু" : "বন্ধ"}
                   </Button>
                 </div>
