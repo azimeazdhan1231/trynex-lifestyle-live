@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { useCart } from "@/hooks/use-cart";
 import IntegratedCartSystem from "./integrated-cart-system";
+import InstantSearchBar from "@/components/instant-search-bar";
 import { useQuery } from "@tanstack/react-query";
 import EnhancedCartModal from "@/components/EnhancedCartModal";
 import {
@@ -163,19 +164,12 @@ const Header = () => {
               ))}
             </nav>
 
-            {/* Search Bar */}
+            {/* Instant Search Bar */}
             <div className="hidden md:flex flex-1 max-w-md mx-8">
-              <form onSubmit={handleSearch} className="relative w-full">
-                <Input
-                  type="text"
-                  placeholder="পণ্য খুঁজুন..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 rounded-full border-2 border-gray-200 dark:border-gray-700 focus:border-primary dark:focus:border-primary bg-gray-50 dark:bg-gray-800"
-                  data-testid="search-input"
-                />
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-              </form>
+              <InstantSearchBar 
+                placeholder="পণ্য খুঁজুন..."
+                className="w-full"
+              />
             </div>
 
             {/* Right Side Actions */}

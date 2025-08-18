@@ -8,6 +8,7 @@ export const products = pgTable("products", {
   name: text("name").notNull(),
   price: numeric("price").notNull(),
   image_url: text("image_url"),
+  additional_images: jsonb("additional_images").default('[]'), // Array of additional image URLs
   category: text("category"),
   stock: integer("stock").notNull().default(0),
   description: text("description"),

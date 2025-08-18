@@ -51,12 +51,12 @@ export default function IntegratedCartSystem({ className = "" }: IntegratedCartS
         size="sm"
         onClick={handleOpenCart}
         className={cn(
-          "relative bg-white hover:bg-gray-50 border-gray-200 transition-all duration-200",
-          hasItems && "ring-2 ring-orange-200 border-orange-300"
+          "relative bg-white hover:bg-gray-50 border-gray-200 transition-all duration-200 text-gray-700 hover:text-gray-900 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700 dark:border-gray-600",
+          hasItems && "ring-2 ring-orange-200 border-orange-300 text-orange-600 dark:text-orange-400"
         )}
         data-testid="cart-button"
       >
-        <ShoppingCart className="w-4 h-4 mr-2" />
+        <ShoppingCart className="w-4 h-4 mr-2 text-gray-700 dark:text-gray-200" />
         <span className="hidden sm:inline">কার্ট</span>
         
         {/* Item Count Badge */}

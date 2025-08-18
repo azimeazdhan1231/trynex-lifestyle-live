@@ -189,14 +189,14 @@ export default function ProductManagement({ products, categories }: ProductManag
       name: product.name,
       description: product.description || "",
       price: product.price.toString(),
-      old_price: product.old_price?.toString() || "",
+      old_price: "",
       category: product.category || "",
-      images: Array.isArray(product.images) ? product.images : typeof product.images === 'string' ? [product.images] : [""],
+      images: product.image_url ? [product.image_url] : [""],
       stock: product.stock || 0,
       is_featured: product.is_featured || false,
-      is_available: product.is_available !== false,
-      sku: product.sku || "",
-      tags: Array.isArray(product.tags) ? product.tags : [],
+      is_available: true,
+      sku: "",
+      tags: [],
     });
     setIsDialogOpen(true);
   };
@@ -223,15 +223,14 @@ export default function ProductManagement({ products, categories }: ProductManag
     const productData: InsertProduct = {
       name: formData.name.trim(),
       description: formData.description.trim() || null,
-      price: Number(formData.price),
-      old_price: formData.old_price ? Number(formData.old_price) : null,
+      price: formData.price,
+      image_url: formData.images.filter(img => img.trim())[0] || null,
+      additional_images: formData.images.filter(img => img.trim()).slice(1),
       category: formData.category || null,
-      images: formData.images.filter(img => img.trim()),
       stock: formData.stock || 0,
       is_featured: formData.is_featured,
-      is_available: formData.is_available,
-      sku: formData.sku.trim() || null,
-      tags: formData.tags,
+      is_latest: false,
+      is_best_selling: false,
     };
 
     if (editingProduct) {

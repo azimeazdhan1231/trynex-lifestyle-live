@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 
-export interface WishlistItem {
+interface WishlistItem {
   id: string;
   name: string;
   price: number;
@@ -10,110 +10,97 @@ export interface WishlistItem {
   added_at: number;
 }
 
-interface UseWishlistReturn {
-  wishlist: WishlistItem[];
-  addToWishlist: (item: WishlistItem) => void;
-  removeFromWishlist: (id: string) => void;
-  isInWishlist: (id: string) => boolean;
-  clearWishlist: () => void;
-  totalItems: number;
-  isLoaded: boolean;
-}
+const WISHLIST_STORAGE_KEY = 'trynex_wishlist';
 
-const WISHLIST_STORAGE_KEY = 'trynex_wishlist_v1';
-
-export function useWishlist(): UseWishlistReturn {
-  const [wishlist, setWishlist] = useState<WishlistItem[]>([]);
-  const [isLoaded, setIsLoaded] = useState(false);
+export function useWishlist() {
+  const [wishlistItems, setWishlistItems] = useState<WishlistItem[]>([]);
 
   // Load wishlist from localStorage on mount
   useEffect(() => {
     try {
-      const savedWishlist = localStorage.getItem(WISHLIST_STORAGE_KEY);
-      if (savedWishlist) {
-        const parsedWishlist = JSON.parse(savedWishlist);
-        if (Array.isArray(parsedWishlist)) {
-          // Validate and clean wishlist data
-          const validWishlist = parsedWishlist.filter(item => 
-            item && 
-            item.id && 
-            item.name && 
-            typeof item.price === 'number' &&
-            typeof item.stock === 'number'
-          );
-          setWishlist(validWishlist);
-        }
+      const saved = localStorage.getItem(WISHLIST_STORAGE_KEY);
+      if (saved) {
+        const items = JSON.parse(saved);
+        setWishlistItems(items);
       }
     } catch (error) {
-      console.error('Failed to load wishlist from storage:', error);
-      // Reset to empty array on error
-      setWishlist([]);
-    } finally {
-      setIsLoaded(true);
+      console.error('Failed to load wishlist:', error);
     }
   }, []);
 
-  // Save wishlist to localStorage whenever it changes (debounced)
-  useEffect(() => {
-    if (isLoaded) {
-      const timeoutId = setTimeout(() => {
-        try {
-          localStorage.setItem(WISHLIST_STORAGE_KEY, JSON.stringify(wishlist));
-          console.log(`💖 Wishlist saved: ${wishlist.length} items`);
-        } catch (error) {
-          console.error('Failed to save wishlist to storage:', error);
-        }
-      }, 100); // Debounce saves
-
-      return () => clearTimeout(timeoutId);
+  // Save wishlist to localStorage whenever it changes
+  const saveWishlist = useCallback((items: WishlistItem[]) => {
+    try {
+      localStorage.setItem(WISHLIST_STORAGE_KEY, JSON.stringify(items));
+    } catch (error) {
+      console.error('Failed to save wishlist:', error);
     }
-  }, [wishlist, isLoaded]);
+  }, []);
 
+  // Add item to wishlist
   const addToWishlist = useCallback((item: WishlistItem) => {
-    setWishlist(prev => {
-      // Check if item already exists
-      const existingIndex = prev.findIndex(existingItem => existingItem.id === item.id);
+    setWishlistItems(prevItems => {
+      const existingIndex = prevItems.findIndex(existing => existing.id === item.id);
       if (existingIndex >= 0) {
-        // Update existing item with latest data
-        const updated = [...prev];
-        updated[existingIndex] = { ...item, added_at: prev[existingIndex].added_at };
-        return updated;
+        // Item already exists, update it
+        const newItems = [...prevItems];
+        newItems[existingIndex] = { ...item, added_at: Date.now() };
+        saveWishlist(newItems);
+        return newItems;
+      } else {
+        // Add new item
+        const newItems = [...prevItems, { ...item, added_at: Date.now() }];
+        saveWishlist(newItems);
+        return newItems;
       }
-      // Add new item
-      const newItem = { ...item, added_at: Date.now() };
-      console.log(`💖 Added to wishlist: ${item.name}`);
-      return [...prev, newItem];
     });
-  }, []);
+  }, [saveWishlist]);
 
-  const removeFromWishlist = useCallback((id: string) => {
-    setWishlist(prev => {
-      const filtered = prev.filter(item => item.id !== id);
-      if (filtered.length !== prev.length) {
-        console.log(`💔 Removed from wishlist: ${id}`);
-      }
-      return filtered;
+  // Remove item from wishlist
+  const removeFromWishlist = useCallback((itemId: string) => {
+    setWishlistItems(prevItems => {
+      const newItems = prevItems.filter(item => item.id !== itemId);
+      saveWishlist(newItems);
+      return newItems;
     });
-  }, []);
+  }, [saveWishlist]);
 
-  const isInWishlist = useCallback((id: string) => {
-    return wishlist.some(item => item.id === id);
-  }, [wishlist]);
+  // Check if item is in wishlist
+  const isInWishlist = useCallback((itemId: string) => {
+    return wishlistItems.some(item => item.id === itemId);
+  }, [wishlistItems]);
 
+  // Clear entire wishlist
   const clearWishlist = useCallback(() => {
-    console.log(`💔 Cleared wishlist: ${wishlist.length} items removed`);
-    setWishlist([]);
-  }, [wishlist.length]);
+    setWishlistItems([]);
+    try {
+      localStorage.removeItem(WISHLIST_STORAGE_KEY);
+    } catch (error) {
+      console.error('Failed to clear wishlist:', error);
+    }
+  }, []);
 
-  const totalItems = wishlist.length;
+  // Get wishlist count
+  const getWishlistCount = useCallback(() => {
+    return wishlistItems.length;
+  }, [wishlistItems]);
+
+  // Toggle item in wishlist
+  const toggleWishlist = useCallback((item: WishlistItem) => {
+    if (isInWishlist(item.id)) {
+      removeFromWishlist(item.id);
+    } else {
+      addToWishlist(item);
+    }
+  }, [isInWishlist, removeFromWishlist, addToWishlist]);
 
   return {
-    wishlist,
+    wishlistItems,
     addToWishlist,
     removeFromWishlist,
     isInWishlist,
     clearWishlist,
-    totalItems,
-    isLoaded
+    getWishlistCount,
+    toggleWishlist,
   };
 }

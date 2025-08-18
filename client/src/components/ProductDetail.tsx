@@ -5,7 +5,11 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useCart } from "@/hooks/use-cart";
+import { useWishlist } from "@/hooks/use-wishlist";
+import { useToast } from "@/hooks/use-toast";
 import { formatPrice } from "@/lib/constants";
+import { useLocation } from "wouter";
+import type { Product } from "@shared/schema";
 import {
   ShoppingCart,
   Heart,
@@ -17,7 +21,9 @@ import {
   Minus,
   Plus,
   Zap,
-  Award
+  Award,
+  Palette,
+  ExternalLink
 } from "lucide-react";
 
 interface ProductDetailProps {
@@ -28,8 +34,11 @@ const ProductDetail = ({ productId }: ProductDetailProps) => {
   const [quantity, setQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState(0);
   const { addItem } = useCart();
+  const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
+  const { toast } = useToast();
+  const [, setLocation] = useLocation();
 
-  const { data: product, isLoading, error } = useQuery({
+  const { data: product, isLoading, error } = useQuery<Product>({
     queryKey: [`/api/products/${productId}`],
     staleTime: 5 * 60 * 1000,
   });
@@ -70,17 +79,84 @@ const ProductDetail = ({ productId }: ProductDetailProps) => {
   }
 
   const handleAddToCart = () => {
+    if (!product) return;
     addItem({
       id: product.id,
       name: product.name,
       price: parseFloat(product.price),
-      image: product.image_url || "",
+      image_url: product.image_url || "",
       quantity
+    });
+    toast({
+      title: "কার্টে যোগ করা হয়েছে!",
+      description: `${quantity}টি ${product.name}`,
     });
   };
 
   const handleQuantityChange = (delta: number) => {
-    setQuantity(Math.max(1, Math.min(product.stock, quantity + delta)));
+    if (!product) return;
+    setQuantity(Math.max(1, Math.min(product.stock || 100, quantity + delta)));
+  };
+
+  const handleWishlistToggle = () => {
+    if (!product) return;
+    
+    if (isInWishlist(product.id)) {
+      removeFromWishlist(product.id);
+      toast({
+        title: "উইশলিস্ট থেকে সরানো হয়েছে",
+        description: product.name,
+      });
+    } else {
+      addToWishlist({
+        id: product.id,
+        name: product.name,
+        price: parseFloat(product.price),
+        image_url: product.image_url || undefined,
+        category: product.category || undefined,
+        stock: product.stock || 0,
+        added_at: Date.now(),
+      });
+      toast({
+        title: "উইশলিস্টে যোগ করা হয়েছে!",
+        description: product.name,
+      });
+    }
+  };
+
+  const handleShare = async () => {
+    if (!product) return;
+    
+    const shareData = {
+      title: product.name,
+      text: `${product.name} - ${formatPrice(parseFloat(product.price))}`,
+      url: window.location.href,
+    };
+
+    try {
+      if (navigator.share && navigator.canShare(shareData)) {
+        await navigator.share(shareData);
+      } else {
+        // Fallback to copying URL
+        await navigator.clipboard.writeText(window.location.href);
+        toast({
+          title: "লিংক কপি করা হয়েছে!",
+          description: "এই পণ্যের লিংক ক্লিপবোর্ডে কপি করা হয়েছে",
+        });
+      }
+    } catch (error) {
+      console.error('Share failed:', error);
+      toast({
+        title: "শেয়ার করতে সমস্যা হয়েছে",
+        description: "আবার চেষ্টা করুন",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleCustomize = () => {
+    if (!product) return;
+    setLocation(`/customize-product?productId=${product.id}`);
   };
 
   const discountPercentage = Math.floor(Math.random() * 30) + 10;
@@ -107,7 +183,7 @@ const ProductDetail = ({ productId }: ProductDetailProps) => {
           <div className="relative bg-gray-100 dark:bg-gray-700 rounded-xl overflow-hidden aspect-square">
             {images.length > 0 ? (
               <img
-                src={images[selectedImage] || images[0]}
+                src={images[selectedImage] || images[0] || "/placeholder.jpg"}
                 alt={product.name}
                 className="w-full h-full object-cover"
               />
@@ -146,7 +222,7 @@ const ProductDetail = ({ productId }: ProductDetailProps) => {
                   }`}
                 >
                   <img
-                    src={image}
+                    src={image || "/placeholder.jpg"}
                     alt={`${product.name} - ${index + 1}`}
                     className="w-full h-full object-cover"
                   />
@@ -285,14 +361,35 @@ const ProductDetail = ({ productId }: ProductDetailProps) => {
                 কার্টে যোগ করুন - {formatPrice(parseFloat(product.price) * quantity)}
               </Button>
 
-              <div className="grid grid-cols-2 gap-3">
-                <Button variant="outline" size="lg">
-                  <Heart className="w-4 h-4 mr-2" />
-                  উইশলিস্ট
+              <div className="grid grid-cols-3 gap-3">
+                <Button 
+                  variant="outline" 
+                  size="lg"
+                  onClick={handleWishlistToggle}
+                  className={isInWishlist(product.id) ? "text-red-500 border-red-500" : ""}
+                  data-testid="wishlist-toggle"
+                >
+                  <Heart className={`w-4 h-4 mr-2 ${isInWishlist(product.id) ? 'fill-current' : ''}`} />
+                  {isInWishlist(product.id) ? 'প্রিয়' : 'উইশলিস্ট'}
                 </Button>
-                <Button variant="outline" size="lg">
+                <Button 
+                  variant="outline" 
+                  size="lg"
+                  onClick={handleShare}
+                  data-testid="share-product"
+                >
                   <Share2 className="w-4 h-4 mr-2" />
                   শেয়ার
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="lg"
+                  onClick={handleCustomize}
+                  className="bg-gradient-to-r from-purple-500 to-pink-500 text-white border-0 hover:from-purple-600 hover:to-pink-600"
+                  data-testid="customize-product"
+                >
+                  <Palette className="w-4 h-4 mr-2" />
+                  কাস্টমাইজ
                 </Button>
               </div>
             </div>
