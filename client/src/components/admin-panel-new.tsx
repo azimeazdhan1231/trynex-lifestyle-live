@@ -14,7 +14,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { formatPrice } from "@/lib/constants";
+import { formatPrice } from "@/lib/utils";
 import { 
   Package, Users, TrendingUp, ShoppingCart, Star, DollarSign, Plus, Pencil, Trash2, Eye,
   BarChart3, Gift, Tag, PlusCircle, Calendar, AlertTriangle, FileText, Settings, 
@@ -184,7 +184,7 @@ export default function AdminPanelNew({ onLogout }: AdminPanelProps) {
   // Handle order status change
   const updateOrderStatusMutation = useMutation({
     mutationFn: async ({ orderId, status }: { orderId: string; status: string }) => {
-      return apiRequest("PATCH", `/api/orders/${orderId}`, { status });
+      return apiRequest(`/api/orders/${orderId}`, 'PATCH', { status });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/orders"] });

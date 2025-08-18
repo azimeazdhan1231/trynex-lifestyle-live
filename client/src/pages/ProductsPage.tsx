@@ -6,7 +6,7 @@ import { useState } from "react";
 const ProductsPage = () => {
   const [filters, setFilters] = useState({
     category: "",
-    priceRange: [0, 10000],
+    priceRange: [0, 10000] as [number, number],
     sortBy: "featured"
   });
 
