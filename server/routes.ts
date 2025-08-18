@@ -1,5 +1,6 @@
 import type { Express } from "express";
 import { storage } from "./storage";
+import { optimizedStorage } from "./optimized-storage";
 import { setupAuthRoutes } from "./auth-routes";
 import express from "express";
 import bcrypt from "bcryptjs";
@@ -25,21 +26,19 @@ export function setupRoutes(app: Express) {
     res.status(204).end();
   });
 
-  // Simple products endpoint - direct from Supabase without caching
+  // Ultra-fast products endpoint with optimized Supabase connection
   app.get('/api/products', async (req, res) => {
     try {
-      console.log('🔍 Fetching products directly from Supabase...');
       const startTime = Date.now();
       
-      const products = await storage.getProducts();
+      // Use optimized storage with caching
+      const products = await optimizedStorage.getProducts();
       const duration = Date.now() - startTime;
       
       res.set({
-        'Cache-Control': 'no-cache, no-store, must-revalidate',
-        'Pragma': 'no-cache',
-        'Expires': '0',
+        'Cache-Control': 'public, max-age=30', // Short cache for performance
         'X-Products-Count': products.length.toString(),
-        'X-Data-Source': 'supabase',
+        'X-Data-Source': 'fast-supabase',
         'X-Response-Time': `${duration}ms`
       });
 
@@ -55,21 +54,19 @@ export function setupRoutes(app: Express) {
     }
   });
 
-  // Simple categories endpoint - direct from Supabase without caching
+  // Ultra-fast categories endpoint
   app.get('/api/categories', async (req, res) => {
     try {
-      console.log('🔍 Fetching categories directly from Supabase...');
       const startTime = Date.now();
       
-      const categories = await storage.getCategories();
+      // Use optimized storage with caching
+      const categories = await optimizedStorage.getCategories();
       const duration = Date.now() - startTime;
 
       res.set({
-        'Cache-Control': 'no-cache, no-store, must-revalidate',
-        'Pragma': 'no-cache',
-        'Expires': '0',
+        'Cache-Control': 'public, max-age=30', // Short cache for performance
         'X-Categories-Count': categories.length.toString(),
-        'X-Data-Source': 'supabase',
+        'X-Data-Source': 'fast-supabase',
         'X-Response-Time': `${duration}ms`
       });
 

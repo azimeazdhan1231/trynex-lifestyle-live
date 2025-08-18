@@ -105,10 +105,12 @@ app.use((req, res, next) => {
   // this serves both the API and the client.
   // It is the only port that is not firewalled.
   const port = parseInt(process.env.PORT || '5000', 10);
-  server.listen(port, "0.0.0.0", () => {
+  server.listen(port, "0.0.0.0", async () => {
     log(`serving on port ${port}`);
     console.log("✅ Database initialization complete");
 
-    // No caching preload needed - using direct Supabase access
+    // Warm up cache for ultra-fast access
+    const { optimizedStorage } = await import("./optimized-storage");
+    await optimizedStorage.warmUpCache();
   });
 })();
