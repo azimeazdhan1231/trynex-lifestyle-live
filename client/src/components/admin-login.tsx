@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,118 +8,89 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Eye, EyeOff, Shield, Lock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from '@tanstack/react-query';
-import ComprehensiveAdminPanel from "@/components/ComprehensiveAdminPanel";
+import AdminPanelNew from "@/components/AdminPanelNew";
 
-interface AdminLoginProps {
-  onLoginSuccess: () => void;
-}
-
-export default function AdminLogin({ onLoginSuccess }: AdminLoginProps) {
-  const [credentials, setCredentials] = useState({
-    email: "",
-    password: ""
-  });
-  const [isLoading, setIsLoading] = useState(false);
+export default function AdminLogin() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const { toast } = useToast();
-  const [isLoggedIn, setIsLoggedIn] = useState(false); // State to track login status
-  const queryClient = useQueryClient(); // Initialize queryClient
+  const queryClient = useQueryClient();
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  // Check if admin is already logged in
+  useEffect(() => {
+    const checkAdminAuth = () => {
+      const token = localStorage.getItem('admin_token');
+      if (token) {
+        setIsLoggedIn(true);
+      }
+    };
+    checkAdminAuth();
+  }, []);
+
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError("");
 
     try {
-      const response = await fetch("/api/admin/login", {
-        method: "POST",
+      const response = await fetch('/api/admin/login', {
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email: credentials.email, password: credentials.password }),
+        body: JSON.stringify({ email, password }),
       });
 
       const data = await response.json();
 
-      if (data.success) {
-        // Store admin token in localStorage
-        localStorage.setItem('admin_token', data.token);
-        localStorage.setItem('admin_data', JSON.stringify(data.user || data.admin));
-        setIsLoggedIn(true);
-        onLoginSuccess?.();
-
-        // Invalidate queries to refresh data with new token
-        queryClient.invalidateQueries();
-
-        toast({
-          title: "সফল",
-          description: "এডমিন লগইন সফল হয়েছে।",
-        });
-      } else {
-        setError(data.message || "লগইন ব্যর্থ");
+      if (!response.ok) {
+        throw new Error(data.error || 'লগইন ব্যর্থ হয়েছে');
       }
-    } catch (error) {
-      console.error("Admin login error:", error);
-      setError("সার্ভার এরর। আবার চেষ্টা করুন।");
+
+      // Store the token
+      localStorage.setItem('admin_token', data.token);
+      localStorage.setItem('admin_data', JSON.stringify(data.admin));
+
+      // Clear any cached queries and refetch
+      queryClient.clear();
+      
+      setIsLoggedIn(true);
+      
+      toast({
+        title: "সফল!",
+        description: "অ্যাডমিন প্যানেলে স্বাগতম",
+      });
+
+    } catch (error: any) {
+      setError(error.message);
+      toast({
+        title: "লগইন ব্যর্থ",
+        description: error.message,
+        variant: "destructive",
+      });
     } finally {
       setIsLoading(false);
     }
   };
 
-  useEffect(() => {
-    const checkAdminAuth = async () => {
-      const token = localStorage.getItem('admin_token');
-      if (!token) {
-        setIsLoggedIn(false);
-        return;
-      }
+  const handleLogout = () => {
+    localStorage.removeItem('admin_token');
+    localStorage.removeItem('admin_data');
+    queryClient.clear();
+    setIsLoggedIn(false);
+    toast({
+      title: "লগআউট সফল",
+      description: "আপনি সফলভাবে লগআউট হয়েছেন।",
+    });
+  };
 
-      try {
-        const response = await fetch('/api/admin/verify', {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-          },
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          if (data.success) {
-            setIsLoggedIn(true);
-            console.log('Admin authentication verified');
-            return;
-          }
-        }
-      } catch (error) {
-        console.error('Admin auth check failed:', error);
-      }
-
-      // If we get here, auth failed
-      console.log('Admin authentication failed, clearing tokens');
-      localStorage.removeItem('admin_token');
-      localStorage.removeItem('admin_data');
-      setIsLoggedIn(false);
-    };
-
-    checkAdminAuth();
-  }, []);
-
-
-  // If logged in, show the comprehensive admin panel
+  // If logged in, show the admin panel
   if (isLoggedIn) {
-    return (
-      <ComprehensiveAdminPanel 
-        onLogout={() => {
-          localStorage.removeItem('admin_token');
-          localStorage.removeItem('admin_data');
-          setIsLoggedIn(false);
-          toast({
-            title: "লগআউট সফল",
-            description: "আপনি সফলভাবে লগআউট হয়েছেন।",
-          });
-        }}
-      />
-    );
+    return <AdminPanelNew onLogout={handleLogout} />;
   }
 
   return (
@@ -128,33 +100,35 @@ export default function AdminLogin({ onLoginSuccess }: AdminLoginProps) {
           <div className="bg-blue-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
             <Shield className="w-8 h-8 text-white" />
           </div>
-          <h1 className="text-2xl font-bold text-gray-900">এডমিন লগইন</h1>
-          <p className="text-gray-600 mt-2">Trynex Lifestyle Admin Panel</p>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">অ্যাডমিন প্যানেল</h1>
+          <p className="text-gray-600">TryneX Lifestyle</p>
         </div>
 
         <Card className="shadow-xl border-0">
           <CardHeader className="space-y-1">
-            <CardTitle className="text-xl text-center">
-              <Lock className="w-5 h-5 inline mr-2" />
-              নিরাপদ প্রবেশ
-            </CardTitle>
+            <CardTitle className="text-2xl font-bold text-center">লগইন করুন</CardTitle>
             <CardDescription className="text-center">
-              এডমিন প্যানেলে প্রবেশের জন্য আপনার তথ্য দিন
+              অ্যাডমিন প্যানেলে প্রবেশ করতে আপনার তথ্য দিন
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleLogin} className="space-y-4">
+              {error && (
+                <Alert variant="destructive">
+                  <AlertDescription>{error}</AlertDescription>
+                </Alert>
+              )}
+
               <div className="space-y-2">
                 <Label htmlFor="email">ইমেইল</Label>
                 <Input
                   id="email"
                   type="email"
                   placeholder="admin@trynex.com"
-                  value={credentials.email}
-                  onChange={(e) => setCredentials(prev => ({ ...prev, email: e.target.value }))}
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   required
-                  className="h-11"
-                  data-testid="input-admin-email"
+                  disabled={isLoading}
                 />
               </div>
 
@@ -165,43 +139,54 @@ export default function AdminLogin({ onLoginSuccess }: AdminLoginProps) {
                     id="password"
                     type={showPassword ? "text" : "password"}
                     placeholder="আপনার পাসওয়ার্ড"
-                    value={credentials.password}
-                    onChange={(e) => setCredentials(prev => ({ ...prev, password: e.target.value }))}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
                     required
-                    className="h-11 pr-10"
-                    data-testid="input-admin-password"
+                    disabled={isLoading}
+                    className="pr-10"
                   />
-                  <button
+                  <Button
                     type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
-                    data-testid="button-toggle-password"
+                    disabled={isLoading}
                   >
-                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                  </button>
+                    {showPassword ? (
+                      <EyeOff className="h-4 w-4 text-gray-400" />
+                    ) : (
+                      <Eye className="h-4 w-4 text-gray-400" />
+                    )}
+                  </Button>
                 </div>
               </div>
 
-              {error && (
-                <Alert variant="destructive">
-                  <AlertDescription>{error}</AlertDescription>
-                </Alert>
-              )}
-
               <Button
                 type="submit"
-                className="w-full h-11 bg-blue-600 hover:bg-blue-700"
+                className="w-full bg-blue-600 hover:bg-blue-700"
                 disabled={isLoading}
-                data-testid="button-admin-login"
               >
-                {isLoading ? "লগইন হচ্ছে..." : "লগইন করুন"}
+                {isLoading ? (
+                  <div className="flex items-center">
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                    লগইন হচ্ছে...
+                  </div>
+                ) : (
+                  <>
+                    <Lock className="w-4 h-4 mr-2" />
+                    লগইন করুন
+                  </>
+                )}
               </Button>
             </form>
 
-            <div className="mt-6 text-center text-sm text-gray-600">
-              <p>ডিফল্ট ক্রেডেনশিয়াল:</p>
-              <p className="font-mono bg-gray-100 p-2 rounded mt-2">
-                admin@trynex.com / admin123
+            <div className="mt-6 text-center">
+              <p className="text-sm text-gray-600">
+                ডেভেলপমেন্ট টেস্টিং এর জন্য:
+              </p>
+              <p className="text-xs text-gray-500 mt-1">
+                ইমেইল: admin@trynex.com | পাসওয়ার্ড: admin123
               </p>
             </div>
           </CardContent>

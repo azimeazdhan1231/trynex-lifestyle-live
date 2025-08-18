@@ -1,6 +1,7 @@
-import { Redirect } from "wouter";
 
-export default function AdminRedirect() {
-  // Redirect to the full admin dashboard
-  return <Redirect to="/admin/dashboard" />;
+import React from 'react';
+import AdminLogin from '@/components/admin-login';
+
+export default function AdminPage() {
+  return <AdminLogin />;
 }

@@ -34,12 +34,17 @@ export default function AdminPanelNew({ onLogout }: AdminPanelProps) {
 
   // Get real-time data for badges
   const { data: orders } = useQuery({
-    queryKey: ['/api/orders'],
+    queryKey: ['/api/admin/orders'],
     refetchInterval: 10000,
   });
 
   const { data: products } = useQuery({
-    queryKey: ['/api/products'],
+    queryKey: ['/api/admin/products'],
+    refetchInterval: 30000,
+  });
+
+  const { data: analytics } = useQuery({
+    queryKey: ['/api/admin/stats'],
     refetchInterval: 30000,
   });
 
