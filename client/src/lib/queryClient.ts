@@ -1,4 +1,3 @@
-
 import { QueryClient } from '@tanstack/react-query';
 
 // Create query client with authentication support
@@ -15,7 +14,7 @@ export const queryClient = new QueryClient({
       refetchOnWindowFocus: false,
       queryFn: async ({ queryKey, signal }) => {
         const url = Array.isArray(queryKey) ? queryKey[0] as string : queryKey as string;
-        
+
         // Prepare headers
         const headers: Record<string, string> = {
           'Content-Type': 'application/json',
@@ -41,7 +40,7 @@ export const queryClient = new QueryClient({
             localStorage.removeItem('admin_data');
             window.location.reload();
           }
-          
+
           throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
 
@@ -53,3 +52,37 @@ export const queryClient = new QueryClient({
     },
   },
 });
+
+// API request utility function
+export const apiRequest = async (url: string, options: RequestInit = {}): Promise<any> => {
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    ...options.headers,
+  };
+
+  // Add auth token for admin routes
+  if (url.includes('/api/admin/')) {
+    const token = localStorage.getItem('admin_token');
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+  }
+
+  const response = await fetch(url, {
+    ...options,
+    headers,
+  });
+
+  if (!response.ok) {
+    // Handle 401 errors by clearing auth and redirecting
+    if (response.status === 401 && url.includes('/api/admin/')) {
+      localStorage.removeItem('admin_token');
+      localStorage.removeItem('admin_data');
+      window.location.reload();
+    }
+
+    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+  }
+
+  return response.json();
+};
