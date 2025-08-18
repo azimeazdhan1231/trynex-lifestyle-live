@@ -32,7 +32,7 @@ export default function UserLogin({ isOpen, onClose, onRegisterClick, onLoginSuc
 
   const loginMutation = useMutation({
     mutationFn: async (data: LoginData) => {
-      const response = await apiRequest('POST', '/api/auth/login', {
+      const response = await apiRequest('/api/auth/login', 'POST', {
         phone: data.phone.trim(),
         password: data.password
       });

@@ -40,7 +40,7 @@ export default function UserRegistration({ isOpen, onClose, onLoginClick }: User
 
   const registrationMutation = useMutation({
     mutationFn: async (data: RegistrationData) => {
-      const response = await apiRequest('POST', '/api/auth/register', {
+      const response = await apiRequest('/api/auth/register', 'POST', {
         firstName: data.firstName.trim(),
         lastName: data.lastName.trim(),
         phone: data.phone.trim(),

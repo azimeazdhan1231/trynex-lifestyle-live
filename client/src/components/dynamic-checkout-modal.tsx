@@ -151,7 +151,7 @@ export default function DynamicCheckoutModal({ isOpen, onClose, cart, onOrderCom
 
   const createOrderMutation = useMutation({
     mutationFn: async (orderData: any) => {
-      const response = await apiRequest("POST", "/api/orders", orderData);
+      const response = await apiRequest("/api/orders", "POST", orderData);
       if (!response.ok) {
         const errorText = await response.text();
         throw new Error(`Order creation failed: ${response.status} - ${errorText}`);

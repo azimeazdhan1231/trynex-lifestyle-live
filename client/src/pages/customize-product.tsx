@@ -266,7 +266,7 @@ export default function CustomizeProduct() {
   // Custom order mutation
   const customOrderMutation = useMutation({
     mutationFn: async (orderData: any) => {
-      const response = await apiRequest("POST", "/api/custom-orders", orderData);
+      const response = await apiRequest("/api/custom-orders", "POST", orderData);
       return response.json();
     },
     onSuccess: (data) => {

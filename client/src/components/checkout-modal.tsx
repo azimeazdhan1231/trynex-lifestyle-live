@@ -109,7 +109,7 @@ export default function CheckoutModal({ isOpen, onClose, cart, onOrderComplete }
 
   const createOrderMutation = useMutation({
     mutationFn: async (orderData: any) => {
-      const response = await apiRequest("POST", "/api/orders", orderData);
+      const response = await apiRequest("/api/orders", "POST", orderData);
       return response;
     },
     onSuccess: (order) => {

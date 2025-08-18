@@ -89,7 +89,7 @@ export default function ComprehensiveAdminPanel({ onLogout }: AdminPanelProps) {
   // Order status update mutation
   const updateOrderStatusMutation = useMutation({
     mutationFn: async ({ orderId, status }: { orderId: string; status: string }) => {
-      return apiRequest("PATCH", `/api/orders/${orderId}`, { status });
+      return apiRequest(`/api/orders/${orderId}`, "PATCH", { status });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/orders"] });

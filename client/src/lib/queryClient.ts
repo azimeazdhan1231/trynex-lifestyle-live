@@ -70,13 +70,13 @@ export const queryClient = new QueryClient({
 });
 
 export const apiRequest = async (
-  method: string,
   url: string,
+  method: string,
   data?: any,
   timeout: number = 30000
 ): Promise<any> => {
 
-  console.log(`API Request: ${method} ${url}`, data ? { body: data } : '');
+  console.log(`API Request: ${url} ${method}`, data ? { body: data } : '');
 
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeout);
