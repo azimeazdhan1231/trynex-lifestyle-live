@@ -1,6 +1,5 @@
-
 import React from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
@@ -64,8 +63,9 @@ export default function CartModalBulletproof({ isOpen, onClose }: CartModalBulle
               <ShoppingCart className="w-6 h-6 text-orange-500" />
               আপনার কার্ট
             </DialogTitle>
+            <DialogDescription className="sr-only">আপনার কার্ট খালি আছে</DialogDescription>
           </DialogHeader>
-          
+
           <div className="text-center py-8 px-4">
             <div className="w-20 h-20 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-6">
               <ShoppingBag className="w-10 h-10 text-gray-400" />
@@ -93,7 +93,7 @@ export default function CartModalBulletproof({ isOpen, onClose }: CartModalBulle
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl w-[95vw] sm:w-[90vw] lg:w-[85vw] max-h-[95vh] rounded-xl bg-white dark:bg-gray-900 border-0 shadow-2xl p-0 overflow-hidden">
-        
+
         {/* Header */}
         <DialogHeader className="sticky top-0 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 px-6 py-4 z-10">
           <DialogTitle className="flex items-center justify-between">
@@ -119,18 +119,19 @@ export default function CartModalBulletproof({ isOpen, onClose }: CartModalBulle
               <X className="w-5 h-5 text-gray-500" />
             </Button>
           </DialogTitle>
+          <DialogDescription className="sr-only">আপনার কার্টে {totalItems} টি পণ্য আছে</DialogDescription>
         </DialogHeader>
 
         {/* Content */}
         <div className="flex flex-col h-full">
-          
+
           {/* Cart Items */}
           <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4 max-h-[50vh]">
             {items.map((item: any, index: number) => (
               <Card key={`${item.id}-${index}`} className="border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden hover:shadow-md transition-shadow duration-200">
                 <CardContent className="p-4">
                   <div className="flex items-start gap-4">
-                    
+
                     {/* Product Image */}
                     <div className="flex-shrink-0">
                       <img
@@ -143,7 +144,7 @@ export default function CartModalBulletproof({ isOpen, onClose }: CartModalBulle
                         }}
                       />
                     </div>
-                    
+
                     {/* Product Info */}
                     <div className="flex-1 min-w-0">
                       <h4 className="font-semibold text-gray-900 dark:text-white text-base truncate mb-1">
@@ -152,7 +153,7 @@ export default function CartModalBulletproof({ isOpen, onClose }: CartModalBulle
                       <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
                         একক মূল্য: {formatPrice(item.price)}
                       </p>
-                      
+
                       {/* Customization Info */}
                       {item.customization && (
                         <div className="mb-3">
@@ -172,7 +173,7 @@ export default function CartModalBulletproof({ isOpen, onClose }: CartModalBulle
                           </div>
                         </div>
                       )}
-                      
+
                       {/* Quantity and Price */}
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
@@ -197,7 +198,7 @@ export default function CartModalBulletproof({ isOpen, onClose }: CartModalBulle
                             <Plus className="w-4 h-4" />
                           </Button>
                         </div>
-                        
+
                         <div className="text-right">
                           <p className="font-bold text-lg text-orange-600 dark:text-orange-400">
                             {formatPrice(item.price * item.quantity)}
@@ -229,7 +230,7 @@ export default function CartModalBulletproof({ isOpen, onClose }: CartModalBulle
                   <span className="text-gray-600 dark:text-gray-400">পণ্যের মূল্য:</span>
                   <span className="font-medium text-gray-900 dark:text-white">{formatPrice(totalPrice)}</span>
                 </div>
-                
+
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600 dark:text-gray-400">ডেলিভারি চার্জ:</span>
                   <span className={`font-medium ${deliveryCharge === 0 ? "text-green-600 dark:text-green-400" : "text-gray-900 dark:text-white"}`}>
@@ -268,7 +269,7 @@ export default function CartModalBulletproof({ isOpen, onClose }: CartModalBulle
                 <ShoppingBag className="w-4 h-4 mr-2" />
                 আরো কিনুন
               </Button>
-              
+
               <Button
                 variant="outline"
                 onClick={handleClearCart}
