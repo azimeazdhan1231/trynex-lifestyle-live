@@ -1040,35 +1040,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Create custom order data matching the new schema
       const customOrderData = {
-        tracking_id: trackingId,
-        product_id: orderData.productId || null,
-        customer_name: orderData.name || orderData.customerName,
-        customer_phone: orderData.whatsapp || orderData.phone,
-        customer_email: orderData.email || null,
-        customer_address: orderData.address,
+        trackingId: trackingId,
+        productId: orderData.productId || null,
+        customerName: orderData.name || orderData.customerName,
+        customerPhone: orderData.phone || orderData.customerPhone,
+        customerEmail: orderData.email || orderData.customerEmail,
+        customerAddress: orderData.address || orderData.customerAddress,
         district: orderData.district || "ঢাকা",
         thana: orderData.thana || "ঢাকা",
-        product_name: orderData.productName || 'Custom Product',
-        customization: typeof orderData.customization === 'string' 
-          ? orderData.customization 
-          : JSON.stringify(orderData.customization || {}),
-        customization_instructions: orderData.customizationInstructions || null,
-        customization_images: Array.isArray(orderData.uploadedImages) 
-          ? JSON.stringify(orderData.uploadedImages) 
+        productName: orderData.productName || 'Custom Product',
+        productType: orderData.productType || 'custom',
+        customizationInstructions: orderData.customizationInstructions || null,
+        customizationImages: Array.isArray(orderData.customizationImages) 
+          ? JSON.stringify(orderData.customizationImages) 
           : '[]',
         quantity: orderData.quantity || 1,
-        base_price: orderData.basePrice || orderData.totalPrice || 0,
-        customization_cost: orderData.customizationCost || 0,
-        total_price: orderData.totalPrice || orderData.basePrice || 0,
-        payment_method: orderData.paymentMethod || 'cash_on_delivery',
-        trx_id: orderData.trxId || null,
-        payment_screenshot: orderData.paymentScreenshot || null,
+        basePrice: String(orderData.basePrice || orderData.totalPrice || 0),
+        customizationCost: String(orderData.customizationCost || 0),
+        totalPrice: String(orderData.totalPrice || orderData.basePrice || 0),
+        paymentMethod: orderData.paymentMethod || 'cod',
+        trxId: orderData.trxId || null,
+        paymentScreenshot: orderData.paymentScreenshot || null,
         status: 'pending',
         notes: orderData.notes || null
       };
 
-      // Validate required fields (adjusting to new schema names)
-      const requiredFields = ['customer_name', 'customer_phone', 'customer_address', 'district', 'thana', 'base_price', 'total_price'];
+      // Validate required fields
+      const requiredFields = ['customerName', 'customerPhone', 'customerAddress', 'district', 'thana', 'basePrice', 'totalPrice'];
       for (const field of requiredFields) {
         if (!customOrderData[field as keyof typeof customOrderData]) {
           return res.status(400).json({
@@ -1084,7 +1082,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(201).json({ 
         success: true, 
         id: customOrder.id,
-        trackingId: trackingId,
+        tracking_id: trackingId,
         data: customOrder,
         message: "কাস্টম অর্ডার সফলভাবে তৈরি হয়েছে"
       });

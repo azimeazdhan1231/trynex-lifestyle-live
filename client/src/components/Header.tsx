@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { useCart } from "@/hooks/use-cart";
 import { useQuery } from "@tanstack/react-query";
+import EnhancedCartModal from "@/components/EnhancedCartModal";
 import {
   Search,
   ShoppingCart,
@@ -27,6 +28,7 @@ const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [isDarkMode, setIsDarkMode] = useState(false);
+  const [showCartModal, setShowCartModal] = useState(false);
   const [location] = useLocation();
   const { items: cartItems, getTotalItems } = useCart();
 
@@ -195,16 +197,20 @@ const Header = () => {
               </Link>
 
               {/* Cart */}
-              <Link href="/cart">
-                <Button variant="ghost" size="icon" className="relative" data-testid="cart-button">
-                  <ShoppingCart className="w-5 h-5" />
-                  {cartItemCount > 0 && (
-                    <Badge className="absolute -top-2 -right-2 w-5 h-5 flex items-center justify-center text-xs bg-primary">
-                      {cartItemCount}
-                    </Badge>
-                  )}
-                </Button>
-              </Link>
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="relative" 
+                data-testid="cart-button"
+                onClick={() => setShowCartModal(true)}
+              >
+                <ShoppingCart className="w-5 h-5" />
+                {cartItemCount > 0 && (
+                  <Badge className="absolute -top-2 -right-2 w-5 h-5 flex items-center justify-center text-xs bg-primary">
+                    {cartItemCount}
+                  </Badge>
+                )}
+              </Button>
 
               {/* User Account */}
               <Link href="/profile">
@@ -293,6 +299,12 @@ const Header = () => {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Enhanced Cart Modal */}
+      <EnhancedCartModal 
+        isOpen={showCartModal} 
+        onClose={() => setShowCartModal(false)} 
+      />
     </>
   );
 };

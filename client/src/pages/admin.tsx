@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from "react";
 import AdminLogin from "@/components/admin-login";
-import AdminPanelMobile from "@/components/AdminPanelMobile";
+import EnhancedAdminPanel from "@/components/EnhancedAdminPanel";
 
 export default function Admin() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -75,7 +75,7 @@ export default function Admin() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <AdminPanelMobile onLogout={handleLogout} />
+      <EnhancedAdminPanel />
     </div>
   );
 }

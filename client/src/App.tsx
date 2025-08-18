@@ -24,6 +24,7 @@ const BlogPage = lazy(() => import("./pages/BlogPage"));
 const SearchPage = lazy(() => import("./pages/SearchPage"));
 const WishlistPage = lazy(() => import("./pages/WishlistPage"));
 const CustomOrderPage = lazy(() => import("./pages/CustomOrderPage"));
+const NewCustomizePage = lazy(() => import("./pages/NewCustomizePage"));
 const AuthPage = lazy(() => import("./pages/AuthPage"));
 const AdminPage = lazy(() => import("./pages/admin"));
 const PolicyPage = lazy(() => import("./pages/PolicyPage"));
@@ -54,9 +55,10 @@ const Router = () => {
         <Route path="/blog/:slug" component={BlogPage} />
         <Route path="/search" component={SearchPage} />
         <Route path="/wishlist" component={WishlistPage} />
-        <Route path="/customize/:id" component={CustomOrderPage} />
-        <Route path="/customize" component={CustomOrderPage} />
-        <Route path="/custom-order" component={CustomOrderPage} />
+        <Route path="/customize/:id" component={NewCustomizePage} />
+        <Route path="/customize" component={NewCustomizePage} />
+        <Route path="/custom-order" component={NewCustomizePage} />
+        <Route path="/custom" component={NewCustomizePage} />
         <Route path="/auth" component={AuthPage} />
         <Route path="/login" component={AuthPage} />
         <Route path="/register" component={AuthPage} />
