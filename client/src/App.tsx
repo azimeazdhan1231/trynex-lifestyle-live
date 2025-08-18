@@ -29,6 +29,7 @@ const CustomOrderPage = lazy(() => import("./pages/CustomOrderPage"));
 const NewCustomizePage = lazy(() => import("./pages/NewCustomizePage"));
 const AuthPage = lazy(() => import("./pages/AuthPage"));
 const AdminPage = lazy(() => import("./pages/admin"));
+const AdminDashboard = lazy(() => import("./pages/admin-dashboard"));
 const PolicyPage = lazy(() => import("./pages/PolicyPage"));
 const NotFoundPage = lazy(() => import("./pages/NotFoundPage"));
 
@@ -67,6 +68,7 @@ const Router = () => {
         <Route path="/login" component={AuthPage} />
         <Route path="/register" component={AuthPage} />
         <Route path="/admin" component={AdminPage} />
+        <Route path="/admin/dashboard" component={AdminDashboard} />
         <Route path="/privacy" component={PolicyPage} />
         <Route path="/terms" component={PolicyPage} />
         <Route path="/terms-conditions" component={PolicyPage} />

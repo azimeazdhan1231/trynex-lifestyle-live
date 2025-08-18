@@ -2,6 +2,7 @@ import type { Express } from "express";
 import { storage } from "./storage";
 import { optimizedStorage } from "./optimized-storage";
 import { setupAuthRoutes } from "./auth-routes";
+import { setupAdminRoutes } from "./admin-routes";
 import express from "express";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
@@ -14,6 +15,9 @@ const JWT_SECRET = process.env.JWT_SECRET_KEY || process.env.JWT_SECRET || "tryn
 export function setupRoutes(app: Express) {
   // Setup authentication routes
   setupAuthRoutes(app);
+  
+  // Setup admin routes
+  setupAdminRoutes(app);
 
   // CORS preflight handler
   app.options('*', (req, res) => {

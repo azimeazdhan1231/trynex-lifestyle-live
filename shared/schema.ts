@@ -222,23 +222,23 @@ export type InsertUserOrder = z.infer<typeof insertUserOrderSchema>;
 export const customOrders = pgTable('custom_orders', {
   id: uuid('id').primaryKey().default(sql`gen_random_uuid()`),
   tracking_id: text('tracking_id').unique().notNull(),
-  productId: uuid('product_id').notNull().references(() => products.id),
-  customerName: text('customer_name').notNull(),
-  customerPhone: text('customer_phone').notNull(), 
-  customerEmail: text('customer_email'),
-  customerAddress: text('customer_address').notNull(),
+  product_id: uuid('product_id').notNull().references(() => products.id),
+  customer_name: text('customer_name').notNull(),
+  customer_phone: text('customer_phone').notNull(), 
+  customer_email: text('customer_email'),
+  customer_address: text('customer_address').notNull(),
   district: text('district').notNull(),
   thana: text('thana').notNull(),
-  customizationInstructions: text('customization_instructions'),
-  customizationImages: jsonb('customization_images').default('[]'), // Array of image URLs
-  basePrice: numeric('base_price').notNull(),
-  customizationCost: numeric('customization_cost').default('0'),
-  totalPrice: numeric('total_price').notNull(),
-  paymentMethod: text('payment_method').default('cash_on_delivery'),
+  customization_instructions: text('customization_instructions'),
+  customization_images: jsonb('customization_images').default('[]'), // Array of image URLs
+  base_price: numeric('base_price').notNull(),
+  customization_cost: numeric('customization_cost').default('0'),
+  total_price: numeric('total_price').notNull(),
+  payment_method: text('payment_method').default('cash_on_delivery'),
   status: text('status').default('pending'), // pending, confirmed, in_production, completed, cancelled
   notes: text('notes'), // Internal notes for the order
-  createdAt: timestamp('created_at').defaultNow(),
-  updatedAt: timestamp('updated_at').defaultNow(),
+  created_at: timestamp('created_at').defaultNow(),
+  updated_at: timestamp('updated_at').defaultNow(),
 });
 
 export const insertCustomOrderSchema = createInsertSchema(customOrders).omit({
