@@ -1,20 +1,12 @@
-
 {
-  "production_branch": "main",
-  "build": {
-    "command": "npm ci --no-optional && npm run build:static",
-    "destination": "dist/public",
-    "root_dir": ".",
-    "environment_variables": {
-      "NODE_VERSION": "20",
-      "NODE_ENV": "production",
-      "CI": "true"
+  "$schema": "https://developers.cloudflare.com/pages/functions/wrangler-configuration/",
+  "compatibility_date": "2024-08-15",
+  "compatibility_flags": ["nodejs_compat"],
+  "env": {
+    "production": {
+      "vars": {
+        "ENVIRONMENT": "production"
+      }
     }
-  },
-  "functions": {
-    "directory": "functions"
-  },
-  "compatibility_flags": [
-    "nodejs_compat"
-  ]
+  }
 }

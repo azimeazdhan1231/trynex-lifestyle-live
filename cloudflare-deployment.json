@@ -1,0 +1,82 @@
+{
+  "name": "TryneX Bengali eCommerce",
+  "deployment": {
+    "type": "cloudflare-pages",
+    "production_branch": "main",
+    "preview_branch": "*",
+    "build": {
+      "command": "npm run build",
+      "output_directory": "dist",
+      "environment_variables": {
+        "NODE_VERSION": "18",
+        "NPM_VERSION": "9"
+      }
+    },
+    "functions": {
+      "directory": "functions",
+      "compatibility_date": "2024-08-15",
+      "compatibility_flags": ["nodejs_compat"]
+    },
+    "environment_variables": {
+      "production": {
+        "DATABASE_URL": {
+          "type": "secret_text",
+          "value": "postgresql://postgres.lxhhgdqfxmeohayceshb:Amiomito1Amiomito1@aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres"
+        },
+        "SUPABASE_URL": {
+          "type": "text",
+          "value": "https://lxhhgdqfxmeohayceshb.supabase.co"
+        },
+        "SUPABASE_ANON_KEY": {
+          "type": "secret_text",
+          "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4aGhnZHFmeG1lb2hheWNlc2hiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM4OTk1OTAsImV4cCI6MjA2OTQ3NTU5MH0.gW9X6igqtpAQKutqb4aEEx0VovEZdMp4Gk_R8Glm9Bw"
+        },
+        "SUPABASE_SERVICE_KEY": {
+          "type": "secret_text",
+          "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4aGhnZHFmeG1lb2hheWNlc2hiIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1Mzg5OTU5MCwiZXhwIjoyMDY5NDc1NTkwfQ.zsYuh0P2S97pLrvY6t1j-qw-j-R_-_5QQX7e423dDeU"
+        },
+        "JWT_SECRET": {
+          "type": "secret_text", 
+          "value": "trynex_secret_key_2025"
+        }
+      }
+    },
+    "redirects": [
+      {
+        "source": "/api/*",
+        "destination": "/api/:splat",
+        "status": 200
+      }
+    ],
+    "headers": [
+      {
+        "source": "/api/*",
+        "headers": [
+          {
+            "key": "Access-Control-Allow-Origin",
+            "value": "*"
+          },
+          {
+            "key": "Access-Control-Allow-Methods", 
+            "value": "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+          },
+          {
+            "key": "Access-Control-Allow-Headers",
+            "value": "Content-Type, Authorization"
+          }
+        ]
+      }
+    ]
+  },
+  "database": {
+    "provider": "supabase",
+    "url": "https://lxhhgdqfxmeohayceshb.supabase.co",
+    "connection_string": "postgresql://postgres.lxhhgdqfxmeohayceshb:Amiomito1Amiomito1@aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres"
+  },
+  "features": {
+    "cors_enabled": true,
+    "cache_control": true,
+    "real_time_updates": true,
+    "admin_authentication": true
+  }
+}

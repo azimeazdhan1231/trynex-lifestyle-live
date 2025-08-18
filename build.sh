@@ -1,37 +1,49 @@
 #!/bin/bash
 
-# Trynex Lifestyle - Optimized Build Script for Cloudflare Pages
+# TryneX eCommerce - Cloudflare Deployment Build Script
+echo "🚀 Building TryneX eCommerce for Cloudflare Pages..."
 
-echo "🚀 Starting Trynex Lifestyle build process..."
-
-# Set production environment
+# Set environment variables
 export NODE_ENV=production
-export CI=true
+export VITE_API_URL=""
 
-# Install dependencies with cache
-echo "📦 Installing dependencies..."
-npm ci --no-optional --prefer-offline
+# Clean previous builds
+echo "🧹 Cleaning previous builds..."
+rm -rf dist/
+rm -rf node_modules/.vite/
 
-# Build the client only (frontend)
-echo "📦 Building client with Vite..."
-npm run build:static || npx vite build --mode production
+# Install dependencies (if needed)
+echo "📦 Checking dependencies..."
+if [ ! -d "node_modules" ]; then
+  npm install
+fi
 
-echo "✅ Build completed successfully!"
-echo "📂 Static files ready in: dist/public"
+# Build the application
+echo "🔨 Building application..."
+npm run build
 
-# Verify build outputs
-if [ -d "dist/public" ] && [ -f "dist/public/index.html" ]; then
-    echo "✅ Build artifacts verified!"
-    echo "📄 Main files:"
-    ls -la dist/public/*.html || echo "No HTML files found"
-    ls -la dist/public/assets/*.js | head -5 || echo "No JS files found"
-    echo "🔧 Cloudflare Functions ready in: functions/"
-    ls -la functions/ || echo "No functions directory"
+# Verify build success
+if [ -d "dist" ]; then
+  echo "✅ Build successful! Files ready for Cloudflare Pages:"
+  echo "   - Static files: dist/"
+  echo "   - API functions: functions/api/"
+  echo "   - Redirects: _redirects"
+  
+  echo ""
+  echo "🌐 Next steps for Cloudflare deployment:"
+  echo "1. Connect your repository to Cloudflare Pages"
+  echo "2. Set build command: npm run build"
+  echo "3. Set output directory: dist"
+  echo "4. Set functions directory: functions"
+  echo "5. Add environment variables in Cloudflare dashboard:"
+  echo "   - DATABASE_URL"
+  echo "   - SUPABASE_URL"
+  echo "   - SUPABASE_ANON_KEY"
+  echo "   - SUPABASE_SERVICE_KEY"
+  echo "   - JWT_SECRET"
+  echo ""
+  echo "🧪 After deployment, test with: node test-cloudflare-deployment.js"
 else
-    echo "❌ Build verification failed!"
-    echo "Contents of dist:"
-    ls -la dist/ || echo "dist/ directory missing"
-    echo "Contents of root:"
-    ls -la . | head -20
-    exit 1
+  echo "❌ Build failed! Check errors above."
+  exit 1
 fi
