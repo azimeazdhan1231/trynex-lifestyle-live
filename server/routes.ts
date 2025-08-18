@@ -24,7 +24,7 @@ class PerformanceCache {
   private static instance: PerformanceCache;
   private productsCache: CacheEntry<any[]> | null = null;
   private categoriesCache: CacheEntry<any[]> | null = null;
-  private readonly CACHE_TTL = 3 * 60 * 1000; // 3 minutes for faster updates
+  private readonly CACHE_TTL = 60 * 1000; // 1 minute for real-time updates
   private readonly ACCESS_TTL = 10 * 60 * 1000; // 10 minutes access-based expiry
   private fetchPromises = new Map<string, Promise<any>>();
 

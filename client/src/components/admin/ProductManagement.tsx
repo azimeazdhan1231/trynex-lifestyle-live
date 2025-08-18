@@ -77,7 +77,11 @@ export default function ProductManagement() {
     refetch: refetchProducts
   } = useQuery<Product[]>({
     queryKey: ['/api/products'],
-    refetchInterval: 30000, // Auto refresh every 30 seconds
+    staleTime: 30 * 1000, // Data is stale after 30 seconds for admin panel
+    gcTime: 2 * 60 * 1000, // Keep in memory for 2 minutes
+    refetchInterval: 60 * 1000, // Auto-refresh every minute for admin panel
+    refetchOnWindowFocus: true,
+    refetchOnMount: true,
   });
 
   const {
@@ -134,12 +138,23 @@ export default function ProductManagement() {
     mutationFn: async ({ id, data }: { id: string; data: Partial<ProductFormData> }) => {
       return apiRequest(`/api/products/${id}`, 'PATCH', data);
     },
-    onSuccess: () => {
+    onSuccess: async (updatedProduct, { id, data }) => {
       toast({
         title: "সফল",
         description: "পণ্য আপডেট হয়েছে",
       });
-      queryClient.invalidateQueries({ queryKey: ['/api/products'] });
+      
+      // Force immediate cache refresh and refetch
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['/api/products'] }),
+        queryClient.refetchQueries({ queryKey: ['/api/products'] })
+      ]);
+      
+      // Wait a bit for the cache to update then refetch again to ensure we have the latest data
+      setTimeout(async () => {
+        await queryClient.refetchQueries({ queryKey: ['/api/products'] });
+      }, 500);
+      
       setIsEditDialogOpen(false);
       setSelectedProduct(null);
     },
@@ -208,17 +223,19 @@ export default function ProductManagement() {
   };
 
   const handleEditProduct = (product: Product) => {
-    setSelectedProduct(product);
+    // Always get the fresh data from the current products list
+    const freshProduct = products?.find(p => p.id === product.id) || product;
+    setSelectedProduct(freshProduct);
     editForm.reset({
-      name: product.name,
-      price: product.price,
-      category: product.category,
-      stock: product.stock,
-      description: product.description || "",
-      image_url: product.image_url || "",
-      is_featured: product.is_featured,
-      is_latest: product.is_latest,
-      is_best_selling: product.is_best_selling,
+      name: freshProduct.name,
+      price: freshProduct.price,
+      category: freshProduct.category,
+      stock: freshProduct.stock,
+      description: freshProduct.description || "",
+      image_url: freshProduct.image_url || "",
+      is_featured: freshProduct.is_featured,
+      is_latest: freshProduct.is_latest,
+      is_best_selling: freshProduct.is_best_selling,
     });
     setIsEditDialogOpen(true);
   };

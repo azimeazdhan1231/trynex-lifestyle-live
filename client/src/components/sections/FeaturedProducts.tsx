@@ -4,15 +4,17 @@ import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import ProductCard from "@/components/ProductCard";
 import { Skeleton } from "@/components/ui/skeleton";
+import LoadingAnimation from "@/components/LoadingAnimation";
 import { ArrowRight } from "lucide-react";
 import type { Product } from "@shared/schema";
 
 const FeaturedProducts = () => {
   const { data: products, isLoading } = useQuery<Product[]>({
     queryKey: ['/api/products'],
-    staleTime: 5 * 60 * 1000, // Cache for 5 minutes
-    gcTime: 10 * 60 * 1000, // Keep in memory for 10 minutes
+    staleTime: 2 * 60 * 1000, // Cache for 2 minutes for faster updates
+    gcTime: 5 * 60 * 1000, // Keep in memory for 5 minutes
     refetchOnWindowFocus: false,
+    refetchInterval: 3 * 60 * 1000, // Auto-refresh every 3 minutes
   });
 
   const featuredProducts = (products || [])
@@ -42,9 +44,17 @@ const FeaturedProducts = () => {
             <Skeleton className="h-8 w-64 mx-auto mb-4" />
             <Skeleton className="h-4 w-96 mx-auto" />
           </div>
+          <LoadingAnimation message="পণ্য লোড হচ্ছে..." className="my-8" />
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {Array.from({ length: 8 }).map((_, index) => (
-              <Skeleton key={index} className="h-80 rounded-xl" />
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.1 }}
+              >
+                <Skeleton className="h-80 rounded-xl" />
+              </motion.div>
             ))}
           </div>
         </div>
