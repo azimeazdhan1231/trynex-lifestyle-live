@@ -57,33 +57,45 @@ export default function OrderManagement() {
     data: orders,
     isLoading,
     error,
-    refetch
+    refetch,
+    isError
   } = useQuery<Order[]>({
     queryKey: ['/api/orders'],
-    refetchInterval: 10000, // Auto refresh every 10 seconds
+    refetchInterval: 30000, // Auto refresh every 30 seconds for live updates
+    refetchOnWindowFocus: true,
+    refetchOnMount: true,
+    retry: 3,
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+    meta: {
+      errorMessage: "অর্ডার লোড করতে সমস্যা হয়েছে"
+    }
   });
 
   const updateOrderMutation = useMutation({
     mutationFn: async ({ orderId, status }: { orderId: string; status: string }) => {
-      return apiRequest(`/api/orders/${orderId}`, {
-        method: 'PATCH',
-        body: { status }
-      });
+      return apiRequest(`/api/orders/${orderId}`, 'PATCH', { status });
     },
-    onSuccess: () => {
+    onSuccess: (_, { status }) => {
       toast({
-        title: "সফল",
-        description: "অর্ডার স্ট্যাটাস আপডেট হয়েছে",
+        title: "✅ সফল",
+        description: `অর্ডার স্ট্যাটাস '${getStatusText(status)}' এ আপডেট হয়েছে`,
+        duration: 4000,
       });
       queryClient.invalidateQueries({ queryKey: ['/api/orders'] });
       setSelectedOrder(null);
+      
+      // Trigger a fresh fetch to ensure data is current
+      refetch();
     },
-    onError: (error) => {
+    onError: (error: any) => {
+      const errorMessage = error?.message || "অজানা সমস্যা হয়েছে";
       toast({
-        title: "ত্রুটি",
-        description: "অর্ডার আপডেট করতে সমস্যা হয়েছে",
+        title: "❌ ত্রুটি",
+        description: `অর্ডার আপডেট করতে সমস্যা: ${errorMessage}`,
         variant: "destructive",
+        duration: 6000,
       });
+      console.error('Order update error:', error);
     }
   });
 
@@ -139,10 +151,13 @@ export default function OrderManagement() {
   };
 
   const filteredOrders = orders?.filter(order => {
+    const searchLower = searchTerm.toLowerCase();
     const matchesSearch = !searchTerm || 
-      order.tracking_id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.customer_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.phone.includes(searchTerm);
+      order.tracking_id.toLowerCase().includes(searchLower) ||
+      order.customer_name.toLowerCase().includes(searchLower) ||
+      order.phone.includes(searchTerm) ||
+      order.district.toLowerCase().includes(searchLower) ||
+      order.thana.toLowerCase().includes(searchLower);
     
     const matchesStatus = statusFilter === 'all' || order.status === statusFilter;
     
@@ -195,15 +210,37 @@ export default function OrderManagement() {
     );
   }
 
-  if (error) {
+  if (isError) {
     return (
       <div className="p-6">
-        <div className="text-center text-red-500">
-          অর্ডার লোড করতে সমস্যা হয়েছে
-          <Button onClick={() => refetch()} className="ml-4">
-            পুনরায় চেষ্টা
-          </Button>
-        </div>
+        <Card className="border-red-200 bg-red-50">
+          <CardContent className="p-6">
+            <div className="text-center">
+              <XCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
+              <h3 className="text-lg font-semibold text-red-800 mb-2">অর্ডার লোড করতে সমস্যা</h3>
+              <p className="text-red-600 mb-4">
+                {error?.message || "সার্ভারের সাথে সংযোগে সমস্যা হয়েছে। অনুগ্রহ করে পুনরায় চেষ্টা করুন।"}
+              </p>
+              <div className="flex justify-center space-x-3">
+                <Button 
+                  onClick={() => refetch()} 
+                  variant="outline"
+                  className="border-red-300 text-red-700 hover:bg-red-100"
+                >
+                  <RefreshCw className="w-4 h-4 mr-2" />
+                  পুনরায় চেষ্টা
+                </Button>
+                <Button 
+                  onClick={() => window.location.reload()} 
+                  variant="default"
+                  className="bg-red-600 hover:bg-red-700"
+                >
+                  পেইজ রিলোড করুন
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     );
   }
@@ -221,10 +258,22 @@ export default function OrderManagement() {
             <Download className="w-4 h-4 mr-2" />
             এক্সপোর্ট
           </Button>
-          <Button onClick={() => refetch()} variant="outline" size="sm">
-            <RefreshCw className="w-4 h-4 mr-2" />
-            রিফ্রেশ
+          <Button 
+            onClick={() => refetch()} 
+            variant="outline" 
+            size="sm"
+            disabled={isLoading}
+            className="transition-all duration-200"
+          >
+            <RefreshCw className={`w-4 h-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
+            {isLoading ? 'লোড হচ্ছে...' : 'রিফ্রেশ'}
           </Button>
+          {orders && (
+            <div className="flex items-center text-sm text-gray-500 bg-gray-100 px-3 py-2 rounded-md">
+              <Clock className="w-4 h-4 mr-1" />
+              সর্বশেষ আপডেট: {new Date().toLocaleTimeString('bn-BD')}
+            </div>
+          )}
         </div>
       </div>
 

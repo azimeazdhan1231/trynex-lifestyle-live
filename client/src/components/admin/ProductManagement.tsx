@@ -110,10 +110,7 @@ export default function ProductManagement() {
 
   const addProductMutation = useMutation({
     mutationFn: async (data: ProductFormData) => {
-      return apiRequest('/api/products', {
-        method: 'POST',
-        body: data
-      });
+      return apiRequest('/api/products', 'POST', data);
     },
     onSuccess: () => {
       toast({
@@ -135,10 +132,7 @@ export default function ProductManagement() {
 
   const updateProductMutation = useMutation({
     mutationFn: async ({ id, data }: { id: string; data: Partial<ProductFormData> }) => {
-      return apiRequest(`/api/products/${id}`, {
-        method: 'PATCH',
-        body: data
-      });
+      return apiRequest(`/api/products/${id}`, 'PATCH', data);
     },
     onSuccess: () => {
       toast({
@@ -160,9 +154,7 @@ export default function ProductManagement() {
 
   const deleteProductMutation = useMutation({
     mutationFn: async (id: string) => {
-      return apiRequest(`/api/products/${id}`, {
-        method: 'DELETE'
-      });
+      return apiRequest(`/api/products/${id}`, 'DELETE');
     },
     onSuccess: () => {
       toast({
@@ -382,7 +374,11 @@ export default function ProductManagement() {
                 </div>
 
                 <div className="space-y-3">
-                  <div className="flex items-center justify-between p-4 border rounded-lg bg-gradient-to-r from-yellow-50 to-orange-50">
+                  <div className={`flex items-center justify-between p-4 border-2 rounded-lg transition-all duration-300 ${
+                    addForm.watch("is_featured") 
+                      ? "bg-gradient-to-r from-yellow-100 to-orange-100 border-yellow-300 shadow-md" 
+                      : "bg-gradient-to-r from-yellow-50 to-orange-50 border-gray-200 hover:border-yellow-200"
+                  }`}>
                     <div className="flex items-center space-x-3">
                       <Checkbox
                         id="is_featured"
@@ -390,9 +386,10 @@ export default function ProductManagement() {
                         onCheckedChange={(checked) => {
                           addForm.setValue("is_featured", !!checked);
                         }}
+                        className="data-[state=checked]:bg-yellow-500 data-[state=checked]:border-yellow-500"
                       />
                       <div>
-                        <label htmlFor="is_featured" className="text-sm font-medium text-gray-900">
+                        <label htmlFor="is_featured" className="text-sm font-medium text-gray-900 cursor-pointer">
                           ফিচারড পণ্য
                         </label>
                         <p className="text-xs text-gray-600">হোম পেইজে বিশেষভাবে প্রদর্শিত হবে</p>
@@ -402,7 +399,11 @@ export default function ProductManagement() {
                       type="button"
                       variant={addForm.watch("is_featured") ? "default" : "outline"}
                       size="sm"
-                      className={addForm.watch("is_featured") ? "bg-yellow-500 hover:bg-yellow-600" : ""}
+                      className={`transition-all duration-300 ${
+                        addForm.watch("is_featured") 
+                          ? "bg-yellow-500 hover:bg-yellow-600 text-white shadow-md" 
+                          : "hover:bg-yellow-50 hover:border-yellow-300"
+                      }`}
                       onClick={() => {
                         const currentValue = addForm.watch("is_featured");
                         addForm.setValue("is_featured", !currentValue);
@@ -413,7 +414,11 @@ export default function ProductManagement() {
                     </Button>
                   </div>
 
-                  <div className="flex items-center justify-between p-4 border rounded-lg bg-gradient-to-r from-green-50 to-emerald-50">
+                  <div className={`flex items-center justify-between p-4 border-2 rounded-lg transition-all duration-300 ${
+                    addForm.watch("is_latest") 
+                      ? "bg-gradient-to-r from-green-100 to-emerald-100 border-green-300 shadow-md" 
+                      : "bg-gradient-to-r from-green-50 to-emerald-50 border-gray-200 hover:border-green-200"
+                  }`}>
                     <div className="flex items-center space-x-3">
                       <Checkbox
                         id="is_latest"
@@ -421,9 +426,10 @@ export default function ProductManagement() {
                         onCheckedChange={(checked) => {
                           addForm.setValue("is_latest", !!checked);
                         }}
+                        className="data-[state=checked]:bg-green-500 data-[state=checked]:border-green-500"
                       />
                       <div>
-                        <label htmlFor="is_latest" className="text-sm font-medium text-gray-900">
+                        <label htmlFor="is_latest" className="text-sm font-medium text-gray-900 cursor-pointer">
                           নতুন পণ্য
                         </label>
                         <p className="text-xs text-gray-600">নতুন পণ্য হিসেবে চিহ্নিত হবে</p>
@@ -433,7 +439,11 @@ export default function ProductManagement() {
                       type="button"
                       variant={addForm.watch("is_latest") ? "default" : "outline"}
                       size="sm"
-                      className={addForm.watch("is_latest") ? "bg-green-500 hover:bg-green-600" : ""}
+                      className={`transition-all duration-300 ${
+                        addForm.watch("is_latest") 
+                          ? "bg-green-500 hover:bg-green-600 text-white shadow-md" 
+                          : "hover:bg-green-50 hover:border-green-300"
+                      }`}
                       onClick={() => {
                         const currentValue = addForm.watch("is_latest");
                         addForm.setValue("is_latest", !currentValue);
@@ -444,7 +454,11 @@ export default function ProductManagement() {
                     </Button>
                   </div>
 
-                  <div className="flex items-center justify-between p-4 border rounded-lg bg-gradient-to-r from-blue-50 to-cyan-50">
+                  <div className={`flex items-center justify-between p-4 border-2 rounded-lg transition-all duration-300 ${
+                    addForm.watch("is_best_selling") 
+                      ? "bg-gradient-to-r from-blue-100 to-cyan-100 border-blue-300 shadow-md" 
+                      : "bg-gradient-to-r from-blue-50 to-cyan-50 border-gray-200 hover:border-blue-200"
+                  }`}>
                     <div className="flex items-center space-x-3">
                       <Checkbox
                         id="is_best_selling"
@@ -452,9 +466,10 @@ export default function ProductManagement() {
                         onCheckedChange={(checked) => {
                           addForm.setValue("is_best_selling", !!checked);
                         }}
+                        className="data-[state=checked]:bg-blue-500 data-[state=checked]:border-blue-500"
                       />
                       <div>
-                        <label htmlFor="is_best_selling" className="text-sm font-medium text-gray-900">
+                        <label htmlFor="is_best_selling" className="text-sm font-medium text-gray-900 cursor-pointer">
                           বেস্ট সেলার
                         </label>
                         <p className="text-xs text-gray-600">সর্বাধিক বিক্রীত পণ্য হিসেবে চিহ্নিত</p>
@@ -464,7 +479,11 @@ export default function ProductManagement() {
                       type="button"
                       variant={addForm.watch("is_best_selling") ? "default" : "outline"}
                       size="sm"
-                      className={addForm.watch("is_best_selling") ? "bg-blue-500 hover:bg-blue-600" : ""}
+                      className={`transition-all duration-300 ${
+                        addForm.watch("is_best_selling") 
+                          ? "bg-blue-500 hover:bg-blue-600 text-white shadow-md" 
+                          : "hover:bg-blue-50 hover:border-blue-300"
+                      }`}
                       onClick={() => {
                         const currentValue = addForm.watch("is_best_selling");
                         addForm.setValue("is_best_selling", !currentValue);
@@ -581,22 +600,22 @@ export default function ProductManagement() {
                 </div>
               )}
 
-              {/* Badges */}
+              {/* Enhanced Badges with Animation */}
               <div className="absolute top-2 left-2 flex flex-col gap-1">
                 {product.is_featured && (
-                  <Badge className="bg-red-500 text-white text-xs">
-                    <Star className="w-3 h-3 mr-1" />
+                  <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white text-xs shadow-lg animate-pulse">
+                    <Star className="w-3 h-3 mr-1 animate-pulse" />
                     ফিচারড
                   </Badge>
                 )}
                 {product.is_latest && (
-                  <Badge className="bg-green-500 text-white text-xs">
+                  <Badge className="bg-gradient-to-r from-green-500 to-emerald-500 text-white text-xs shadow-lg">
                     <Zap className="w-3 h-3 mr-1" />
                     নতুন
                   </Badge>
                 )}
                 {product.is_best_selling && (
-                  <Badge className="bg-blue-500 text-white text-xs">
+                  <Badge className="bg-gradient-to-r from-blue-500 to-cyan-500 text-white text-xs shadow-lg">
                     <TrendingUp className="w-3 h-3 mr-1" />
                     বেস্ট সেলার
                   </Badge>
@@ -812,7 +831,11 @@ export default function ProductManagement() {
               </div>
 
               <div className="space-y-3">
-                <div className="flex items-center justify-between p-4 border rounded-lg bg-gradient-to-r from-yellow-50 to-orange-50">
+                <div className={`flex items-center justify-between p-4 border-2 rounded-lg transition-all duration-300 ${
+                  editForm.watch("is_featured") 
+                    ? "bg-gradient-to-r from-yellow-100 to-orange-100 border-yellow-300 shadow-md" 
+                    : "bg-gradient-to-r from-yellow-50 to-orange-50 border-gray-200 hover:border-yellow-200"
+                }`}>
                   <div className="flex items-center space-x-3">
                     <Checkbox
                       id="edit_is_featured"
@@ -820,9 +843,10 @@ export default function ProductManagement() {
                       onCheckedChange={(checked) => {
                         editForm.setValue("is_featured", !!checked);
                       }}
+                      className="data-[state=checked]:bg-yellow-500 data-[state=checked]:border-yellow-500"
                     />
                     <div>
-                      <label htmlFor="edit_is_featured" className="text-sm font-medium text-gray-900">
+                      <label htmlFor="edit_is_featured" className="text-sm font-medium text-gray-900 cursor-pointer">
                         ফিচারড পণ্য
                       </label>
                       <p className="text-xs text-gray-600">হোম পেইজে বিশেষভাবে প্রদর্শিত হবে</p>
@@ -832,7 +856,11 @@ export default function ProductManagement() {
                     type="button"
                     variant={editForm.watch("is_featured") ? "default" : "outline"}
                     size="sm"
-                    className={editForm.watch("is_featured") ? "bg-yellow-500 hover:bg-yellow-600" : ""}
+                    className={`transition-all duration-300 ${
+                      editForm.watch("is_featured") 
+                        ? "bg-yellow-500 hover:bg-yellow-600 text-white shadow-md" 
+                        : "hover:bg-yellow-50 hover:border-yellow-300"
+                    }`}
                     onClick={() => {
                       const currentValue = editForm.watch("is_featured");
                       editForm.setValue("is_featured", !currentValue);
@@ -843,7 +871,11 @@ export default function ProductManagement() {
                   </Button>
                 </div>
 
-                <div className="flex items-center justify-between p-4 border rounded-lg bg-gradient-to-r from-green-50 to-emerald-50">
+                <div className={`flex items-center justify-between p-4 border-2 rounded-lg transition-all duration-300 ${
+                  editForm.watch("is_latest") 
+                    ? "bg-gradient-to-r from-green-100 to-emerald-100 border-green-300 shadow-md" 
+                    : "bg-gradient-to-r from-green-50 to-emerald-50 border-gray-200 hover:border-green-200"
+                }`}>
                   <div className="flex items-center space-x-3">
                     <Checkbox
                       id="edit_is_latest"
@@ -851,9 +883,10 @@ export default function ProductManagement() {
                       onCheckedChange={(checked) => {
                         editForm.setValue("is_latest", !!checked);
                       }}
+                      className="data-[state=checked]:bg-green-500 data-[state=checked]:border-green-500"
                     />
                     <div>
-                      <label htmlFor="edit_is_latest" className="text-sm font-medium text-gray-900">
+                      <label htmlFor="edit_is_latest" className="text-sm font-medium text-gray-900 cursor-pointer">
                         নতুন পণ্য
                       </label>
                       <p className="text-xs text-gray-600">নতুন পণ্য হিসেবে চিহ্নিত হবে</p>
@@ -863,7 +896,11 @@ export default function ProductManagement() {
                     type="button"
                     variant={editForm.watch("is_latest") ? "default" : "outline"}
                     size="sm"
-                    className={editForm.watch("is_latest") ? "bg-green-500 hover:bg-green-600" : ""}
+                    className={`transition-all duration-300 ${
+                      editForm.watch("is_latest") 
+                        ? "bg-green-500 hover:bg-green-600 text-white shadow-md" 
+                        : "hover:bg-green-50 hover:border-green-300"
+                    }`}
                     onClick={() => {
                       const currentValue = editForm.watch("is_latest");
                       editForm.setValue("is_latest", !currentValue);
@@ -874,7 +911,11 @@ export default function ProductManagement() {
                   </Button>
                 </div>
 
-                <div className="flex items-center justify-between p-4 border rounded-lg bg-gradient-to-r from-blue-50 to-cyan-50">
+                <div className={`flex items-center justify-between p-4 border-2 rounded-lg transition-all duration-300 ${
+                  editForm.watch("is_best_selling") 
+                    ? "bg-gradient-to-r from-blue-100 to-cyan-100 border-blue-300 shadow-md" 
+                    : "bg-gradient-to-r from-blue-50 to-cyan-50 border-gray-200 hover:border-blue-200"
+                }`}>
                   <div className="flex items-center space-x-3">
                     <Checkbox
                       id="edit_is_best_selling"
@@ -882,9 +923,10 @@ export default function ProductManagement() {
                       onCheckedChange={(checked) => {
                         editForm.setValue("is_best_selling", !!checked);
                       }}
+                      className="data-[state=checked]:bg-blue-500 data-[state=checked]:border-blue-500"
                     />
                     <div>
-                      <label htmlFor="edit_is_best_selling" className="text-sm font-medium text-gray-900">
+                      <label htmlFor="edit_is_best_selling" className="text-sm font-medium text-gray-900 cursor-pointer">
                         বেস্ট সেলার
                       </label>
                       <p className="text-xs text-gray-600">সর্বাধিক বিক্রীত পণ্য হিসেবে চিহ্নিত</p>
@@ -894,7 +936,11 @@ export default function ProductManagement() {
                     type="button"
                     variant={editForm.watch("is_best_selling") ? "default" : "outline"}
                     size="sm"
-                    className={editForm.watch("is_best_selling") ? "bg-blue-500 hover:bg-blue-600" : ""}
+                    className={`transition-all duration-300 ${
+                      editForm.watch("is_best_selling") 
+                        ? "bg-blue-500 hover:bg-blue-600 text-white shadow-md" 
+                        : "hover:bg-blue-50 hover:border-blue-300"
+                    }`}
                     onClick={() => {
                       const currentValue = editForm.watch("is_best_selling");
                       editForm.setValue("is_best_selling", !currentValue);
