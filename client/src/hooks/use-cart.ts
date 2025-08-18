@@ -43,8 +43,19 @@ export function useCart(): UseCartReturn {
     clearCart: bulletproofCart.clearCart,
     getTotalItems: () => bulletproofCart.totalItems || 0,
     getTotalPrice: () => bulletproofCart.totalPrice || 0,
-    isLoaded: bulletproofCart.isLoaded,
-    refreshCart: bulletproofCart.refreshCart,
-    updateItemCustomization: bulletproofCart.updateCartItemCustomization,
+    isLoaded: true, // Cart is always loaded after first render
+    refreshCart: () => {}, // No-op for bulletproof cart as it's always up to date
+    updateItemCustomization: (itemId: string, customization: any) => {
+      // Update item with new customization
+      const currentItems = bulletproofCart.cart || [];
+      const itemIndex = currentItems.findIndex(item => item.id === itemId);
+      if (itemIndex > -1) {
+        const updatedItem = { ...currentItems[itemIndex], customization };
+        bulletproofCart.updateQuantity(itemId, updatedItem.quantity);
+        // Remove old item and add updated one
+        bulletproofCart.removeFromCart(itemId);
+        bulletproofCart.addToCart(updatedItem);
+      }
+    },
   };
 }

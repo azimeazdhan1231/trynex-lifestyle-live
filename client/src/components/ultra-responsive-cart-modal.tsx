@@ -34,6 +34,15 @@ export default function UltraResponsiveCartModal({
   const { toast } = useToast();
   const [isMobile, setIsMobile] = useState(false);
 
+  // Debug cart items when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      console.log('🛒 Cart modal opened with items:', items);
+      console.log('🛒 Total items:', items.length);
+      console.log('🛒 Total price:', getTotalPrice());
+    }
+  }, [isOpen, items, getTotalPrice]);
+
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
     checkMobile();

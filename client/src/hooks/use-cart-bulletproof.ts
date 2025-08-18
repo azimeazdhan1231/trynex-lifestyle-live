@@ -52,22 +52,28 @@ export function useCart() {
   }, [cart]);
 
   const addToCart = (item: Omit<CartItem, 'quantity'> & { quantity?: number }) => {
+    console.log('🛒 Adding to cart:', item);
     setCart(prevCart => {
+      console.log('🛒 Previous cart:', prevCart);
       const existingItemIndex = prevCart.findIndex(cartItem =>
         cartItem.id === item.id &&
         JSON.stringify(cartItem.customization) === JSON.stringify(item.customization)
       );
 
+      let newCart;
       if (existingItemIndex > -1) {
         const updatedCart = [...prevCart];
         updatedCart[existingItemIndex] = {
           ...updatedCart[existingItemIndex],
           quantity: updatedCart[existingItemIndex].quantity + (item.quantity || 1)
         };
-        return updatedCart;
+        newCart = updatedCart;
+        console.log('🛒 Updated existing item in cart:', newCart);
       } else {
-        return [...prevCart, { ...item, quantity: item.quantity || 1 }];
+        newCart = [...prevCart, { ...item, quantity: item.quantity || 1 }];
+        console.log('🛒 Added new item to cart:', newCart);
       }
+      return newCart;
     });
   };
 
