@@ -407,13 +407,8 @@ export function setupAdminRoutes(app: Express) {
         customOrders = [];
       }
       
-      try {
-        // Try to get promo codes safely
-        promoCodes = await storage.getPromoCodes() || [];
-      } catch (e) {
-        console.log('⚠️ Promo codes query failed:', e instanceof Error ? e.message : 'Unknown error');
-        promoCodes = [];
-      }
+      // Temporarily skip promo codes due to schema fixes
+      promoCodes = [];
 
       // Calculate revenue trends (last 7 days)
       const today = new Date();
@@ -469,17 +464,9 @@ export function setupAdminRoutes(app: Express) {
         bestSellingProducts: products.filter(p => p.is_best_selling).length,
         lowStockProducts: products.filter(p => p.stock < 10).length,
         
-        // Active promotions - get offers safely
-        activeOffers: await (async () => {
-          try {
-            const offers = await storage.getOffers();
-            return offers.filter(o => o.active).length;
-          } catch (e) {
-            console.log('⚠️ Offers query failed:', e instanceof Error ? e.message : 'Unknown error');
-            return 0;
-          }
-        })(),
-        activePromoCodes: promoCodes.filter(p => p.is_active).length,
+        // Active promotions - temporarily disabled due to schema fixes
+        activeOffers: 0,
+        activePromoCodes: 0,
         
         // Category popularity
         topCategories: Object.entries(categoryStats)

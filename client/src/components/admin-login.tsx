@@ -23,7 +23,7 @@ export default function AdminLogin() {
   // Check if admin is already logged in
   useEffect(() => {
     const checkAdminAuth = () => {
-      const token = localStorage.getItem('admin_token');
+      const token = localStorage.getItem('adminToken') || localStorage.getItem('admin_token');
       if (token) {
         setIsLoggedIn(true);
       }
@@ -51,7 +51,8 @@ export default function AdminLogin() {
         throw new Error(data.error || 'লগইন ব্যর্থ হয়েছে');
       }
 
-      // Store the token
+      // Store the token with both keys for compatibility
+      localStorage.setItem('adminToken', data.token);
       localStorage.setItem('admin_token', data.token);
       localStorage.setItem('admin_data', JSON.stringify(data.admin));
 

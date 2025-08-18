@@ -102,7 +102,7 @@ export default function FullyFunctionalAdminPanel() {
   const queryClient = useQueryClient();
 
   // Authentication check
-  const token = localStorage.getItem('adminToken');
+  const token = localStorage.getItem('adminToken') || localStorage.getItem('admin_token');
   if (!token) {
     window.location.href = '/admin';
     return null;
