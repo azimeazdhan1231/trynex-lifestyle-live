@@ -380,6 +380,76 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Order Tracking Endpoints
+  app.get('/api/orders/track/:trackingId', async (req, res) => {
+    try {
+      const { trackingId } = req.params;
+      console.log('🔍 Tracking order with ID:', trackingId);
+      
+      // Get all orders and find by tracking_id
+      const orders = await storage.getOrders();
+      const order = orders.find(o => o.tracking_id === trackingId || o.id === trackingId);
+      
+      if (!order) {
+        console.log('❌ Order not found for tracking ID:', trackingId);
+        return res.status(404).json({ 
+          success: false, 
+          message: 'অর্ডার খুঁজে পাওয়া যায়নি',
+          trackingId 
+        });
+      }
+
+      console.log('✅ Order found:', { id: order.id, tracking_id: order.tracking_id, status: order.status });
+
+      res.json({ 
+        success: true, 
+        order: {
+          ...order,
+          items: typeof order.items === 'string' ? JSON.parse(order.items) : order.items
+        } 
+      });
+    } catch (error) {
+      console.error('Failed to track order:', error);
+      res.status(500).json({ 
+        success: false, 
+        message: 'অর্ডার ট্র্যাক করতে সমস্যা হয়েছে',
+        error: error.message 
+      });
+    }
+  });
+
+  // Backward compatibility endpoint
+  app.get('/api/track/:trackingId', async (req, res) => {
+    try {
+      const { trackingId } = req.params;
+      
+      // Get all orders and find by tracking_id
+      const orders = await storage.getOrders();
+      const order = orders.find(o => o.tracking_id === trackingId || o.id === trackingId);
+      
+      if (!order) {
+        return res.status(404).json({ 
+          success: false, 
+          message: 'অর্ডার খুঁজে পাওয়া যায়নি' 
+        });
+      }
+
+      res.json({ 
+        success: true, 
+        order: {
+          ...order,
+          items: typeof order.items === 'string' ? JSON.parse(order.items) : order.items
+        } 
+      });
+    } catch (error) {
+      console.error('Failed to track order:', error);
+      res.status(500).json({ 
+        success: false, 
+        message: 'অর্ডার ট্র্যাক করতে সমস্যা হয়েছে' 
+      });
+    }
+  });
+
   // Settings
   app.get('/api/settings', async (req, res) => {
     try {

@@ -79,7 +79,7 @@ const statusConfig = {
   },
 };
 
-const TrackingPage = () => {
+const ComprehensiveTrackingPage = () => {
   const params = useParams();
   const [, setLocation] = useLocation();
   const { toast } = useToast();
@@ -582,4 +582,4 @@ const TrackingPage = () => {
   );
 };
 
-export default TrackingPage;
+export default ComprehensiveTrackingPage;

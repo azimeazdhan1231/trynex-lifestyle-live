@@ -47,12 +47,12 @@ const Router = () => {
         <Route path="/cart" component={CartPage} />
         <Route path="/checkout" component={CheckoutPage} />
         <Route path="/profile" component={UserProfilePage} />
-        <Route path="/orders" element={<OrderTrackingPage />} />
-        <Route path="/tracking" element={<TrackingPage />} />
-        <Route path="/tracking/:trackingId" element={<TrackingPage />} />
-        <Route path="/track/:trackingId" element={<TrackingPage />} />
-        <Route path="/live-tracking" element={<PremiumLiveTracking />} />
-        <Route path="/live-tracking/:trackingId" element={<PremiumLiveTracking />} />
+        <Route path="/orders" component={OrderTrackingPage} />
+        <Route path="/tracking" component={TrackingPage} />
+        <Route path="/tracking/:trackingId" component={TrackingPage} />
+        <Route path="/track/:trackingId" component={TrackingPage} />
+        <Route path="/live-tracking" component={PremiumLiveTracking} />
+        <Route path="/live-tracking/:trackingId" component={PremiumLiveTracking} />
         <Route path="/contact" component={ContactPage} />
         <Route path="/about" component={AboutPage} />
         <Route path="/offers" component={OffersPage} />
