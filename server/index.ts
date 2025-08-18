@@ -6,6 +6,7 @@ import { registerRoutes } from "./routes-optimized";
 import { setupVite, serveStatic, log } from "./vite";
 import cors from "cors";
 import { createServer } from "http";
+import { ultraFastStorage } from "./ultra-fast-storage";
 
 const app = express();
 
@@ -107,5 +108,10 @@ app.use((req, res, next) => {
   const port = parseInt(process.env.PORT || '5000', 10);
   server.listen(port, "0.0.0.0", () => {
     log(`serving on port ${port}`);
+    console.log("✅ Database initialization complete");
+
+    // Start ultra-fast product preloading immediately
+    console.log("🚀 Starting ultra-fast product preloading...");
+    ultraFastStorage.preload();
   });
 })();
