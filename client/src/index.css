@@ -4,6 +4,33 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Custom responsive breakpoints for product cards */
+@screen xs {
+  .xs\:inline {
+    display: inline;
+  }
+  .xs\:hidden {
+    display: none;
+  }
+}
+
+/* Ensure buttons don't overflow on very small screens */
+@media (max-width: 360px) {
+  .product-card-button {
+    font-size: 0.65rem;
+    padding: 0.25rem 0.5rem;
+    min-width: 0;
+  }
+  
+  .product-card-button-text {
+    display: none;
+  }
+  
+  .product-card-button-icon {
+    margin: 0;
+  }
+}
+
 /* Enhanced Day Mode Design */
 :root {
   --primary: 220 14% 96%;

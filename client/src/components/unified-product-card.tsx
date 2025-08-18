@@ -46,7 +46,7 @@ export default function UnifiedProductCard({
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    
+
     if (product.stock <= 0) {
       toast({
         title: "দুঃখিত, এই পণ্যটি স্টকে নেই",
@@ -59,7 +59,7 @@ export default function UnifiedProductCard({
     if (onAddToCart) {
       onAddToCart(product);
     }
-    
+
     toast({
       title: "পণ্য কার্টে যোগ করা হয়েছে",
       description: product.name,
@@ -69,7 +69,7 @@ export default function UnifiedProductCard({
   const handleToggleWishlist = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    
+
     if (isInWishlist(product.id)) {
       removeFromWishlist(product.id);
       toast({
@@ -96,6 +96,7 @@ export default function UnifiedProductCard({
   const rating = 4.5; // Mock rating - replace with actual rating
   const reviewCount = 42; // Mock review count
   const isWishlisted = isInWishlist(product.id);
+  const isOutOfStock = product.stock <= 0;
 
   return (
     <Card 
@@ -177,7 +178,7 @@ export default function UnifiedProductCard({
           </div>
 
           {/* Stock Status */}
-          {product.stock <= 0 && (
+          {isOutOfStock && (
             <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
               <Badge variant="destructive">স্টক নেই</Badge>
             </div>
@@ -238,31 +239,44 @@ export default function UnifiedProductCard({
           <div className="flex-1"></div>
 
           {/* Action Buttons - Fixed at bottom with responsive sizing */}
-          <div className="space-y-2 mt-auto">
-            {/* Add to Cart Button - Primary action */}
+          <div className="p-3 sm:p-4 pt-0 space-y-2">
+          <div className="flex gap-1.5 sm:gap-2">
             <Button
               onClick={handleAddToCart}
-              disabled={product.stock <= 0}
-              className="w-full h-10 sm:h-9 transition-all duration-300 text-xs sm:text-sm mobile-transition bg-gradient-to-r from-orange-500 to-red-500 text-white hover:from-orange-600 hover:to-red-600 disabled:opacity-50 disabled:cursor-not-allowed"
-              size="sm"
-              data-testid={`button-add-to-cart-${product.id}`}
+              disabled={isOutOfStock}
+              className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold py-2 sm:py-2.5 px-2 sm:px-4 rounded-lg transition-all duration-300 disabled:opacity-50 text-xs sm:text-sm"
+              data-testid={`button-cart-${product.id}`}
             >
-              <svg className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-1.1 5H18"/>
-              </svg>
-              {product.stock <= 0 ? 'স্টকে নেই' : 'কার্টে যোগ করুন'}
+              <ShoppingCart className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+              <span className="hidden xs:inline">{isOutOfStock ? 'স্টক নেই' : 'কার্টে যোগ করুন'}</span>
+              <span className="xs:hidden">{isOutOfStock ? 'নেই' : 'কার্ট'}</span>
             </Button>
-            
+
             <Button
-              onClick={handleCustomize}
-              className="w-full h-10 sm:h-9 transition-all duration-300 text-xs sm:text-sm mobile-transition bg-gradient-to-r from-blue-500 to-purple-500 text-white hover:from-blue-600 hover:to-purple-600"
-              size="sm"
-              data-testid={`button-customize-${product.id}`}
+              variant="outline"
+              onClick={handleToggleWishlist}
+              className={`px-2 sm:px-3 py-2 sm:py-2.5 rounded-lg transition-all duration-300 flex-shrink-0 ${
+                isWishlisted ? 'bg-red-50 border-red-200 text-red-600' : ''
+              }`}
+              data-testid={`button-wishlist-${product.id}`}
             >
-              <Palette className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-              কাস্টমাইজ করুন
+              <Heart 
+                className={`w-3 h-3 sm:w-4 sm:h-4 ${isWishlisted ? 'fill-current' : ''}`} 
+              />
             </Button>
           </div>
+
+          <Button
+            variant="outline"
+            onClick={handleCustomize}
+            className="w-full border-dashed border-purple-500 text-purple-600 hover:bg-purple-50 py-2 sm:py-2.5 rounded-lg text-xs sm:text-sm"
+            data-testid={`button-customize-${product.id}`}
+          >
+            <Palette className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+            <span className="hidden xs:inline">কাস্টমাইজ করুন</span>
+            <span className="xs:hidden">কাস্টমাইজ</span>
+          </Button>
+        </div>
         </CardContent>
     </Card>
   );

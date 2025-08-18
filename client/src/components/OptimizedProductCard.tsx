@@ -198,36 +198,36 @@ export const OptimizedProductCard: React.FC<OptimizedProductCardProps> = ({
         </div>
 
         {/* Responsive Action Buttons */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+        <div className="flex gap-1.5 sm:gap-2">
           <Button
             variant="outline"
             size="sm"
             onClick={() => onViewProduct(product)}
-            className="h-9 text-xs"
+            className="h-8 sm:h-9 text-xs flex-1 px-2 sm:px-3"
             data-testid={`button-view-${product.id}`}
           >
             <Eye className="w-3 h-3 sm:mr-1" />
-            <span className="hidden sm:inline">দেখুন</span>
+            <span className="hidden xs:inline text-xs">দেখুন</span>
           </Button>
           
           <Button
             size="sm"
             onClick={handleAddToCart}
-            className="h-9 text-xs bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600"
+            className="h-8 sm:h-9 text-xs bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 flex-1 px-2 sm:px-3"
             data-testid={`button-cart-${product.id}`}
           >
             <ShoppingCart className="w-3 h-3 sm:mr-1" />
-            <span className="hidden sm:inline">কার্ট</span>
+            <span className="hidden xs:inline text-xs">কার্ট</span>
           </Button>
           
           <Button
             size="sm"
             onClick={() => onCustomize(product)}
-            className="h-9 text-xs bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 col-span-2 sm:col-span-1"
+            className="h-8 sm:h-9 text-xs bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 flex-1 px-2 sm:px-3"
             data-testid={`button-customize-${product.id}`}
           >
             <Settings className="w-3 h-3 sm:mr-1" />
-            <span className="hidden sm:inline">সাজান</span>
+            <span className="hidden xs:inline text-xs">সাজান</span>
           </Button>
         </div>
       </div>

@@ -170,7 +170,7 @@ export default function UltraModernProductCard({
 
       {/* Product Details */}
       <CardContent className="p-4 space-y-3">
-        
+
         {/* Category & Rating */}
         <div className="flex items-center justify-between text-xs">
           <Badge variant="secondary" className="text-orange-600 bg-orange-50 border-orange-200">
@@ -224,7 +224,7 @@ export default function UltraModernProductCard({
               </div>
             )}
           </div>
-          
+
           {/* Trending Indicator */}
           {rating > 4.7 && (
             <div className="flex items-center space-x-1 text-xs text-green-600">

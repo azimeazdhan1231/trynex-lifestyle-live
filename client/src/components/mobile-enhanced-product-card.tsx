@@ -2,7 +2,7 @@ import { useState, memo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Heart, Eye, ShoppingCart, Star, TrendingUp, Sparkles } from "lucide-react";
+import { Heart, Eye, ShoppingCart, Star, TrendingUp, Sparkles, Settings } from "lucide-react";
 import { formatPrice } from "@/lib/constants";
 import type { Product } from "@shared/schema";
 
@@ -14,12 +14,12 @@ interface MobileEnhancedProductCardProps {
   showBadge?: boolean;
 }
 
-const MobileEnhancedProductCard = memo(function MobileEnhancedProductCard({ 
-  product, 
-  onAddToCart, 
-  onViewProduct, 
-  onCustomize, 
-  showBadge = true 
+const MobileEnhancedProductCard = memo(function MobileEnhancedProductCard({
+  product,
+  onAddToCart,
+  onViewProduct,
+  onCustomize,
+  showBadge = true
 }: MobileEnhancedProductCardProps) {
   const [isFavorite, setIsFavorite] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
@@ -45,8 +45,17 @@ const MobileEnhancedProductCard = memo(function MobileEnhancedProductCard({
     }
   };
 
+  // Placeholder for isOutOfStock and isWishlisted, assuming these would be derived from product or state
+  const isOutOfStock = product.stock === 0;
+  const isWishlisted = isFavorite; // Assuming isFavorite maps to isWishlisted for this example
+
+  const handleToggleWishlist = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsFavorite(!isFavorite);
+  };
+
   return (
-    <Card 
+    <Card
       className="group touch-button zoom-enabled bg-white border border-gray-200 hover:border-primary/30 hover:shadow-xl transition-all duration-300 transform overflow-hidden"
       onClick={handleProductView}
       data-testid={`card-product-${product.id}`}
@@ -126,18 +135,18 @@ const MobileEnhancedProductCard = memo(function MobileEnhancedProductCard({
       <CardContent className="p-4">
         {/* Product Info */}
         <div className="space-y-3">
-          <h3 
+          <h3
             className="font-semibold text-gray-800 line-clamp-2 text-sm leading-tight responsive-text-base"
             data-testid={`text-product-name-${product.id}`}
           >
             {product.name}
           </h3>
-          
+
           {/* Price Section - Enhanced for Mobile */}
           <div className="flex items-center justify-between">
             <div className="space-y-1">
               <div className="flex items-center gap-2">
-                <span 
+                <span
                   className="text-lg font-bold text-green-600 responsive-text-lg"
                   data-testid={`text-price-${product.id}`}
                 >
@@ -162,28 +171,43 @@ const MobileEnhancedProductCard = memo(function MobileEnhancedProductCard({
           </div>
 
           {/* Action Buttons - Mobile Optimized */}
-          <div className="flex gap-2 pt-2">
-            <Button
-              onClick={handleAddToCart}
-              disabled={product.stock === 0}
-              className="flex-1 h-10 bg-primary hover:bg-primary/90 text-white font-medium text-sm touch-button disabled:opacity-50 disabled:cursor-not-allowed"
-              data-testid={`button-add-cart-${product.id}`}
-            >
-              <ShoppingCart className="w-4 h-4 mr-2" />
-              {product.stock === 0 ? 'স্টক নেই' : 'কার্টে যোগ করুন'}
-            </Button>
-            
-            {onCustomize && (
+          <div className="px-2 sm:px-3 pb-2 sm:pb-3 pt-0">
+            <div className="flex gap-1 sm:gap-1.5">
               <Button
-                onClick={handleCustomize}
+                size="sm"
+                onClick={handleAddToCart}
+                disabled={isOutOfStock}
+                className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold text-xs h-7 sm:h-8 touch-button px-2 sm:px-3"
+                data-testid={`button-cart-${product.id}`}
+              >
+                <ShoppingCart className="w-3 h-3 mr-1" />
+                <span className="hidden xs:inline">{isOutOfStock ? 'স্টক নেই' : 'কার্ট'}</span>
+                <span className="xs:hidden">{isOutOfStock ? 'নেই' : 'ক'}</span>
+              </Button>
+
+              <Button
+                size="sm"
                 variant="outline"
-                className="h-10 px-3 border-primary text-primary hover:bg-primary/10 touch-button"
+                onClick={handleCustomize}
+                className="px-2 sm:px-3 h-7 sm:h-8 text-xs border-purple-500 text-purple-600 hover:bg-purple-50 touch-button flex-shrink-0"
                 data-testid={`button-customize-${product.id}`}
               >
-                কাস্টমাইজ
+                <Settings className="w-3 h-3" />
+                <span className="hidden sm:inline ml-1">সাজান</span>
               </Button>
-            )}
+
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={handleToggleWishlist}
+                className={`px-2 sm:px-3 h-7 sm:h-8 touch-button flex-shrink-0 ${isWishlisted ? 'text-red-500' : 'text-gray-500'}`}
+                data-testid={`button-wishlist-${product.id}`}
+              >
+                <Heart className={`w-3 h-3 ${isWishlisted ? 'fill-current' : ''}`} />
+              </Button>
+            </div>
           </div>
+
 
           {/* Additional Product Info for Mobile */}
           {(product.category || product.description) && (

@@ -9,7 +9,8 @@ import {
   Eye, 
   TrendingUp,
   Package,
-  Palette
+  Palette,
+  Settings // Import Settings icon
 } from "lucide-react";
 import { formatPrice } from "@/lib/constants";
 import { useCart } from "@/hooks/use-cart";
@@ -35,7 +36,7 @@ const CleanProductCard = memo(function CleanProductCard({
   const [isFavorite, setIsFavorite] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
-  
+
   const { addToCart } = useCart();
   const { toast } = useToast();
 
@@ -56,7 +57,7 @@ const CleanProductCard = memo(function CleanProductCard({
     e.preventDefault();
     e.stopPropagation();
     setIsFavorite(!isFavorite);
-    
+
     toast({
       title: isFavorite ? "পছন্দের তালিকা থেকে সরানো হয়েছে" : "পছন্দের তালিকায় যোগ করা হয়েছে",
       description: product.name,
@@ -70,9 +71,9 @@ const CleanProductCard = memo(function CleanProductCard({
   const handleAddToCart = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    
+
     if (isOutOfStock) return;
-    
+
     addToCart({
       id: product.id,
       name: product.name,
@@ -80,7 +81,7 @@ const CleanProductCard = memo(function CleanProductCard({
       image_url: product.image_url || '',
       quantity: 1
     });
-    
+
     toast({
       title: "পণ্য কার্টে যোগ করা হয়েছে",
       description: product.name,
@@ -111,7 +112,7 @@ const CleanProductCard = memo(function CleanProductCard({
               onLoad={() => setImageLoaded(true)}
               onError={() => setImageError(true)}
             />
-            
+
             {/* Overlay Badges */}
             <div className="absolute top-2 left-2">
               {isOutOfStock && (
@@ -146,7 +147,7 @@ const CleanProductCard = memo(function CleanProductCard({
               <div className="text-xl font-bold text-primary">
                 {formatPrice(price)}
               </div>
-              
+
               <div className="flex items-center gap-2">
                 <Button
                   variant="ghost"
@@ -157,7 +158,7 @@ const CleanProductCard = memo(function CleanProductCard({
                 >
                   <Heart className={`w-4 h-4 ${isFavorite ? 'text-red-500 fill-current' : 'text-gray-400'}`} />
                 </Button>
-                
+
                 <Button
                   onClick={handleAddToCart}
                   disabled={isOutOfStock}
@@ -200,7 +201,7 @@ const CleanProductCard = memo(function CleanProductCard({
             onLoad={() => setImageLoaded(true)}
             onError={() => setImageError(true)}
           />
-          
+
           {/* Overlay Badges */}
           <div className="absolute top-3 left-3 flex flex-col gap-1">
             {isOutOfStock && (
@@ -225,7 +226,7 @@ const CleanProductCard = memo(function CleanProductCard({
             >
               <Heart className={`w-4 h-4 ${isFavorite ? 'text-red-500 fill-current' : 'text-gray-600'}`} />
             </Button>
-            
+
             <Button
               variant="secondary"
               size="sm"
@@ -276,15 +277,27 @@ const CleanProductCard = memo(function CleanProductCard({
             </div>
 
             <div>
-              <Button
-                onClick={handleAddToCart}
-                disabled={isOutOfStock}
-                className="w-full h-10 sm:h-11 font-medium text-xs sm:text-sm bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                data-testid="button-add-to-cart"
-              >
-                <ShoppingCart className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-                {isOutOfStock ? 'স্টকে নেই' : 'কার্টে যোগ করুন'}
-              </Button>
+              <div className="flex gap-1.5 sm:gap-2 mt-3">
+                <Button
+                  onClick={handleAddToCart}
+                  disabled={isOutOfStock}
+                  className="flex-1 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white font-medium py-2 h-8 sm:h-9 text-xs sm:text-sm px-2 sm:px-4"
+                  data-testid={`button-cart-${product.id}`}
+                >
+                  <ShoppingCart className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+                  <span className="hidden xs:inline">কার্টে যোগ করুন</span>
+                  <span className="xs:hidden">কার্ট</span>
+                </Button>
+                <Button
+                  onClick={handleCustomize}
+                  variant="outline"
+                  className="px-2 sm:px-4 h-8 sm:h-9 flex-shrink-0 text-xs sm:text-sm"
+                  data-testid={`button-customize-${product.id}`}
+                >
+                  <Settings className="w-3 h-3 sm:w-4 sm:h-4" />
+                  <span className="hidden sm:inline ml-1">সাজান</span>
+                </Button>
+              </div>
             </div>
           </div>
         </CardContent>
