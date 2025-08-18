@@ -93,7 +93,7 @@ const ProductCard = ({ product, className = "" }: ProductCardProps) => {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: isVisible ? 1 : 0, y: isVisible ? 0 : 20 }}
       whileHover={{ y: -5 }}
-      className={`group card-enhanced rounded-xl hover:shadow-2xl transition-all duration-300 overflow-hidden h-full flex flex-col ${className}`}
+      className={`group card-enhanced card-hover-premium light-mode-card dark:card-enhanced rounded-xl hover:shadow-2xl transition-all duration-300 overflow-hidden h-full flex flex-col ${className}`}
       data-testid={`product-card-${product.id}`}
     >
       <Link href={`/product/${product.id}`}>
@@ -245,30 +245,32 @@ const ProductCard = ({ product, className = "" }: ProductCardProps) => {
         </div>
       </Link>
 
-      {/* Add to Cart Button - Outside Link */}
-      <div className="p-4 pt-0">
-        <Button
-          onClick={handleAddToCart}
-          disabled={isAddingToCart}
-          className="w-full bg-primary hover:bg-primary/90 text-white font-semibold py-3 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl disabled:opacity-70 disabled:scale-100"
-          data-testid={`add-to-cart-${product.id}`}
-        >
-          <ShoppingCart className={`w-4 h-4 mr-2 ${isAddingToCart ? 'animate-spin' : ''}`} />
-          {isAddingToCart ? 'যোগ করা হচ্ছে...' : 'কার্টে যোগ করুন'}
-        </Button>
-      </div>
-
-      {/* Add to Cart Button */}
+      {/* Action Buttons */}
       <div className="p-4 pt-0 flex-shrink-0">
-        <Button
-          onClick={handleAddToCart}
-          className="w-full group-hover:bg-primary group-hover:text-white transition-colors"
-          variant="outline"
-          data-testid={`add-to-cart-${product.id}`}
-        >
-          <ShoppingCart className="w-4 h-4 mr-2" />
-          কার্টে যোগ করুন
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            onClick={handleAddToCart}
+            disabled={isAddingToCart}
+            className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold py-3 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl disabled:opacity-70 disabled:scale-100 btn-premium-light"
+            data-testid={`add-to-cart-${product.id}`}
+          >
+            <ShoppingCart className={`w-4 h-4 mr-2 ${isAddingToCart ? 'animate-spin' : ''}`} />
+            {isAddingToCart ? 'যোগ করা হচ্ছে...' : 'কার্টে যোগ করুন'}
+          </Button>
+          
+          <Link href={`/customize/${product.id}`}>
+            <Button
+              variant="outline"
+              className="px-4 py-3 rounded-lg transition-all duration-300 transform hover:scale-105 border-2 border-purple-500 text-purple-600 hover:bg-gradient-to-r hover:from-purple-600 hover:to-pink-600 hover:text-white font-semibold"
+              data-testid={`customize-${product.id}`}
+            >
+              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zM21 5a2 2 0 00-2-2h-4a2 2 0 00-2 2v12a4 4 0 004 4h4a4 4 0 004-4V9a2 2 0 00-2-2z" />
+              </svg>
+              কাস্টমাইজ
+            </Button>
+          </Link>
+        </div>
       </div>
     </motion.div>
   );

@@ -70,9 +70,14 @@ const Header = () => {
   };
 
   useEffect(() => {
-    const savedDarkMode = localStorage.getItem('darkMode') === 'true';
-    setIsDarkMode(savedDarkMode);
-    document.documentElement.classList.toggle('dark', savedDarkMode);
+    // Set night mode as default
+    const savedDarkMode = localStorage.getItem('darkMode');
+    const shouldUseDarkMode = savedDarkMode !== null ? savedDarkMode === 'true' : true;
+    setIsDarkMode(shouldUseDarkMode);
+    document.documentElement.classList.toggle('dark', shouldUseDarkMode);
+    if (savedDarkMode === null) {
+      localStorage.setItem('darkMode', 'true');
+    }
   }, []);
 
   const navigation = [
@@ -99,7 +104,7 @@ const Header = () => {
             </span>
           </div>
           <div className="flex items-center space-x-2">
-            <span className="text-xs font-medium">🎉 ফ্রি ডেলিভারি ৫০০ টাকার উপরে 🎉</span>
+            <span className="text-xs font-medium">🎉 ফ্রি ডেলিভারি ১৬০০ টাকার উপরে 🎉</span>
           </div>
         </div>
       </div>
@@ -108,8 +113,8 @@ const Header = () => {
       <motion.header
         className={`fixed top-8 left-0 right-0 z-50 transition-all duration-300 ${
           isScrolled
-            ? 'header-glass shadow-lg'
-            : 'bg-white dark:bg-gray-900'
+            ? 'header-glass shadow-lg nav-premium'
+            : 'bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm nav-premium'
         }`}
         initial={{ y: -100 }}
         animate={{ y: 0 }}

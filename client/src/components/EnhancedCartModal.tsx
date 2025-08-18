@@ -49,7 +49,7 @@ export default function EnhancedCartModal({ isOpen, onClose }: EnhancedCartModal
 
   // Calculate delivery and totals
   const subtotal = getTotalPrice();
-  const deliveryThreshold = 500;
+  const deliveryThreshold = 1600;
   const deliveryCharge = subtotal >= deliveryThreshold ? 0 : 60;
   const total = subtotal + deliveryCharge;
 

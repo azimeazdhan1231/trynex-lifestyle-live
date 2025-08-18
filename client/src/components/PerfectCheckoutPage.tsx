@@ -90,7 +90,7 @@ export default function PerfectCheckoutPage({ onSuccess, onBack }: PerfectChecko
 
   // Calculate totals
   const subtotal = getTotalPrice();
-  const deliveryCharge = subtotal >= 500 ? 0 : 60;
+  const deliveryCharge = subtotal >= 1600 ? 0 : 60;
   const total = subtotal + deliveryCharge;
 
   const watchedPaymentMethod = form.watch("paymentMethod");
