@@ -123,8 +123,7 @@ export class SimpleStorage {
         description: String(productData.description || '').trim(),
         category: String(productData.category || '').trim(),
         image_url: String(productData.image_url || '').trim(),
-        additional_images: productData.additional_images || [],
-        is_active: Boolean(productData.is_active !== false), // Default to true
+        // Remove non-existent schema fields
         is_featured: Boolean(productData.is_featured),
         is_latest: Boolean(productData.is_latest),
         is_best_selling: Boolean(productData.is_best_selling)
@@ -154,10 +153,7 @@ export class SimpleStorage {
 
       console.log('Final validated data for database insert:', validatedData);
 
-      const [product] = await db.insert(products).values({
-        ...validatedData,
-        created_at: new Date()
-      }).returning();
+      const [product] = await db.insert(products).values(validatedData).returning();
 
       return product;
     } catch (error) {
@@ -210,13 +206,8 @@ export class SimpleStorage {
         validatedUpdates.image_url = String(updates.image_url).trim();
       }
 
-      if (updates.additional_images !== undefined) {
-        validatedUpdates.additional_images = updates.additional_images;
-      }
-
-      if (updates.is_active !== undefined) {
-        validatedUpdates.is_active = Boolean(updates.is_active);
-      }
+      // Skip non-existent schema fields
+      // additional_images and is_active don't exist in current schema
 
       if (updates.is_featured !== undefined) {
         validatedUpdates.is_featured = Boolean(updates.is_featured);
@@ -402,7 +393,7 @@ export class SimpleStorage {
 
   // Custom Orders
   async getCustomOrders(): Promise<CustomOrder[]> {
-    return await db.select().from(customOrders).orderBy(desc(customOrders.createdAt));
+    return await db.select().from(customOrders).orderBy(desc(customOrders.created_at));
   }
 
   async getCustomOrder(id: string): Promise<CustomOrder | undefined> {
@@ -410,7 +401,7 @@ export class SimpleStorage {
     return result[0];
   }
 
-  async createCustomOrder(customOrder: NewCustomOrder): Promise<CustomOrder> {
+  async createCustomOrder(customOrder: InsertCustomOrder): Promise<CustomOrder> {
     const result = await db.insert(customOrders).values(customOrder).returning();
     return result[0];
   }
@@ -418,7 +409,7 @@ export class SimpleStorage {
   async updateCustomOrderStatus(id: string, status: string): Promise<CustomOrder> {
     const result = await db.update(customOrders).set({ 
       status, 
-      updatedAt: new Date() 
+      updated_at: new Date() 
     }).where(eq(customOrders.id, id)).returning();
     return result[0];
   }
@@ -445,9 +436,9 @@ export class SimpleStorage {
           description: '১০% ছাড়',
           discount_type: 'percentage',
           discount_value: '10',
-          min_order_amount: '1000',
+          min_purchase_amount: '1000',
           usage_limit: 100,
-          expires_at: new Date('2025-12-31'),
+          end_date: new Date('2025-12-31'),
           is_active: true,
           created_at: new Date(),
           updated_at: new Date()
@@ -458,9 +449,9 @@ export class SimpleStorage {
           description: '২০% ছাড় নতুন গ্রাহকদের জন্য',
           discount_type: 'percentage',
           discount_value: '20',
-          min_order_amount: '1500',
+          min_purchase_amount: '1500',
           usage_limit: 50,
-          expires_at: new Date('2025-12-31'),
+          end_date: new Date('2025-12-31'),
           is_active: true,
           created_at: new Date(),
           updated_at: new Date()

@@ -114,7 +114,7 @@ export default function ProductManagement() {
 
   const addProductMutation = useMutation({
     mutationFn: async (data: ProductFormData) => {
-      return apiRequest('/api/products', 'POST', data);
+      return apiRequest('POST', '/api/admin/products', data);
     },
     onSuccess: () => {
       toast({
@@ -136,7 +136,7 @@ export default function ProductManagement() {
 
   const updateProductMutation = useMutation({
     mutationFn: async ({ id, data }: { id: string; data: Partial<ProductFormData> }) => {
-      return apiRequest(`/api/products/${id}`, 'PATCH', data);
+      return apiRequest('PUT', `/api/admin/products/${id}`, data);
     },
     onSuccess: async (updatedProduct, { id, data }) => {
       toast({
@@ -144,16 +144,8 @@ export default function ProductManagement() {
         description: "পণ্য আপডেট হয়েছে",
       });
       
-      // Force immediate cache refresh and refetch
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ['/api/products'] }),
-        queryClient.refetchQueries({ queryKey: ['/api/products'] })
-      ]);
-      
-      // Wait a bit for the cache to update then refetch again to ensure we have the latest data
-      setTimeout(async () => {
-        await queryClient.refetchQueries({ queryKey: ['/api/products'] });
-      }, 500);
+      // Force immediate cache refresh
+      queryClient.invalidateQueries({ queryKey: ['/api/products'] });
       
       setIsEditDialogOpen(false);
       setSelectedProduct(null);
@@ -169,7 +161,7 @@ export default function ProductManagement() {
 
   const deleteProductMutation = useMutation({
     mutationFn: async (id: string) => {
-      return apiRequest(`/api/products/${id}`, 'DELETE');
+      return apiRequest('DELETE', `/api/admin/products/${id}`);
     },
     onSuccess: () => {
       toast({
@@ -288,10 +280,13 @@ export default function ProductManagement() {
                 নতুন পণ্য
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-2xl">
+            <DialogContent className="max-w-2xl" aria-describedby="add-product-description">
               <DialogHeader>
                 <DialogTitle>নতুন পণ্য যোগ করুন</DialogTitle>
               </DialogHeader>
+              <div id="add-product-description" className="sr-only">
+                নতুন পণ্য যোগ করার জন্য সকল প্রয়োজনীয় তথ্য পূরণ করুন
+              </div>
               
               <form onSubmit={addForm.handleSubmit(handleAddProduct)} className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -741,10 +736,13 @@ export default function ProductManagement() {
 
       {/* Edit Product Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-2xl" aria-describedby="edit-product-description">
           <DialogHeader>
             <DialogTitle>পণ্য এডিট করুন</DialogTitle>
           </DialogHeader>
+          <div id="edit-product-description" className="sr-only">
+            বর্তমান পণ্যের তথ্য এডিট করুন এবং পরিবর্তনগুলি সংরক্ষণ করুন
+          </div>
           
           {selectedProduct && (
             <form onSubmit={editForm.handleSubmit(handleUpdateProduct)} className="space-y-4">

@@ -395,9 +395,25 @@ export function setupAdminRoutes(app: Express) {
       ]);
 
       // Get counts safely without problematic queries
-      const customOrders: any[] = []; // Temporarily empty since custom orders are disabled
-      const promoCodes: any[] = []; // Temporarily empty due to schema issues
-      const users: any[] = []; // Temporarily empty due to schema issues
+      let customOrders: any[] = [];
+      let promoCodes: any[] = [];
+      let users: any[] = [];
+      
+      try {
+        // Try to get custom orders safely
+        customOrders = await storage.getCustomOrders() || [];
+      } catch (e) {
+        console.log('⚠️ Custom orders query failed:', e instanceof Error ? e.message : 'Unknown error');
+        customOrders = [];
+      }
+      
+      try {
+        // Try to get promo codes safely
+        promoCodes = await storage.getPromoCodes() || [];
+      } catch (e) {
+        console.log('⚠️ Promo codes query failed:', e instanceof Error ? e.message : 'Unknown error');
+        promoCodes = [];
+      }
 
       // Calculate revenue trends (last 7 days)
       const today = new Date();
@@ -453,8 +469,16 @@ export function setupAdminRoutes(app: Express) {
         bestSellingProducts: products.filter(p => p.is_best_selling).length,
         lowStockProducts: products.filter(p => p.stock < 10).length,
         
-        // Active promotions
-        activeOffers: (await storage.getOffers()).filter(o => o.active).length,
+        // Active promotions - get offers safely
+        activeOffers: await (async () => {
+          try {
+            const offers = await storage.getOffers();
+            return offers.filter(o => o.active).length;
+          } catch (e) {
+            console.log('⚠️ Offers query failed:', e instanceof Error ? e.message : 'Unknown error');
+            return 0;
+          }
+        })(),
         activePromoCodes: promoCodes.filter(p => p.is_active).length,
         
         // Category popularity

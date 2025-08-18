@@ -683,7 +683,25 @@ export class DatabaseStorage implements IStorage {
   // PROMO CODE MANAGEMENT METHODS
   async getPromoCodes(): Promise<PromoCode[]> {
     try {
-      const result = await this.db.select().from(promoCodes).orderBy(desc(promoCodes.created_at));
+      // Use specific column selection to avoid schema issues
+      const result = await this.db
+        .select({
+          id: promoCodes.id,
+          code: promoCodes.code,
+          description: promoCodes.description,
+          discount_type: promoCodes.discount_type,
+          discount_value: promoCodes.discount_value,
+          min_purchase_amount: promoCodes.min_purchase_amount,
+          max_discount_amount: promoCodes.max_discount_amount,
+          usage_limit: promoCodes.usage_limit,
+          usage_count: promoCodes.usage_count,
+          start_date: promoCodes.start_date,
+          end_date: promoCodes.end_date,
+          is_active: promoCodes.is_active,
+          created_at: promoCodes.created_at
+        })
+        .from(promoCodes)
+        .orderBy(desc(promoCodes.created_at));
       return result;
     } catch (error) {
       console.error('❌ Error fetching promo codes:', error);
