@@ -1,991 +1,549 @@
-import { useState, useEffect } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Checkbox } from "@/components/ui/checkbox";
-import { toast } from "@/hooks/use-toast";
-import {
-  Search,
-  Plus,
-  Edit,
-  Trash2,
-  Package,
-  Eye,
-  Star,
-  Zap,
-  TrendingUp,
-  Image as ImageIcon,
-  RefreshCw,
-  Upload,
-  ChevronLeft,
-  ChevronRight,
-  Filter
-} from "lucide-react";
-import { formatPrice } from "@/lib/utils";
-import { apiRequest } from "@/lib/queryClient";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
+import React, { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
+import { Plus, Edit, Trash2, Package, Image, Tag, Eye, Star, Zap, TrendingUp } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import { apiRequest } from '@/lib/queryClient';
+import { formatPrice } from '@/lib/utils';
+import type { Product, InsertProduct, Category } from '@shared/schema';
 
-const productSchema = z.object({
-  name: z.string().min(1, "পণ্যের নাম আবশ্যক"),
-  price: z.string().min(1, "দাম আবশ্যক"),
-  category: z.string().min(1, "ক্যাটাগরি আবশ্যক"),
-  stock: z.number().min(0, "স্টক ০ বা তার বেশি হতে হবে"),
-  description: z.string().optional(),
-  image_url: z.string().url("সঠিক URL দিন").optional().or(z.literal("")),
-  is_featured: z.boolean().default(false),
-  is_latest: z.boolean().default(false),
-  is_best_selling: z.boolean().default(false),
-});
-
-type ProductFormData = z.infer<typeof productSchema>;
-
-interface Product {
-  id: string;
-  name: string;
-  price: string;
-  image_url: string;
-  category: string;
-  stock: number;
-  description: string;
-  is_featured: boolean;
-  is_latest: boolean;
-  is_best_selling: boolean;
-  created_at: string;
+interface ProductWithFlags extends Product {
+  is_featured?: boolean;
+  is_latest?: boolean;
+  is_best_selling?: boolean;
 }
 
 export default function ProductManagement() {
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [editingProduct, setEditingProduct] = useState<ProductWithFlags | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [searchTerm, setSearchTerm] = useState("");
-  const [categoryFilter, setCategoryFilter] = useState("all");
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(12);
 
-  const {
-    data: products,
-    isLoading: productsLoading,
-    error: productsError,
-    refetch: refetchProducts
-  } = useQuery<Product[]>({
-    queryKey: ['/api/products'],
-    staleTime: 30 * 1000, // Data is stale after 30 seconds for admin panel
-    gcTime: 2 * 60 * 1000, // Keep in memory for 2 minutes
-    refetchInterval: 60 * 1000, // Auto-refresh every minute for admin panel
-    refetchOnWindowFocus: true,
-    refetchOnMount: true,
+  const [formData, setFormData] = useState<Partial<InsertProduct & {
+    is_featured?: boolean;
+    is_latest?: boolean;
+    is_best_selling?: boolean;
+  }>>({
+    name: '',
+    price: '',
+    image_url: '',
+    category: '',
+    stock: 0,
+    description: '',
+    is_featured: false,
+    is_latest: false,
+    is_best_selling: false,
   });
 
-  const {
-    data: categories,
-    isLoading: categoriesLoading
-  } = useQuery({
+  // Fetch products
+  const { data: products = [], isLoading: productsLoading, refetch } = useQuery<ProductWithFlags[]>({
+    queryKey: ['/api/products'],
+    refetchInterval: 30000,
+  });
+
+  // Fetch categories
+  const { data: categories = [] } = useQuery<Category[]>({
     queryKey: ['/api/categories'],
   });
 
-  // Add Product Form
-  const addForm = useForm<ProductFormData>({
-    resolver: zodResolver(productSchema),
-    defaultValues: {
-      name: "",
-      price: "",
-      category: "",
+  // Create product mutation
+  const createProductMutation = useMutation({
+    mutationFn: async (data: Partial<InsertProduct>) => {
+      const token = localStorage.getItem('adminToken') || localStorage.getItem('admin_token');
+      const response = await fetch('/api/admin/products', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(data),
+      });
+      if (!response.ok) throw new Error('Failed to create product');
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({ title: 'সফল!', description: 'পণ্য সফলভাবে যোগ করা হয়েছে' });
+      queryClient.invalidateQueries({ queryKey: ['/api/products'] });
+      setIsDialogOpen(false);
+      resetForm();
+    },
+    onError: (error: any) => {
+      toast({ 
+        title: 'ত্রুটি!', 
+        description: error.message || 'পণ্য যোগ করতে সমস্যা হয়েছে',
+        variant: 'destructive' 
+      });
+    },
+  });
+
+  // Update product mutation
+  const updateProductMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: Partial<InsertProduct> }) => {
+      const token = localStorage.getItem('adminToken') || localStorage.getItem('admin_token');
+      const response = await fetch(`/api/admin/products/${id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(data),
+      });
+      if (!response.ok) throw new Error('Failed to update product');
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({ title: 'সফল!', description: 'পণ্য সফলভাবে আপডেট হয়েছে' });
+      queryClient.invalidateQueries({ queryKey: ['/api/products'] });
+      setIsDialogOpen(false);
+      resetForm();
+      setEditingProduct(null);
+    },
+    onError: (error: any) => {
+      toast({ 
+        title: 'ত্রুটি!', 
+        description: error.message || 'পণ্য আপডেট করতে সমস্যা হয়েছে',
+        variant: 'destructive' 
+      });
+    },
+  });
+
+  // Delete product mutation
+  const deleteProductMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const token = localStorage.getItem('adminToken') || localStorage.getItem('admin_token');
+      const response = await fetch(`/api/admin/products/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
+      });
+      if (!response.ok) throw new Error('Failed to delete product');
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({ title: 'সফল!', description: 'পণ্য সফলভাবে মুছে ফেলা হয়েছে' });
+      queryClient.invalidateQueries({ queryKey: ['/api/products'] });
+    },
+    onError: (error: any) => {
+      toast({ 
+        title: 'ত্রুটি!', 
+        description: error.message || 'পণ্য মুছতে সমস্যা হয়েছে',
+        variant: 'destructive' 
+      });
+    },
+  });
+
+  // Toggle product flags
+  const toggleProductFlag = async (product: ProductWithFlags, flag: string, value: boolean) => {
+    const updateData = { [flag]: value };
+    updateProductMutation.mutate({ id: product.id, data: updateData });
+  };
+
+  const resetForm = () => {
+    setFormData({
+      name: '',
+      price: '',
+      image_url: '',
+      category: '',
       stock: 0,
-      description: "",
-      image_url: "",
+      description: '',
       is_featured: false,
       is_latest: false,
       is_best_selling: false,
-    },
-  });
+    });
+  };
 
-  // Edit Product Form
-  const editForm = useForm<ProductFormData>({
-    resolver: zodResolver(productSchema),
-  });
-
-  const addProductMutation = useMutation({
-    mutationFn: async (data: ProductFormData) => {
-      return apiRequest('POST', '/api/admin/products', data);
-    },
-    onSuccess: () => {
-      toast({
-        title: "সফল",
-        description: "নতুন পণ্য যোগ করা হয়েছে",
+  const openDialog = (product?: ProductWithFlags) => {
+    if (product) {
+      setEditingProduct(product);
+      setFormData({
+        name: product.name,
+        price: product.price.toString(),
+        image_url: product.image_url || '',
+        category: product.category || '',
+        stock: product.stock,
+        description: product.description || '',
+        is_featured: product.is_featured || false,
+        is_latest: product.is_latest || false,
+        is_best_selling: product.is_best_selling || false,
       });
-      queryClient.invalidateQueries({ queryKey: ['/api/products'] });
-      setIsAddDialogOpen(false);
-      addForm.reset();
-    },
-    onError: (error) => {
-      toast({
-        title: "ত্রুটি",
-        description: "পণ্য যোগ করতে সমস্যা হয়েছে",
-        variant: "destructive",
-      });
+    } else {
+      setEditingProduct(null);
+      resetForm();
     }
-  });
+    setIsDialogOpen(true);
+  };
 
-  const updateProductMutation = useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: Partial<ProductFormData> }) => {
-      return apiRequest('PUT', `/api/admin/products/${id}`, data);
-    },
-    onSuccess: async (updatedProduct, { id, data }) => {
-      toast({
-        title: "সফল",
-        description: "পণ্য আপডেট হয়েছে",
-      });
-      
-      // Force immediate cache refresh
-      queryClient.invalidateQueries({ queryKey: ['/api/products'] });
-      
-      setIsEditDialogOpen(false);
-      setSelectedProduct(null);
-    },
-    onError: (error) => {
-      toast({
-        title: "ত্রুটি",
-        description: "পণ্য আপডেট করতে সমস্যা হয়েছে",
-        variant: "destructive",
-      });
-    }
-  });
-
-  const deleteProductMutation = useMutation({
-    mutationFn: async (id: string) => {
-      return apiRequest('DELETE', `/api/admin/products/${id}`);
-    },
-    onSuccess: () => {
-      toast({
-        title: "সফল",
-        description: "পণ্য মুছে ফেলা হয়েছে",
-      });
-      queryClient.invalidateQueries({ queryKey: ['/api/products'] });
-    },
-    onError: (error) => {
-      toast({
-        title: "ত্রুটি",
-        description: "পণ্য মুছতে সমস্যা হয়েছে",
-        variant: "destructive",
-      });
-    }
-  });
-
-  const filteredProducts = products?.filter(product => {
-    const matchesSearch = !searchTerm || 
-      product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      product.category.toLowerCase().includes(searchTerm.toLowerCase());
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
     
-    const matchesCategory = categoryFilter === 'all' || product.category === categoryFilter;
-    
-    return matchesSearch && matchesCategory;
-  }) || [];
+    if (!formData.name || !formData.price) {
+      toast({
+        title: 'ত্রুটি!',
+        description: 'পণ্যের নাম এবং দাম আবশ্যক',
+        variant: 'destructive'
+      });
+      return;
+    }
 
-  const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
-  const paginatedProducts = filteredProducts.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
+    const productData = {
+      ...formData,
+      price: formData.price?.toString() || '0',
+      stock: formData.stock || 0,
+    };
+
+    if (editingProduct) {
+      updateProductMutation.mutate({ id: editingProduct.id, data: productData });
+    } else {
+      createProductMutation.mutate(productData);
+    }
+  };
+
+  // Filter products based on search
+  const filteredProducts = products.filter(product =>
+    product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    product.category?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const handleAddProduct = (data: ProductFormData) => {
-    addProductMutation.mutate(data);
-  };
-
-  const handleUpdateProduct = (data: ProductFormData) => {
-    if (selectedProduct) {
-      updateProductMutation.mutate({
-        id: selectedProduct.id,
-        data
-      });
-    }
-  };
-
-  const handleDeleteProduct = (id: string) => {
-    if (confirm('আপনি কি নিশ্চিত যে এই পণ্যটি মুছে ফেলতে চান?')) {
-      deleteProductMutation.mutate(id);
-    }
-  };
-
-  const handleEditProduct = (product: Product) => {
-    // Always get the fresh data from the current products list
-    const freshProduct = products?.find(p => p.id === product.id) || product;
-    setSelectedProduct(freshProduct);
-    editForm.reset({
-      name: freshProduct.name,
-      price: freshProduct.price,
-      category: freshProduct.category,
-      stock: freshProduct.stock,
-      description: freshProduct.description || "",
-      image_url: freshProduct.image_url || "",
-      is_featured: freshProduct.is_featured,
-      is_latest: freshProduct.is_latest,
-      is_best_selling: freshProduct.is_best_selling,
-    });
-    setIsEditDialogOpen(true);
-  };
-
-  const uniqueCategories = Array.from(new Set(products?.map(p => p.category) || []));
-
-  if (productsLoading || categoriesLoading) {
-    return (
-      <div className="p-6 animate-pulse">
-        <div className="h-8 bg-gray-200 rounded mb-6"></div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {[...Array(8)].map((_, i) => (
-            <div key={i} className="h-64 bg-gray-200 rounded-lg"></div>
-          ))}
-        </div>
-      </div>
-    );
-  }
-
-  if (productsError) {
-    return (
-      <div className="p-6">
-        <div className="text-center text-red-500">
-          পণ্য লোড করতে সমস্যা হয়েছে
-          <Button onClick={() => refetchProducts()} className="ml-4">
-            পুনরায় চেষ্টা
-          </Button>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="p-6 space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">পণ্য ব্যবস্থাপনা</h1>
-          <p className="text-gray-600">সকল পণ্য দেখুন এবং পরিচালনা করুন</p>
+    <div className="space-y-6">
+      {/* Header with Search and Add Button */}
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div className="flex-1 max-w-sm">
+          <Input
+            placeholder="পণ্য অনুসন্ধান করুন..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full"
+          />
         </div>
-        <div className="flex space-x-2">
-          <Button onClick={() => refetchProducts()} variant="outline" size="sm">
-            <RefreshCw className="w-4 h-4 mr-2" />
-            রিফ্রেশ
-          </Button>
-          <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-            <DialogTrigger asChild>
-              <Button>
-                <Plus className="w-4 h-4 mr-2" />
-                নতুন পণ্য
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-2xl" aria-describedby="add-product-description">
-              <DialogHeader>
-                <DialogTitle>নতুন পণ্য যোগ করুন</DialogTitle>
-              </DialogHeader>
-              <div id="add-product-description" className="sr-only">
-                নতুন পণ্য যোগ করার জন্য সকল প্রয়োজনীয় তথ্য পূরণ করুন
-              </div>
-              
-              <form onSubmit={addForm.handleSubmit(handleAddProduct)} className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-sm font-medium">পণ্যের নাম *</label>
-                    <Input
-                      {...addForm.register("name")}
-                      placeholder="পণ্যের নাম লিখুন"
-                      className="mt-1"
-                    />
-                    {addForm.formState.errors.name && (
-                      <p className="text-sm text-red-500 mt-1">
-                        {addForm.formState.errors.name.message}
-                      </p>
-                    )}
-                  </div>
-
-                  <div>
-                    <label className="text-sm font-medium">দাম (টাকা) *</label>
-                    <Input
-                      {...addForm.register("price")}
-                      type="number"
-                      step="0.01"
-                      placeholder="০"
-                      className="mt-1"
-                    />
-                    {addForm.formState.errors.price && (
-                      <p className="text-sm text-red-500 mt-1">
-                        {addForm.formState.errors.price.message}
-                      </p>
-                    )}
-                  </div>
-
-                  <div>
-                    <label className="text-sm font-medium">ক্যাটাগরি *</label>
-                    <Select onValueChange={(value) => addForm.setValue("category", value)}>
-                      <SelectTrigger className="mt-1">
-                        <SelectValue placeholder="ক্যাটাগরি নির্বাচন করুন" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="mugs">মগ</SelectItem>
-                        <SelectItem value="t-shirts">টি-শার্ট</SelectItem>
-                        <SelectItem value="frames">ফ্রেম</SelectItem>
-                        <SelectItem value="cushions">কুশন</SelectItem>
-                        <SelectItem value="keychains">কি-চেইন</SelectItem>
-                        <SelectItem value="calendars">ক্যালেন্ডার</SelectItem>
-                        <SelectItem value="others">অন্যান্য</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    {addForm.formState.errors.category && (
-                      <p className="text-sm text-red-500 mt-1">
-                        {addForm.formState.errors.category.message}
-                      </p>
-                    )}
-                  </div>
-
-                  <div>
-                    <label className="text-sm font-medium">স্টক *</label>
-                    <Input
-                      {...addForm.register("stock", { valueAsNumber: true })}
-                      type="number"
-                      min="0"
-                      placeholder="০"
-                      className="mt-1"
-                    />
-                    {addForm.formState.errors.stock && (
-                      <p className="text-sm text-red-500 mt-1">
-                        {addForm.formState.errors.stock.message}
-                      </p>
-                    )}
-                  </div>
-                </div>
-
-                <div>
-                  <label className="text-sm font-medium">ছবির URL</label>
-                  <Input
-                    {...addForm.register("image_url")}
-                    type="url"
-                    placeholder="https://example.com/image.jpg"
-                    className="mt-1"
-                  />
-                  {addForm.formState.errors.image_url && (
-                    <p className="text-sm text-red-500 mt-1">
-                      {addForm.formState.errors.image_url.message}
-                    </p>
-                  )}
-                </div>
-
-                <div>
-                  <label className="text-sm font-medium">বিবরণ</label>
-                  <Textarea
-                    {...addForm.register("description")}
-                    placeholder="পণ্যের বিবরণ লিখুন"
-                    rows={3}
-                    className="mt-1"
-                  />
-                </div>
-
-                <div className="space-y-3">
-                  <div className={`flex items-center justify-between p-4 border-2 rounded-lg transition-all duration-300 ${
-                    addForm.watch("is_featured") 
-                      ? "bg-gradient-to-r from-yellow-100 to-orange-100 border-yellow-300 shadow-md" 
-                      : "bg-gradient-to-r from-yellow-50 to-orange-50 border-gray-200 hover:border-yellow-200"
-                  }`}>
-                    <div className="flex items-center space-x-3">
-                      <Checkbox
-                        id="is_featured"
-                        checked={addForm.watch("is_featured") || false}
-                        onCheckedChange={(checked) => {
-                          addForm.setValue("is_featured", !!checked);
-                        }}
-                        className="data-[state=checked]:bg-yellow-500 data-[state=checked]:border-yellow-500"
-                      />
-                      <div>
-                        <label htmlFor="is_featured" className="text-sm font-medium text-gray-900 cursor-pointer">
-                          ফিচারড পণ্য
-                        </label>
-                        <p className="text-xs text-gray-600">হোম পেইজে বিশেষভাবে প্রদর্শিত হবে</p>
-                      </div>
-                    </div>
-                    <Button
-                      type="button"
-                      variant={addForm.watch("is_featured") ? "default" : "outline"}
-                      size="sm"
-                      className={`transition-all duration-300 ${
-                        addForm.watch("is_featured") 
-                          ? "bg-yellow-500 hover:bg-yellow-600 text-white shadow-md" 
-                          : "hover:bg-yellow-50 hover:border-yellow-300"
-                      }`}
-                      onClick={() => {
-                        const currentValue = addForm.watch("is_featured");
-                        addForm.setValue("is_featured", !currentValue);
-                      }}
-                    >
-                      <Star className="w-4 h-4 mr-1" />
-                      {addForm.watch("is_featured") ? "চালু" : "বন্ধ"}
-                    </Button>
-                  </div>
-
-                  <div className={`flex items-center justify-between p-4 border-2 rounded-lg transition-all duration-300 ${
-                    addForm.watch("is_latest") 
-                      ? "bg-gradient-to-r from-green-100 to-emerald-100 border-green-300 shadow-md" 
-                      : "bg-gradient-to-r from-green-50 to-emerald-50 border-gray-200 hover:border-green-200"
-                  }`}>
-                    <div className="flex items-center space-x-3">
-                      <Checkbox
-                        id="is_latest"
-                        checked={addForm.watch("is_latest") || false}
-                        onCheckedChange={(checked) => {
-                          addForm.setValue("is_latest", !!checked);
-                        }}
-                        className="data-[state=checked]:bg-green-500 data-[state=checked]:border-green-500"
-                      />
-                      <div>
-                        <label htmlFor="is_latest" className="text-sm font-medium text-gray-900 cursor-pointer">
-                          নতুন পণ্য
-                        </label>
-                        <p className="text-xs text-gray-600">নতুন পণ্য হিসেবে চিহ্নিত হবে</p>
-                      </div>
-                    </div>
-                    <Button
-                      type="button"
-                      variant={addForm.watch("is_latest") ? "default" : "outline"}
-                      size="sm"
-                      className={`transition-all duration-300 ${
-                        addForm.watch("is_latest") 
-                          ? "bg-green-500 hover:bg-green-600 text-white shadow-md" 
-                          : "hover:bg-green-50 hover:border-green-300"
-                      }`}
-                      onClick={() => {
-                        const currentValue = addForm.watch("is_latest");
-                        addForm.setValue("is_latest", !currentValue);
-                      }}
-                    >
-                      <Zap className="w-4 h-4 mr-1" />
-                      {addForm.watch("is_latest") ? "চালু" : "বন্ধ"}
-                    </Button>
-                  </div>
-
-                  <div className={`flex items-center justify-between p-4 border-2 rounded-lg transition-all duration-300 ${
-                    addForm.watch("is_best_selling") 
-                      ? "bg-gradient-to-r from-blue-100 to-cyan-100 border-blue-300 shadow-md" 
-                      : "bg-gradient-to-r from-blue-50 to-cyan-50 border-gray-200 hover:border-blue-200"
-                  }`}>
-                    <div className="flex items-center space-x-3">
-                      <Checkbox
-                        id="is_best_selling"
-                        checked={addForm.watch("is_best_selling") || false}
-                        onCheckedChange={(checked) => {
-                          addForm.setValue("is_best_selling", !!checked);
-                        }}
-                        className="data-[state=checked]:bg-blue-500 data-[state=checked]:border-blue-500"
-                      />
-                      <div>
-                        <label htmlFor="is_best_selling" className="text-sm font-medium text-gray-900 cursor-pointer">
-                          বেস্ট সেলার
-                        </label>
-                        <p className="text-xs text-gray-600">সর্বাধিক বিক্রীত পণ্য হিসেবে চিহ্নিত</p>
-                      </div>
-                    </div>
-                    <Button
-                      type="button"
-                      variant={addForm.watch("is_best_selling") ? "default" : "outline"}
-                      size="sm"
-                      className={`transition-all duration-300 ${
-                        addForm.watch("is_best_selling") 
-                          ? "bg-blue-500 hover:bg-blue-600 text-white shadow-md" 
-                          : "hover:bg-blue-50 hover:border-blue-300"
-                      }`}
-                      onClick={() => {
-                        const currentValue = addForm.watch("is_best_selling");
-                        addForm.setValue("is_best_selling", !currentValue);
-                      }}
-                    >
-                      <TrendingUp className="w-4 h-4 mr-1" />
-                      {addForm.watch("is_best_selling") ? "চালু" : "বন্ধ"}
-                    </Button>
-                  </div>
-                </div>
-
-                <div className="flex justify-end space-x-2 pt-4">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setIsAddDialogOpen(false)}
-                  >
-                    বাতিল
-                  </Button>
-                  <Button
-                    type="submit"
-                    disabled={addProductMutation.isPending}
-                  >
-                    {addProductMutation.isPending ? "সেভ হচ্ছে..." : "সেভ করুন"}
-                  </Button>
-                </div>
-              </form>
-            </DialogContent>
-          </Dialog>
-        </div>
-      </div>
-
-      {/* Filters */}
-      <Card>
-        <CardContent className="p-6">
-          <div className="flex flex-col md:flex-row gap-4">
-            <div className="flex-1">
-              <div className="relative">
-                <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                <Input
-                  placeholder="পণ্যের নাম বা ক্যাটাগরি দিয়ে খুঁজুন..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-            </div>
-            <div className="w-full md:w-48">
-              <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                <SelectTrigger>
-                  <Filter className="w-4 h-4 mr-2" />
-                  <SelectValue placeholder="ক্যাটাগরি ফিল্টার" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">সব পণ্য</SelectItem>
-                  {uniqueCategories.map((category) => (
-                    <SelectItem key={category} value={category}>
-                      {category}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          {/* Stats */}
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mt-6 pt-6 border-t">
-            <div className="text-center">
-              <p className="text-2xl font-bold text-gray-900">{filteredProducts.length}</p>
-              <p className="text-sm text-gray-600">মোট পণ্য</p>
-            </div>
-            <div className="text-center">
-              <p className="text-2xl font-bold text-yellow-600">
-                {filteredProducts.filter(p => p.is_featured).length}
-              </p>
-              <p className="text-sm text-gray-600">ফিচারড</p>
-            </div>
-            <div className="text-center">
-              <p className="text-2xl font-bold text-green-600">
-                {filteredProducts.filter(p => p.is_latest).length}
-              </p>
-              <p className="text-sm text-gray-600">নতুন</p>
-            </div>
-            <div className="text-center">
-              <p className="text-2xl font-bold text-blue-600">
-                {filteredProducts.filter(p => p.is_best_selling).length}
-              </p>
-              <p className="text-sm text-gray-600">বেস্ট সেলার</p>
-            </div>
-            <div className="text-center">
-              <p className="text-2xl font-bold text-red-600">
-                {filteredProducts.filter(p => p.stock === 0).length}
-              </p>
-              <p className="text-sm text-gray-600">স্টক শেষ</p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Products Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {paginatedProducts.map((product) => (
-          <Card key={product.id} className="group hover:shadow-lg transition-shadow">
-            <div className="relative aspect-square overflow-hidden rounded-t-lg">
-              {product.image_url ? (
-                <img
-                  src={product.image_url}
-                  alt={product.name}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform"
-                />
-              ) : (
-                <div className="w-full h-full bg-gray-100 flex items-center justify-center">
-                  <ImageIcon className="w-12 h-12 text-gray-400" />
-                </div>
-              )}
-
-              {/* Enhanced Badges with Animation */}
-              <div className="absolute top-2 left-2 flex flex-col gap-1">
-                {product.is_featured && (
-                  <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white text-xs shadow-lg animate-pulse">
-                    <Star className="w-3 h-3 mr-1 animate-pulse" />
-                    ফিচারড
-                  </Badge>
-                )}
-                {product.is_latest && (
-                  <Badge className="bg-gradient-to-r from-green-500 to-emerald-500 text-white text-xs shadow-lg">
-                    <Zap className="w-3 h-3 mr-1" />
-                    নতুন
-                  </Badge>
-                )}
-                {product.is_best_selling && (
-                  <Badge className="bg-gradient-to-r from-blue-500 to-cyan-500 text-white text-xs shadow-lg">
-                    <TrendingUp className="w-3 h-3 mr-1" />
-                    বেস্ট সেলার
-                  </Badge>
-                )}
-              </div>
-
-              {/* Stock Status */}
-              <div className="absolute top-2 right-2">
-                <Badge variant={product.stock > 0 ? "default" : "destructive"}>
-                  {product.stock > 0 ? `স্টক: ${product.stock}` : "স্টক নেই"}
-                </Badge>
-              </div>
-
-              {/* Actions */}
-              <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                <Button
-                  size="sm"
-                  variant="secondary"
-                  onClick={() => handleEditProduct(product)}
-                >
-                  <Edit className="w-4 h-4" />
-                </Button>
-                <Button
-                  size="sm"
-                  variant="destructive"
-                  onClick={() => handleDeleteProduct(product.id)}
-                >
-                  <Trash2 className="w-4 h-4" />
-                </Button>
-              </div>
-            </div>
-
-            <CardContent className="p-4">
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <Badge variant="outline" className="text-xs">
-                    {product.category}
-                  </Badge>
-                </div>
-
-                <h3 className="font-semibold text-gray-900 line-clamp-2 min-h-[3rem]">
-                  {product.name}
-                </h3>
-
-                {product.description && (
-                  <p className="text-sm text-gray-600 line-clamp-2">
-                    {product.description}
-                  </p>
-                )}
-
-                <div className="flex items-center justify-between pt-2">
-                  <div className="text-xl font-bold text-green-600">
-                    {formatPrice(parseFloat(product.price))}
-                  </div>
-                  <div className="text-sm text-gray-500">
-                    {new Date(product.created_at).toLocaleDateString('bn-BD')}
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="flex items-center justify-between">
-          <div className="text-sm text-gray-600">
-            {filteredProducts.length} টি পণ্যের মধ্যে {((currentPage - 1) * itemsPerPage) + 1} - {Math.min(currentPage * itemsPerPage, filteredProducts.length)} দেখানো হচ্ছে
-          </div>
-          <div className="flex items-center space-x-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-              disabled={currentPage === 1}
+        
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+          <DialogTrigger asChild>
+            <Button 
+              onClick={() => openDialog()}
+              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
             >
-              <ChevronLeft className="w-4 h-4" />
+              <Plus className="h-4 w-4 mr-2" />
+              নতুন পণ্য যোগ করুন
             </Button>
-            
-            <div className="flex items-center space-x-1">
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                <Button
-                  key={page}
-                  variant={currentPage === page ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setCurrentPage(page)}
-                  className="w-8 h-8 p-0"
-                >
-                  {page}
-                </Button>
-              ))}
-            </div>
-
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-              disabled={currentPage === totalPages}
-            >
-              <ChevronRight className="w-4 h-4" />
-            </Button>
-          </div>
-        </div>
-      )}
-
-      {/* Edit Product Dialog */}
-      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="max-w-2xl" aria-describedby="edit-product-description">
-          <DialogHeader>
-            <DialogTitle>পণ্য এডিট করুন</DialogTitle>
-          </DialogHeader>
-          <div id="edit-product-description" className="sr-only">
-            বর্তমান পণ্যের তথ্য এডিট করুন এবং পরিবর্তনগুলি সংরক্ষণ করুন
-          </div>
+          </DialogTrigger>
           
-          {selectedProduct && (
-            <form onSubmit={editForm.handleSubmit(handleUpdateProduct)} className="space-y-4">
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>
+                {editingProduct ? 'পণ্য সম্পাদনা' : 'নতুন পণ্য যোগ করুন'}
+              </DialogTitle>
+            </DialogHeader>
+            
+            <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm font-medium">পণ্যের নাম *</label>
+                  <Label htmlFor="name">পণ্যের নাম *</Label>
                   <Input
-                    {...editForm.register("name")}
-                    placeholder="পণ্যের নাম লিখুন"
-                    className="mt-1"
+                    id="name"
+                    data-testid="input-product-name"
+                    value={formData.name || ''}
+                    onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                    required
                   />
-                  {editForm.formState.errors.name && (
-                    <p className="text-sm text-red-500 mt-1">
-                      {editForm.formState.errors.name.message}
-                    </p>
-                  )}
                 </div>
-
+                
                 <div>
-                  <label className="text-sm font-medium">দাম (টাকা) *</label>
+                  <Label htmlFor="price">দাম (৳) *</Label>
                   <Input
-                    {...editForm.register("price")}
+                    id="price"
+                    data-testid="input-product-price"
                     type="number"
-                    step="0.01"
-                    placeholder="০"
-                    className="mt-1"
+                    value={formData.price || ''}
+                    onChange={(e) => setFormData(prev => ({ ...prev, price: e.target.value }))}
+                    required
                   />
-                  {editForm.formState.errors.price && (
-                    <p className="text-sm text-red-500 mt-1">
-                      {editForm.formState.errors.price.message}
-                    </p>
-                  )}
                 </div>
-
+                
                 <div>
-                  <label className="text-sm font-medium">ক্যাটাগরি *</label>
-                  <Select
-                    value={editForm.watch("category")}
-                    onValueChange={(value) => editForm.setValue("category", value)}
+                  <Label htmlFor="category">ক্যাটেগরি</Label>
+                  <Select 
+                    value={formData.category || ''} 
+                    onValueChange={(value) => setFormData(prev => ({ ...prev, category: value }))}
                   >
-                    <SelectTrigger className="mt-1">
-                      <SelectValue placeholder="ক্যাটাগরি নির্বাচন করুন" />
+                    <SelectTrigger data-testid="select-product-category">
+                      <SelectValue placeholder="ক্যাটেগরি নির্বাচন করুন" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="mugs">মগ</SelectItem>
-                      <SelectItem value="t-shirts">টি-শার্ট</SelectItem>
-                      <SelectItem value="frames">ফ্রেম</SelectItem>
-                      <SelectItem value="cushions">কুশন</SelectItem>
-                      <SelectItem value="keychains">কি-চেইন</SelectItem>
-                      <SelectItem value="calendars">ক্যালেন্ডার</SelectItem>
-                      <SelectItem value="others">অন্যান্য</SelectItem>
+                      {categories.map(category => (
+                        <SelectItem key={category.id} value={category.name}>
+                          {category.name_bengali}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
-                  {editForm.formState.errors.category && (
-                    <p className="text-sm text-red-500 mt-1">
-                      {editForm.formState.errors.category.message}
-                    </p>
-                  )}
                 </div>
-
+                
                 <div>
-                  <label className="text-sm font-medium">স্টক *</label>
+                  <Label htmlFor="stock">স্টক</Label>
                   <Input
-                    {...editForm.register("stock", { valueAsNumber: true })}
+                    id="stock"
+                    data-testid="input-product-stock"
                     type="number"
-                    min="0"
-                    placeholder="০"
-                    className="mt-1"
+                    value={formData.stock || 0}
+                    onChange={(e) => setFormData(prev => ({ ...prev, stock: parseInt(e.target.value) || 0 }))}
                   />
-                  {editForm.formState.errors.stock && (
-                    <p className="text-sm text-red-500 mt-1">
-                      {editForm.formState.errors.stock.message}
-                    </p>
-                  )}
                 </div>
               </div>
-
+              
               <div>
-                <label className="text-sm font-medium">ছবির URL</label>
+                <Label htmlFor="image_url">ছবির লিংক</Label>
                 <Input
-                  {...editForm.register("image_url")}
-                  type="url"
+                  id="image_url"
+                  data-testid="input-product-image"
+                  value={formData.image_url || ''}
+                  onChange={(e) => setFormData(prev => ({ ...prev, image_url: e.target.value }))}
                   placeholder="https://example.com/image.jpg"
-                  className="mt-1"
                 />
-                {editForm.formState.errors.image_url && (
-                  <p className="text-sm text-red-500 mt-1">
-                    {editForm.formState.errors.image_url.message}
-                  </p>
-                )}
               </div>
-
+              
               <div>
-                <label className="text-sm font-medium">বিবরণ</label>
+                <Label htmlFor="description">বর্ণনা</Label>
                 <Textarea
-                  {...editForm.register("description")}
-                  placeholder="পণ্যের বিবরণ লিখুন"
-                  rows={3}
-                  className="mt-1"
+                  id="description"
+                  data-testid="textarea-product-description"
+                  value={formData.description || ''}
+                  onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                  placeholder="পণ্যের বিস্তারিত বর্ণনা..."
                 />
               </div>
-
-              <div className="space-y-3">
-                <div className={`flex items-center justify-between p-4 border-2 rounded-lg transition-all duration-300 ${
-                  editForm.watch("is_featured") 
-                    ? "bg-gradient-to-r from-yellow-100 to-orange-100 border-yellow-300 shadow-md" 
-                    : "bg-gradient-to-r from-yellow-50 to-orange-50 border-gray-200 hover:border-yellow-200"
-                }`}>
-                  <div className="flex items-center space-x-3">
-                    <Checkbox
-                      id="edit_is_featured"
-                      checked={editForm.watch("is_featured") || false}
-                      onCheckedChange={(checked) => {
-                        editForm.setValue("is_featured", !!checked);
-                      }}
-                      className="data-[state=checked]:bg-yellow-500 data-[state=checked]:border-yellow-500"
-                    />
-                    <div>
-                      <label htmlFor="edit_is_featured" className="text-sm font-medium text-gray-900 cursor-pointer">
-                        ফিচারড পণ্য
-                      </label>
-                      <p className="text-xs text-gray-600">হোম পেইজে বিশেষভাবে প্রদর্শিত হবে</p>
-                    </div>
-                  </div>
-                  <Button
-                    type="button"
-                    variant={editForm.watch("is_featured") ? "default" : "outline"}
-                    size="sm"
-                    className={`transition-all duration-300 ${
-                      editForm.watch("is_featured") 
-                        ? "bg-yellow-500 hover:bg-yellow-600 text-white shadow-md" 
-                        : "hover:bg-yellow-50 hover:border-yellow-300"
-                    }`}
-                    onClick={() => {
-                      const currentValue = editForm.watch("is_featured");
-                      editForm.setValue("is_featured", !currentValue);
-                    }}
-                  >
-                    <Star className="w-4 h-4 mr-1" />
-                    {editForm.watch("is_featured") ? "চালু" : "বন্ধ"}
-                  </Button>
+              
+              {/* Product Flags */}
+              <div className="grid grid-cols-3 gap-4 p-4 bg-gray-50 rounded-lg">
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    id="is_featured"
+                    data-testid="switch-featured"
+                    checked={formData.is_featured || false}
+                    onCheckedChange={(checked) => setFormData(prev => ({ ...prev, is_featured: checked }))}
+                  />
+                  <Label htmlFor="is_featured" className="text-sm">ফিচার্ড</Label>
                 </div>
-
-                <div className={`flex items-center justify-between p-4 border-2 rounded-lg transition-all duration-300 ${
-                  editForm.watch("is_latest") 
-                    ? "bg-gradient-to-r from-green-100 to-emerald-100 border-green-300 shadow-md" 
-                    : "bg-gradient-to-r from-green-50 to-emerald-50 border-gray-200 hover:border-green-200"
-                }`}>
-                  <div className="flex items-center space-x-3">
-                    <Checkbox
-                      id="edit_is_latest"
-                      checked={editForm.watch("is_latest") || false}
-                      onCheckedChange={(checked) => {
-                        editForm.setValue("is_latest", !!checked);
-                      }}
-                      className="data-[state=checked]:bg-green-500 data-[state=checked]:border-green-500"
-                    />
-                    <div>
-                      <label htmlFor="edit_is_latest" className="text-sm font-medium text-gray-900 cursor-pointer">
-                        নতুন পণ্য
-                      </label>
-                      <p className="text-xs text-gray-600">নতুন পণ্য হিসেবে চিহ্নিত হবে</p>
-                    </div>
-                  </div>
-                  <Button
-                    type="button"
-                    variant={editForm.watch("is_latest") ? "default" : "outline"}
-                    size="sm"
-                    className={`transition-all duration-300 ${
-                      editForm.watch("is_latest") 
-                        ? "bg-green-500 hover:bg-green-600 text-white shadow-md" 
-                        : "hover:bg-green-50 hover:border-green-300"
-                    }`}
-                    onClick={() => {
-                      const currentValue = editForm.watch("is_latest");
-                      editForm.setValue("is_latest", !currentValue);
-                    }}
-                  >
-                    <Zap className="w-4 h-4 mr-1" />
-                    {editForm.watch("is_latest") ? "চালু" : "বন্ধ"}
-                  </Button>
+                
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    id="is_latest"
+                    data-testid="switch-latest"
+                    checked={formData.is_latest || false}
+                    onCheckedChange={(checked) => setFormData(prev => ({ ...prev, is_latest: checked }))}
+                  />
+                  <Label htmlFor="is_latest" className="text-sm">সর্বশেষ</Label>
                 </div>
-
-                <div className={`flex items-center justify-between p-4 border-2 rounded-lg transition-all duration-300 ${
-                  editForm.watch("is_best_selling") 
-                    ? "bg-gradient-to-r from-blue-100 to-cyan-100 border-blue-300 shadow-md" 
-                    : "bg-gradient-to-r from-blue-50 to-cyan-50 border-gray-200 hover:border-blue-200"
-                }`}>
-                  <div className="flex items-center space-x-3">
-                    <Checkbox
-                      id="edit_is_best_selling"
-                      checked={editForm.watch("is_best_selling") || false}
-                      onCheckedChange={(checked) => {
-                        editForm.setValue("is_best_selling", !!checked);
-                      }}
-                      className="data-[state=checked]:bg-blue-500 data-[state=checked]:border-blue-500"
-                    />
-                    <div>
-                      <label htmlFor="edit_is_best_selling" className="text-sm font-medium text-gray-900 cursor-pointer">
-                        বেস্ট সেলার
-                      </label>
-                      <p className="text-xs text-gray-600">সর্বাধিক বিক্রীত পণ্য হিসেবে চিহ্নিত</p>
-                    </div>
-                  </div>
-                  <Button
-                    type="button"
-                    variant={editForm.watch("is_best_selling") ? "default" : "outline"}
-                    size="sm"
-                    className={`transition-all duration-300 ${
-                      editForm.watch("is_best_selling") 
-                        ? "bg-blue-500 hover:bg-blue-600 text-white shadow-md" 
-                        : "hover:bg-blue-50 hover:border-blue-300"
-                    }`}
-                    onClick={() => {
-                      const currentValue = editForm.watch("is_best_selling");
-                      editForm.setValue("is_best_selling", !currentValue);
-                    }}
-                  >
-                    <TrendingUp className="w-4 h-4 mr-1" />
-                    {editForm.watch("is_best_selling") ? "চালু" : "বন্ধ"}
-                  </Button>
+                
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    id="is_best_selling"
+                    data-testid="switch-best-selling"
+                    checked={formData.is_best_selling || false}
+                    onCheckedChange={(checked) => setFormData(prev => ({ ...prev, is_best_selling: checked }))}
+                  />
+                  <Label htmlFor="is_best_selling" className="text-sm">বেস্ট সেলিং</Label>
                 </div>
               </div>
-
-              <div className="flex justify-end space-x-2 pt-4">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setIsEditDialogOpen(false)}
-                >
+              
+              <div className="flex justify-end space-x-2">
+                <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
                   বাতিল
                 </Button>
-                <Button
-                  type="submit"
-                  disabled={updateProductMutation.isPending}
+                <Button 
+                  type="submit" 
+                  disabled={createProductMutation.isPending || updateProductMutation.isPending}
+                  className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
                 >
-                  {updateProductMutation.isPending ? "আপডেট হচ্ছে..." : "আপডেট করুন"}
+                  {editingProduct ? 'আপডেট করুন' : 'যোগ করুন'}
                 </Button>
               </div>
             </form>
+          </DialogContent>
+        </Dialog>
+      </div>
+
+      {/* Products Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600">মোট পণ্য</p>
+                <p className="text-2xl font-bold">{products.length}</p>
+              </div>
+              <Package className="h-8 w-8 text-blue-500" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600">ফিচার্ড</p>
+                <p className="text-2xl font-bold">{products.filter(p => p.is_featured).length}</p>
+              </div>
+              <Star className="h-8 w-8 text-yellow-500" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600">স্টক শেষ</p>
+                <p className="text-2xl font-bold">{products.filter(p => p.stock <= 5).length}</p>
+              </div>
+              <Zap className="h-8 w-8 text-red-500" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600">বেস্ট সেলিং</p>
+                <p className="text-2xl font-bold">{products.filter(p => p.is_best_selling).length}</p>
+              </div>
+              <TrendingUp className="h-8 w-8 text-green-500" />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Products Table */}
+      <Card>
+        <CardHeader>
+          <CardTitle>পণ্য তালিকা</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {productsLoading ? (
+            <div className="flex items-center justify-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+              <span className="ml-2">লোড হচ্ছে...</span>
+            </div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>ছবি</TableHead>
+                  <TableHead>নাম</TableHead>
+                  <TableHead>ক্যাটেগরি</TableHead>
+                  <TableHead>দাম</TableHead>
+                  <TableHead>স্টক</TableHead>
+                  <TableHead>স্ট্যাটাস</TableHead>
+                  <TableHead>অ্যাকশন</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredProducts.map((product) => (
+                  <TableRow key={product.id}>
+                    <TableCell>
+                      {product.image_url ? (
+                        <img
+                          src={product.image_url}
+                          alt={product.name}
+                          className="w-12 h-12 object-cover rounded-lg border"
+                        />
+                      ) : (
+                        <div className="w-12 h-12 bg-gray-200 rounded-lg flex items-center justify-center">
+                          <Image className="h-6 w-6 text-gray-400" />
+                        </div>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      <div>
+                        <p className="font-medium">{product.name}</p>
+                        {product.description && (
+                          <p className="text-sm text-gray-500 line-clamp-1">
+                            {product.description}
+                          </p>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="outline">{product.category || 'অন্যান্য'}</Badge>
+                    </TableCell>
+                    <TableCell className="font-semibold">
+                      {formatPrice(parseFloat(product.price.toString()))}
+                    </TableCell>
+                    <TableCell>
+                      <Badge 
+                        variant={product.stock <= 5 ? 'destructive' : 'secondary'}
+                        className={product.stock <= 5 ? 'bg-red-100 text-red-800' : ''}
+                      >
+                        {product.stock}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex flex-wrap gap-1">
+                        {product.is_featured && (
+                          <Badge className="bg-yellow-100 text-yellow-800 border-yellow-300">
+                            ফিচার্ড
+                          </Badge>
+                        )}
+                        {product.is_latest && (
+                          <Badge className="bg-green-100 text-green-800 border-green-300">
+                            সর্বশেষ
+                          </Badge>
+                        )}
+                        {product.is_best_selling && (
+                          <Badge className="bg-blue-100 text-blue-800 border-blue-300">
+                            বেস্ট সেলিং
+                          </Badge>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center space-x-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => openDialog(product)}
+                          data-testid={`button-edit-product-${product.id}`}
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => deleteProductMutation.mutate(product.id)}
+                          disabled={deleteProductMutation.isPending}
+                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                          data-testid={`button-delete-product-${product.id}`}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
           )}
-        </DialogContent>
-      </Dialog>
+          
+          {!productsLoading && filteredProducts.length === 0 && (
+            <div className="text-center py-8">
+              <Package className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+              <p className="text-gray-500">কোন পণ্য পাওয়া যায়নি</p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }

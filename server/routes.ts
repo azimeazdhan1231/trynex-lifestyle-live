@@ -183,6 +183,132 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Enhanced admin dashboard stats
+  app.get('/api/admin/dashboard-stats', authenticateAdmin, async (req, res) => {
+    try {
+      const [products, orders, categories] = await Promise.all([
+        storage.getProducts(),
+        storage.getOrders(),
+        storage.getCategories()
+      ]);
+
+      const totalRevenue = orders.reduce((sum, order) => sum + parseFloat(order.total || '0'), 0);
+      const currentMonth = new Date().getMonth();
+      const currentYear = new Date().getFullYear();
+      
+      const currentMonthOrders = orders.filter(order => {
+        const orderDate = new Date(order.created_at);
+        return orderDate.getMonth() === currentMonth && orderDate.getFullYear() === currentYear;
+      });
+      
+      const lastMonthOrders = orders.filter(order => {
+        const orderDate = new Date(order.created_at);
+        return orderDate.getMonth() === (currentMonth - 1 < 0 ? 11 : currentMonth - 1) && 
+               orderDate.getFullYear() === (currentMonth - 1 < 0 ? currentYear - 1 : currentYear);
+      });
+
+      const currentMonthRevenue = currentMonthOrders.reduce((sum, order) => sum + parseFloat(order.total || '0'), 0);
+      const lastMonthRevenue = lastMonthOrders.reduce((sum, order) => sum + parseFloat(order.total || '0'), 0);
+
+      const revenueGrowth = lastMonthRevenue > 0 ? 
+        ((currentMonthRevenue - lastMonthRevenue) / lastMonthRevenue * 100).toFixed(1) : 0;
+      const orderGrowth = lastMonthOrders.length > 0 ? 
+        ((currentMonthOrders.length - lastMonthOrders.length) / lastMonthOrders.length * 100).toFixed(1) : 0;
+
+      const stats = {
+        totalRevenue,
+        totalOrders: orders.length,
+        pendingOrders: orders.filter(o => o.status === 'pending').length,
+        totalCustomers: [...new Set(orders.map(o => o.phone))].length,
+        totalProducts: products.length,
+        revenueGrowth: parseFloat(revenueGrowth as string),
+        orderGrowth: parseFloat(orderGrowth as string),
+        activeCategories: categories.filter(c => c.is_active).length,
+        lowStockProducts: products.filter(p => p.stock < 10).length
+      };
+
+      res.json(stats);
+    } catch (error) {
+      console.error('Failed to fetch dashboard stats:', error);
+      res.status(500).json({ error: 'Failed to fetch dashboard stats' });
+    }
+  });
+
+  // Recent orders for dashboard
+  app.get('/api/admin/recent-orders', authenticateAdmin, async (req, res) => {
+    try {
+      const limit = parseInt(req.query.limit as string) || 10;
+      const orders = await storage.getOrders();
+      
+      const recentOrders = orders
+        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+        .slice(0, limit)
+        .map(order => ({
+          id: order.id,
+          tracking_id: order.tracking_id,
+          customer_name: order.customer_name,
+          phone: order.phone,
+          district: order.district,
+          thana: order.thana,
+          total: order.total,
+          status: order.status,
+          created_at: order.created_at
+        }));
+
+      res.json(recentOrders);
+    } catch (error) {
+      console.error('Failed to fetch recent orders:', error);
+      res.status(500).json({ error: 'Failed to fetch recent orders' });
+    }
+  });
+
+  // Top products for dashboard
+  app.get('/api/admin/top-products', authenticateAdmin, async (req, res) => {
+    try {
+      const limit = parseInt(req.query.limit as string) || 10;
+      const [products, orders] = await Promise.all([
+        storage.getProducts(),
+        storage.getOrders()
+      ]);
+
+      // Calculate product sales
+      const productSales: { [key: string]: { total_sales: number, revenue: number } } = {};
+      
+      orders.forEach(order => {
+        if (order.items && Array.isArray(order.items)) {
+          order.items.forEach((item: any) => {
+            const productId = item.id || item.product_id;
+            if (productId) {
+              if (!productSales[productId]) {
+                productSales[productId] = { total_sales: 0, revenue: 0 };
+              }
+              productSales[productId].total_sales += item.quantity || 1;
+              productSales[productId].revenue += (item.price || 0) * (item.quantity || 1);
+            }
+          });
+        }
+      });
+
+      // Combine with product info and sort by revenue
+      const topProducts = products
+        .map(product => ({
+          id: product.id,
+          name: product.name,
+          category: product.category || 'অন্যান্য',
+          total_sales: productSales[product.id]?.total_sales || 0,
+          revenue: productSales[product.id]?.revenue || 0
+        }))
+        .sort((a, b) => b.revenue - a.revenue)
+        .slice(0, limit);
+
+      res.json(topProducts);
+    } catch (error) {
+      console.error('Failed to fetch top products:', error);
+      res.status(500).json({ error: 'Failed to fetch top products' });
+    }
+  });
+
+  // Legacy stats endpoint for compatibility
   app.get('/api/admin/stats', authenticateAdmin, async (req, res) => {
     try {
       const [products, orders] = await Promise.all([
@@ -206,6 +332,54 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin Products CRUD
+  app.post('/api/admin/products', authenticateAdmin, async (req, res) => {
+    try {
+      const productData = insertProductSchema.parse(req.body);
+      const product = await storage.createProduct(productData);
+      res.json(product);
+    } catch (error) {
+      console.error('Failed to create product:', error);
+      res.status(400).json({ error: 'Failed to create product' });
+    }
+  });
+
+  app.patch('/api/admin/products/:id', authenticateAdmin, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const updateData = req.body;
+      const product = await storage.updateProduct(id, updateData);
+      res.json(product);
+    } catch (error) {
+      console.error('Failed to update product:', error);
+      res.status(400).json({ error: 'Failed to update product' });
+    }
+  });
+
+  app.delete('/api/admin/products/:id', authenticateAdmin, async (req, res) => {
+    try {
+      const { id } = req.params;
+      await storage.deleteProduct(id);
+      res.json({ success: true, message: 'Product deleted successfully' });
+    } catch (error) {
+      console.error('Failed to delete product:', error);
+      res.status(400).json({ error: 'Failed to delete product' });
+    }
+  });
+
+  // Admin Orders Management
+  app.patch('/api/admin/orders/:id/status', authenticateAdmin, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { status } = req.body;
+      const order = await storage.updateOrderStatus(id, status);
+      res.json(order);
+    } catch (error) {
+      console.error('Failed to update order status:', error);
+      res.status(400).json({ error: 'Failed to update order status' });
+    }
+  });
+
   // Settings
   app.get('/api/settings', async (req, res) => {
     try {
@@ -218,6 +392,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Settings error:', error);
       res.status(500).json({ message: 'Settings could not be loaded' });
+    }
+  });
+
+  // Admin Settings Management
+  app.patch('/api/admin/settings', authenticateAdmin, async (req, res) => {
+    try {
+      const settings = req.body;
+      const updatedSettings = [];
+      
+      for (const [key, value] of Object.entries(settings)) {
+        const updated = await storage.updateSetting(key, value as string);
+        updatedSettings.push(updated);
+      }
+      
+      res.json({ success: true, settings: updatedSettings });
+    } catch (error) {
+      console.error('Failed to update settings:', error);
+      res.status(400).json({ error: 'Failed to update settings' });
     }
   });
 

@@ -8,7 +8,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Eye, EyeOff, Shield, Lock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from '@tanstack/react-query';
-import AdminPanelNew from "@/components/AdminPanelNew";
+import AdminPanelNew from "./AdminPanelNew";
 
 export default function AdminLogin() {
   const [email, setEmail] = useState("");
