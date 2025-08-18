@@ -69,6 +69,16 @@ export default function AdminDashboard() {
     refetch: refetchAdminStats
   } = useQuery({
     queryKey: ['/api/admin/stats', refreshKey],
+    queryFn: async () => {
+      const token = localStorage.getItem('adminToken');
+      const response = await fetch('/api/admin/stats', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      if (!response.ok) throw new Error('Failed to fetch admin stats');
+      return response.json();
+    },
     refetchInterval: 30000,
     retry: 3,
     retryDelay: 1000,
@@ -82,6 +92,16 @@ export default function AdminDashboard() {
     refetch: refetchOrders
   } = useQuery({
     queryKey: ['/api/admin/orders', refreshKey],
+    queryFn: async () => {
+      const token = localStorage.getItem('adminToken');
+      const response = await fetch('/api/admin/orders', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      if (!response.ok) throw new Error('Failed to fetch orders');
+      return response.json();
+    },
     refetchInterval: 10000,
     retry: 2,
   });
@@ -94,6 +114,16 @@ export default function AdminDashboard() {
     refetch: refetchProducts
   } = useQuery({
     queryKey: ['/api/admin/products', refreshKey],
+    queryFn: async () => {
+      const token = localStorage.getItem('adminToken');
+      const response = await fetch('/api/admin/products', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      if (!response.ok) throw new Error('Failed to fetch products');
+      return response.json();
+    },
     refetchInterval: 60000,
     retry: 2,
   });

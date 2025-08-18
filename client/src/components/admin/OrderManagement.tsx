@@ -53,14 +53,48 @@ export default function OrderManagement() {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
 
+  // API request helper
+  const apiRequest = async (url: string, method: string = 'GET', data?: any) => {
+    const token = localStorage.getItem('adminToken');
+    const options: RequestInit = {
+      method,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      }
+    };
+
+    if (data) {
+      options.body = JSON.stringify(data);
+    }
+
+    const response = await fetch(url, options);
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('API Error:', errorText);
+      // Attempt to parse JSON error first, then fall back to text
+      try {
+        const errorJson = JSON.parse(errorText);
+        throw new Error(errorJson.message || `API Error: ${response.status}`);
+      } catch (e) {
+        throw new Error(`API Error: ${response.status} - ${errorText}`);
+      }
+    }
+
+    return response.json();
+  };
+
+  // Fetch orders data
   const {
-    data: orders,
+    data: orders = [],
     isLoading,
     error,
     refetch,
     isError
   } = useQuery<Order[]>({
-    queryKey: ['/api/orders'],
+    queryKey: ['/api/admin/orders'],
+    queryFn: () => apiRequest('/api/admin/orders'),
     refetchInterval: 30000, // Auto refresh every 30 seconds for live updates
     refetchOnWindowFocus: true,
     refetchOnMount: true,
@@ -73,7 +107,7 @@ export default function OrderManagement() {
 
   const updateOrderMutation = useMutation({
     mutationFn: async ({ orderId, status }: { orderId: string; status: string }) => {
-      return apiRequest(`/api/orders/${orderId}`, 'PATCH', { status });
+      return apiRequest(`/api/admin/orders/${orderId}`, 'PATCH', { status });
     },
     onSuccess: (_, { status }) => {
       toast({
@@ -81,9 +115,9 @@ export default function OrderManagement() {
         description: `অর্ডার স্ট্যাটাস '${getStatusText(status)}' এ আপডেট হয়েছে`,
         duration: 4000,
       });
-      queryClient.invalidateQueries({ queryKey: ['/api/orders'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/orders'] });
       setSelectedOrder(null);
-      
+
       // Trigger a fresh fetch to ensure data is current
       refetch();
     },
@@ -152,15 +186,15 @@ export default function OrderManagement() {
 
   const filteredOrders = orders?.filter(order => {
     const searchLower = searchTerm.toLowerCase();
-    const matchesSearch = !searchTerm || 
+    const matchesSearch = !searchTerm ||
       order.tracking_id.toLowerCase().includes(searchLower) ||
       order.customer_name.toLowerCase().includes(searchLower) ||
       order.phone.includes(searchTerm) ||
       order.district.toLowerCase().includes(searchLower) ||
       order.thana.toLowerCase().includes(searchLower);
-    
+
     const matchesStatus = statusFilter === 'all' || order.status === statusFilter;
-    
+
     return matchesSearch && matchesStatus;
   }) || [];
 
@@ -222,16 +256,16 @@ export default function OrderManagement() {
                 {error?.message || "সার্ভারের সাথে সংযোগে সমস্যা হয়েছে। অনুগ্রহ করে পুনরায় চেষ্টা করুন।"}
               </p>
               <div className="flex justify-center space-x-3">
-                <Button 
-                  onClick={() => refetch()} 
+                <Button
+                  onClick={() => refetch()}
                   variant="outline"
                   className="border-red-300 text-red-700 hover:bg-red-100"
                 >
                   <RefreshCw className="w-4 h-4 mr-2" />
                   পুনরায় চেষ্টা
                 </Button>
-                <Button 
-                  onClick={() => window.location.reload()} 
+                <Button
+                  onClick={() => window.location.reload()}
                   variant="default"
                   className="bg-red-600 hover:bg-red-700"
                 >
@@ -258,9 +292,9 @@ export default function OrderManagement() {
             <Download className="w-4 h-4 mr-2" />
             এক্সপোর্ট
           </Button>
-          <Button 
-            onClick={() => refetch()} 
-            variant="outline" 
+          <Button
+            onClick={() => refetch()}
+            variant="outline"
             size="sm"
             disabled={isLoading}
             className="transition-all duration-200"
@@ -421,7 +455,7 @@ export default function OrderManagement() {
                               অর্ডার বিস্তারিত - {order.tracking_id}
                             </DialogTitle>
                           </DialogHeader>
-                          
+
                           {selectedOrder && (
                             <div className="space-y-6">
                               {/* Customer Info */}
@@ -489,8 +523,8 @@ export default function OrderManagement() {
                                   <div className="space-y-3">
                                     {(() => {
                                       try {
-                                        const items = typeof selectedOrder.items === 'string' 
-                                          ? JSON.parse(selectedOrder.items || '[]') 
+                                        const items = typeof selectedOrder.items === 'string'
+                                          ? JSON.parse(selectedOrder.items || '[]')
                                           : (Array.isArray(selectedOrder.items) ? selectedOrder.items : []);
                                         return items;
                                       } catch (e) {
@@ -540,15 +574,15 @@ export default function OrderManagement() {
                                         </p>
                                       </div>
                                     )}
-                                    
+
                                     {selectedOrder.custom_images && (
                                       <div>
                                         <label className="text-sm font-medium text-gray-600">আপলোড করা ছবি</label>
                                         <div className="mt-2 grid grid-cols-2 md:grid-cols-4 gap-2">
                                           {(() => {
                                             try {
-                                              const images = typeof selectedOrder.custom_images === 'string' 
-                                                ? JSON.parse(selectedOrder.custom_images || '[]') 
+                                              const images = typeof selectedOrder.custom_images === 'string'
+                                                ? JSON.parse(selectedOrder.custom_images || '[]')
                                                 : (Array.isArray(selectedOrder.custom_images) ? selectedOrder.custom_images : []);
                                               return images;
                                             } catch (e) {
@@ -620,7 +654,7 @@ export default function OrderManagement() {
                 >
                   <ChevronLeft className="w-4 h-4" />
                 </Button>
-                
+
                 <div className="flex items-center space-x-1">
                   {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
                     <Button
