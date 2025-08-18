@@ -52,11 +52,11 @@ const ProductCard = ({ product, className = "" }: ProductCardProps) => {
   const handleAddToCart = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    
+
     if (isAddingToCart) return;
-    
+
     setIsAddingToCart(true);
-    
+
     try {
       await addItem({
         id: product.id,
@@ -65,7 +65,7 @@ const ProductCard = ({ product, className = "" }: ProductCardProps) => {
         image_url: product.image_url || "",
         quantity: 1
       });
-      
+
       // Show success toast
       toast({
         title: "কার্টে যোগ হয়েছে!",
@@ -130,7 +130,7 @@ const ProductCard = ({ product, className = "" }: ProductCardProps) => {
                 </div>
               </div>
             )}
-            
+
             {/* Badges */}
             <div className="absolute top-3 left-3 flex flex-col gap-2">
               {product.is_featured && (
@@ -258,7 +258,7 @@ const ProductCard = ({ product, className = "" }: ProductCardProps) => {
             <span className="hidden xs:inline">{isAddingToCart ? 'যোগ করা হচ্ছে...' : 'কার্টে যোগ করুন'}</span>
             <span className="xs:hidden">{isAddingToCart ? 'যোগ...' : 'কার্ট'}</span>
           </Button>
-          
+
           <Link href={`/customize/${product.id}`} className="flex-shrink-0">
             <Button
               variant="outline"

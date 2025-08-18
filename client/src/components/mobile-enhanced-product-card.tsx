@@ -2,7 +2,7 @@ import { useState, memo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Heart, Eye, ShoppingCart, Star, TrendingUp, Sparkles, Settings } from "lucide-react";
+import { Heart, Eye, ShoppingCart, Star, TrendingUp, Sparkles, Settings, Palette } from "lucide-react";
 import { formatPrice } from "@/lib/constants";
 import type { Product } from "@shared/schema";
 

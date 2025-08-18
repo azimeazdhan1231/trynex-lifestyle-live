@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Star, Heart, Eye, Palette } from "lucide-react";
+import { Star, Heart, Eye, Palette, ShoppingCart, Settings } from "lucide-react";
 import { formatPrice } from "@/lib/constants";
 import { useLocation } from "wouter";
 import { useWishlist } from "@/hooks/use-wishlist";
@@ -247,7 +247,7 @@ export default function UnifiedProductCard({
               className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold py-2 sm:py-2.5 px-2 sm:px-4 rounded-lg transition-all duration-300 disabled:opacity-50 text-xs sm:text-sm"
               data-testid={`button-cart-${product.id}`}
             >
-              <ShoppingCart className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+              <ShoppingCart className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-1" />
               <span className="hidden xs:inline">{isOutOfStock ? 'স্টক নেই' : 'কার্টে যোগ করুন'}</span>
               <span className="xs:hidden">{isOutOfStock ? 'নেই' : 'কার্ট'}</span>
             </Button>
@@ -272,7 +272,7 @@ export default function UnifiedProductCard({
             className="w-full border-dashed border-purple-500 text-purple-600 hover:bg-purple-50 py-2 sm:py-2.5 rounded-lg text-xs sm:text-sm"
             data-testid={`button-customize-${product.id}`}
           >
-            <Palette className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+            <Palette className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-1" />
             <span className="hidden xs:inline">কাস্টমাইজ করুন</span>
             <span className="xs:hidden">কাস্টমাইজ</span>
           </Button>
