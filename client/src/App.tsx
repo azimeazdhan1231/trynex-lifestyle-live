@@ -9,7 +9,7 @@ import LoadingSpinner from "@/components/LoadingSpinner";
 import { useAnalytics } from "./hooks/use-analytics";
 import { initGA, loadFacebookPixelFromSettings } from "./lib/analytics";
 import PremiumLiveTracking from "./pages/premium-live-tracking";
-import TrackingPage from "@/pages/TrackingPage";
+import TrackingPage from "./pages/TrackingPage";
 
 // Lazy load all pages for better performance
 const HomePage = lazy(() => import("./pages/HomePage"));
