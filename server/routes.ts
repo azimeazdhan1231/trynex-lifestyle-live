@@ -1,23 +1,39 @@
+
 import type { Express } from "express";
+import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { optimizedStorage } from "./optimized-storage";
 import { setupAuthRoutes } from "./auth-routes";
-import { setupAdminRoutes } from "./admin-routes";
 import express from "express";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import type { Product, Order, Category, Offer, User, CustomOrder } from "@shared/schema";
 import { insertProductSchema, insertOrderSchema } from "@shared/schema";
 
-// JWT Secret for authentication
 const JWT_SECRET = process.env.JWT_SECRET_KEY || process.env.JWT_SECRET || "trynex_secret_key_2025";
 
-export function setupRoutes(app: Express) {
+// Admin authentication middleware
+const authenticateAdmin = (req: any, res: any, next: any) => {
+  const token = req.headers.authorization?.replace('Bearer ', '');
+
+  if (!token) {
+    return res.status(401).json({ error: 'Access token required' });
+  }
+
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET) as any;
+    if (decoded.role !== 'admin') {
+      return res.status(403).json({ error: 'Admin access required' });
+    }
+    req.user = decoded;
+    next();
+  } catch (error) {
+    return res.status(401).json({ error: 'Invalid token' });
+  }
+};
+
+export async function registerRoutes(app: Express): Promise<Server> {
   // Setup authentication routes
   setupAuthRoutes(app);
-  
-  // Setup admin routes
-  setupAdminRoutes(app);
 
   // CORS preflight handler
   app.options('*', (req, res) => {
@@ -30,79 +46,24 @@ export function setupRoutes(app: Express) {
     res.status(204).end();
   });
 
-  // Ultra-fast products endpoint with optimized Supabase connection
+  // Products endpoints
   app.get('/api/products', async (req, res) => {
     try {
-      const startTime = Date.now();
-      
-      // Use optimized storage with caching
-      const products = await optimizedStorage.getProducts();
-      const duration = Date.now() - startTime;
-      
-      res.set({
-        'Cache-Control': 'public, max-age=30', // Short cache for performance
-        'X-Products-Count': products.length.toString(),
-        'X-Data-Source': 'fast-supabase',
-        'X-Response-Time': `${duration}ms`
-      });
-
-      console.log(`✅ Products fetched from Supabase in ${duration}ms - ${products.length} items`);
+      const products = await storage.getProducts();
       res.json(products);
-
     } catch (error) {
-      console.error('❌ Failed to fetch products from Supabase:', error);
-      res.status(500).json({ 
-        message: 'পণ্য লোড করতে সমস্যা হয়েছে',
-        error: error instanceof Error ? error.message : 'Unknown error'
-      });
+      console.error('Failed to fetch products:', error);
+      res.status(500).json({ error: 'Failed to fetch products' });
     }
   });
 
-  // Ultra-fast categories endpoint
-  app.get('/api/categories', async (req, res) => {
-    try {
-      const startTime = Date.now();
-      
-      // Use optimized storage with caching
-      const categories = await optimizedStorage.getCategories();
-      const duration = Date.now() - startTime;
-
-      res.set({
-        'Cache-Control': 'public, max-age=30', // Short cache for performance
-        'X-Categories-Count': categories.length.toString(),
-        'X-Data-Source': 'fast-supabase',
-        'X-Response-Time': `${duration}ms`
-      });
-
-      console.log(`✅ Categories fetched from Supabase in ${duration}ms - ${categories.length} items`);
-      res.json(categories);
-
-    } catch (error) {
-      console.error('❌ Failed to fetch categories from Supabase:', error);
-      res.status(500).json({ 
-        message: 'ক্যাটেগরি লোড করতে সমস্যা হয়েছে',
-        error: error instanceof Error ? error.message : 'Unknown error'
-      });
-    }
-  });
-
-  // Get individual product by ID
   app.get('/api/products/:id', async (req, res) => {
     try {
       const { id } = req.params;
       const product = await storage.getProduct(id);
-
       if (!product) {
         return res.status(404).json({ error: 'Product not found' });
       }
-
-      res.set({
-        'Cache-Control': 'no-cache, no-store, must-revalidate',
-        'Pragma': 'no-cache',
-        'Expires': '0'
-      });
-
-      console.log(`✅ Product fetched: ${id}`);
       res.json(product);
     } catch (error) {
       console.error('Failed to fetch product:', error);
@@ -110,62 +71,18 @@ export function setupRoutes(app: Express) {
     }
   });
 
-  // Get offers
-  app.get('/api/offers', async (req, res) => {
+  // Categories endpoints
+  app.get('/api/categories', async (req, res) => {
     try {
-      const offers = await storage.getOffers();
-      res.json(offers);
+      const categories = await storage.getCategories();
+      res.json(categories);
     } catch (error) {
-      console.error('Failed to fetch offers:', error);
-      res.status(500).json({ error: 'Failed to fetch offers' });
+      console.error('Failed to fetch categories:', error);
+      res.status(500).json({ error: 'Failed to fetch categories' });
     }
   });
 
-  // Settings endpoint
-  app.get('/api/settings', async (req, res) => {
-    try {
-      const settings = await storage.getSettings();
-      const settingsObj: any = {};
-      settings.forEach(setting => {
-        settingsObj[setting.key] = setting.value;
-      });
-
-      res.json(settingsObj);
-    } catch (error) {
-      console.error('❌ Settings error:', error);
-      res.status(500).json({ message: 'Settings could not be loaded' });
-    }
-  });
-
-  // Create order endpoint
-  app.post('/api/orders', async (req, res) => {
-    try {
-      const orderData = insertOrderSchema.parse(req.body);
-      const order = await storage.createOrder(orderData);
-      
-      console.log('✅ Order created:', order.id);
-      res.status(201).json(order);
-    } catch (error) {
-      console.error('Failed to create order:', error);
-      res.status(500).json({ error: 'Failed to create order' });
-    }
-  });
-
-  // Create custom order endpoint
-  app.post('/api/custom-orders', async (req, res) => {
-    try {
-      const customOrderData = req.body;
-      const customOrder = await storage.createCustomOrder(customOrderData);
-      
-      console.log('✅ Custom order created:', customOrder.tracking_id);
-      res.status(201).json(customOrder);
-    } catch (error) {
-      console.error('Failed to create custom order:', error);
-      res.status(500).json({ error: 'Failed to create custom order' });
-    }
-  });
-
-  // Get orders
+  // Orders endpoints
   app.get('/api/orders', async (req, res) => {
     try {
       const orders = await storage.getOrders();
@@ -176,59 +93,138 @@ export function setupRoutes(app: Express) {
     }
   });
 
-  // Get custom orders
-  app.get('/api/custom-orders', async (req, res) => {
+  app.post('/api/orders', async (req, res) => {
     try {
-      const customOrders = await storage.getCustomOrders();
-      res.json(customOrders);
-    } catch (error) {
-      console.error('Failed to fetch custom orders:', error);
-      res.status(500).json({ error: 'Failed to fetch custom orders' });
-    }
-  });
-
-  // AI Chat endpoint (simplified)
-  app.post('/api/ai/chat', async (req, res) => {
-    try {
-      const { message } = req.body;
-
-      if (!message || typeof message !== 'string') {
-        return res.status(400).json({ error: 'বার্তা প্রয়োজন' });
-      }
-
-      // Simple fallback response
-      const response = "আমি একজন AI সহায়ক। আপনি আমাদের প্রোডাক্ট সম্পর্কে জানতে চাইলে বা কোন সাহায্য প্রয়োজন হলে হোয়াটসঅ্যাপে (+8801648534981) যোগাযোগ করুন।";
-
-      res.json({ reply: response });
-    } catch (error) {
-      console.error('AI Chat Error:', error);
-      res.status(500).json({ 
-        error: 'দুঃখিত, আমি এখন উত্তর দিতে পারছি না। পরে আবার চেষ্টা করুন।'
-      });
-    }
-  });
-
-  // Search products
-  app.get('/api/search/products', async (req, res) => {
-    try {
-      const { q: query } = req.query;
+      const orderData = req.body;
+      const trackingId = `TRX${Date.now()}${Math.floor(Math.random() * 10000)}`;
       
-      if (!query || typeof query !== 'string') {
-        return res.status(400).json({ error: 'Search query is required' });
-      }
-
-      const products = await storage.getProducts();
-      const filtered = products.filter(product => 
-        product.name.toLowerCase().includes(query.toLowerCase()) ||
-        (product.description && product.description.toLowerCase().includes(query.toLowerCase())) ||
-        (product.category && product.category.toLowerCase().includes(query.toLowerCase()))
-      );
-
-      res.json(filtered);
+      const order = await storage.createOrder({
+        ...orderData,
+        tracking_id: trackingId
+      });
+      
+      res.status(201).json(order);
     } catch (error) {
-      console.error('Search error:', error);
-      res.status(500).json({ error: 'Search failed' });
+      console.error('Failed to create order:', error);
+      res.status(500).json({ error: 'Failed to create order' });
     }
   });
 
+  // ADMIN ENDPOINTS WITH AUTHENTICATION
+  app.get('/api/admin/products', authenticateAdmin, async (req, res) => {
+    try {
+      const products = await storage.getProducts();
+      res.json(products);
+    } catch (error) {
+      console.error('Failed to fetch admin products:', error);
+      res.status(500).json({ error: 'Failed to fetch products' });
+    }
+  });
+
+  app.post('/api/admin/products', authenticateAdmin, async (req, res) => {
+    try {
+      const productData = insertProductSchema.parse(req.body);
+      const product = await storage.createProduct(productData);
+      res.status(201).json(product);
+    } catch (error) {
+      console.error('Failed to create product:', error);
+      res.status(500).json({ error: 'Failed to create product' });
+    }
+  });
+
+  app.patch('/api/products/:id', authenticateAdmin, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const updateData = req.body;
+      
+      const updatedProduct = await storage.updateProduct(id, updateData);
+      if (!updatedProduct) {
+        return res.status(404).json({ error: 'Product not found' });
+      }
+      
+      res.json(updatedProduct);
+    } catch (error) {
+      console.error('Failed to update product:', error);
+      res.status(500).json({ error: 'Failed to update product' });
+    }
+  });
+
+  app.delete('/api/products/:id', authenticateAdmin, async (req, res) => {
+    try {
+      const { id } = req.params;
+      await storage.deleteProduct(id);
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Failed to delete product:', error);
+      res.status(500).json({ error: 'Failed to delete product' });
+    }
+  });
+
+  app.get('/api/admin/orders', authenticateAdmin, async (req, res) => {
+    try {
+      const orders = await storage.getOrders();
+      res.json(orders);
+    } catch (error) {
+      console.error('Failed to fetch admin orders:', error);
+      res.status(500).json({ error: 'Failed to fetch orders' });
+    }
+  });
+
+  app.patch('/api/orders/:id', authenticateAdmin, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { status } = req.body;
+      
+      const updatedOrder = await storage.updateOrderStatus(id, status);
+      res.json(updatedOrder);
+    } catch (error) {
+      console.error('Failed to update order:', error);
+      res.status(500).json({ error: 'Failed to update order' });
+    }
+  });
+
+  app.get('/api/admin/stats', authenticateAdmin, async (req, res) => {
+    try {
+      const [products, orders] = await Promise.all([
+        storage.getProducts(),
+        storage.getOrders()
+      ]);
+
+      const totalRevenue = orders.reduce((sum, order) => sum + parseFloat(order.total || '0'), 0);
+      const stats = {
+        totalProducts: products.length,
+        totalOrders: orders.length,
+        totalRevenue,
+        pendingOrders: orders.filter(o => o.status === 'pending').length,
+        lowStockProducts: products.filter(p => p.stock < 10).length
+      };
+
+      res.json(stats);
+    } catch (error) {
+      console.error('Failed to fetch stats:', error);
+      res.status(500).json({ error: 'Failed to fetch stats' });
+    }
+  });
+
+  // Settings
+  app.get('/api/settings', async (req, res) => {
+    try {
+      const settings = await storage.getSettings();
+      const settingsObj: any = {};
+      settings.forEach(setting => {
+        settingsObj[setting.key] = setting.value;
+      });
+      res.json(settingsObj);
+    } catch (error) {
+      console.error('Settings error:', error);
+      res.status(500).json({ message: 'Settings could not be loaded' });
+    }
+  });
+
+  // Health check
+  app.get('/api/health', (req, res) => {
+    res.json({ status: 'healthy', timestamp: new Date().toISOString() });
+  });
+
+  return createServer(app);
 }

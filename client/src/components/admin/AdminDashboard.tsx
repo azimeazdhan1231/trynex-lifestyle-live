@@ -70,7 +70,7 @@ export default function AdminDashboard() {
   } = useQuery({
     queryKey: ['/api/admin/stats', refreshKey],
     queryFn: async () => {
-      const token = localStorage.getItem('adminToken');
+      const token = localStorage.getItem('adminToken') || localStorage.getItem('admin_token');
       if (!token) {
         throw new Error('No admin token found');
       }
@@ -96,7 +96,7 @@ export default function AdminDashboard() {
   } = useQuery({
     queryKey: ['/api/admin/orders', refreshKey],
     queryFn: async () => {
-      const token = localStorage.getItem('adminToken');
+      const token = localStorage.getItem('adminToken') || localStorage.getItem('admin_token');
       if (!token) {
         throw new Error('No admin token found');
       }
@@ -121,7 +121,7 @@ export default function AdminDashboard() {
   } = useQuery({
     queryKey: ['/api/admin/products', refreshKey],
     queryFn: async () => {
-      const token = localStorage.getItem('adminToken');
+      const token = localStorage.getItem('adminToken') || localStorage.getItem('admin_token');
       if (!token) {
         throw new Error('No admin token found');
       }
