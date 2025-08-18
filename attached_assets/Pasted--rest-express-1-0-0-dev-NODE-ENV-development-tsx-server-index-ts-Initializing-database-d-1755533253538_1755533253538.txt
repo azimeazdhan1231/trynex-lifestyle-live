@@ -1,0 +1,37 @@
+
+> rest-express@1.0.0 dev
+> NODE_ENV=development tsx server/index.ts
+
+🔧 Initializing database...
+[dotenv@17.2.1] injecting env (0) from .env -- tip: 🔐 prevent committing .env to code: https://dotenvx.com/precommit
+[dotenv@17.2.1] injecting env (0) from .env -- tip: 📡 observe env with Radar: https://dotenvx.com/radar
+4:01:44 PM [express] serving on port 5000
+✅ Database initialization complete
+4:01:56 PM [vite] ✨ new dependencies optimized: react-router-dom
+4:01:56 PM [vite] ✨ optimized dependencies changed. reloading
+4:02:00 PM [express] GET /api/settings 304 in 78ms :: {"site_title":"TryneX Lifestyle","site_descrip…
+🔍 Fetching products from Supabase...
+✅ Products fetched successfully: 32 products
+✅ Products fetched in 889ms - 32 items
+4:02:02 PM [express] GET /api/products 200 in 1117ms :: [{"id":"f7bff648-e0bc-49c5-abb9-3e569145b6f7…
+4:03:05 PM [express] GET /api/settings 304 in 63ms :: {"site_title":"TryneX Lifestyle","site_descrip…
+4:07:19 PM [vite] hmr update /src/App.tsx?v=ayccj-ZuZL0QTgvzN5hWT, /src/index.css?v=ayccj-ZuZL0QTgvzN5hWT
+4:07:21 PM [vite] Internal server error: Failed to resolve import "@/pages/TrackingPage" from "client/src/App.tsx". Does the file exist?
+  Plugin: vite:import-analysis
+  File: /home/runner/workspace/client/src/App.tsx:12:25
+  27 |  import { initGA, loadFacebookPixelFromSettings } from "./lib/analytics";
+  28 |  import PremiumLiveTracking from "./pages/premium-live-tracking";
+  29 |  import TrackingPage from "@/pages/TrackingPage";
+     |                            ^
+  30 |  const HomePage = lazy(_c = () => import("./pages/HomePage"));
+  31 |  _c2 = HomePage;
+      at TransformPluginContext._formatError (/home/runner/workspace/node_modules/vite/dist/node/chunks/dep-C6uTJdX2.js:49258:41)
+      at TransformPluginContext.error (/home/runner/workspace/node_modules/vite/dist/node/chunks/dep-C6uTJdX2.js:49253:16)
+      at normalizeUrl (/home/runner/workspace/node_modules/vite/dist/node/chunks/dep-C6uTJdX2.js:64291:23)
+      at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+      at async <anonymous> (/home/runner/workspace/node_modules/vite/dist/node/chunks/dep-C6uTJdX2.js:64423:39)
+      at async Promise.all (index 14)
+      at async TransformPluginContext.transform (/home/runner/workspace/node_modules/vite/dist/node/chunks/dep-C6uTJdX2.js:64350:7)
+      at async PluginContainer.transform (/home/runner/workspace/node_modules/vite/dist/node/chunks/dep-C6uTJdX2.js:49099:18)
+      at async loadAndTransform (/home/runner/workspace/node_modules/vite/dist/node/chunks/dep-C6uTJdX2.js:51977:27)
+      at async viteTransformMiddleware (/home/runner/workspace/node_modules/vite/dist/node/chunks/dep-C6uTJdX2.js:62105:24)
