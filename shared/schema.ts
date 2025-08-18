@@ -244,8 +244,8 @@ export const customOrders = pgTable('custom_orders', {
 export const insertCustomOrderSchema = createInsertSchema(customOrders).omit({
   id: true,
   tracking_id: true,
-  createdAt: true,
-  updatedAt: true,
+  created_at: true,
+  updated_at: true,
 });
 
 export type CustomOrder = typeof customOrders.$inferSelect;

@@ -76,7 +76,7 @@ export interface IStorage {
   // Settings
   getSettings(): Promise<SiteSettings[]>;
   createSetting(setting: InsertSiteSettings): Promise<SiteSettings>;
-  updateSetting(key: string, value: string): Promise<SiteSettings>;
+  updateSetting(key: string, value: string, description?: string): Promise<SiteSettings>;
 
   // Admins
   getAdminByEmail(email: string): Promise<Admin | undefined>;
@@ -680,6 +680,189 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
+  // PROMO CODE MANAGEMENT METHODS
+  async getPromoCodes(): Promise<PromoCode[]> {
+    try {
+      const result = await this.db.select().from(promoCodes).orderBy(desc(promoCodes.created_at));
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching promo codes:', error);
+      return [];
+    }
+  }
+
+  async createPromoCode(promoCodeData: InsertPromoCode): Promise<PromoCode> {
+    try {
+      const result = await this.db.insert(promoCodes).values(promoCodeData).returning();
+      return result[0];
+    } catch (error) {
+      console.error('❌ Error creating promo code:', error);
+      throw error;
+    }
+  }
+
+  async updatePromoCode(id: string, updates: Partial<PromoCode>): Promise<PromoCode> {
+    try {
+      const result = await this.db.update(promoCodes)
+        .set(updates)
+        .where(eq(promoCodes.id, id))
+        .returning();
+      return result[0];
+    } catch (error) {
+      console.error('❌ Error updating promo code:', error);
+      throw error;
+    }
+  }
+
+  async deletePromoCode(id: string): Promise<void> {
+    try {
+      await this.db.delete(promoCodes).where(eq(promoCodes.id, id));
+    } catch (error) {
+      console.error('❌ Error deleting promo code:', error);
+      throw error;
+    }
+  }
+
+  async validatePromoCode(code: string, orderAmount: number): Promise<{ valid: boolean; discount: number; message: string }> {
+    try {
+      const result = await this.db.select().from(promoCodes)
+        .where(and(
+          eq(promoCodes.code, code),
+          eq(promoCodes.is_active, true)
+        ))
+        .limit(1);
+
+      const promoCode = result[0];
+      
+      if (!promoCode) {
+        return { valid: false, discount: 0, message: 'Invalid promo code' };
+      }
+
+      // Check usage limit
+      if (promoCode.usage_limit && promoCode.usage_count >= promoCode.usage_limit) {
+        return { valid: false, discount: 0, message: 'Promo code usage limit exceeded' };
+      }
+
+      // Check minimum purchase amount
+      const minAmount = parseFloat(promoCode.min_purchase_amount || '0');
+      if (orderAmount < minAmount) {
+        return { valid: false, discount: 0, message: `Minimum purchase amount is ৳${minAmount}` };
+      }
+
+      // Check date validity
+      if (promoCode.start_date && new Date(promoCode.start_date) > new Date()) {
+        return { valid: false, discount: 0, message: 'Promo code not yet active' };
+      }
+
+      if (promoCode.end_date && new Date(promoCode.end_date) < new Date()) {
+        return { valid: false, discount: 0, message: 'Promo code has expired' };
+      }
+
+      // Calculate discount
+      let discount = 0;
+      if (promoCode.discount_type === 'percentage') {
+        discount = (orderAmount * parseFloat(promoCode.discount_value)) / 100;
+        const maxDiscount = parseFloat(promoCode.max_discount_amount || '0');
+        if (maxDiscount > 0 && discount > maxDiscount) {
+          discount = maxDiscount;
+        }
+      } else {
+        discount = parseFloat(promoCode.discount_value);
+      }
+
+      return { valid: true, discount, message: 'Valid promo code' };
+    } catch (error) {
+      console.error('❌ Error validating promo code:', error);
+      return { valid: false, discount: 0, message: 'Error validating promo code' };
+    }
+  }
+
+  // ANALYTICS METHODS
+  async getAnalytics(startDate?: string, endDate?: string, eventType?: string): Promise<Analytics[]> {
+    try {
+      let query = this.db.select().from(analytics);
+      
+      const conditions = [];
+      
+      if (startDate) {
+        conditions.push(gte(analytics.created_at, new Date(startDate)));
+      }
+      
+      if (endDate) {
+        conditions.push(lte(analytics.created_at, new Date(endDate)));
+      }
+      
+      if (eventType) {
+        conditions.push(eq(analytics.event_type, eventType));
+      }
+      
+      if (conditions.length > 0) {
+        query = query.where(and(...conditions));
+      }
+      
+      const result = await query.orderBy(desc(analytics.created_at));
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching analytics:', error);
+      return [];
+    }
+  }
+
+  async createAnalytics(analyticsData: InsertAnalytics): Promise<Analytics> {
+    try {
+      const result = await this.db.insert(analytics).values(analyticsData).returning();
+      return result[0];
+    } catch (error) {
+      console.error('❌ Error creating analytics:', error);
+      throw error;
+    }
+  }
+
+  // SITE SETTINGS METHODS
+  async getSettings(): Promise<SiteSettings[]> {
+    try {
+      const result = await this.db.select().from(siteSettings).orderBy(siteSettings.key);
+      return result;
+    } catch (error) {
+      console.error('❌ Error fetching site settings:', error);
+      return [];
+    }
+  }
+
+  async createSetting(settingData: InsertSiteSettings): Promise<SiteSettings> {
+    try {
+      const result = await this.db.insert(siteSettings).values(settingData).returning();
+      return result[0];
+    } catch (error) {
+      console.error('❌ Error creating site setting:', error);
+      throw error;
+    }
+  }
+
+  async updateSetting(key: string, value: string, description?: string): Promise<SiteSettings> {
+    try {
+      const updateData: any = { value, updated_at: new Date() };
+      if (description) {
+        updateData.description = description;
+      }
+      
+      const result = await this.db.update(siteSettings)
+        .set(updateData)
+        .where(eq(siteSettings.key, key))
+        .returning();
+      
+      if (result.length === 0) {
+        // Create if doesn't exist
+        return this.createSetting({ key, value, description });
+      }
+      
+      return result[0];
+    } catch (error) {
+      console.error('❌ Error updating site setting:', error);
+      throw error;
+    }
+  }
+
   // Admin operations
   async getAdminByEmail(email: string): Promise<Admin | undefined> {
     const result = await this.db.select().from(admins).where(eq(admins.email, email)).limit(1);
@@ -690,7 +873,6 @@ export class DatabaseStorage implements IStorage {
     const result = await this.db.insert(admins).values(admin).returning();
     return result[0];
   }
-
 
 }
 
