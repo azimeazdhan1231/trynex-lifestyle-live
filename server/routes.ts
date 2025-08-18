@@ -108,8 +108,8 @@ class PerformanceCache {
     }
   }
 
-  private async fetchProductsFromDBWithRetry(maxRetries = 3): Promise<any[]> {
-    console.log('🔍 Executing robust products query...');
+  private async fetchProductsFromDBWithRetry(maxRetries = 2): Promise<any[]> {
+    console.log('🔍 Executing ultra-fast products query...');
     const startTime = Date.now();
 
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
@@ -117,38 +117,36 @@ class PerformanceCache {
         const products = await Promise.race([
           storage.getProducts(),
           new Promise((_, reject) => 
-            setTimeout(() => reject(new Error('Database timeout')), 8000)
+            setTimeout(() => reject(new Error('Database timeout')), 5000) // Reduced timeout
           )
         ]) as any[];
 
-        // Validate products data
-        if (!Array.isArray(products)) {
-          throw new Error('Invalid products data structure');
-        }
-
-        // Ensure each product has required fields
-        const validProducts = products.filter(product => 
-          product && 
-          product.id && 
-          product.name && 
-          product.price !== undefined
-        );
-
-        const duration = Date.now() - startTime;
-        console.log(`✅ Products query completed in ${duration}ms - ${validProducts.length} valid items (attempt ${attempt})`);
-
-        return validProducts;
-      } catch (error) {
-        console.error(`❌ Products query failed (attempt ${attempt}/${maxRetries}):`, error);
-
-        if (attempt === maxRetries) {
-          console.error('❌ All retry attempts failed, returning empty array');
+        // Fast validation with early return
+        if (!Array.isArray(products) || products.length === 0) {
+          console.log('⚠️ No products found or invalid structure');
           return [];
         }
 
-        // Wait before retry with exponential backoff
-        const delay = Math.min(1000 * Math.pow(2, attempt - 1), 5000);
-        console.log(`⏳ Retrying in ${delay}ms...`);
+        // Lightweight validation - only check essential fields
+        const validProducts = products.filter(product => 
+          product?.id && product?.name && product?.price !== undefined
+        );
+
+        const duration = Date.now() - startTime;
+        console.log(`✅ Ultra-fast products query completed in ${duration}ms - ${validProducts.length} items (attempt ${attempt})`);
+
+        return validProducts;
+      } catch (error) {
+        console.error(`❌ Fast query failed (attempt ${attempt}/${maxRetries}):`, error);
+
+        if (attempt === maxRetries) {
+          console.log('❌ Falling back to empty array for performance');
+          return [];
+        }
+
+        // Faster retry with reduced delay
+        const delay = Math.min(500 * attempt, 2000);
+        console.log(`⏳ Quick retry in ${delay}ms...`);
         await new Promise(resolve => setTimeout(resolve, delay));
       }
     }

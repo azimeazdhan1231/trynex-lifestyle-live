@@ -138,12 +138,31 @@ export class DatabaseStorage implements IStorage {
     }
 
     const startTime = Date.now();
-    const result = await this.db.select().from(products).orderBy(desc(products.created_at));
+    
+    // Ultra-optimized query with specific field selection and limit
+    const result = await this.db
+      .select({
+        id: products.id,
+        name: products.name,
+        price: products.price,
+        image_url: products.image_url,
+        category: products.category,
+        stock: products.stock,
+        description: products.description,
+        is_featured: products.is_featured,
+        is_latest: products.is_latest,
+        is_best_selling: products.is_best_selling,
+        created_at: products.created_at
+      })
+      .from(products)
+      .orderBy(desc(products.created_at))
+      .limit(200); // Reasonable limit for performance
+    
     const endTime = Date.now();
 
-    // Aggressive caching for 15 minutes
-    cache.set(cacheKey, result, 900);
-    console.log(`⚡ Products fetched in ${endTime - startTime}ms - ${result.length} items`);
+    // Ultra-aggressive caching for 30 minutes for better performance
+    cache.set(cacheKey, result, 1800);
+    console.log(`⚡ Ultra-fast products fetched in ${endTime - startTime}ms - ${result.length} items`);
     return result;
   }
 

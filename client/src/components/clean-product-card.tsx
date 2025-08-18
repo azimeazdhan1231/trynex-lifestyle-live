@@ -162,10 +162,10 @@ const CleanProductCard = memo(function CleanProductCard({
                   onClick={handleAddToCart}
                   disabled={isOutOfStock}
                   size="sm"
-                  className="px-4 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600"
+                  className="px-3 sm:px-4 h-8 sm:h-9 text-xs sm:text-sm bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 disabled:opacity-50 disabled:cursor-not-allowed"
                   data-testid="button-add-to-cart"
                 >
-                  <ShoppingCart className="w-4 h-4 mr-1" />
+                  <ShoppingCart className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
                   কার্টে যোগ করুন
                 </Button>
               </div>
@@ -279,10 +279,10 @@ const CleanProductCard = memo(function CleanProductCard({
               <Button
                 onClick={handleAddToCart}
                 disabled={isOutOfStock}
-                className="w-full h-11 font-medium bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 transition-colors"
+                className="w-full h-10 sm:h-11 font-medium text-xs sm:text-sm bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 data-testid="button-add-to-cart"
               >
-                <ShoppingCart className="w-4 h-4 mr-2" />
+                <ShoppingCart className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
                 {isOutOfStock ? 'স্টকে নেই' : 'কার্টে যোগ করুন'}
               </Button>
             </div>

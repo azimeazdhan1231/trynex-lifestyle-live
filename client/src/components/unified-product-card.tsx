@@ -43,6 +43,29 @@ export default function UnifiedProductCard({
     onCustomize(product);
   };
 
+  const handleAddToCart = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (product.stock <= 0) {
+      toast({
+        title: "দুঃখিত, এই পণ্যটি স্টকে নেই",
+        description: product.name,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (onAddToCart) {
+      onAddToCart(product);
+    }
+    
+    toast({
+      title: "পণ্য কার্টে যোগ করা হয়েছে",
+      description: product.name,
+    });
+  };
+
   const handleToggleWishlist = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -214,28 +237,30 @@ export default function UnifiedProductCard({
           {/* Spacer to push buttons to bottom */}
           <div className="flex-1"></div>
 
-          {/* Action Buttons - Fixed at bottom */}
+          {/* Action Buttons - Fixed at bottom with responsive sizing */}
           <div className="space-y-2 mt-auto">
+            {/* Add to Cart Button - Primary action */}
+            <Button
+              onClick={handleAddToCart}
+              disabled={product.stock <= 0}
+              className="w-full h-10 sm:h-9 transition-all duration-300 text-xs sm:text-sm mobile-transition bg-gradient-to-r from-orange-500 to-red-500 text-white hover:from-orange-600 hover:to-red-600 disabled:opacity-50 disabled:cursor-not-allowed"
+              size="sm"
+              data-testid={`button-add-to-cart-${product.id}`}
+            >
+              <svg className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-1.1 5H18"/>
+              </svg>
+              {product.stock <= 0 ? 'স্টকে নেই' : 'কার্টে যোগ করুন'}
+            </Button>
+            
             <Button
               onClick={handleCustomize}
-              className="w-full h-9 transition-all duration-300 text-sm mobile-transition bg-gradient-to-r from-orange-500 to-red-500 text-white hover:from-orange-600 hover:to-red-600"
+              className="w-full h-10 sm:h-9 transition-all duration-300 text-xs sm:text-sm mobile-transition bg-gradient-to-r from-blue-500 to-purple-500 text-white hover:from-blue-600 hover:to-purple-600"
               size="sm"
               data-testid={`button-customize-${product.id}`}
             >
-              <Palette className="w-4 h-4 mr-2" />
+              <Palette className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
               কাস্টমাইজ করুন
-            </Button>
-            
-            {/* View Details Button */}
-            <Button
-              onClick={handleViewProduct}
-              variant="outline"
-              size="sm"
-              className="w-full h-9 mobile-transition"
-              data-testid={`button-view-${product.id}`}
-            >
-              <Eye className="w-4 h-4 mr-1" />
-              বিস্তারিত দেখুন
             </Button>
           </div>
         </CardContent>

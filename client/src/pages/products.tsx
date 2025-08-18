@@ -7,9 +7,12 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Search, Filter, Grid3X3, Star, Eye, Palette, Settings, ShoppingCart } from "lucide-react";
+import EnhancedSearchBar from "@/components/enhanced-search-bar";
+import { useCart } from "@/hooks/use-cart";
 import { useToast } from "@/hooks/use-toast";
 import MobileOptimizedLayout from "@/components/mobile-optimized-layout";
 import UnifiedProductCard from "@/components/unified-product-card";
+import OptimizedProductCard from "@/components/optimized-product-cards";
 import UltraDynamicProductModal from "@/components/ultra-dynamic-product-modal";
 import SimpleCustomizeModal from "@/components/simple-customize-modal";
 import CustomOrderSuccessModal from "@/components/CustomOrderSuccessModal";
@@ -63,6 +66,7 @@ export default function ProductsPage() {
   const [isCustomizeModalOpen, setIsCustomizeModalOpen] = useState(false);
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
   const [displayLimit, setDisplayLimit] = useState(20); // Start with 20 products
+  const [liveSearchResults, setLiveSearchResults] = useState<Product[]>([]);
   const [orderSuccess, setOrderSuccess] = useState<{
     trackingId: string;
     customerName: string;
@@ -85,27 +89,50 @@ export default function ProductsPage() {
     }
   }, [selectedCategory, sortOption]);
 
-  // Fetch products with enhanced performance optimization
+  // Fetch products with ultra-fast performance optimization
   const { data: products = [], isLoading, error, refetch } = useQuery<Product[]>({
     queryKey: ["/api/products"],
-    staleTime: 1000 * 60 * 2, // 2 minutes for faster updates
-    gcTime: 1000 * 60 * 15, // 15 minutes cache
+    staleTime: 1000 * 60 * 5, // 5 minutes - increased for better performance
+    gcTime: 1000 * 60 * 30, // 30 minutes cache - increased
     refetchOnWindowFocus: false,
-    refetchOnMount: true,
-    retry: 2,
-    retryDelay: (attemptIndex) => Math.min(1000 * 1.5 ** attemptIndex, 10000),
+    refetchOnMount: false, // Disable to use cache first
+    retry: 1, // Reduce retries for faster response
+    retryDelay: 1000, // Faster retry
     refetchOnReconnect: true,
+    networkMode: 'online', // Only fetch when online
   });
 
-  // Filter and sort products
-  const filteredProducts = useMemo(() => {
-    let filtered = [...products];
+  // Live search functionality with optimized debouncing
+  const performLiveSearch = useCallback((query: string) => {
+    if (!query.trim()) {
+      setLiveSearchResults([]);
+      return;
+    }
 
-    // Filter by search
-    if (searchTerm) {
+    // Fast client-side filtering for instant results
+    const filtered = products.filter(product => {
+      const searchLower = query.toLowerCase();
+      return (
+        product.name.toLowerCase().includes(searchLower) ||
+        (product.description || '').toLowerCase().includes(searchLower) ||
+        (product.category || '').toLowerCase().includes(searchLower)
+      );
+    });
+
+    setLiveSearchResults(filtered);
+  }, [products]);
+
+  // Filter and sort products with live search integration
+  const filteredProducts = useMemo(() => {
+    // Use live search results if search is active, otherwise use all products
+    let filtered = searchTerm && liveSearchResults.length >= 0 ? liveSearchResults : [...products];
+
+    // Additional filtering by search term (for edge cases)
+    if (searchTerm && liveSearchResults.length === 0) {
       filtered = filtered.filter(product =>
         product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (product.description || '').toLowerCase().includes(searchTerm.toLowerCase())
+        (product.description || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (product.category || '').toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 
@@ -149,7 +176,7 @@ export default function ProductsPage() {
     });
 
     return filtered;
-  }, [products, searchTerm, selectedCategory, sortOption]);
+  }, [products, searchTerm, liveSearchResults, selectedCategory, sortOption]);
 
   // Products to display (with pagination)
   const displayedProducts = filteredProducts.slice(0, displayLimit);
@@ -168,15 +195,32 @@ export default function ProductsPage() {
     setIsCustomizeModalOpen(true);
   };
 
-  // Handle add to cart - placeholder
+  // Get cart functionality
+  const { addItem } = useCart();
+
+  // Handle add to cart with real functionality
   const handleAddToCart = (product: Product) => {
-    console.log("Add to cart for:", product.name);
+    if (product.stock <= 0) {
+      toast({
+        title: "দুঃখিত, এই পণ্যটি স্টকে নেই",
+        description: product.name,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    addItem({
+      id: product.id,
+      name: product.name,
+      price: parseFloat(product.price),
+      quantity: 1,
+      image_url: product.image_url || undefined,
+    });
+
     toast({
       title: "পণ্য কার্টে যোগ করা হয়েছে",
       description: `${product.name} আপনার কার্টে যোগ করা হয়েছে।`,
-      variant: "success",
     });
-    // This would typically involve updating a cart state or calling a cart API
   };
 
   // Handle order placed successfully
@@ -255,14 +299,15 @@ export default function ProductsPage() {
         {/* Filters and Search - Mobile First */}
         <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6 mb-8">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-            {/* Search - Mobile Optimized */}
+            {/* Enhanced Search - YouTube-style Live Search */}
             <div className="relative sm:col-span-2 lg:col-span-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-              <Input
+              <EnhancedSearchBar
+                onSearch={(query) => {
+                  setSearchTerm(query);
+                  performLiveSearch(query);
+                }}
+                initialQuery={searchTerm}
                 placeholder="পণ্য খুঁজুন..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-11 h-12 text-base border-2 focus:border-blue-500 rounded-xl"
               />
             </div>
 
@@ -347,95 +392,14 @@ export default function ProductsPage() {
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7 gap-4 sm:gap-6 auto-rows-fr items-stretch">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 sm:gap-6">
               {displayedProducts.map((product) => (
-                <Card 
+                <OptimizedProductCard
                   key={product.id}
-                  className="group relative bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-xl hover:border-green-200 transition-all duration-300 overflow-hidden transform hover:scale-[1.02]"
-                  onClick={() => handleViewProduct(product)}
-                >
-                  <div className="relative aspect-square overflow-hidden bg-gray-50">
-                    <img
-                      src={product.image_url || '/placeholder.jpg'}
-                      alt={product.name}
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                      loading="lazy"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-
-                    {/* Hover overlay with quick actions */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-end justify-center pb-4">
-                        <div className="flex gap-2 w-full px-4">
-                          <Button
-                            size="sm"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleCustomize(product);
-                            }}
-                            className="flex-1 bg-white/95 backdrop-blur-sm text-gray-900 hover:bg-white shadow-lg transform translate-y-4 group-hover:translate-y-0 transition-all duration-300 delay-75"
-                          >
-                            <Settings className="w-4 h-4 mr-1" />
-                            কাস্টমাইজ
-                          </Button>
-                          <Button
-                            size="sm"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleAddToCart(product);
-                            }}
-                            className="flex-1 bg-green-600 hover:bg-green-700 text-white shadow-lg transform translate-y-4 group-hover:translate-y-0 transition-all duration-300 delay-100"
-                          >
-                            <ShoppingCart className="w-4 h-4 mr-1" />
-                            কার্ট
-                          </Button>
-                        </div>
-                      </div>
-                  </div>
-
-                  <div className="p-4">
-                    <h3 className="font-semibold text-gray-900 text-lg mb-2 line-clamp-2 group-hover:text-green-600 transition-colors">
-                      {product.name}
-                    </h3>
-
-                    <div className="flex items-center justify-between mb-4">
-                      <div>
-                        <span className="text-xl font-bold text-gray-900">
-                          {formatPrice(Number(product.price))}
-                        </span>
-                      </div>
-                      <div className="text-sm text-gray-500">
-                        স্টক: <span className={Number(product.stock) < 5 ? 'text-orange-500 font-medium' : ''}>{product.stock}</span>
-                      </div>
-                    </div>
-
-                    <div className="flex gap-2">
-                      <Button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleViewProduct(product);
-                        }}
-                        variant="outline"
-                        size="sm"
-                        className="flex-1 h-9"
-                      >
-                        <Eye className="w-4 h-4 mr-1" />
-                        দেখুন
-                      </Button>
-
-                      <Button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleCustomize(product);
-                        }}
-                        size="sm"
-                        className="flex-1 h-9 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600"
-                      >
-                        <Palette className="w-4 h-4 mr-1" />
-                        কাস্টমাইজ
-                      </Button>
-                    </div>
-                  </div>
-                </Card>
+                  product={product}
+                  onViewDetails={handleViewProduct}
+                  onCustomize={handleCustomize}
+                />
               ))}
             </div>
 
@@ -463,10 +427,6 @@ export default function ProductsPage() {
             )}
           </>
         )}
-            </ProgressiveLoader>
-          </PerformanceMonitor>
-        </PerformanceErrorBoundary>
-
 
       </div>
 
