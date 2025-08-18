@@ -71,6 +71,9 @@ export default function AdminDashboard() {
     queryKey: ['/api/admin/stats', refreshKey],
     queryFn: async () => {
       const token = localStorage.getItem('adminToken');
+      if (!token) {
+        throw new Error('No admin token found');
+      }
       const response = await fetch('/api/admin/stats', {
         headers: {
           'Authorization': `Bearer ${token}`
@@ -94,6 +97,9 @@ export default function AdminDashboard() {
     queryKey: ['/api/admin/orders', refreshKey],
     queryFn: async () => {
       const token = localStorage.getItem('adminToken');
+      if (!token) {
+        throw new Error('No admin token found');
+      }
       const response = await fetch('/api/admin/orders', {
         headers: {
           'Authorization': `Bearer ${token}`
@@ -116,6 +122,9 @@ export default function AdminDashboard() {
     queryKey: ['/api/admin/products', refreshKey],
     queryFn: async () => {
       const token = localStorage.getItem('adminToken');
+      if (!token) {
+        throw new Error('No admin token found');
+      }
       const response = await fetch('/api/admin/products', {
         headers: {
           'Authorization': `Bearer ${token}`

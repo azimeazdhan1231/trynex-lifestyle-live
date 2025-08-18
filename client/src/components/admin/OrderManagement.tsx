@@ -56,6 +56,10 @@ export default function OrderManagement() {
   // API request helper
   const apiRequest = async (url: string, method: string = 'GET', data?: any) => {
     const token = localStorage.getItem('adminToken');
+    if (!token) {
+      throw new Error('No admin token found');
+    }
+
     const options: RequestInit = {
       method,
       headers: {
@@ -71,12 +75,19 @@ export default function OrderManagement() {
     const response = await fetch(url, options);
 
     if (!response.ok) {
+      if (response.status === 401) {
+        localStorage.removeItem('adminToken');
+        localStorage.removeItem('adminData');
+        window.location.href = '/admin';
+        throw new Error('Authentication expired');
+      }
+
       const errorText = await response.text();
       console.error('API Error:', errorText);
-      // Attempt to parse JSON error first, then fall back to text
+      
       try {
         const errorJson = JSON.parse(errorText);
-        throw new Error(errorJson.message || `API Error: ${response.status}`);
+        throw new Error(errorJson.error || errorJson.message || `API Error: ${response.status}`);
       } catch (e) {
         throw new Error(`API Error: ${response.status} - ${errorText}`);
       }
@@ -107,7 +118,7 @@ export default function OrderManagement() {
 
   const updateOrderMutation = useMutation({
     mutationFn: async ({ orderId, status }: { orderId: string; status: string }) => {
-      return apiRequest(`/api/admin/orders/${orderId}`, 'PATCH', { status });
+      return apiRequest(`/api/admin/orders/${orderId}/status`, 'PUT', { status });
     },
     onSuccess: (_, { status }) => {
       toast({
