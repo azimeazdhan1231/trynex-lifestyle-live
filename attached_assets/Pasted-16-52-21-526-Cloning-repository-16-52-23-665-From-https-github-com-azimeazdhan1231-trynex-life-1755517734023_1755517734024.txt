@@ -1,0 +1,73 @@
+16:52:21.526	Cloning repository...
+16:52:23.665	From https://github.com/azimeazdhan1231/trynex-lifestyle-live
+16:52:23.665	 * branch            7067c4d32ad1527baab7aeb3a42337109b1e7618 -> FETCH_HEAD
+16:52:23.665	
+16:52:23.876	HEAD is now at 7067c4d mainaayuaaa
+16:52:23.877	
+16:52:23.955	
+16:52:23.955	Using v2 root directory strategy
+16:52:23.975	Success: Finished cloning repository files
+16:52:25.631	Checking for configuration in a Wrangler configuration file (BETA)
+16:52:25.631	
+16:52:26.756	No wrangler.toml file found. Continuing.
+16:52:26.833	Detected the following tools from environment: nodejs@20.19.2, npm@10.9.2
+16:52:26.834	Installing nodejs 20.19.2
+16:52:27.981	Trying to update node-build... ok
+16:52:28.079	To follow progress, use 'tail -f /tmp/node-build.20250818105228.494.log' or pass --verbose
+16:52:28.172	Downloading node-v20.19.2-linux-x64.tar.gz...
+16:52:28.420	-> https://nodejs.org/dist/v20.19.2/node-v20.19.2-linux-x64.tar.gz
+16:52:30.011	
+16:52:30.011	WARNING: node-v20.19.2-linux-x64 is in LTS Maintenance mode and nearing its end of life.
+16:52:30.011	It only receives *critical* security updates, *critical* bug fixes and documentation updates.
+16:52:30.012	
+16:52:30.012	Installing node-v20.19.2-linux-x64...
+16:52:30.413	Installed node-v20.19.2-linux-x64 to /opt/buildhome/.asdf/installs/nodejs/20.19.2
+16:52:30.413	
+16:52:31.416	Installing project dependencies: npm clean-install --progress=false
+16:52:35.727	npm warn deprecated @esbuild-kit/esm-loader@2.6.5: Merged into tsx: https://tsx.is
+16:52:35.782	npm warn deprecated @esbuild-kit/core-utils@3.3.2: Merged into tsx: https://tsx.is
+16:52:41.087	
+16:52:41.088	added 546 packages, and audited 547 packages in 9s
+16:52:41.088	
+16:52:41.089	72 packages are looking for funding
+16:52:41.089	  run `npm fund` for details
+16:52:41.122	
+16:52:41.122	5 moderate severity vulnerabilities
+16:52:41.122	
+16:52:41.122	To address all issues (including breaking changes), run:
+16:52:41.123	  npm audit fix --force
+16:52:41.123	
+16:52:41.123	Run `npm audit` for details.
+16:52:41.143	Executing user command: npm ci && npm run build && ls -la dist/ && ls -la dist/public/ && echo "Build completed successfully"
+16:52:46.944	npm warn deprecated @esbuild-kit/esm-loader@2.6.5: Merged into tsx: https://tsx.is
+16:52:47.033	npm warn deprecated @esbuild-kit/core-utils@3.3.2: Merged into tsx: https://tsx.is
+16:52:50.152	
+16:52:50.152	added 546 packages, and audited 547 packages in 9s
+16:52:50.152	
+16:52:50.152	72 packages are looking for funding
+16:52:50.153	  run `npm fund` for details
+16:52:50.184	
+16:52:50.185	5 moderate severity vulnerabilities
+16:52:50.185	
+16:52:50.185	To address all issues (including breaking changes), run:
+16:52:50.185	  npm audit fix --force
+16:52:50.185	
+16:52:50.185	Run `npm audit` for details.
+16:52:50.600	
+16:52:50.600	> rest-express@1.0.0 build
+16:52:50.601	> vite build && esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist
+16:52:50.601	
+16:52:50.852	vite v5.4.19 building for production...
+16:52:50.904	transforming...
+16:52:54.426	✓ 1139 modules transformed.
+16:52:54.429	x Build failed in 3.55s
+16:52:54.430	error during build:
+16:52:54.430	Could not resolve "./Header" from "client/src/components/Layout.tsx"
+16:52:54.430	file: /opt/buildhome/repo/client/src/components/Layout.tsx
+16:52:54.431	    at getRollupError (file:///opt/buildhome/repo/node_modules/rollup/dist/es/shared/parseAst.js:401:41)
+16:52:54.431	    at error (file:///opt/buildhome/repo/node_modules/rollup/dist/es/shared/parseAst.js:397:42)
+16:52:54.431	    at ModuleLoader.handleInvalidResolvedId (file:///opt/buildhome/repo/node_modules/rollup/dist/es/shared/node-entry.js:21490:24)
+16:52:54.431	    at file:///opt/buildhome/repo/node_modules/rollup/dist/es/shared/node-entry.js:21450:26
+16:52:54.463	Failed: Error while executing user command. Exited with error code: 1
+16:52:54.472	Failed: build command exited with code: 1
+16:52:55.458	Failed: error occurred while running build command

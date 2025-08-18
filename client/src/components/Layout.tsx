@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import Header from "./Header";
-import Footer from "./Footer";
-import MobileNavigation from "./MobileNavigation";
-import FloatingActionButton from "./FloatingActionButton";
+import Header from "@/components/Header";
+import Footer from "@/components/Footer";
+import MobileNavigation from "@/components/MobileNavigation";
+import FloatingActionButton from "@/components/FloatingActionButton";
 import { Button } from "@/components/ui/button";
 import { ArrowUp } from "lucide-react";
 
