@@ -17,52 +17,95 @@ import {
   Filter, Download, Upload, RefreshCw, Bell, Mail, Phone, MapPin, Calendar,
   Target, Zap, Award, Activity, PieChart, LineChart, FileText, Image,
   Shield, Globe, CreditCard, Truck, Gift, Tag, Percent, Megaphone,
-  Database, RotateCcw, Save, X, Check, Home, LogOut
+  Database, RotateCcw, Save, X, Check, Home, LogOut, Menu, ChevronDown
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { apiRequest } from '@/lib/queryClient';
 
-// Enhanced interfaces for comprehensive data management
-interface ComprehensiveAdminStats {
-  // Basic counts
+// Form validation schemas
+const productSchema = z.object({
+  name: z.string().min(1, 'পণ্যের নাম প্রয়োজন'),
+  price: z.string().min(1, 'দাম প্রয়োজন'),
+  category: z.string().min(1, 'ক্যাটেগরি প্রয়োজন'),
+  stock: z.number().min(0, 'স্টক ০ বা তার বেশি হতে হবে'),
+  description: z.string().optional(),
+  image_url: z.string().optional(),
+  is_featured: z.boolean().default(false),
+  is_latest: z.boolean().default(false),
+  is_best_selling: z.boolean().default(false),
+});
+
+const categorySchema = z.object({
+  name: z.string().min(1, 'ইংরেজি নাম প্রয়োজন'),
+  name_bengali: z.string().min(1, 'বাংলা নাম প্রয়োজন'),
+  description: z.string().optional(),
+  image_url: z.string().optional(),
+  is_active: z.boolean().default(true),
+  sort_order: z.number().default(0),
+});
+
+const offerSchema = z.object({
+  title: z.string().min(1, 'অফারের শিরোনাম প্রয়োজন'),
+  description: z.string().optional(),
+  image_url: z.string().optional(),
+  discount_percentage: z.number().min(0).max(100).optional(),
+  discount_amount: z.string().optional(),
+  min_purchase_amount: z.string().optional(),
+  max_discount_amount: z.string().optional(),
+  button_text: z.string().default('অর্ডার করুন'),
+  button_link: z.string().default('/products'),
+  is_popup: z.boolean().default(false),
+  popup_delay: z.number().default(3000),
+  start_date: z.string().optional(),
+  end_date: z.string().optional(),
+  terms_conditions: z.string().optional(),
+  active: z.boolean().default(true),
+});
+
+const promoCodeSchema = z.object({
+  code: z.string().min(1, 'প্রোমো কোড প্রয়োজন'),
+  description: z.string().optional(),
+  discount_type: z.enum(['percentage', 'fixed']),
+  discount_value: z.string().min(1, 'ছাড়ের পরিমাণ প্রয়োজন'),
+  min_purchase_amount: z.string().optional(),
+  max_discount_amount: z.string().optional(),
+  usage_limit: z.number().optional(),
+  start_date: z.string().optional(),
+  end_date: z.string().optional(),
+  is_active: z.boolean().default(true),
+});
+
+// Type definitions
+interface AdminStats {
   totalProducts: number;
   totalOrders: number;
   totalCustomOrders: number;
   totalCategories: number;
   totalPromoCodes: number;
   totalCustomers: number;
-  
-  // Order status breakdown
   pendingOrders: number;
   processingOrders: number;
   shippedOrders: number;
   deliveredOrders: number;
   completedOrders: number;
   cancelledOrders: number;
-  
-  // Revenue analytics
   totalRevenue: number;
   weeklyRevenue: number;
   averageOrderValue: number;
-  
-  // Growth metrics
   newOrdersThisWeek: number;
   revenueGrowth: string;
-  
-  // Product insights
   featuredProducts: number;
   latestProducts: number;
   bestSellingProducts: number;
   lowStockProducts: number;
-  
-  // Active promotions
   activeOffers: number;
   activePromoCodes: number;
-  
-  // Category popularity
   topCategories: Array<{ name: string; count: number }>;
-  
-  // Recent activity
   recentOrders: Array<any>;
   recentCustomOrders: Array<any>;
 }
@@ -202,7 +245,7 @@ export default function ComprehensiveAdminPanel() {
   };
 
   // Data fetching queries
-  const { data: stats, isLoading: statsLoading } = useQuery<ComprehensiveAdminStats>({
+  const { data: stats, isLoading: statsLoading } = useQuery<AdminStats>({
     queryKey: ['/api/admin/stats'],
     meta: authHeaders
   });
@@ -507,7 +550,7 @@ export default function ComprehensiveAdminPanel() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3">
-                    {stats?.topCategories.map((category, index) => (
+                    {stats?.topCategories.map((category: any, index: number) => (
                       <div key={index} className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <Badge className="bg-blue-600/20 text-blue-300">#{index + 1}</Badge>
@@ -531,7 +574,7 @@ export default function ComprehensiveAdminPanel() {
                 <CardContent>
                   <ScrollArea className="h-64">
                     <div className="space-y-3">
-                      {stats?.recentOrders.slice(0, 8).map((order) => (
+                      {stats?.recentOrders.slice(0, 8).map((order: any) => (
                         <div key={order.id} className="flex items-center justify-between p-3 bg-white/5 rounded-lg">
                           <div>
                             <p className="text-white font-medium">{order.customer_name}</p>

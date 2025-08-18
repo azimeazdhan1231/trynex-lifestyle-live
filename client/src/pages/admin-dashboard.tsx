@@ -1,6 +1,6 @@
 import React from 'react';
-import ComprehensiveAdminPanel from '@/components/ComprehensiveAdminPanel';
+import FullyFunctionalAdminPanel from '@/components/FullyFunctionalAdminPanel';
 
 export default function AdminDashboard() {
-  return <ComprehensiveAdminPanel />;
+  return <FullyFunctionalAdminPanel />;
 }
