@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -91,9 +91,9 @@ export default function UltraResponsiveCartModal({
               <DialogTitle className={cn("text-lg font-bold text-gray-900", isMobile ? "text-base" : "text-xl")}>
                 আপনার কার্ট
               </DialogTitle>
-              <p className={cn("text-gray-600", isMobile ? "text-xs" : "text-sm")}>
+              <DialogDescription className={cn("text-gray-600", isMobile ? "text-xs" : "text-sm")}>
                 {items.length} টি পণ্য
-              </p>
+              </DialogDescription>
             </div>
           </div>
           <Button
