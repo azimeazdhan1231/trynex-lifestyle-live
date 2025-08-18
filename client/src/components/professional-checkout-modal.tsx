@@ -9,7 +9,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
-import { 
+import {
   ArrowLeft,
   ArrowRight,
   CheckCircle,
@@ -23,6 +23,8 @@ import {
   ShieldCheck
 } from "lucide-react";
 import { formatPrice } from "@/lib/constants";
+import EnhancedOrderSuccessModal from "./enhanced-order-success-modal";
+
 
 interface CheckoutItem {
   id: string;
@@ -30,6 +32,7 @@ interface CheckoutItem {
   price: number;
   quantity: number;
   image_url?: string;
+  customization?: any;
 }
 
 interface ProfessionalCheckoutModalProps {
@@ -40,18 +43,19 @@ interface ProfessionalCheckoutModalProps {
   onOrderComplete: () => void;
 }
 
-export default function ProfessionalCheckoutModal({ 
-  isOpen, 
-  onClose, 
-  cartItems, 
+export default function ProfessionalCheckoutModal({
+  isOpen,
+  onClose,
+  cartItems,
   totalAmount,
-  onOrderComplete 
+  onOrderComplete
 }: ProfessionalCheckoutModalProps) {
   const { toast } = useToast();
   const [currentStep, setCurrentStep] = useState<'summary' | 'details' | 'success'>('summary');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [orderResult, setOrderResult] = useState<{ order_id: string; tracking_id?: string } | null>(null);
-  
+  const [orderData, setOrderData] = useState<any>(null);
+
   // Form data
   const [formData, setFormData] = useState({
     name: '',
@@ -87,15 +91,25 @@ export default function ProfessionalCheckoutModal({
     }
 
     setIsSubmitting(true);
-    
+
     try {
+      // Generate unique tracking ID
+      const generateTrackingId = () => {
+        const timestamp = Date.now();
+        const randomStr = Math.random().toString(36).substr(2, 8).toUpperCase();
+        return `TRK${timestamp}${randomStr}`;
+      };
+
+      const trackingId = generateTrackingId();
+
       // Create order object
-      const orderData = {
+      const orderPayload = {
         customer_name: formData.name,
         phone: formData.phone,
         district: formData.district,
         thana: formData.upazila || formData.district,
         address: formData.address,
+        tracking_id: trackingId,
         payment_info: {
           method: formData.paymentMethod,
           type: formData.deliveryType
@@ -127,19 +141,35 @@ export default function ProfessionalCheckoutModal({
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify(orderData)
+        body: JSON.stringify(orderPayload)
       });
 
       if (response.ok) {
         const result = await response.json();
+        const successOrderData = {
+          tracking_id: trackingId,
+          customer_name: formData.name,
+          phone: formData.phone,
+          total_amount: totalAmount,
+          items: cartItems,
+          address: formData.address,
+          district: formData.district,
+          thana: formData.upazila || formData.district,
+          payment_info: {
+            method: formData.paymentMethod,
+            type: formData.deliveryType
+          },
+          estimated_delivery: "৩-৫ কার্যদিবস"
+        };
+        setOrderData(successOrderData);
         setOrderResult({
-          order_id: result.order_id || result.id,
-          tracking_id: result.tracking_id || result.order_id || result.id
+          order_id: result.order_id || result.id || trackingId,
+          tracking_id: trackingId
         });
         setCurrentStep('success');
         toast({
           title: "অর্ডার সফল হয়েছে",
-          description: `আপনার অর্ডার আইডি: ${result.order_id || result.id}`,
+          description: `আপনার অর্ডার আইডি: ${result.order_id || result.id || trackingId}`,
         });
       } else {
         throw new Error('Order submission failed');
@@ -195,7 +225,7 @@ export default function ProfessionalCheckoutModal({
                 <Package className="w-4 h-4" />
                 পণ্যসমূহ ({cartItems.length}টি)
               </h3>
-              
+
               {cartItems.map((item, index) => (
                 <Card key={item.id || index} className="border border-gray-200">
                   <CardContent className="p-3">
@@ -231,7 +261,7 @@ export default function ProfessionalCheckoutModal({
                   {formatPrice(cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0))}
                 </span>
               </div>
-              
+
               <div className="flex justify-between text-sm">
                 <span className="text-gray-600 flex items-center gap-1">
                   <Truck className="w-3 h-3" />
@@ -241,9 +271,9 @@ export default function ProfessionalCheckoutModal({
                   {formatPrice(totalAmount - cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0))}
                 </span>
               </div>
-              
+
               <Separator />
-              
+
               <div className="flex justify-between items-center text-lg font-bold">
                 <span className="text-gray-900">সর্বমোট:</span>
                 <span className="text-green-600">{formatPrice(totalAmount)}</span>
@@ -309,7 +339,7 @@ export default function ProfessionalCheckoutModal({
                 <User className="w-4 h-4" />
                 ব্যক্তিগত তথ্য
               </h3>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="name" className="text-sm font-medium">
@@ -323,7 +353,7 @@ export default function ProfessionalCheckoutModal({
                     className="h-11"
                   />
                 </div>
-                
+
                 <div className="space-y-2">
                   <Label htmlFor="phone" className="text-sm font-medium">
                     ফোন নম্বর <span className="text-red-500">*</span>
@@ -361,7 +391,7 @@ export default function ProfessionalCheckoutModal({
                 <MapPin className="w-4 h-4" />
                 ডেলিভারি ঠিকানা
               </h3>
-              
+
               <div className="space-y-2">
                 <Label htmlFor="address" className="text-sm font-medium">
                   সম্পূর্ণ ঠিকানা <span className="text-red-500">*</span>
@@ -394,7 +424,7 @@ export default function ProfessionalCheckoutModal({
                     </SelectContent>
                   </Select>
                 </div>
-                
+
                 <div className="space-y-2">
                   <Label htmlFor="upazila" className="text-sm font-medium">
                     উপজেলা (ঐচ্ছিক)
@@ -418,9 +448,9 @@ export default function ProfessionalCheckoutModal({
                 <CreditCard className="w-4 h-4" />
                 পেমেন্ট পদ্ধতি
               </h3>
-              
-              <RadioGroup 
-                value={formData.paymentMethod} 
+
+              <RadioGroup
+                value={formData.paymentMethod}
                 onValueChange={(value) => handleInputChange('paymentMethod', value)}
                 className="grid grid-cols-1 md:grid-cols-3 gap-3"
               >
@@ -431,7 +461,7 @@ export default function ProfessionalCheckoutModal({
                     <div className="text-xs text-gray-600">মোবাইল ব্যাংকিং</div>
                   </Label>
                 </div>
-                
+
                 <div className="flex items-center space-x-2 border rounded-lg p-3">
                   <RadioGroupItem value="nagad" id="nagad" />
                   <Label htmlFor="nagad" className="flex-1 cursor-pointer">
@@ -439,7 +469,7 @@ export default function ProfessionalCheckoutModal({
                     <div className="text-xs text-gray-600">মোবাইল ব্যাংকিং</div>
                   </Label>
                 </div>
-                
+
                 <div className="flex items-center space-x-2 border rounded-lg p-3">
                   <RadioGroupItem value="cash" id="cash" />
                   <Label htmlFor="cash" className="flex-1 cursor-pointer">
@@ -498,100 +528,13 @@ export default function ProfessionalCheckoutModal({
 
   // Step 3: Success
   return (
-    <Dialog open={isOpen} onOpenChange={() => {
-      onOrderComplete();
-      handleCloseModal();
-    }}>
-      <DialogContent className="w-[95vw] max-w-2xl h-[70vh] max-h-[700px] p-0 flex flex-col">
-        <DialogHeader className="flex-shrink-0 p-4 text-center">
-          <DialogTitle className="flex flex-col items-center gap-3">
-            <div className="bg-green-100 p-3 rounded-full">
-              <CheckCircle className="w-8 h-8 text-green-600" />
-            </div>
-            অর্ডার সফল হয়েছে!
-          </DialogTitle>
-          <DialogDescription>
-            আপনার অর্ডার সফলভাবে গ্রহণ করা হয়েছে
-          </DialogDescription>
-        </DialogHeader>
-
-        <div className="flex-1 flex items-center justify-center">
-          <div className="text-center space-y-6 px-4">
-          {/* Order ID Display */}
-          {orderResult && (
-            <Card className="bg-green-50 border-green-200">
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="font-semibold text-green-800 text-sm">অর্ডার আইডি</span>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => {
-                      navigator.clipboard.writeText(orderResult.tracking_id || orderResult.order_id);
-                      toast({
-                        title: "কপি হয়েছে!",
-                        description: "অর্ডার আইডি কপি করা হয়েছে",
-                      });
-                    }}
-                    className="h-6 px-2 text-green-700 hover:text-green-800"
-                  >
-                    কপি করুন
-                  </Button>
-                </div>
-                <p className="text-lg font-bold text-green-600 break-all">
-                  {orderResult.tracking_id || orderResult.order_id}
-                </p>
-              </CardContent>
-            </Card>
-          )}
-
-          <div className="space-y-3">
-            <h3 className="font-semibold text-gray-900">পরবর্তী করণীয়</h3>
-            <div className="text-sm text-gray-600 space-y-2">
-              <p>• আমাদের প্রতিনিধি শীঘ্রই আপনার সাথে যোগাযোগ করবেন</p>
-              <p>• অর্ডার কনফার্মেশনের জন্য ফোন করা হবে</p>
-              <p>• ডেলিভারি ট্র্যাকিং তথ্য SMS এ পাবেন</p>
-            </div>
-          </div>
-
-          <Card className="bg-blue-50 border-blue-200">
-            <CardContent className="p-4">
-              <div className="flex items-center gap-2 mb-2">
-                <Phone className="w-4 h-4 text-blue-600" />
-                <span className="font-semibold text-blue-800 text-sm">সাপোর্ট</span>
-              </div>
-              <p className="text-xs text-blue-700 mb-2">
-                কোন সমস্যা হলে: +8801765555593
-              </p>
-              {orderResult && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    const message = `আসসালামু আলাইকুম! আমার অর্ডার সম্পর্কে জানতে চাই।\nঅর্ডার আইডি: ${orderResult.tracking_id || orderResult.order_id}\nনাম: ${formData.name}\nফোন: ${formData.phone}`;
-                    const whatsappUrl = `https://wa.me/8801765555593?text=${encodeURIComponent(message)}`;
-                    window.open(whatsappUrl, '_blank');
-                  }}
-                  className="w-full text-xs"
-                >
-                  হোয়াটসঅ্যাপে যোগাযোগ
-                </Button>
-              )}
-            </CardContent>
-          </Card>
-
-          <Button
-            onClick={() => {
-              onOrderComplete();
-              handleCloseModal();
-            }}
-            className="w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800"
-          >
-            সম্পন্ন
-          </Button>
-          </div>
-        </div>
-      </DialogContent>
-    </Dialog>
+    <EnhancedOrderSuccessModal
+      isOpen={isOpen}
+      orderData={orderData}
+      onClose={() => {
+        onOrderComplete();
+        handleCloseModal();
+      }}
+    />
   );
 }

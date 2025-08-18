@@ -8,6 +8,7 @@ import ErrorBoundary from "@/components/error-boundary";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { useAnalytics } from "./hooks/use-analytics";
 import { initGA, loadFacebookPixelFromSettings } from "./lib/analytics";
+import PremiumLiveTracking from "./pages/premium-live-tracking";
 
 // Lazy load all pages for better performance
 const HomePage = lazy(() => import("./pages/HomePage"));
@@ -44,10 +45,9 @@ const Router = () => {
         <Route path="/cart" component={CartPage} />
         <Route path="/checkout" component={CheckoutPage} />
         <Route path="/profile" component={UserProfilePage} />
-        <Route path="/orders" component={UserProfilePage} />
-        <Route path="/tracking" component={OrderTrackingPage} />
-        <Route path="/track/:id" component={OrderTrackingPage} />
-        <Route path="/track" component={OrderTrackingPage} />
+        <Route path="/orders" element={<OrderTrackingPage />} />
+        <Route path="/tracking" element={<PremiumLiveTracking />} />
+        <Route path="/tracking/:trackingId" element={<PremiumLiveTracking />} />
         <Route path="/contact" component={ContactPage} />
         <Route path="/about" component={AboutPage} />
         <Route path="/offers" component={OffersPage} />

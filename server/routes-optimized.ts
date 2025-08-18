@@ -9,8 +9,11 @@ import {
 } from "@shared/schema";
 
 function generateTrackingId(): string {
-  return 'TRK' + Date.now() + Math.random().toString(36).substr(2, 4).toUpperCase();
-}
+    const timestamp = Date.now();
+    const randomStr = Math.random().toString(36).substr(2, 8).toUpperCase();
+    const randomNum = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
+    return `TRK${timestamp}${randomStr}${randomNum}`;
+  }
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Setup authentication routes
@@ -20,29 +23,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/products', async (req, res) => {
     try {
       const startTime = Date.now();
-      
+
       // Enhanced cache headers for better performance
       res.set({
         'Cache-Control': 'public, max-age=300, stale-while-revalidate=60',
         'ETag': `products-${Date.now()}`,
         'Vary': 'Accept-Encoding'
       });
-      
+
       const category = req.query.category as string;
       let products;
-      
+
       if (category && category !== 'all') {
         products = await supabaseStorage.getProductsByCategory(category);
       } else {
         products = await supabaseStorage.getProducts();
       }
-      
+
       // Add performance metrics
       const duration = Date.now() - startTime;
       res.set('X-Response-Time', `${duration}ms`);
-      
+
       console.log(`✅ Products fetched in ${duration}ms - ${products.length} items`);
-      
+
       res.json(products);
     } catch (error) {
       console.error('❌ Error fetching products:', error);
@@ -54,7 +57,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/products/:id', async (req, res) => {
     try {
       res.set('Cache-Control', 'public, max-age=600'); // 10 minutes
-      
+
       const product = await supabaseStorage.getProduct(req.params.id);
       if (!product) {
         return res.status(404).json({ message: 'পণ্য পাওয়া যায়নি' });
@@ -76,20 +79,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         created_at: new Date(),
         updated_at: new Date()
       };
-      
+
       // Enhanced validation for customization data
       if (orderData.items) {
         orderData.items = typeof orderData.items === 'string' 
           ? orderData.items 
           : JSON.stringify(orderData.items);
       }
-      
+
       if (orderData.payment_info) {
         orderData.payment_info = typeof orderData.payment_info === 'string'
           ? orderData.payment_info
           : JSON.stringify(orderData.payment_info);
       }
-      
+
       // Debug log to check data types
       console.log('🔍 Order data before validation:', {
         total: orderData.total,
@@ -113,7 +116,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
 
       const validatedData = insertOrderSchema.parse(dataToValidate);
-      
+
       let order;
       try {
         order = await supabaseStorage.createOrder(validatedData);
@@ -121,9 +124,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.warn('⚠️ Supabase unavailable for orders, using memory storage');
         order = await memoryStorage.createOrder(validatedData);
       }
-      
+
       console.log(`✅ Order created: ${order.tracking_id}`);
-      
+
       // Return the complete order object for frontend compatibility
       res.status(201).json({
         ...order,
@@ -144,22 +147,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/orders', async (req, res) => {
     try {
       const { status, customer_phone, date_from, date_to } = req.query;
-      
+
       // Add basic filtering logic here if needed
       const orders = await supabaseStorage.getOrders();
-      
+
       let filteredOrders = orders;
-      
+
       if (status && status !== 'all') {
         filteredOrders = filteredOrders.filter(order => order.status === status);
       }
-      
+
       if (customer_phone) {
         filteredOrders = filteredOrders.filter(order => 
           order.phone.includes(customer_phone as string)
         );
       }
-      
+
       res.json(filteredOrders);
     } catch (error) {
       console.error('❌ Error fetching orders:', error);
@@ -172,15 +175,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { id } = req.params;
       const { status } = req.body;
-      
+
       if (!status) {
         return res.status(400).json({ error: 'Status is required' });
       }
-      
+
       console.log(`📝 Updating order ${id} status to: ${status}`);
-      
+
       const updatedOrder = await supabaseStorage.updateOrderStatus(id, status);
-      
+
       console.log(`✅ Order ${id} status updated successfully to ${status}`);
       res.json({ success: true, order: updatedOrder });
     } catch (error) {
@@ -199,14 +202,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!order) {
         return res.status(404).json({ message: 'অর্ডার পাওয়া যায়নি' });
       }
-      
+
       // Parse JSON fields for frontend consumption
       const enhancedOrder = {
         ...order,
         items: typeof order.items === 'string' ? JSON.parse(order.items) : order.items,
         payment_info: typeof order.payment_info === 'string' ? JSON.parse(order.payment_info) : order.payment_info
       };
-      
+
       res.json(enhancedOrder);
     } catch (error) {
       console.error('❌ Error fetching order:', error);
@@ -219,9 +222,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { status } = req.body;
       const order = await supabaseStorage.updateOrderStatus(req.params.id, status);
-      
+
       console.log(`✅ Order ${req.params.id} status updated to: ${status}`);
-      
+
       res.json({
         success: true,
         order,
@@ -237,7 +240,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/categories', async (req, res) => {
     try {
       res.set('Cache-Control', 'public, max-age=900'); // 15 minutes
-      
+
       const categories = await supabaseStorage.getCategories();
       res.json(categories);
     } catch (error) {
@@ -253,10 +256,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ...req.body,
         created_at: new Date()
       };
-      
+
       const validatedData = insertAnalyticsSchema.parse(analyticsData);
       await supabaseStorage.createAnalytics(validatedData);
-      
+
       res.json({ success: true });
     } catch (error) {
       console.error('❌ Analytics error:', error);
@@ -279,15 +282,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/custom-orders', async (req, res) => {
     try {
       console.log('Creating custom order with data:', req.body);
-      
+
       // Set proper JSON content type and CORS headers
       res.setHeader('Content-Type', 'application/json');
       res.header('Access-Control-Allow-Origin', '*');
       res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
       res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
-      
+
       const orderData = req.body;
-      
+
       // Map the frontend data to the expected schema format
       const customOrderData = {
         productId: orderData.productId,
@@ -301,10 +304,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         createdAt: new Date(),
         updatedAt: new Date()
       };
-      
+
       const customOrder = await supabaseStorage.createCustomOrder(customOrderData);
       console.log('Custom order created successfully:', customOrder.id);
-      
+
       res.status(201).json({ 
         success: true,
         id: customOrder.id,
@@ -348,7 +351,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/settings', async (req, res) => {
     try {
       res.set('Cache-Control', 'public, max-age=60'); // 1 minute
-      
+
       const settings = await supabaseStorage.getSettings();
       res.json(settings);
     } catch (error) {
@@ -361,25 +364,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/orders/track/:trackingId', async (req, res) => {
     try {
       const trackingId = req.params.trackingId;
-      
+
       if (!trackingId) {
         return res.status(400).json({ 
           success: false,
           message: 'ট্র্যাকিং আইডি প্রয়োজন' 
         });
       }
-      
+
       console.log(`🔍 Tracking order with ID: ${trackingId}`);
-      
+
       const order = await supabaseStorage.getOrderByTrackingId(trackingId);
-      
+
       if (!order) {
         return res.status(404).json({ 
           success: false,
           message: 'এই ট্র্যাকিং আইডি দিয়ে কোনো অর্ডার খুঁজে পাওয়া যায়নি' 
         });
       }
-      
+
       // Parse JSON fields for frontend consumption
       const enhancedOrder = {
         ...order,
@@ -387,9 +390,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         payment_info: typeof order.payment_info === 'string' ? JSON.parse(order.payment_info) : order.payment_info,
         custom_images: typeof order.custom_images === 'string' ? JSON.parse(order.custom_images) : order.custom_images
       };
-      
+
       console.log(`✅ Order found: ${order.customer_name} - ${order.status}`);
-      
+
       res.json({
         success: true,
         order: enhancedOrder
@@ -408,10 +411,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       console.log('🔍 Fetching products from Supabase...');
       res.set('Cache-Control', 'public, max-age=300'); // 5 minutes
-      
+
       const products = await supabaseStorage.getProducts();
       console.log(`✅ Products fetched successfully: ${products.length} products`);
-      
+
       res.json(products);
     } catch (error) {
       console.error('❌ Error fetching products:', error);
@@ -423,11 +426,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/products/:id', async (req, res) => {
     try {
       const product = await supabaseStorage.getProduct(req.params.id);
-      
+
       if (!product) {
         return res.status(404).json({ message: 'পণ্য পাওয়া যায়নি' });
       }
-      
+
       res.json(product);
     } catch (error) {
       console.error('❌ Error fetching product:', error);
@@ -444,10 +447,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         created_at: new Date(),
         updated_at: new Date()
       };
-      
+
       const validatedData = insertProductSchema.parse(productData);
       const product = await supabaseStorage.createProduct(validatedData);
-      
+
       console.log('✅ Product created successfully:', product.name);
       res.status(201).json({
         success: true,
@@ -532,11 +535,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.delete('/api/products/:id', async (req, res) => {
     try {
       const success = await supabaseStorage.deleteProduct(req.params.id);
-      
+
       if (!success) {
         return res.status(404).json({ message: 'পণ্য পাওয়া যায়নি' });
       }
-      
+
       console.log(`✅ Product ${req.params.id} deleted successfully`);
       res.json({
         success: true,
