@@ -1,0 +1,39 @@
+
+> rest-express@1.0.0 dev
+> NODE_ENV=development tsx server/index.ts
+
+[dotenv@17.2.1] injecting env (0) from .env -- tip: ⚙️  override existing env vars with { override: true }
+[dotenv@17.2.1] injecting env (0) from .env -- tip: ⚙️  override existing env vars with { override: true }
+9:26:23 PM [express] serving on port 5000
+✅ Database initialization complete
+🔥 Warming up cache...
+🔍 Fetching products directly from Supabase...
+🔍 Fetching categories directly from Supabase...
+✅ Categories fetched from Supabase in 4768ms - 30 items
+⚡ Ultra-fast products fetched in 11975ms - 32 items
+✅ Cache warmed up with 32 products and 30 categories
+9:26:36 PM [express] GET /api/settings 200 in 537ms :: {}
+9:26:36 PM [express] GET /api/settings 304 in 67ms :: {}
+9:26:36 PM [express] GET /api/categories 200 in 430ms :: [{"id":"ef078e38-957f-41f6-8cdc-1ddd882cd9d…
+⚡ Ultra-fast products fetched in 7376ms - 32 items
+9:26:45 PM [express] GET /api/products 200 in 9115ms :: [{"id":"f7bff648-e0bc-49c5-abb9-3e569145b6f7…
+9:27:36 PM [express] POST /api/orders 201 in 494ms :: {"id":"a0c93e48-9a0f-47f7-a372-220f9db91043","…
+9:27:56 PM [vite] Internal server error: Failed to resolve import "@/components/AdminPanelNew" from "client/src/components/admin-login.tsx". Does the file exist?
+  Plugin: vite:import-analysis
+  File: /home/runner/workspace/client/src/components/admin-login.tsx:11:26
+  25 |  import { useToast } from "@/hooks/use-toast";
+  26 |  import { useQueryClient } from "@tanstack/react-query";
+  27 |  import AdminPanelNew from "@/components/AdminPanelNew";
+     |                             ^
+  28 |  export default function AdminLogin() {
+  29 |    _s();
+      at TransformPluginContext._formatError (/home/runner/workspace/node_modules/vite/dist/node/chunks/dep-C6uTJdX2.js:49258:41)
+      at TransformPluginContext.error (/home/runner/workspace/node_modules/vite/dist/node/chunks/dep-C6uTJdX2.js:49253:16)
+      at normalizeUrl (/home/runner/workspace/node_modules/vite/dist/node/chunks/dep-C6uTJdX2.js:64291:23)
+      at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+      at async <anonymous> (/home/runner/workspace/node_modules/vite/dist/node/chunks/dep-C6uTJdX2.js:64423:39)
+      at async Promise.all (index 12)
+      at async TransformPluginContext.transform (/home/runner/workspace/node_modules/vite/dist/node/chunks/dep-C6uTJdX2.js:64350:7)
+      at async PluginContainer.transform (/home/runner/workspace/node_modules/vite/dist/node/chunks/dep-C6uTJdX2.js:49099:18)
+      at async loadAndTransform (/home/runner/workspace/node_modules/vite/dist/node/chunks/dep-C6uTJdX2.js:51977:27)
+
