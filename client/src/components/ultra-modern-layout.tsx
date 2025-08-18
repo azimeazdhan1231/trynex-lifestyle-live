@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { ArrowUp, MessageCircle } from 'lucide-react';
-import ModernHeader from './modern-header';
+import Header from '@/components/Header';
 import ModernFooter from './modern-footer';
 
 interface UltraModernLayoutProps {
@@ -59,7 +59,7 @@ export default function UltraModernLayout({
 
   return (
     <div className="min-h-screen bg-gray-50 ultra-modern-container">
-      <ModernHeader />
+      <Header />
       
       <main className="pt-[140px] lg:pt-[180px]">
         {children}

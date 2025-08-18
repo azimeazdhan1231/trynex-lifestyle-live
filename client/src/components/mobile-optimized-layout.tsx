@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { ArrowUp } from 'lucide-react';
-import ModernHeader from './modern-header';
+import Header from '@/components/Header';
 import EnhancedFooter from './enhanced-footer';
 
 interface MobileOptimizedLayoutProps {
@@ -47,7 +47,7 @@ export default function MobileOptimizedLayout({
 
   return (
     <div className="min-h-screen bg-gray-50 prevent-overflow">
-      <ModernHeader />
+      <Header />
       
       <main className="pt-24 lg:pt-32">
         {children}
