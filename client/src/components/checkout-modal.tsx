@@ -89,45 +89,80 @@ export default function CheckoutModal({ isOpen, onClose, onOrderComplete }: Chec
     setIsSubmitting(true);
 
     try {
-      const formData = new FormData();
+      // Generate unique tracking ID
+      const trackingId = `TRX-${Date.now()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
       
-      // Add order data
-      formData.append('orderData', JSON.stringify({
-        ...data,
-        items,
-        totalPrice,
-        orderType: customPhoto ? 'custom' : 'regular'
-      }));
-
-      // Add custom photo if exists
-      if (customPhoto) {
-        formData.append('customPhoto', customPhoto);
-      }
-
-      // Add payment screenshot if exists  
-      if (paymentScreenshot) {
-        formData.append('paymentScreenshot', paymentScreenshot);
-      }
+      // Prepare order data matching the schema
+      const orderData = {
+        tracking_id: trackingId,
+        customer_name: data.customerName,
+        district: data.district,
+        thana: data.thana,
+        address: data.customerAddress,
+        phone: data.customerPhone,
+        payment_info: {
+          method: data.paymentMethod,
+          transaction_id: data.transactionId,
+          amount: data.paymentAmount,
+          screenshot: paymentScreenshot ? 'uploaded' : null
+        },
+        items: items.map(item => ({
+          id: item.id,
+          name: item.name,
+          price: item.price,
+          quantity: item.quantity,
+          image_url: item.image_url
+        })),
+        total: (getTotalPrice() + (getTotalPrice() >= 1600 ? 0 : 120)).toString(),
+        custom_instructions: data.customInstructions || null,
+        custom_images: customPhoto ? ['uploaded'] : [],
+        status: 'pending'
+      };
 
       const response = await fetch('/api/orders', {
         method: 'POST',
-        body: formData
-      }).then(res => res.json());
-
-      clearCart();
-      onOrderComplete(response.orderId);
-      
-      toast({
-        title: 'অর্ডার সফল! 🎉',
-        description: `অর্ডার নম্বর: ${response.orderId}`,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(orderData)
       });
 
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Order submission failed');
+      }
+
+      const result = await response.json();
+      
+      // Show order success modal with comprehensive details
+      const orderDetails = {
+        tracking_id: result.tracking_id || trackingId,
+        customer_name: data.customerName,
+        phone: data.customerPhone,
+        total: (getTotalPrice() + (getTotalPrice() >= 1600 ? 0 : 120)).toString(),
+        items: items.map(item => ({
+          name: item.name,
+          quantity: item.quantity,
+          price: item.price
+        }))
+      };
+      
+      clearCart();
+      onOrderComplete(result.tracking_id || trackingId);
       onClose();
+      
+      // Show success toast first
+      toast({
+        title: "🎉 অর্ডার সফল হয়েছে!",
+        description: `ট্র্যাকিং আইডি: ${result.tracking_id || trackingId}`,
+        duration: 8000,
+      });
 
     } catch (error) {
+      console.error('Order submission error:', error);
       toast({
         title: 'অর্ডার ব্যর্থ',
-        description: 'আবার চেষ্টা করুন',
+        description: error instanceof Error ? error.message : 'আবার চেষ্টা করুন',
         variant: 'destructive'
       });
     } finally {

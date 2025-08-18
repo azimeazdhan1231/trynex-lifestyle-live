@@ -90,6 +90,15 @@ ${itemsText}
 
   const handleCheckout = () => {
     console.log('🛒 Checkout button clicked!', { hasOnCheckout: !!onCheckout, showCheckout });
+    if (items.length === 0) {
+      toast({
+        title: "কার্ট খালি",
+        description: "প্রথমে কিছু পণ্য কার্টে যোগ করুন",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     if (onCheckout) {
       onCheckout();
     } else {

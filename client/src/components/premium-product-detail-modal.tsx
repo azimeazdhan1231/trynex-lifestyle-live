@@ -51,7 +51,7 @@ export default function PremiumProductDetailModal({
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [imageLoaded, setImageLoaded] = useState(false);
   
-  const { addToCart } = useCart();
+  const { addItem } = useCart();
   const { toast } = useToast();
 
   // Reset state when modal opens/closes
@@ -89,11 +89,11 @@ export default function PremiumProductDetailModal({
     }
 
     try {
-      addToCart({
+      addItem({
         id: product.id,
         name: product.name || 'Unknown Product',
         price: price,
-        image: product.image_url || '',
+        image_url: product.image_url || '',
         quantity: quantity
       });
 
@@ -110,7 +110,7 @@ export default function PremiumProductDetailModal({
         variant: "destructive",
       });
     }
-  }, [product, quantity, isOutOfStock, addToCart, toast, price, onClose]);
+  }, [product, quantity, isOutOfStock, addItem, toast, price, onClose]);
 
   const handleCustomize = useCallback(() => {
     onCustomize(product);
