@@ -55,7 +55,16 @@ export default function OrderManagement() {
     isLoading: ordersLoading, 
     refetch 
   } = useQuery<ExtendedOrder[]>({
-    queryKey: ['/api/orders'],
+    queryKey: ['orders'],
+    queryFn: async () => {
+      const response = await fetch('/api/orders');
+      if (!response.ok) throw new Error('Failed to fetch orders');
+      const data = await response.json();
+      return data.map((order: any) => ({
+        ...order,
+        items: order.items ? (typeof order.items === 'string' ? JSON.parse(order.items) : order.items) : []
+      }));
+    },
     refetchInterval: 30000,
   });
 
