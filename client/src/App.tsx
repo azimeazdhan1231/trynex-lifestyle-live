@@ -69,7 +69,7 @@ const Router = () => {
         <Route path="/login" component={AuthPage} />
         <Route path="/register" component={AuthPage} />
         <Route path="/admin" component={AdminPage} />
-        <Route path="/admin/dashboard" component={AdminDashboard} />
+        <Route path="/admin/dashboard" component={AdminPage} />
         <Route path="/privacy" component={PolicyPage} />
         <Route path="/terms" component={PolicyPage} />
         <Route path="/terms-conditions" component={PolicyPage} />

@@ -1,7 +1,7 @@
 
 import React from 'react';
-import AdminDashboard from '@/components/admin/AdminDashboard';
+import AdminLogin from '@/components/admin-login';
 
 export default function AdminDashboardPage() {
-  return <AdminDashboard />;
+  return <AdminLogin />;
 }

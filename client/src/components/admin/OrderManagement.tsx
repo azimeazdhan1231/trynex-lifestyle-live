@@ -172,7 +172,7 @@ export default function OrderManagement() {
             />
           </div>
         </div>
-        
+
         <div className="flex items-center gap-3">
           <Select value={statusFilter} onValueChange={setStatusFilter}>
             <SelectTrigger className="w-40" data-testid="select-order-status-filter">
@@ -187,7 +187,7 @@ export default function OrderManagement() {
               ))}
             </SelectContent>
           </Select>
-          
+
           <Button
             variant="outline"
             onClick={() => refetch()}
@@ -438,14 +438,17 @@ export default function OrderManagement() {
 
       {/* Order Details Modal */}
       <Dialog open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto" aria-describedby="order-details-description">
           <DialogHeader>
             <DialogTitle className="flex items-center space-x-2">
               <FileText className="h-5 w-5" />
               <span>অর্ডার বিস্তারিত - #{selectedOrder?.tracking_id}</span>
             </DialogTitle>
+            <div id="order-details-description" className="sr-only">
+              অর্ডারের সম্পূর্ণ তথ্য এবং স্ট্যাটাস দেখুন
+            </div>
           </DialogHeader>
-          
+
           {selectedOrder && (
             <div className="space-y-6">
               {/* Customer Information */}
