@@ -1,6 +1,6 @@
 import Layout from "@/components/Layout";
 import UserProfile from "@/components/UserProfile";
-import OrderHistory from "@/components/OrderHistory";
+import OrderHistory from "@/components/OrderHistory.tsx";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const UserProfilePage = () => {
