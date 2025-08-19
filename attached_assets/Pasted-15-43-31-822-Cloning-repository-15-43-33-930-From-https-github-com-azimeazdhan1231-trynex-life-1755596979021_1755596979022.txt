@@ -1,0 +1,74 @@
+15:43:31.822	Cloning repository...
+15:43:33.930	From https://github.com/azimeazdhan1231/trynex-lifestyle-live
+15:43:33.931	 * branch            3a95b2a552db0427f24705f337c70737ff4486b3 -> FETCH_HEAD
+15:43:33.931	
+15:43:34.200	HEAD is now at 3a95b2a bukhHHHuhju
+15:43:34.200	
+15:43:34.302	
+15:43:34.303	Using v2 root directory strategy
+15:43:34.336	Success: Finished cloning repository files
+15:43:36.438	Checking for configuration in a Wrangler configuration file (BETA)
+15:43:36.439	
+15:43:37.556	No wrangler.toml file found. Continuing.
+15:43:37.659	Detected the following tools from environment: nodejs@20.19.2, npm@10.9.2
+15:43:37.660	Installing nodejs 20.19.2
+15:43:38.946	Trying to update node-build... ok
+15:43:39.062	To follow progress, use 'tail -f /tmp/node-build.20250819094339.494.log' or pass --verbose
+15:43:39.181	Downloading node-v20.19.2-linux-x64.tar.gz...
+15:43:39.425	-> https://nodejs.org/dist/v20.19.2/node-v20.19.2-linux-x64.tar.gz
+15:43:41.151	
+15:43:41.151	WARNING: node-v20.19.2-linux-x64 is in LTS Maintenance mode and nearing its end of life.
+15:43:41.151	It only receives *critical* security updates, *critical* bug fixes and documentation updates.
+15:43:41.151	
+15:43:41.152	Installing node-v20.19.2-linux-x64...
+15:43:41.641	Installed node-v20.19.2-linux-x64 to /opt/buildhome/.asdf/installs/nodejs/20.19.2
+15:43:41.641	
+15:43:42.903	Installing project dependencies: npm clean-install --progress=false
+15:43:48.512	npm warn deprecated @esbuild-kit/esm-loader@2.6.5: Merged into tsx: https://tsx.is
+15:43:48.568	npm warn deprecated @esbuild-kit/core-utils@3.3.2: Merged into tsx: https://tsx.is
+15:43:55.566	
+15:43:55.567	added 546 packages, and audited 547 packages in 12s
+15:43:55.567	
+15:43:55.567	72 packages are looking for funding
+15:43:55.567	  run `npm fund` for details
+15:43:55.608	
+15:43:55.608	5 moderate severity vulnerabilities
+15:43:55.609	
+15:43:55.609	To address all issues (including breaking changes), run:
+15:43:55.609	  npm audit fix --force
+15:43:55.610	
+15:43:55.610	Run `npm audit` for details.
+15:43:55.635	Executing user command: npm ci && npm run build && ls -la dist/ && ls -la dist/public/ && echo "Build completed successfully"
+15:44:02.325	npm warn deprecated @esbuild-kit/esm-loader@2.6.5: Merged into tsx: https://tsx.is
+15:44:02.464	npm warn deprecated @esbuild-kit/core-utils@3.3.2: Merged into tsx: https://tsx.is
+15:44:07.537	
+15:44:07.538	added 546 packages, and audited 547 packages in 11s
+15:44:07.538	
+15:44:07.543	72 packages are looking for funding
+15:44:07.544	  run `npm fund` for details
+15:44:07.568	
+15:44:07.570	5 moderate severity vulnerabilities
+15:44:07.570	
+15:44:07.571	To address all issues (including breaking changes), run:
+15:44:07.571	  npm audit fix --force
+15:44:07.571	
+15:44:07.571	Run `npm audit` for details.
+15:44:08.126	
+15:44:08.127	> rest-express@1.0.0 build
+15:44:08.127	> vite build && esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist
+15:44:08.127	
+15:44:08.468	vite v5.4.19 building for production...
+15:44:08.531	transforming...
+15:44:12.685	✓ 1123 modules transformed.
+15:44:12.692	x Build failed in 4.19s
+15:44:12.693	error during build:
+15:44:12.694	[vite:load-fallback] Could not load /opt/buildhome/repo/client/src/components/OrderHistory (imported by client/src/pages/UserProfilePage.tsx): ENOENT: no such file or directory, open '/opt/buildhome/repo/client/src/components/OrderHistory'
+15:44:12.694	    at async open (node:internal/fs/promises:639:25)
+15:44:12.694	    at async Object.readFile (node:internal/fs/promises:1246:14)
+15:44:12.694	    at async Object.load (file:///opt/buildhome/repo/node_modules/vite/dist/node/chunks/dep-C6uTJdX2.js:65341:25)
+15:44:12.694	    at async PluginDriver.hookFirstAndGetPlugin (file:///opt/buildhome/repo/node_modules/rollup/dist/es/shared/node-entry.js:22233:28)
+15:44:12.694	    at async file:///opt/buildhome/repo/node_modules/rollup/dist/es/shared/node-entry.js:21237:33
+15:44:12.694	    at async Queue.work (file:///opt/buildhome/repo/node_modules/rollup/dist/es/shared/node-entry.js:22461:32)
+15:44:12.739	Failed: Error while executing user command. Exited with error code: 1
+15:44:12.752	Failed: build command exited with code: 1
+15:44:14.077	Failed: error occurred while running build command
