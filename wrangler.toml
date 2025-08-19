@@ -3,17 +3,14 @@ name = "trynex-ecommerce"
 compatibility_date = "2024-08-15"
 compatibility_flags = ["nodejs_compat"]
 
-# Environment variables for Cloudflare Workers
-[env.production]
-vars = { ENVIRONMENT = "production" }
-
 # Build configuration for Cloudflare Pages
 [build]
 command = "npm run build"
 publish = "dist"
 
-# Environment variables for secure deployment
-[[env.production.vars]]
+# Environment variables for Cloudflare Workers
+[env.production]
+ENVIRONMENT = "production"
 DATABASE_URL = ""
 SUPABASE_URL = "https://lxhhgdqfxmeohayceshb.supabase.co"
 SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4aGhnZHFmeG1lb2hheWNlc2hiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM4OTk1OTAsImV4cCI6MjA2OTQ3NTU5MH0.gW9X6igqtpAQKutqb4aEEx0VovEZdMp4Gk_R8Glm9Bw"

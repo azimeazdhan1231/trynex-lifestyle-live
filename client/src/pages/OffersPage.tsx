@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import UltraSimpleLayout from "@/components/ultra-simple-layout";
+import Layout from "@/components/Layout";
 import { useToast } from "@/hooks/use-toast";
 import { useCart } from "@/hooks/use-cart";
 import { Link, useLocation } from "wouter";
@@ -16,7 +16,7 @@ import type { Offer, Product } from "@shared/schema";
 const OffersPage = () => {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
-  const { addToCart } = useCart();
+  const { addItem } = useCart();
   const [favoriteOffers, setFavoriteOffers] = useState<string[]>([]);
 
   // Load offers
@@ -32,10 +32,10 @@ const OffersPage = () => {
   });
 
   const handleOfferClick = (offer: Offer) => {
-    if (offer.product_id) {
-      setLocation(`/product/${offer.product_id}`);
-    } else if (offer.category) {
-      setLocation(`/products?category=${offer.category}`);
+    if (offer.button_link) {
+      setLocation(offer.button_link);
+    } else {
+      setLocation('/products');
     }
   };
 
@@ -55,7 +55,7 @@ const OffersPage = () => {
     if (navigator.share) {
       navigator.share({
         title: offer.title,
-        text: offer.description,
+        text: offer.description || offer.title,
         url: window.location.href,
       });
     } else {
@@ -72,37 +72,38 @@ const OffersPage = () => {
     window.open(createWhatsAppUrl(message), '_blank');
   };
 
-  const getOfferProduct = (offer: Offer) => {
-    return products.find(p => p.id === offer.product_id);
-  };
+  // Offers don't link directly to products in this schema
+  // const getOfferProduct = (offer: Offer) => {
+  //   return products.find(p => p.id === offer.product_id);
+  // };
 
-  const calculateDiscountedPrice = (originalPrice: number, discountPercent: number) => {
-    return originalPrice - (originalPrice * discountPercent / 100);
-  };
+  // Offers show discount percentage but don't calculate specific prices
+  // since they're not linked to specific products in current schema
 
   const activeOffers = offers.filter(offer => 
-    offer.is_active && 
+    offer.active && 
     (!offer.end_date || new Date(offer.end_date) > new Date())
   );
 
-  const featuredOffers = activeOffers.filter(offer => offer.is_featured);
-  const regularOffers = activeOffers.filter(offer => !offer.is_featured);
+  // No featured field in offers schema, showing all offers
+  const featuredOffers: Offer[] = [];
+  const regularOffers = activeOffers;
 
   if (offersLoading) {
     return (
-      <UltraSimpleLayout>
+      <Layout>
         <div className="container mx-auto px-4 py-8">
           <div className="text-center">
             <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary mx-auto"></div>
             <p className="mt-4 text-lg text-gray-600">অফারগুলো লোড হচ্ছে...</p>
           </div>
         </div>
-      </UltraSimpleLayout>
+      </Layout>
     );
   }
 
   return (
-    <UltraSimpleLayout>
+    <Layout>
       <div className="min-h-screen bg-gradient-to-br from-orange-50 via-red-50 to-pink-50">
         {/* Hero Section */}
         <section className="bg-gradient-to-r from-red-500 via-pink-500 to-orange-500 text-white py-16">
@@ -145,7 +146,7 @@ const OffersPage = () => {
               
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
                 {featuredOffers.map((offer) => {
-                  const product = getOfferProduct(offer);
+                  // No product linking in current schema
                   const isFavorite = favoriteOffers.includes(offer.id);
                   
                   return (
@@ -184,43 +185,22 @@ const OffersPage = () => {
                           <p className="text-gray-600 leading-relaxed">{offer.description}</p>
                         </div>
 
-                        {offer.discount_percent && (
+                        {offer.discount_percentage && (
                           <div className="text-center mb-4">
                             <div className="inline-flex items-center bg-gradient-to-r from-red-500 to-pink-500 text-white px-6 py-3 rounded-full text-2xl font-bold shadow-lg">
                               <Percent className="w-6 h-6 mr-2" />
-                              {offer.discount_percent}% ছাড়
+                              {offer.discount_percentage}% ছাড়
                             </div>
                           </div>
                         )}
 
-                        {product && (
+                        {offer.image_url && (
                           <div className="bg-white rounded-lg p-4 mb-4 shadow-inner">
-                            <div className="flex items-center space-x-4">
-                              <img
-                                src={product.image_url || "https://images.unsplash.com/photo-1544787219-7f47ccb76574?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&h=300"}
-                                alt={product.name}
-                                className="w-16 h-16 object-cover rounded-lg"
-                              />
-                              <div className="flex-1">
-                                <h4 className="font-semibold text-gray-800">{product.name}</h4>
-                                <div className="flex items-center space-x-2 mt-1">
-                                  {offer.discount_percent ? (
-                                    <>
-                                      <span className="text-lg font-bold text-green-600">
-                                        {formatPrice(calculateDiscountedPrice(Number(product.price), offer.discount_percent))}
-                                      </span>
-                                      <span className="text-sm text-gray-500 line-through">
-                                        {formatPrice(Number(product.price))}
-                                      </span>
-                                    </>
-                                  ) : (
-                                    <span className="text-lg font-bold text-green-600">
-                                      {formatPrice(Number(product.price))}
-                                    </span>
-                                  )}
-                                </div>
-                              </div>
-                            </div>
+                            <img
+                              src={offer.image_url}
+                              alt={offer.title}
+                              className="w-full h-32 object-cover rounded-lg"
+                            />
                           </div>
                         )}
 
@@ -273,7 +253,7 @@ const OffersPage = () => {
               
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {regularOffers.map((offer) => {
-                  const product = getOfferProduct(offer);
+                  // No product linking in current schema
                   const isFavorite = favoriteOffers.includes(offer.id);
                   
                   return (
@@ -304,43 +284,22 @@ const OffersPage = () => {
                           <p className="text-gray-600 text-sm leading-relaxed">{offer.description}</p>
                         </div>
 
-                        {offer.discount_percent && (
+                        {offer.discount_percentage && (
                           <div className="text-center mb-4">
                             <Badge className="bg-gradient-to-r from-green-500 to-blue-500 text-white text-lg px-4 py-2">
                               <Tag className="w-4 h-4 mr-1" />
-                              {offer.discount_percent}% ছাড়
+                              {offer.discount_percentage}% ছাড়
                             </Badge>
                           </div>
                         )}
 
-                        {product && (
+                        {offer.image_url && (
                           <div className="bg-gray-50 rounded-lg p-3 mb-4">
-                            <div className="flex items-center space-x-3">
-                              <img
-                                src={product.image_url || "https://images.unsplash.com/photo-1544787219-7f47ccb76574?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&h=200"}
-                                alt={product.name}
-                                className="w-12 h-12 object-cover rounded"
-                              />
-                              <div className="flex-1">
-                                <h4 className="font-medium text-gray-800 text-sm">{product.name}</h4>
-                                <div className="flex items-center space-x-2 mt-1">
-                                  {offer.discount_percent ? (
-                                    <>
-                                      <span className="text-green-600 font-bold">
-                                        {formatPrice(calculateDiscountedPrice(Number(product.price), offer.discount_percent))}
-                                      </span>
-                                      <span className="text-xs text-gray-500 line-through">
-                                        {formatPrice(Number(product.price))}
-                                      </span>
-                                    </>
-                                  ) : (
-                                    <span className="text-green-600 font-bold">
-                                      {formatPrice(Number(product.price))}
-                                    </span>
-                                  )}
-                                </div>
-                              </div>
-                            </div>
+                            <img
+                              src={offer.image_url}
+                              alt={offer.title}
+                              className="w-full h-24 object-cover rounded"
+                            />
                           </div>
                         )}
 
@@ -405,7 +364,7 @@ const OffersPage = () => {
           )}
         </div>
       </div>
-    </UltraSimpleLayout>
+    </Layout>
   );
 };
 

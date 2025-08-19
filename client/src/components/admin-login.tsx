@@ -8,7 +8,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Eye, EyeOff, Shield, Lock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from '@tanstack/react-query';
-import AdminPanelNew from "./AdminPanelNew";
+import AdminDashboard from "./admin/AdminDashboard";
 
 export default function AdminLogin() {
   const [email, setEmail] = useState("");
@@ -91,7 +91,7 @@ export default function AdminLogin() {
 
   // If logged in, show the admin panel
   if (isLoggedIn) {
-    return <AdminPanelNew onLogout={handleLogout} />;
+    return <AdminDashboard onLogout={handleLogout} />;
   }
 
   return (
