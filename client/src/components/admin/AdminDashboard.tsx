@@ -85,15 +85,21 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps = {}) {
       }
       const response = await fetch('/api/admin/stats', {
         headers: {
-          'Authorization': `Bearer ${token}`
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
         }
       });
-      if (!response.ok) throw new Error('Failed to fetch admin stats');
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Admin stats error:', errorText);
+        throw new Error(`Failed to fetch admin stats: ${response.status}`);
+      }
       return response.json();
     },
     refetchInterval: 30000,
-    retry: 3,
-    retryDelay: 1000,
+    retry: 2,
+    retryDelay: 2000,
+    enabled: !!localStorage.getItem('adminToken') || !!localStorage.getItem('admin_token'),
   });
 
   // Fetch orders with error handling
@@ -111,14 +117,22 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps = {}) {
       }
       const response = await fetch('/api/admin/orders', {
         headers: {
-          'Authorization': `Bearer ${token}`
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
         }
       });
-      if (!response.ok) throw new Error('Failed to fetch orders');
-      return response.json();
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Orders fetch error:', errorText);
+        throw new Error(`Failed to fetch orders: ${response.status}`);
+      }
+      const data = await response.json();
+      return Array.isArray(data) ? data : [];
     },
-    refetchInterval: 10000,
+    refetchInterval: 15000,
     retry: 2,
+    retryDelay: 1500,
+    enabled: !!localStorage.getItem('adminToken') || !!localStorage.getItem('admin_token'),
   });
 
   // Fetch products with error handling
@@ -136,14 +150,22 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps = {}) {
       }
       const response = await fetch('/api/admin/products', {
         headers: {
-          'Authorization': `Bearer ${token}`
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
         }
       });
-      if (!response.ok) throw new Error('Failed to fetch products');
-      return response.json();
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Products fetch error:', errorText);
+        throw new Error(`Failed to fetch products: ${response.status}`);
+      }
+      const data = await response.json();
+      return Array.isArray(data) ? data : [];
     },
     refetchInterval: 60000,
     retry: 2,
+    retryDelay: 2000,
+    enabled: !!localStorage.getItem('adminToken') || !!localStorage.getItem('admin_token'),
   });
 
   // Fallback analytics data

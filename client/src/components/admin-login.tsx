@@ -51,9 +51,15 @@ export default function AdminLogin() {
       }
 
       // Store the token with both keys for compatibility
-      localStorage.setItem('adminToken', data.token);
-      localStorage.setItem('admin_token', data.token);
-      localStorage.setItem('admin_data', JSON.stringify(data.admin));
+      if (data.token) {
+        localStorage.setItem('adminToken', data.token);
+        localStorage.setItem('admin_token', data.token);
+        if (data.admin) {
+          localStorage.setItem('admin_data', JSON.stringify(data.admin));
+        }
+      } else {
+        throw new Error('No token received from server');
+      }
 
       // Clear any cached queries and refetch
       queryClient.clear();
@@ -78,6 +84,7 @@ export default function AdminLogin() {
   };
 
   const handleLogout = () => {
+    localStorage.removeItem('adminToken');
     localStorage.removeItem('admin_token');
     localStorage.removeItem('admin_data');
     queryClient.clear();
