@@ -98,15 +98,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const orderData = req.body;
       const trackingId = `TRX${Date.now()}${Math.floor(Math.random() * 10000)}`;
       
-      const order = await storage.createOrder({
-        ...orderData,
-        tracking_id: trackingId
-      });
+      // Map frontend order data to database schema
+      const mappedOrderData = {
+        tracking_id: trackingId,
+        customer_name: orderData.customerName,
+        district: orderData.district,
+        thana: orderData.thana,
+        address: orderData.customerAddress,
+        phone: orderData.customerPhone,
+        payment_info: JSON.stringify({
+          method: orderData.paymentMethod,
+          trxId: orderData.trxId,
+          screenshot: orderData.paymentScreenshot
+        }),
+        status: 'pending',
+        items: JSON.stringify(orderData.items),
+        total: orderData.total.toString(),
+        custom_instructions: orderData.notes || '',
+        custom_images: JSON.stringify([])
+      };
+      
+      const order = await storage.createOrder(mappedOrderData);
       
       res.status(201).json(order);
     } catch (error) {
       console.error('Failed to create order:', error);
-      res.status(500).json({ error: 'Failed to create order' });
+      res.status(500).json({ error: 'Failed to create order', details: error instanceof Error ? error.message : 'Unknown error' });
     }
   });
 
@@ -197,11 +214,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const currentYear = new Date().getFullYear();
       
       const currentMonthOrders = orders.filter(order => {
+        if (!order.created_at) return false;
         const orderDate = new Date(order.created_at);
         return orderDate.getMonth() === currentMonth && orderDate.getFullYear() === currentYear;
       });
       
       const lastMonthOrders = orders.filter(order => {
+        if (!order.created_at) return false;
         const orderDate = new Date(order.created_at);
         return orderDate.getMonth() === (currentMonth - 1 < 0 ? 11 : currentMonth - 1) && 
                orderDate.getFullYear() === (currentMonth - 1 < 0 ? currentYear - 1 : currentYear);
@@ -219,7 +238,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         totalRevenue,
         totalOrders: orders.length,
         pendingOrders: orders.filter(o => o.status === 'pending').length,
-        totalCustomers: [...new Set(orders.map(o => o.phone))].length,
+        totalCustomers: Array.from(new Set(orders.map(o => o.phone))).length,
         totalProducts: products.length,
         revenueGrowth: parseFloat(revenueGrowth as string),
         orderGrowth: parseFloat(orderGrowth as string),
@@ -241,7 +260,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const orders = await storage.getOrders();
       
       const recentOrders = orders
-        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+        .sort((a, b) => {
+          const dateA = a.created_at ? new Date(a.created_at).getTime() : 0;
+          const dateB = b.created_at ? new Date(b.created_at).getTime() : 0;
+          return dateB - dateA;
+        })
         .slice(0, limit)
         .map(order => ({
           id: order.id,
@@ -413,7 +436,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ 
         success: false, 
         message: 'অর্ডার ট্র্যাক করতে সমস্যা হয়েছে',
-        error: error.message 
+        error: error instanceof Error ? error.message : 'Unknown error' 
       });
     }
   });
