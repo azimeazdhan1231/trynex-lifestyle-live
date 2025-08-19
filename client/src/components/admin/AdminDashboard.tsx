@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -19,6 +18,11 @@ import {
   AlertCircle
 } from "lucide-react";
 import { formatPrice } from "@/lib/utils";
+import OrderManagement from './OrderManagement';
+import ProductManagement from './ProductManagement';
+import CategoryManagement from './category-management';
+import OfferManagement from './offer-management';
+import SiteSettingsManagement from './site-settings-management';
 
 interface DashboardStats {
   overview: {
@@ -64,6 +68,7 @@ interface AdminDashboardProps {
 
 export default function AdminDashboard({ onLogout }: AdminDashboardProps = {}) {
   const [refreshKey, setRefreshKey] = useState(0);
+  const [activeTab, setActiveTab] = useState('dashboard'); // State to manage active tab
 
   // Fetch admin stats with error handling
   const {
@@ -259,243 +264,319 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps = {}) {
         </Card>
       )}
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">মোট আয়</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {formatPrice(adminStats?.totalRevenue || stats.totalRevenue)}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              <span className="text-green-600">
-                +{adminStats?.revenueGrowth || '0'}%
-              </span>
-              {' '}গত মাস থেকে
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">মোট অর্ডার</CardTitle>
-            <ShoppingCart className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {adminStats?.totalOrders || stats.totalOrders}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              <span className="text-blue-600">
-                {adminStats?.pendingOrders || stats.pendingOrders} অপেক্ষমান
-              </span>
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">পণ্য</CardTitle>
-            <Package className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {adminStats?.totalProducts || stats.totalProducts}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              <span className="text-red-600">
-                {adminStats?.lowStockProducts || stats.lowStockProducts} কম স্টক
-              </span>
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">গড় অর্ডার</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {formatPrice(adminStats?.averageOrderValue || stats.averageOrderValue)}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              প্রতি অর্ডার গড় মূল্য
-            </p>
-          </CardContent>
-        </Card>
+      {/* Navigation Tabs */}
+      <div className="flex space-x-4 border-b mb-6">
+        <button
+          onClick={() => setActiveTab('dashboard')}
+          className={`py-3 px-4 text-sm font-medium ${activeTab === 'dashboard' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-600'}`}
+        >
+          ড্যাশবোর্ড
+        </button>
+        <button
+          onClick={() => setActiveTab('orders')}
+          className={`py-3 px-4 text-sm font-medium ${activeTab === 'orders' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-600'}`}
+        >
+          অর্ডার
+        </button>
+        <button
+          onClick={() => setActiveTab('products')}
+          className={`py-3 px-4 text-sm font-medium ${activeTab === 'products' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-600'}`}
+        >
+          পণ্য
+        </button>
+        <button
+          onClick={() => setActiveTab('categories')}
+          className={`py-3 px-4 text-sm font-medium ${activeTab === 'categories' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-600'}`}
+        >
+          ক্যাটাগরি
+        </button>
+        <button
+          onClick={() => setActiveTab('offers')}
+          className={`py-3 px-4 text-sm font-medium ${activeTab === 'offers' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-600'}`}
+        >
+          অফার
+        </button>
+        <button
+          onClick={() => setActiveTab('settings')}
+          className={`py-3 px-4 text-sm font-medium ${activeTab === 'settings' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-600'}`}
+        >
+          সেটিংস
+        </button>
       </div>
 
-      {/* Order Status Overview */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>অর্ডার স্ট্যাটাস</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between p-3 bg-yellow-50 rounded-lg">
-                <div className="flex items-center space-x-3">
-                  <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
-                  <span className="font-medium">অপেক্ষমান</span>
-                </div>
-                <span className="font-bold text-yellow-700">{stats.pendingOrders}</span>
-              </div>
-              <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
-                <div className="flex items-center space-x-3">
-                  <div className="w-3 h-3 rounded-full bg-blue-500"></div>
-                  <span className="font-medium">প্রক্রিয়াকরণ</span>
-                </div>
-                <span className="font-bold text-blue-700">{stats.processingOrders}</span>
-              </div>
-              <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
-                <div className="flex items-center space-x-3">
-                  <div className="w-3 h-3 rounded-full bg-green-500"></div>
-                  <span className="font-medium">পাঠানো</span>
-                </div>
-                <span className="font-bold text-green-700">{stats.shippedOrders}</span>
-              </div>
-              <div className="flex items-center justify-between p-3 bg-emerald-50 rounded-lg">
-                <div className="flex items-center space-x-3">
-                  <div className="w-3 h-3 rounded-full bg-emerald-500"></div>
-                  <span className="font-medium">ডেলিভার</span>
-                </div>
-                <span className="font-bold text-emerald-700">{stats.deliveredOrders}</span>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
 
-        {/* Quick Actions */}
-        <Card>
-          <CardHeader>
-            <CardTitle>দ্রুত কাজ</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              <Button variant="outline" className="w-full justify-start">
-                <Package className="w-4 h-4 mr-2" />
-                নতুন পণ্য যোগ করুন
-              </Button>
-              <Button variant="outline" className="w-full justify-start">
-                <ShoppingCart className="w-4 h-4 mr-2" />
-                অর্ডার দেখুন
-              </Button>
-              <Button variant="outline" className="w-full justify-start">
-                <BarChart3 className="w-4 h-4 mr-2" />
-                রিপোর্ট দেখুন
-              </Button>
-              <Button variant="outline" className="w-full justify-start">
-                <Users className="w-4 h-4 mr-2" />
-                গ্রাহক তালিকা
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      {activeTab === 'dashboard' && (
+        <>
+          {/* Stats Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">মোট আয়</CardTitle>
+                <DollarSign className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">
+                  {formatPrice(adminStats?.totalRevenue || stats.totalRevenue)}
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  <span className="text-green-600">
+                    +{adminStats?.revenueGrowth || '0'}%
+                  </span>
+                  {' '}গত মাস থেকে
+                </p>
+              </CardContent>
+            </Card>
 
-      {/* Recent Orders */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center justify-between">
-            <span>সাম্প্রতিক অর্ডার</span>
-            <Badge variant="outline">
-              {orders?.length || 0} টি অর্ডার
-            </Badge>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {orders && orders.length > 0 ? (
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b">
-                    <th className="text-left py-2">ট্র্যাকিং আইডি</th>
-                    <th className="text-left py-2">গ্রাহক</th>
-                    <th className="text-left py-2">ফোন</th>
-                    <th className="text-left py-2">মোট</th>
-                    <th className="text-left py-2">স্ট্যাটাস</th>
-                    <th className="text-left py-2">তারিখ</th>
-                    <th className="text-left py-2">অ্যাকশন</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {orders.slice(0, 10).map((order: any) => (
-                    <tr key={order.id} className="border-b hover:bg-gray-50">
-                      <td className="py-3 font-mono text-sm">{order.tracking_id}</td>
-                      <td className="py-3">{order.customer_name}</td>
-                      <td className="py-3">
-                        <div className="flex items-center">
-                          <Phone className="w-3 h-3 mr-1" />
-                          {order.phone}
-                        </div>
-                      </td>
-                      <td className="py-3 font-bold">
-                        {formatPrice(parseFloat(order.total || 0))}
-                      </td>
-                      <td className="py-3">
-                        <Badge className={getStatusColor(order.status)}>
-                          {getStatusText(order.status)}
-                        </Badge>
-                      </td>
-                      <td className="py-3">
-                        <div className="flex items-center">
-                          <Calendar className="w-3 h-3 mr-1" />
-                          {new Date(order.created_at).toLocaleDateString('bn-BD')}
-                        </div>
-                      </td>
-                      <td className="py-3">
-                        <Button variant="ghost" size="sm">
-                          <Eye className="w-4 h-4" />
-                        </Button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          ) : (
-            <div className="text-center py-8 text-gray-500">
-              কোন অর্ডার পাওয়া যায়নি
-            </div>
-          )}
-        </CardContent>
-      </Card>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">মোট অর্ডার</CardTitle>
+                <ShoppingCart className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">
+                  {adminStats?.totalOrders || stats.totalOrders}
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  <span className="text-blue-600">
+                    {adminStats?.pendingOrders || stats.pendingOrders} অপেক্ষমান
+                  </span>
+                </p>
+              </CardContent>
+            </Card>
 
-      {/* System Status */}
-      <Card>
-        <CardHeader>
-          <CardTitle>সিস্টেম স্ট্যাটাস</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="flex items-center space-x-3 p-3 bg-green-50 rounded-lg">
-              <div className="w-3 h-3 rounded-full bg-green-500"></div>
-              <div>
-                <p className="font-medium">ডাটাবেস</p>
-                <p className="text-sm text-gray-600">সক্রিয়</p>
-              </div>
-            </div>
-            <div className="flex items-center space-x-3 p-3 bg-green-50 rounded-lg">
-              <div className="w-3 h-3 rounded-full bg-green-500"></div>
-              <div>
-                <p className="font-medium">API</p>
-                <p className="text-sm text-gray-600">সক্রিয়</p>
-              </div>
-            </div>
-            <div className="flex items-center space-x-3 p-3 bg-amber-50 rounded-lg">
-              <div className="w-3 h-3 rounded-full bg-amber-500"></div>
-              <div>
-                <p className="font-medium">বিশ্লেষণ</p>
-                <p className="text-sm text-gray-600">আংশিক</p>
-              </div>
-            </div>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">পণ্য</CardTitle>
+                <Package className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">
+                  {adminStats?.totalProducts || stats.totalProducts}
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  <span className="text-red-600">
+                    {adminStats?.lowStockProducts || stats.lowStockProducts} কম স্টক
+                  </span>
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">গড় অর্ডার</CardTitle>
+                <TrendingUp className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">
+                  {formatPrice(adminStats?.averageOrderValue || stats.averageOrderValue)}
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  প্রতি অর্ডার গড় মূল্য
+                </p>
+              </CardContent>
+            </Card>
           </div>
-        </CardContent>
-      </Card>
+
+          {/* Order Status Overview */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>অর্ডার স্ট্যাটাস</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between p-3 bg-yellow-50 rounded-lg">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
+                      <span className="font-medium">অপেক্ষমান</span>
+                    </div>
+                    <span className="font-bold text-yellow-700">{stats.pendingOrders}</span>
+                  </div>
+                  <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-3 h-3 rounded-full bg-blue-500"></div>
+                      <span className="font-medium">প্রক্রিয়াকরণ</span>
+                    </div>
+                    <span className="font-bold text-blue-700">{stats.processingOrders}</span>
+                  </div>
+                  <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                      <span className="font-medium">পাঠানো</span>
+                    </div>
+                    <span className="font-bold text-green-700">{stats.shippedOrders}</span>
+                  </div>
+                  <div className="flex items-center justify-between p-3 bg-emerald-50 rounded-lg">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-3 h-3 rounded-full bg-emerald-500"></div>
+                      <span className="font-medium">ডেলিভার</span>
+                    </div>
+                    <span className="font-bold text-emerald-700">{stats.deliveredOrders}</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Quick Actions */}
+            <Card>
+              <CardHeader>
+                <CardTitle>দ্রুত কাজ</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  <Button className="w-full justify-start" variant="outline" onClick={() => setActiveTab('products')}>
+                    <Package className="w-4 h-4 mr-2" />
+                    নতুন পণ্য যোগ করুন
+                  </Button>
+                  <Button className="w-full justify-start" variant="outline" onClick={() => setActiveTab('orders')}>
+                    <ShoppingCart className="w-4 h-4 mr-2" />
+                    অর্ডার দেখুন
+                  </Button>
+                  <Button className="w-full justify-start" variant="outline" onClick={() => setActiveTab('settings')}>
+                    <Users className="w-4 h-4 mr-2" />
+                    সেটিংস
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Recent Orders */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between">
+                <span>সাম্প্রতিক অর্ডার</span>
+                <Badge variant="outline">
+                  {orders?.length || 0} টি অর্ডার
+                </Badge>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {orders && orders.length > 0 ? (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b">
+                        <th className="text-left py-2">ট্র্যাকিং আইডি</th>
+                        <th className="text-left py-2">গ্রাহক</th>
+                        <th className="text-left py-2">ফোন</th>
+                        <th className="text-left py-2">মোট</th>
+                        <th className="text-left py-2">স্ট্যাটাস</th>
+                        <th className="text-left py-2">তারিখ</th>
+                        <th className="text-left py-2">অ্যাকশন</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {orders.slice(0, 10).map((order: any) => (
+                        <tr key={order.id} className="border-b hover:bg-gray-50">
+                          <td className="py-3 font-mono text-sm">{order.tracking_id}</td>
+                          <td className="py-3">{order.customer_name}</td>
+                          <td className="py-3">
+                            <div className="flex items-center">
+                              <Phone className="w-3 h-3 mr-1" />
+                              {order.phone}
+                            </div>
+                          </td>
+                          <td className="py-3 font-bold">
+                            {formatPrice(parseFloat(order.total || 0))}
+                          </td>
+                          <td className="py-3">
+                            <Badge className={getStatusColor(order.status)}>
+                              {getStatusText(order.status)}
+                            </Badge>
+                          </td>
+                          <td className="py-3">
+                            <div className="flex items-center">
+                              <Calendar className="w-3 h-3 mr-1" />
+                              {new Date(order.created_at).toLocaleDateString('bn-BD')}
+                            </div>
+                          </td>
+                          <td className="py-3">
+                            <Button variant="ghost" size="sm">
+                              <Eye className="w-4 h-4" />
+                            </Button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <div className="text-center py-8 text-gray-500">
+                  কোন অর্ডার পাওয়া যায়নি
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* System Status */}
+          <Card>
+            <CardHeader>
+              <CardTitle>সিস্টেম স্ট্যাটাস</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="flex items-center space-x-3 p-3 bg-green-50 rounded-lg">
+                  <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                  <div>
+                    <p className="font-medium">ডাটাবেস</p>
+                    <p className="text-sm text-gray-600">সক্রিয়</p>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-3 p-3 bg-green-50 rounded-lg">
+                  <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                  <div>
+                    <p className="font-medium">API</p>
+                    <p className="text-sm text-gray-600">সক্রিয়</p>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-3 p-3 bg-amber-50 rounded-lg">
+                  <div className="w-3 h-3 rounded-full bg-amber-500"></div>
+                  <div>
+                    <p className="font-medium">বিশ্লেষণ</p>
+                    <p className="text-sm text-gray-600">আংশিক</p>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </>
+      )}
+
+      {/* Order Management Tab */}
+      {activeTab === 'orders' && (
+        <div className="space-y-6">
+          <OrderManagement />
+        </div>
+      )}
+
+      {/* Product Management Tab */}
+      {activeTab === 'products' && (
+        <div className="space-y-6">
+          <ProductManagement />
+        </div>
+      )}
+
+      {/* Category Management Tab */}
+      {activeTab === 'categories' && (
+        <div className="space-y-6">
+          <CategoryManagement />
+        </div>
+      )}
+
+      {/* Offer Management Tab */}
+      {activeTab === 'offers' && (
+        <div className="space-y-6">
+          <OfferManagement />
+        </div>
+      )}
+
+      {/* Site Settings Tab */}
+      {activeTab === 'settings' && (
+        <div className="space-y-6">
+          <SiteSettingsManagement />
+        </div>
+      )}
     </div>
   );
 }

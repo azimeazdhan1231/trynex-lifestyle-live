@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -58,9 +57,9 @@ export default function AdminLogin() {
 
       // Clear any cached queries and refetch
       queryClient.clear();
-      
+
       setIsLoggedIn(true);
-      
+
       toast({
         title: "সফল!",
         description: "অ্যাডমিন প্যানেলে স্বাগতম",
