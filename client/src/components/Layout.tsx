@@ -2,8 +2,6 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import MobileNavigation from "@/components/MobileNavigation";
-import FloatingActionButton from "@/components/FloatingActionButton";
 import { Button } from "@/components/ui/button";
 import { ArrowUp } from "lucide-react";
 
@@ -68,10 +66,8 @@ const Layout = ({ children, showScrollTop = true, className = "" }: LayoutProps)
       <Footer />
       
       {/* Mobile Navigation */}
-      {isMobile && <MobileNavigation />}
       
       {/* Floating Action Buttons */}
-      <FloatingActionButton />
 
       {/* Scroll to Top Button */}
       <AnimatePresence>

@@ -1,19 +1,28 @@
 import Layout from "@/components/Layout";
 import PerfectCheckoutPage from "@/components/PerfectCheckoutPage";
 import { useCart } from "@/hooks/use-cart";
-import { Redirect } from "wouter";
+import { Redirect, useLocation } from "wouter";
 
 const CheckoutPage = () => {
   const { items } = useCart();
+  const [, navigate] = useLocation();
 
   // Redirect to cart if no items
   if (items.length === 0) {
     return <Redirect to="/cart" />;
   }
 
+  const handleSuccess = (orderId: string) => {
+    navigate(`/tracking/${orderId}`);
+  };
+
+  const handleBack = () => {
+    navigate("/cart");
+  };
+
   return (
     <Layout>
-      <PerfectCheckoutPage />
+      <PerfectCheckoutPage onSuccess={handleSuccess} onBack={handleBack} />
     </Layout>
   );
 };

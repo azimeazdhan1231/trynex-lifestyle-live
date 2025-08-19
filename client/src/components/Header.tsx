@@ -5,8 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { useCart } from "@/hooks/use-cart";
-import IntegratedCartSystem from "./integrated-cart-system";
-import InstantSearchBar from "@/components/instant-search-bar";
 import { useQuery } from "@tanstack/react-query";
 import EnhancedCartModal from "@/components/EnhancedCartModal";
 import {
@@ -164,12 +162,24 @@ const Header = () => {
               ))}
             </nav>
 
-            {/* Instant Search Bar */}
+            {/* Search Bar */}
             <div className="hidden md:flex flex-1 max-w-md mx-8">
-              <InstantSearchBar 
-                placeholder="পণ্য খুঁজুন..."
-                className="w-full"
-              />
+              <div className="relative w-full">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                <Input
+                  type="text"
+                  placeholder="পণ্য খুঁজুন..."
+                  className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      const searchValue = (e.target as HTMLInputElement).value;
+                      if (searchValue.trim()) {
+                        window.location.href = `/search?q=${encodeURIComponent(searchValue)}`;
+                      }
+                    }
+                  }}
+                />
+              </div>
             </div>
 
             {/* Right Side Actions */}
@@ -196,8 +206,23 @@ const Header = () => {
                 </Button>
               </Link>
 
-              {/* Integrated Cart System */}
-              <IntegratedCartSystem />
+              {/* Cart Button */}
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                onClick={() => setShowCartModal(true)}
+                data-testid="cart-button"
+                className="relative"
+              >
+                <ShoppingCart className="w-5 h-5" />
+                {cartItemCount > 0 && (
+                  <Badge 
+                    className="absolute -top-2 -right-2 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs"
+                  >
+                    {cartItemCount}
+                  </Badge>
+                )}
+              </Button>
 
               {/* User Account */}
               <Link href="/profile">
