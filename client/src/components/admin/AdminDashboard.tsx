@@ -58,7 +58,11 @@ interface DashboardStats {
   }>;
 }
 
-export default function AdminDashboard() {
+interface AdminDashboardProps {
+  onLogout?: () => void;
+}
+
+export default function AdminDashboard({ onLogout }: AdminDashboardProps = {}) {
   const [refreshKey, setRefreshKey] = useState(0);
 
   // Fetch admin stats with error handling
@@ -193,12 +197,12 @@ export default function AdminDashboard() {
   const calculateStats = () => {
     const totalOrders = orders?.length || 0;
     const totalProducts = products?.length || 0;
-    const totalRevenue = orders?.reduce((sum, order) => sum + parseFloat(order.total || '0'), 0) || 0;
-    const pendingOrders = orders?.filter(order => order.status === 'pending')?.length || 0;
-    const processingOrders = orders?.filter(order => order.status === 'processing')?.length || 0;
-    const shippedOrders = orders?.filter(order => order.status === 'shipped')?.length || 0;
-    const deliveredOrders = orders?.filter(order => order.status === 'delivered')?.length || 0;
-    const lowStockProducts = products?.filter(product => (product.stock || 0) < 5)?.length || 0;
+    const totalRevenue = orders?.reduce((sum: number, order: any) => sum + parseFloat(order.total || '0'), 0) || 0;
+    const pendingOrders = orders?.filter((order: any) => order.status === 'pending')?.length || 0;
+    const processingOrders = orders?.filter((order: any) => order.status === 'processing')?.length || 0;
+    const shippedOrders = orders?.filter((order: any) => order.status === 'shipped')?.length || 0;
+    const deliveredOrders = orders?.filter((order: any) => order.status === 'delivered')?.length || 0;
+    const lowStockProducts = products?.filter((product: any) => (product.stock || 0) < 5)?.length || 0;
 
     return {
       totalOrders,
